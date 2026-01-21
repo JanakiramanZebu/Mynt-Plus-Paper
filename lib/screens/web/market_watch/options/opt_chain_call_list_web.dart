@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -206,8 +208,8 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   color: isHovered
                       ? (theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary)
+                          ? MyntColors.primary
+                          : MyntColors.primary)
                           .withOpacity(0.15)
                       : Colors.transparent,
                   child: _buildCompleteDataRow(theme, scripData, lp, perChange, oiLack, oiPerChng, currentOI, isInWatchlist, isHovered),
@@ -223,10 +225,10 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
   Widget _buildCompleteDataRow(ThemesProvider theme, MarketWatchProvider scripData,
       String lp, String perChange, String oiLack, String oiPerChng, double currentOI, bool isInWatchlist, bool isHovered) {
     final changeColor = perChange.startsWith("-")
-        ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+        ? (theme.isDarkMode ? MyntColors.loss : MyntColors.loss)
         : (perChange == "0.00" || perChange == "0.0"
-            ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-            : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
+            ? (theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary)
+            : (theme.isDarkMode ? MyntColors.profit : MyntColors.profit));
 
     return Stack(
       clipBehavior: Clip.none,
@@ -245,20 +247,34 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                             Expanded(
                               child: Text(
                                 "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
                                   color: (oiPerChng.startsWith("-"))
-                                      ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-                                      : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
+                                      ? resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss,
+                                        )
+                                      : resolveThemeColor(
+                                          context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit,
+                                        ),
                                 ),
                               ),
                             ),
                             Expanded(
                               child: Text(
                                 oiLack,
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
                                 ),
                               ),
                             ),
@@ -278,8 +294,9 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                             Expanded(
                               child: Text(
                                 "$perChange%",
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
                                   color: changeColor,
                                 ),
                               ),
@@ -287,9 +304,14 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                             Expanded(
                               child: Text(
                                 lp,
-                                style: WebTextStyles.tableDataCompact(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
                                 ),
                               ),
                             ),
@@ -306,7 +328,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                         //             ? (_currentOI / _globalMaxOI).clamp(0.0, 1.0) 
                         //             : 0.0),
                         //     decoration: BoxDecoration(
-                        //       color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
+                        //       color: theme.isDarkMode ? MyntColors.profit : MyntColors.profit,
                         //       borderRadius: BorderRadius.circular(1),
                         //     ),
                         //   ),
@@ -327,7 +349,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                   _buildHoverButton(
                     label: 'B',
                     color: Colors.white,
-                    backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+                    backgroundColor: theme.isDarkMode ? MyntColors.primary : MyntColors.primary,
                     onPressed: () async {
                       await placeOrderInput(scripData, context, widget.option, true);
                     },
@@ -337,7 +359,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                   _buildHoverButton(
                     label: 'S',
                     color: Colors.white,
-                    backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
+                    backgroundColor: theme.isDarkMode ? MyntColors.tertiary : MyntColors.tertiary,
                     onPressed: () async {
                       await placeOrderInput(scripData, context, widget.option, false);
                     },
@@ -358,8 +380,8 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                   _buildHoverButton(
                     svgIcon: isInWatchlist ? assets.bookmarkIcon : assets.bookmarkedIcon,
                     color: isInWatchlist
-                        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
+                        ? (theme.isDarkMode ? MyntColors.primary : MyntColors.primary)
+                        : (theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary),
                     backgroundColor: Colors.white,
                     borderRadius: 5.0,
                     onPressed: () async {
@@ -377,8 +399,8 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
   Widget _buildDataCell(String value, ThemesProvider theme, {bool isPrimary = false, Color? color}) {
     final displayValue = value == "0.00" || value == "0" ? "0.00" : value;
     final textColor = color ?? (isPrimary 
-        ? (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary)
-        : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary));
+        ? (theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)
+        : (theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary));
 
     return Text(
       displayValue,

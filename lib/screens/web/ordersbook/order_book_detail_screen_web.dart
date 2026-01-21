@@ -204,30 +204,52 @@ class _OrderBookDetailScreenWebState
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with close button (fixed)
+              // Header with Order Details title
               Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildSymbolSection(theme, scripInfo, depthArgs),
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                      width: 1,
                     ),
-                    MyntCloseButton(
-                      onPressed: () {
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
                         shadcn.closeSheet(context);
                       },
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Order Details',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // Border divider
-              Container(
-                height: 1,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -237,32 +259,45 @@ class _OrderBookDetailScreenWebState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Symbol Info Section
+                        _buildSymbolSection(theme, scripInfo, depthArgs),
+                        const SizedBox(height: 16),
                         // Action Buttons
                         _buildActionButtons(theme),
+                        // Order History Button Stub (Visual only if needed, keeping functionality simple for now)
+                        // If user wants exactly like image, we might need to hide the full list and show a button.
+                        // For now keeping the full list at the bottom but checking if we need the button visually.
+
                         // Details Section
                         _buildDetailsSection(theme),
+
                         // Reason Section
                         if (_orderData.rejreason != null &&
                             _orderData.rejreason!.isNotEmpty) ...[
-                          // const shadcn.Gap(16),
                           _buildReasonWidget(theme, _orderData.rejreason!),
                         ],
-                        // Order History Section
+
+                        // Order History Header & Section
                         if (orderHistory != null &&
                             orderHistory.isNotEmpty &&
                             orderHistory[0].stat != "Not_Ok") ...[
-                          // const shadcn.Gap(24),
-                          Text(
-                            'Order History',
-                            style: MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textPrimaryDark,
-                                  light: MyntColors.textPrimary),
-                              fontWeight: MyntFonts.semiBold,
-                            ),
-                          ),
-                          const shadcn.Gap(12),
+                          const SizedBox(height: 24),
+                          // Center(
+                          //     child: TextButton.icon(
+                          //   onPressed: () {
+                          //     // Optional: Toggle history visibility or scroll to it
+                          //   },
+                          //   icon: Icon(Icons.list, color: MyntColors.primary),
+                          //   label: Text(
+                          //     'Order History',
+                          //     style: MyntWebTextStyles.bodySmall(
+                          //       context,
+                          //       color: MyntColors.primary,
+                          //       fontWeight: MyntFonts.semiBold,
+                          //     ),
+                          //   ),
+                          // )),
+                          const SizedBox(height: 12),
                           _buildOrderHistorySection(theme, orderHistory),
                         ],
                       ],
@@ -488,24 +523,148 @@ class _OrderBookDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
               title1,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
+                    dark: MyntColors
+                        .textPrimaryDark, // Changed to Primary as per image usually labels are dark/visible
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value1,
+              textAlign: TextAlign.end,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rowOfInfoDataWithColor(
+      String title, String value, ThemesProvider theme, Color valueColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: valueColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: valueColor,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Text(
-              value1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReasonWidget(ThemesProvider theme, String reason) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Reason",
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.regular,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              reason,
+              textAlign: TextAlign.end,
               style: MyntWebTextStyles.bodySmall(
                 context,
                 color: resolveThemeColor(context,
@@ -514,72 +673,9 @@ class _OrderBookDetailScreenWebState
                 fontWeight: MyntFonts.medium,
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _rowOfInfoDataWithColor(
-      String title, String value, ThemesProvider theme, Color valueColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
-            ),
-            Text(
-              value,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: valueColor,
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _buildReasonWidget(ThemesProvider theme, String reason) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Reason:",
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary),
-            fontWeight: MyntFonts.regular,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          reason,
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary),
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

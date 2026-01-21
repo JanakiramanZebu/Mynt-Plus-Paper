@@ -68,7 +68,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final indexProvider = ref.watch(indexListProvider);
 
     return Scaffold(
-      backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+      backgroundColor: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -96,6 +98,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         final portfolio = ref.watch(portfolioProvider);
         final orders = ref.watch(orderProvider);
         final fund = ref.watch(fundProvider);
+        // Watch websocket to rebuild when price data updates (triggers rebuild on any socket data change)
+        ref.watch(websocketProvider);
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -148,21 +152,29 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   Widget _buildHoldingsCard(BuildContext context, PortfolioProvider portfolio) {
     final holdings = portfolio.holdingsModel ?? [];
     final holdingsCount = holdings.length;
-    final invested = portfolio.totInvesHold;
-    final current = portfolio.totalCurrentVal.toStringAsFixed(2);
-    final totalPnL = portfolio.totalPnlHolding.toStringAsFixed(2);
-    final totalPnLPercent = portfolio.totPnlPercHolding;
-    final todayPnL = portfolio.oneDayChng.toStringAsFixed(2);
-    final todayPnLPercent = portfolio.oneDayChngPer.toStringAsFixed(2);
 
-    // Calculate positive and negative holdings
+    // Calculate stats locally from holdings data (like mobile does)
+    double totalPnlHolding = 0.0;
+    double oneDayChng = 0.0;
+    double invest = 0.0;
+    double totalCurrentVal = 0.0;
     int positiveCount = 0;
     int negativeCount = 0;
+
     for (var holding in holdings) {
       if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final pnl =
-            double.tryParse(holding.exchTsym![0].profitNloss ?? '0') ?? 0.0;
+        final exchTsym = holding.exchTsym![0];
+        final pnl = double.tryParse(exchTsym.profitNloss ?? '0') ?? 0.0;
         final rpnl = double.tryParse(holding.rpnl ?? '0') ?? 0.0;
+        final oneDayChgVal = double.tryParse(exchTsym.oneDayChg ?? '0') ?? 0.0;
+        final investedVal = double.tryParse(holding.invested ?? '0') ?? 0.0;
+        final currentVal = double.tryParse(holding.currentValue ?? '0') ?? 0.0;
+
+        totalPnlHolding += pnl + rpnl;
+        oneDayChng += oneDayChgVal;
+        invest += investedVal;
+        totalCurrentVal += currentVal;
+
         if (pnl + rpnl > 0) {
           positiveCount++;
         } else if (pnl + rpnl < 0) {
@@ -170,6 +182,17 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         }
       }
     }
+
+    // Calculate percentages
+    final oneDayChngPer = totalCurrentVal > 0 ? (oneDayChng / totalCurrentVal) * 100 : 0.0;
+    final totPnlPercHolding = invest > 0 ? ((totalPnlHolding / invest) * 100).toStringAsFixed(2) : '0.00';
+
+    final invested = invest.toStringAsFixed(2);
+    final current = totalCurrentVal.toStringAsFixed(2);
+    final totalPnL = totalPnlHolding.toStringAsFixed(2);
+    final totalPnLPercent = totPnlPercHolding;
+    final todayPnL = oneDayChng.toStringAsFixed(2);
+    final todayPnLPercent = oneDayChngPer.toStringAsFixed(2);
 
     return _buildCard(
       context: context,
@@ -203,27 +226,45 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   }
 
   Widget _buildPositionCard(BuildContext context, PortfolioProvider portfolio) {
-    final positions = portfolio.openPosition ?? [];
+    // Use postionBookModel for all positions (both open and closed)
+    final positions = portfolio.postionBookModel ?? [];
     final positionsCount = positions.length;
-    final openPositionsCount = positions.where((p) => p.qty != "0").length;
-    final tradeValue = portfolio.totBuyAmt;
-    final mtm = portfolio.totMtM;
-    final totalPnL = portfolio.totPnL;
-    final openPnL = portfolio.totUnRealMtm;
+    final openPositionsCount = positions.where((p) => p.netqty != "0").length;
 
-    // Calculate positive and negative positions
+    // Calculate stats locally from positions data (like mobile does)
+    double totBuyAmts = 0.0;
+    double totMtm = 0.0;
+    double totPnl = 0.0;
+    double unRealMtm = 0.0;
     int positiveCount = 0;
     int negativeCount = 0;
+
     for (var position in positions) {
-      if (position.qty != "0") {
-        final pnl = double.tryParse(position.profitNloss ?? '0') ?? 0.0;
-        if (pnl > 0) {
-          positiveCount++;
-        } else if (pnl < 0) {
-          negativeCount++;
-        }
+      final buyAmt = double.tryParse(position.totbuyamt ?? '0') ?? 0.0;
+      final mtmVal = double.tryParse(position.mTm ?? '0') ?? 0.0;
+      final pnlVal = double.tryParse(position.profitNloss ?? '0') ?? 0.0;
+
+      totBuyAmts += buyAmt;
+      totMtm += mtmVal;
+      totPnl += pnlVal;
+
+      // Count positive/negative based on P&L for ALL positions
+      if (pnlVal > 0) {
+        positiveCount++;
+      } else if (pnlVal < 0) {
+        negativeCount++;
+      }
+
+      // For unrealized P&L, only count open positions
+      if (position.netqty != "0") {
+        unRealMtm += pnlVal;
       }
     }
+
+    final tradeValue = totBuyAmts.toStringAsFixed(2);
+    final mtm = totMtm.toStringAsFixed(2);
+    final totalPnL = totPnl.toStringAsFixed(2);
+    final openPnL = unRealMtm.toStringAsFixed(2);
 
     return _buildCard(
       context: context,

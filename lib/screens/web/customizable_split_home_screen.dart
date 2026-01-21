@@ -8,10 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
+import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/index_list_provider.dart';
@@ -34,10 +38,10 @@ import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
-import '../../../sharedWidget/splash_loader.dart';
+// import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
-import 'profile/profile_main_screen_web.dart';
-import 'profile/settings_web.dart';
+import 'profile/profile_main_screen.dart';
+// import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -521,7 +525,7 @@ class _CustomizableSplitHomeScreenState
         body: Stack(
           children: [
             _buildMainScaffold(),
-            _buildChartOverlay(),
+            const WebChartOverlay(), // New simplified chart overlay
           ],
         ),
       ),
@@ -535,10 +539,14 @@ class _CustomizableSplitHomeScreenState
         // PERFORMANCE FIX: Use .select() to only watch connection status fields
         // Before: ref.watch(websocketProvider) - ENTIRE provider caused rebuilds every 500ms!
         // After: Only rebuild when connection status actually changes
-        final connectionCount = ref.watch(websocketProvider.select((p) => p.connectioncount));
-        final reconnectionSuccess = ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
-        final wsConnected = ref.watch(websocketProvider.select((p) => p.wsConnected));
-        final retryscreen = ref.watch(websocketProvider.select((p) => p.retryscreen));
+        final connectionCount =
+            ref.watch(websocketProvider.select((p) => p.connectioncount));
+        final reconnectionSuccess =
+            ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
+        final wsConnected =
+            ref.watch(websocketProvider.select((p) => p.wsConnected));
+        final retryscreen =
+            ref.watch(websocketProvider.select((p) => p.retryscreen));
 
         if ((internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
@@ -604,9 +612,7 @@ class _CustomizableSplitHomeScreenState
           ),
           // Divider
           Container(
-            width: 1,
-            color:shadcn.Theme.of(context).colorScheme.border
-          ),
+              width: 1, color: shadcn.Theme.of(context).colorScheme.border),
           // Right side: AppBar + Content
           Expanded(
             child: Column(
@@ -671,7 +677,9 @@ class _CustomizableSplitHomeScreenState
   /// Build watchlist panel (full height) with index slots on top
   Widget _buildWatchlistPanel(ThemesProvider theme, {required int panelIndex}) {
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: Column(
         children: [
           // Index slots at top of watchlist
@@ -706,7 +714,9 @@ class _CustomizableSplitHomeScreenState
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.background,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             // border: Border(
             //   bottom: BorderSide(
             //     color: isDarkMode
@@ -751,7 +761,9 @@ class _CustomizableSplitHomeScreenState
     if (panelIndex < _panels.length) {
       final panel = _panels[panelIndex];
       return Container(
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: panel.screens.isNotEmpty
             ? IndexedStack(
                 index: panel.activeScreenIndex >= 0 &&
@@ -769,7 +781,9 @@ class _CustomizableSplitHomeScreenState
     }
     // Default to dashboard if no panel configured
     return Container(
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: _getScreenForType(ScreenType.dashboard),
     );
   }
@@ -779,7 +793,9 @@ class _CustomizableSplitHomeScreenState
     return Container(
       height: 65,
       decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         border: Border(
           bottom: BorderSide(
             color: shadcn.Theme.of(context).colorScheme.border,
@@ -841,7 +857,9 @@ class _CustomizableSplitHomeScreenState
         child: Container(
           decoration: BoxDecoration(
             // Clean minimal - white background
-            color: shadcn.Theme.of(context).colorScheme.background,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             // Subtle border at bottom
             border: Border(
               bottom: BorderSide(
@@ -1045,7 +1063,9 @@ class _CustomizableSplitHomeScreenState
 
     return Container(
       // margin: const EdgeInsets.all(0),
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: DragTarget<Object>(
         onAcceptWithDetails: (details) {
           final draggedData = details.data;
@@ -1278,18 +1298,16 @@ class _CustomizableSplitHomeScreenState
       child: InkWell(
         onTap: _handleSwapPanels,
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Icon(
           Icons.swap_horiz,
           color: resolveThemeColor(
@@ -1316,18 +1334,16 @@ highlightColor: resolveThemeColor(
           );
         },
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -1364,9 +1380,34 @@ highlightColor: resolveThemeColor(
         return _ProfileDropdown(
           isDarkMode: isDarkMode,
           clientId: clientId,
+          onNavigateToScreen: (screenType) {
+            _navigateToScreen(screenType);
+          },
         );
       },
     );
+  }
+
+  // Navigate to a specific screen type in the main panel
+  void _navigateToScreen(ScreenType screenType) {
+    // Find the active panel (not watchlist) and switch to the new screen
+    int targetPanelIndex = 0;
+    for (int i = 0; i < _panels.length; i++) {
+      if (_panels[i].screenType != ScreenType.watchlist &&
+          !(_panels[i].screens.isNotEmpty &&
+              _panels[i].screens.contains(ScreenType.watchlist))) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+
+    setState(() {
+      _panels[targetPanelIndex].screenType = screenType;
+      _panels[targetPanelIndex].screens = [screenType];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
+    });
+    _saveLayout();
+    _handleScreenTypeChange(screenType);
   }
 
   // Build index slots for app bar
@@ -1440,14 +1481,16 @@ highlightColor: resolveThemeColor(
                 ref.watch(portfolioProvider.select((p) => p.holdloader));
             final holdingsModel =
                 ref.watch(portfolioProvider.select((p) => p.holdingsModel));
-            final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
+            // final hasData = holdingsModel != null && holdingsModel.isNotEmpty;
 
             // Show loader if local loading state is true, provider loading is true, or no data yet
-            if (isLoading || holdloader || !hasData) {
+            if (isLoading || holdloader) {
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: shadcn.Theme.of(context).colorScheme.background,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                 child: const CircularLoaderImage(),
               );
             }
@@ -1470,7 +1513,9 @@ highlightColor: resolveThemeColor(
               return Container(
                 width: double.infinity,
                 height: double.infinity,
-                color: shadcn.Theme.of(context).colorScheme.background,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                 child: const CircularLoaderImage(),
               );
             }
@@ -1496,9 +1541,10 @@ highlightColor: resolveThemeColor(
             if (args == null) {
               // PERFORMANCE FIX: Use .select() to only watch getQuotes
               // Watching entire marketWatchProvider causes unnecessary rebuilds
-              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
+              final quotes =
+                  ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
-                  ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
+                  ChartArgs(exch: 'NSE', tsym: 'Nifty 50', token: '26000');
               return ChartWithDepthWeb(
                 wlValue: DepthInputArgs(
                   exch: quotes?.exch ?? fallback.exch,
@@ -1526,7 +1572,7 @@ highlightColor: resolveThemeColor(
       case ScreenType.reports:
         return const ReportsScreenWeb();
       case ScreenType.settings:
-        return const SettingsScreenWeb();
+        return const ProfileMainScreen(initialIndex: 3);
       case ScreenType.tradeAction:
         // Get tab index from stored state or use null for default
         final tabIndex = _tradeActionTabIndex;
@@ -1760,7 +1806,9 @@ highlightColor: resolveThemeColor(
           builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             return AlertDialog(
-              backgroundColor: shadcn.Theme.of(context).colorScheme.background,
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -2485,6 +2533,9 @@ highlightColor: resolveThemeColor(
             "NSE", "NSEALL", "mostActive", "mostActive");
       }
 
+      // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
+      await portfolio.fetchHoldings(context, "Refresh");
+
       // Update subscription manager AFTER data is fetched
       // This ensures tokens are available for subscription
       if (mounted) {
@@ -3154,42 +3205,6 @@ highlightColor: resolveThemeColor(
     }
   }
 
-  Widget _buildChartOverlay() {
-    return Consumer(
-      builder: (context, ref, _) {
-        final showChart = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.showchartof));
-        final webViewKey = ref.watch(userProfileProvider
-            .select((userProfile) => userProfile.webViewKey));
-        return Positioned(
-          key: webViewKey,
-          bottom: showChart ? 0 : (MediaQuery.of(context).size.height + 100),
-          child: AnimatedContainer(
-            alignment: Alignment.center,
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.fastLinearToSlowEaseIn,
-            decoration: BoxDecoration(
-              color: shadcn.Theme.of(context).colorScheme.background,
-            ),
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ChartScreenWebViews(
-                      chartArgs:
-                          ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123')),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   void _handleReconnectionSuccess() {
     if (!mounted) return;
     setState(() {});
@@ -3207,7 +3222,7 @@ highlightColor: resolveThemeColor(
       mktwth.singlePageloader(false);
 
       if (mounted) setState(() {});
-      ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+      ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
       return false;
     } else {
       return await showDialog(
@@ -3215,8 +3230,9 @@ highlightColor: resolveThemeColor(
               builder: (BuildContext context) {
                 final theme = ref.read(themeProvider);
                 return AlertDialog(
-                    backgroundColor:
-                        shadcn.Theme.of(context).colorScheme.background,
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
                     titlePadding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     shape: const RoundedRectangleBorder(
@@ -3245,18 +3261,16 @@ highlightColor: resolveThemeColor(
                                   Navigator.of(context).pop(false);
                                 },
                                 borderRadius: BorderRadius.circular(20),
-                              splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.all(6.0),
                                   child: Icon(
@@ -3337,10 +3351,12 @@ highlightColor: resolveThemeColor(
 class _ProfileDropdown extends StatefulWidget {
   final bool isDarkMode;
   final String clientId;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileDropdown({
     required this.isDarkMode,
     required this.clientId,
+    this.onNavigateToScreen,
   });
 
   @override
@@ -3375,6 +3391,10 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
         onClose: () {
           _removeOverlay();
         },
+        onNavigateToScreen: (screenType) {
+          _removeOverlay();
+          widget.onNavigateToScreen?.call(screenType);
+        },
       ),
     );
 
@@ -3399,18 +3419,16 @@ class _ProfileDropdownState extends State<_ProfileDropdown> {
       child: InkWell(
         onTap: _toggleDropdown,
         borderRadius: BorderRadius.circular(10),
-      splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -3445,35 +3463,48 @@ highlightColor: resolveThemeColor(
   }
 }
 
-// InheritedWidget to provide close callback to UserAccountScreen
+// InheritedWidget to provide close and navigate callbacks to ProfileMainScreen
 class _ProfileCloseCallback extends InheritedWidget {
   final VoidCallback onClose;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileCloseCallback({
     required this.onClose,
+    this.onNavigateToScreen,
     required super.child,
   });
 
+  static _ProfileCloseCallback? of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ProfileCloseCallback>();
+  }
+
   @override
   bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
-    return onClose != oldWidget.onClose;
+    return onClose != oldWidget.onClose || onNavigateToScreen != oldWidget.onNavigateToScreen;
   }
 }
 
 // Wrapper widget that provides close callback to UserAccountScreen via InheritedWidget
 class ProfileMenuContentWrapper extends StatelessWidget {
   final VoidCallback onNavigate;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const ProfileMenuContentWrapper({
     super.key,
     required this.onNavigate,
+    this.onNavigateToScreen,
   });
 
   @override
   Widget build(BuildContext context) {
     return _ProfileCloseCallback(
       onClose: onNavigate,
-      child: const UserAccountScreenWeb(),
+      onNavigateToScreen: onNavigateToScreen,
+      child: ProfileNavigationCallback(
+        onClose: onNavigate,
+        onNavigateToScreen: onNavigateToScreen,
+        child: const ProfileMainScreen(),
+      ),
     );
   }
 }
@@ -3483,11 +3514,13 @@ class _ProfileDropdownOverlay extends StatelessWidget {
   final bool isDarkMode;
   final String clientId;
   final VoidCallback onClose;
+  final Function(ScreenType)? onNavigateToScreen;
 
   const _ProfileDropdownOverlay({
     required this.isDarkMode,
     required this.clientId,
     required this.onClose,
+    this.onNavigateToScreen,
   });
 
   @override
@@ -3528,8 +3561,8 @@ class _ProfileDropdownOverlay extends StatelessWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: ProfileMenuContentWrapper(
-                      onNavigate:
-                          onClose, // Pass callback to close on any navigation
+                      onNavigate: onClose,
+                      onNavigateToScreen: onNavigateToScreen,
                     ),
                   ),
                 ),
@@ -3801,7 +3834,9 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: const CircularLoaderImage(),
     );
   }
@@ -3885,9 +3920,18 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTap: () => _handleIndexClick(context),
-        child: shadcn.Card(
-          borderColor: Colors.transparent,
-          padding: const EdgeInsets.all(0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? resolveThemeColor(
+                    context,
+                    dark: WebColors.primaryDark,
+                    light: WebColors.primary,
+                  ).withValues(alpha: 0.08)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(0),
+          ),
           child: Stack(
             children: [
               Column(
@@ -3899,6 +3943,7 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                     widget.indexItem.idxname ?? "",
                     style: MyntWebTextStyles.symbol(
                       context,
+                      fontWeight: FontWeight.w500,
                       color: resolveThemeColor(
                         context,
                         dark: MyntColors.textPrimaryDark,
@@ -3932,35 +3977,35 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                   right: 0,
                   top: 0,
                   child: Material(
-                    color: Colors.transparent,
+                    color: resolveThemeColor(
+                      context,
+                      dark: Colors.white.withOpacity(0.1),
+                      light: Colors.black.withOpacity(0.05),
+                    ),
                     shape: const CircleBorder(),
                     child: InkWell(
-                      customBorder: const CircleBorder(),
-                   splashColor: resolveThemeColor(
-  context,
-  dark: MyntColors.rippleDark,
-  light: MyntColors.rippleLight,
-),
-highlightColor: resolveThemeColor(
-  context,
-  dark: MyntColors.highlightDark,
-  light: MyntColors.highlightLight,
-),
-
-
                       onTap: () => _handleTap(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: shadcn.Theme.of(context).colorScheme.card,
-                          shape: BoxShape.circle,
-                        ),
+                      customBorder: const CircleBorder(),
+                      splashColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.rippleDark,
+                        light: MyntColors.rippleLight,
+                      ),
+                      highlightColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.highlightDark,
+                        light: MyntColors.highlightLight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.edit_outlined,
-                          size: 16,
-                          color: shadcn.Theme.of(context)
-                              .colorScheme
-                              .mutedForeground,
+                          size: 14,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
+                          ),
                         ),
                       ),
                     ),
@@ -4200,7 +4245,9 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: shadcn.Theme.of(context).colorScheme.background,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: const CircularLoaderImage(),
     );
   }

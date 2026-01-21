@@ -1,95 +1,85 @@
 import 'package:flutter/foundation.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-// Shows how to open a contextual popover anchored to a button, with a custom
-// overlay barrier and a simple form inside. The popover closes via
-// closeOverlay(context) or when the user taps outside the barrier.
-
-class PopoverExample1 extends StatelessWidget {
-  const PopoverExample1({super.key});
+/// Dropdown menu anchored to a button.
+///
+/// Uses [showDropdown] to present a [DropdownMenu] overlay with labels,
+/// dividers, buttons, and a nested submenu.
+class DropdownMenuExample1 extends StatelessWidget {
+  const DropdownMenuExample1({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return PrimaryButton(
+    return OutlineButton(
       onPressed: () {
-        showPopover(
+        // Show the dropdown relative to the button.
+        showDropdown(
           context: context,
-          // Position the popover above the button, shifted by 8px.
-          alignment: Alignment.topCenter,
-          offset: const Offset(0, 8),
-          // Unless you have full opacity surface,
-          // you should explicitly set the overlay barrier.
-          overlayBarrier: OverlayBarrier(
-            borderRadius: theme.borderRadiusLg,
-          ),
           builder: (context) {
-            return ModalContainer(
-              child: SizedBox(
-                width: 300,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Dimensions').large().medium(),
-                    const Text('Set the dimensions for the layer.').muted(),
-                    Form(
-                      controller: FormController(),
-                      // Compact grid layout for label/field rows.
-                      child: const FormTableLayout(
-                        rows: [
-                          FormField<double>(
-                            key: FormKey(#width),
-                            label: Text('Width'),
-                            child: TextField(
-                              initialValue: '100%',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#maxWidth),
-                            label: Text('Max. Width'),
-                            child: TextField(
-                              initialValue: '300px',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#height),
-                            label: Text('Height'),
-                            child: TextField(
-                              initialValue: '25px',
-                            ),
-                          ),
-                          FormField<double>(
-                            key: FormKey(#maxHeight),
-                            label: Text('Max. Height'),
-                            child: TextField(
-                              initialValue: 'none',
-                            ),
-                          ),
-                        ],
-                        spacing: 8,
-                      ),
-                    ).withPadding(vertical: 16),
-                    PrimaryButton(
-                      onPressed: () {
-                        // Close the popover and resolve the returned future.
-                        closeOverlay(context);
-                      },
-                      child: const Text('Submit'),
+            return const DropdownMenu(
+              children: [
+                MenuLabel(child: Text('My Account')),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('Profile'),
+                ),
+                MenuButton(
+                  child: Text('Billing'),
+                ),
+                MenuButton(
+                  child: Text('Settings'),
+                ),
+                MenuButton(
+                  child: Text('Keyboard shortcuts'),
+                ),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('Team'),
+                ),
+                MenuButton(
+                  // Demonstrates a nested submenu.
+                  subMenu: [
+                    MenuButton(
+                      child: Text('Email'),
+                    ),
+                    MenuButton(
+                      child: Text('Message'),
+                    ),
+                    MenuDivider(),
+                    MenuButton(
+                      child: Text('More...'),
                     ),
                   ],
+                  child: Text('Invite users'),
                 ),
-              ),
+                MenuButton(
+                  child: Text('New Team'),
+                ),
+                MenuDivider(),
+                MenuButton(
+                  child: Text('GitHub'),
+                ),
+                MenuButton(
+                  child: Text('Support'),
+                ),
+                MenuButton(
+                  enabled: false,
+                  child: Text('API'),
+                ),
+                MenuButton(
+                  child: Text('Log out'),
+                ),
+              ],
             );
           },
         ).future.then((_) {
-          // Optional completion hook after the popover is dismissed.
+          // Called when the dropdown is closed.
           if (kDebugMode) {
-            print('Popover closed');
+            print('Closed');
           }
         });
       },
-      child: const Text('Open popover'),
+      child: const Text('Open'),
     );
   }
 }

@@ -16,6 +16,8 @@ import 'package:mynt_plus/screens/web/order/modify_place_order_web_screen.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart' as NewColors;
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 /// Service class to handle order actions (Cancel, Modify, Repeat)
 /// Separated from UI to improve maintainability
@@ -33,19 +35,64 @@ class OrderActionHandler {
     final parentCtx = context; // Capture the parent context
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => OrderBookDetailScreenWeb(
-        orderBookData: order,
-        parentContext: parentCtx, // Pass the parent context
-      ),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: NewColors.MyntColors.backgroundColorDark,
+              light: NewColors.MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: OrderBookDetailScreenWeb(
+            orderBookData: order,
+            parentContext: parentCtx, // Pass the parent context
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
     );
   }
 
   /// Open trade detail dialog
   void openTradeDetail(dynamic trade) {
-    showDialog(
+    shadcn.openSheet(
       context: context,
-      builder: (context) => TradeBookDetailScreenWeb(tradeData: trade),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 500 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: NewColors.MyntColors.backgroundColorDark,
+              light: NewColors.MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: TradeBookDetailScreenWeb(tradeData: trade),
+        );
+      },
+      position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
     );
   }
 
@@ -147,7 +194,7 @@ class OrderActionHandler {
       }
 
       print('🔵 [HOVER MODIFY] scripInfo fetched successfully');
-      
+
       final orderArgs = _createOrderArgs(orderData);
       print('🔵 [HOVER MODIFY] OrderArgs created:');
       print('  - exchange: ${orderArgs.exchange}');
@@ -157,7 +204,8 @@ class OrderActionHandler {
       print('  - prd: ${orderArgs.prd}');
       print('  - lotSize: ${orderArgs.lotSize}');
       print('  - transType: ${orderArgs.transType}');
-      print('🔵 [HOVER MODIFY] Calling showDraggable with initialPosition: $modifyDialogPosition');
+      print(
+          '🔵 [HOVER MODIFY] Calling showDraggable with initialPosition: $modifyDialogPosition');
 
       // Show draggable modify order dialog
       ModifyPlaceOrderScreenWeb.showDraggable(
@@ -167,7 +215,7 @@ class OrderActionHandler {
         orderArg: orderArgs,
         initialPosition: modifyDialogPosition,
       );
-      
+
       print('🔵 [HOVER MODIFY] showDraggable called successfully');
 
       // Refresh order book after a short delay
@@ -325,8 +373,8 @@ class OrderActionHandler {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -483,8 +531,8 @@ class OrderActionHandler {
               children: [
                 // Header with close button
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   margin: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -647,4 +695,3 @@ class OrderActionHandler {
     );
   }
 }
-

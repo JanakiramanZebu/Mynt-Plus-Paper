@@ -18,6 +18,12 @@ class AlertDialogue extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.read(themeProvider);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 600;
+    // Constrain dialog width on desktop
+    final dialogWidth =
+        isDesktop ? 400.0 : screenWidth - 60; // 60 = 2 * 30 insetPadding
+
     return AlertDialog(
       backgroundColor: colors.colorWhite,
       shape: const RoundedRectangleBorder(
@@ -26,7 +32,10 @@ class AlertDialogue extends ConsumerWidget {
       scrollable: true,
       titlePadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+      insetPadding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? (screenWidth - 400) / 2 : 30,
+        vertical: 12,
+      ),
       actionsPadding:
           const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
       title: Column(
@@ -65,7 +74,7 @@ class AlertDialogue extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           SizedBox(
-            width: MediaQuery.of(context).size.width,
+            width: dialogWidth,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -94,7 +103,7 @@ class AlertDialogue extends ConsumerWidget {
       ),
       actions: [
         SizedBox(
-          width: MediaQuery.of(context).size.width,
+          width: dialogWidth,
           child: OutlinedButton(
             onPressed: () async {
               Navigator.pop(context);

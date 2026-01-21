@@ -87,46 +87,49 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
             colorScheme: customColorScheme,
             radius: currentTheme.radius,
           ),
-          child: shadcn.TabList(
-            index: _currentPageIndex,
-            onChanged: (value) async {
-              if (_currentPageIndex != value) {
-                setState(() {
-                  _currentPageIndex = value;
-                });
-                _pageController.jumpToPage(value);
-                await indexProvide.fetchIndexList(_exchanges[value], context);
-              }
-            },
-            children: [
-              for (int index = 0; index < _exchanges.length; index++)
-                shadcn.TabItem(
-                  child: Builder(
-                    builder: (context) {
-                      final isActive = index == _currentPageIndex;
-                      return Text(
-                        _exchanges[index],
-                        style: MyntWebTextStyles.body(
-                          context,
-                          fontWeight:
-                              isActive ? FontWeight.w700 : FontWeight.w500,
-                          color: isActive
-                              ? resolveThemeColor(
-                                  context,
-                                  dark: WebColors.primaryDark,
-                                  light: WebColors.primary,
-                                )
-                              : resolveThemeColor(
-                                  context,
-                                  dark: WebColors.textSecondaryDark,
-                                  light: WebColors.textSecondary,
-                                ),
-                        ),
-                      );
-                    },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: shadcn.TabList(
+              index: _currentPageIndex,
+              onChanged: (value) async {
+                if (_currentPageIndex != value) {
+                  setState(() {
+                    _currentPageIndex = value;
+                  });
+                  _pageController.jumpToPage(value);
+                  await indexProvide.fetchIndexList(_exchanges[value], context);
+                }
+              },
+              children: [
+                for (int index = 0; index < _exchanges.length; index++)
+                  shadcn.TabItem(
+                    child: Builder(
+                      builder: (context) {
+                        final isActive = index == _currentPageIndex;
+                        return Text(
+                          _exchanges[index],
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight:
+                                isActive ? FontWeight.w700 : FontWeight.w500,
+                            color: isActive
+                                ? resolveThemeColor(
+                                    context,
+                                    dark: WebColors.primaryDark,
+                                    light: WebColors.primary,
+                                  )
+                                : resolveThemeColor(
+                                    context,
+                                    dark: WebColors.textSecondaryDark,
+                                    light: WebColors.textSecondary,
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -143,7 +146,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
         borderRadius: BorderRadius.circular(8),
         padding: EdgeInsets.zero,
         child: Container(
-          width: 400,
+          width: 500,
           constraints: const BoxConstraints(maxHeight: 600),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -180,27 +183,20 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-
+              const SizedBox(height: 8),
               // Tabs section
               _buildExchangeTabs(context, indexProvide),
-
               // Info text
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.only(top: 10, bottom: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
                       assets.dInfo,
-                      colorFilter: ColorFilter.mode(
-                        resolveThemeColor(
-                          context,
+                      color: resolveThemeColor(context,
                           dark: WebColors.primaryDark,
-                          light: WebColors.primary,
-                        ),
-                        BlendMode.srcIn,
-                      ),
+                          light: WebColors.primary),
                       width: 16,
                       height: 16,
                     ),
@@ -365,6 +361,7 @@ class _IndexListItemWithStreamWebState
 
   // Track when this widget was created
   final DateTime _creationTime = DateTime.now();
+  bool _isHovered = false;
 
   @override
   void initState() {
@@ -546,61 +543,79 @@ class _IndexListItemWithStreamWebState
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        splashColor:
-            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.15),
-        highlightColor:
-            shadcn.Theme.of(context).colorScheme.accent.withValues(alpha: 0.08),
-        onTap: () => _handleTap(context),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          color: widget.ischeck
-              ? shadcn.Theme.of(context)
-                  .colorScheme
-                  .accent
-                  .withValues(alpha: 0.1)
-              : Colors.transparent,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Left side - Index info
-              Expanded(
-                flex: 3,
-                child: RepaintBoundary(
-                  child: _StaticIndexContentWeb(
-                    itemData: widget.itemData,
-                    exch: widget.indexProvider.slectedExch,
-                    isDarkMode: widget.isDarkMode,
-                  ),
-                ),
-              ),
-
-              // Right side - Price data and action button
-              Row(
-                mainAxisSize: MainAxisSize.min,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          splashColor: shadcn.Theme.of(context)
+              .colorScheme
+              .accent
+              .withValues(alpha: 0.15),
+          highlightColor: shadcn.Theme.of(context)
+              .colorScheme
+              .accent
+              .withValues(alpha: 0.08),
+          onTap: () => _handleTap(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            color: _isHovered
+                ? resolveThemeColor(
+                    context,
+                    dark: WebColors.primaryDark,
+                    light: WebColors.primary,
+                  ).withValues(alpha: widget.ischeck ? 0.12 : 0.08)
+                : widget.ischeck
+                    ? resolveThemeColor(
+                        context,
+                        dark: WebColors.primaryDark,
+                        light: WebColors.primary,
+                      ).withValues(alpha: 0.05)
+                    : Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Dynamic content that needs to update
-                  RepaintBoundary(
-                    child: _DynamicPriceContentWeb(
-                      ltp: _ltp,
-                      ch: _ch,
-                      chp: _chp,
-                      isDarkMode: widget.isDarkMode,
+                  // Left side - Index info
+                  Expanded(
+                    flex: 3,
+                    child: RepaintBoundary(
+                      child: _StaticIndexContentWeb(
+                        itemData: widget.itemData,
+                        exch: widget.indexProvider.slectedExch,
+                        isDarkMode: widget.isDarkMode,
+                      ),
                     ),
                   ),
-                  // Action button to replace the symbol
-                  RepaintBoundary(
-                    child: _ActionButtonWeb(
-                      ischeck: widget.ischeck,
-                      itemData: widget.itemData,
-                      indexProvider: widget.indexProvider,
-                      isDarkMode: widget.isDarkMode,
-                      indexPosition: widget.indexPosition,
-                    ),
+
+                  // Right side - Price data and action button
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Dynamic content that needs to update
+                      RepaintBoundary(
+                        child: _DynamicPriceContentWeb(
+                          ltp: _ltp,
+                          ch: _ch,
+                          chp: _chp,
+                          isDarkMode: widget.isDarkMode,
+                        ),
+                      ),
+                      // Action button to replace the symbol
+                      RepaintBoundary(
+                        child: _ActionButtonWeb(
+                          ischeck: widget.ischeck,
+                          itemData: widget.itemData,
+                          indexProvider: widget.indexProvider,
+                          isDarkMode: widget.isDarkMode,
+                          indexPosition: widget.indexPosition,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -695,7 +710,7 @@ class _StaticIndexContentWeb extends StatelessWidget {
           children: [
             Text(
               exch ?? "",
-              style: MyntWebTextStyles.symbol(
+              style: MyntWebTextStyles.exch(
                 context,
                 color: resolveThemeColor(
                   context,
@@ -769,7 +784,7 @@ class _DynamicPriceContentWeb extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             "$displayChange ($displayPerChange%)",
-            style: MyntWebTextStyles.body(
+            style: MyntWebTextStyles.priceChange(
               context,
               color: resolveThemeColor(
                 context,
@@ -828,16 +843,13 @@ class _ActionButtonWeb extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: SvgPicture.asset(
               ischeck ? assets.bookmarkIcon : assets.bookmarkedIcon,
-              colorFilter: ColorFilter.mode(
-                ischeck
-                    ? primaryColor
-                    : resolveThemeColor(
-                        context,
-                        dark: WebColors.textSecondaryDark,
-                        light: WebColors.textSecondary,
-                      ),
-                BlendMode.srcIn,
-              ),
+              color: ischeck
+                  ? primaryColor
+                  : resolveThemeColor(
+                      context,
+                      dark: WebColors.iconDark,
+                      light: WebColors.icon,
+                    ),
               width: 18,
               height: 18,
             ),

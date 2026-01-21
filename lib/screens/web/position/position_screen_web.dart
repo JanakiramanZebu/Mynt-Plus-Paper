@@ -16,6 +16,8 @@ import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
+import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
@@ -88,7 +90,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         height: double.infinity,
         color: resolveThemeColor(
           context,
-          dark: shadcn.Theme.of(context).colorScheme.background,
+          dark: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           light: Colors.white,
         ),
         child: GestureDetector(
@@ -250,13 +254,13 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
     final numValue = double.tryParse(cleanValue) ?? 0.0;
     final colorScheme = shadcn.Theme.of(context).colorScheme;
-   if (numValue > 0) {
+    if (numValue > 0) {
       return colorScheme.chart2;
     } else if (numValue < 0) {
       return colorScheme.destructive;
     } else {
       return colorScheme.mutedForeground;
-    }    
+    }
   }
 
   Widget _buildMainContent(
@@ -341,7 +345,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
           // Spacer to push action items to the right
           const Spacer(),
-          // Search Bar - Using shadcn.TextField like holdings
+          // Search Bar - Using MyntSearchTextField for consistent styling
           LayoutBuilder(
             builder: (context, constraints) {
               // Responsive search bar width
@@ -356,141 +360,54 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               }
 
               return SizedBox(
-                height: 40,
                 width: searchWidth,
-                child: DefaultTextStyle(
-                  style: const TextStyle(fontFamily: 'Geist'),
-                  child: ValueListenableBuilder<String>(
-                    valueListenable: _searchQuery,
-                    builder: (context, searchValue, child) {
-                      final features = <shadcn.InputFeature>[
-                        shadcn.InputFeature.leading(
-                          SvgPicture.asset(
-                            assets.searchIcon,
-                            color: shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                            fit: BoxFit.scaleDown,
-                            width: 18,
-                          ),
-                        ),
-                      ];
-
-                      // Add clear button if there's text
-                      if (searchValue.isNotEmpty) {
-                        features.add(
-                          shadcn.InputFeature.trailing(
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: () {
-                                    _searchController.clear();
-                                  },
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 16,
-                                      color: shadcn.Theme.of(context)
-                                          .colorScheme
-                                          .mutedForeground,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-
-                      return shadcn.TextField(
-                        controller: _searchController,
-                        placeholder: Text(
-                          'Search positions',
-                          style: const TextStyle(fontFamily: 'Geist'),
-                        ),
-                        features: features,
-                      );
-                    },
-                  ),
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search positions',
+                  leadingIcon: assets.searchIcon,
+                  onChanged: (value) {
+                    _searchQuery.value = value;
+                  },
                 ),
               );
             },
           ),
-          const SizedBox(width: 16),
-          // Exit All Button
+          // Exit All Button - only show if there are open positions
           Builder(
             builder: (context) {
               final openPositions = positionBook.openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
+
+              // Hide button if no open positions
+              if (nonZeroPositions.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
               // Count only selected positions
               final selectedPositions = nonZeroPositions
                   .where((p) => p.isExitSelection == true)
                   .toList();
               final selectedCount = selectedPositions.length;
-              // Button should be enabled if there are positions to exit
-              final buttonEnabled =
-                  selectedCount > 0 || nonZeroPositions.isNotEmpty;
-              return shadcn.TextButton(
-                // size: shadcn.ButtonSize.large,
-                // density: shadcn.ButtonDensity.dense,
-                onPressed: buttonEnabled ? () => _exitAllPositions() : null,
-                shape: shadcn.ButtonShape.rectangle,
-                child: Text(
-                  selectedCount == 0
-                      ? 'Exit All'
-                      : (selectedCount == 1
-                          ? 'Exit (1)'
-                          : 'Exit ($selectedCount)'),
-                  style: MyntWebTextStyles.buttonMd(
-                    context,
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ),
-                  ),
-                ),
-              );
 
-              
-            
+              return MyntTextButton(
+                onPressed: () => _exitAllPositions(),
+                label: selectedCount == 0
+                    ? 'Exit All'
+                    : (selectedCount == 1
+                        ? 'Exit (1)'
+                        : 'Exit ($selectedCount)'),
+              );
             },
           ),
           const SizedBox(width: 16),
           // Refresh Button
-          Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.15)
-                  : Colors.black.withOpacity(.15),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.08)
-                  : Colors.black.withOpacity(.08),
-              onTap: () async {
-                await positionBook.fetchPositionBook(context, false);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.iconDark,
-                    light: MyntColors.icon,
-                  ),
-                ),
-              ),
-            ),
+          MyntIconButton(
+            icon: Icons.refresh,
+            onPressed: () async {
+              await positionBook.fetchPositionBook(context, false);
+            },
+            size: MyntButtonSize.medium,
           ),
           const SizedBox(width: 8),
         ],
@@ -585,14 +502,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
-
-          // Exit All Button
+          // Exit All Button - only show if there are open positions
           Builder(
             builder: (context) {
               final openPositions = positionBook.openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
+
+              // Hide button if no open positions
+              if (nonZeroPositions.isEmpty) {
+                return const SizedBox.shrink();
+              }
 
               // Count only selected positions
               final selectedPositions = nonZeroPositions
@@ -600,73 +520,24 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   .toList();
               final selectedCount = selectedPositions.length;
 
-              // Button should be enabled if there are positions to exit
-              final buttonEnabled =
-                  selectedCount > 0 || nonZeroPositions.isNotEmpty;
-
-              return Container(
-                decoration: BoxDecoration(
-                  color: buttonEnabled
-                      ? resolveThemeColor(
-                          context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary,
-                        )
-                      : Colors.grey,
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: shadcn.TextButton(
-                  size: shadcn.ButtonSize.small,
-                  density: shadcn.ButtonDensity.dense,
-                  onPressed: buttonEnabled ? () => _exitAllPositions() : null,
-                  shape: shadcn.ButtonShape.rectangle,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      selectedCount == 0
-                          ? 'Exit All'
-                          : (selectedCount == 1
-                              ? 'Exit (1)'
-                              : 'Exit ($selectedCount)'),
-                      style: MyntWebTextStyles.buttonSm(  
-                        context,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+              return MyntTextButton(
+                onPressed: () => _exitAllPositions(),
+                label: selectedCount == 0
+                    ? 'Exit All'
+                    : (selectedCount == 1
+                        ? 'Exit (1)'
+                        : 'Exit ($selectedCount)'),
               );
             },
           ),
           const SizedBox(width: 16),
-
-          Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.15)
-                  : Colors.black.withOpacity(.15),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.08)
-                  : Colors.black.withOpacity(.08),
-              onTap: () async {
-                await positionBook.fetchPositionBook(context, false);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.refresh,
-                  size: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.iconDark,
-                    light: MyntColors.icon,
-                  ),
-                ),
-              ),
-            ),
+          // Refresh Button
+          MyntIconButton(
+            icon: Icons.refresh,
+            onPressed: () async {
+              await positionBook.fetchPositionBook(context, false);
+            },
+            size: MyntButtonSize.medium,
           ),
         ],
       ),
@@ -1698,12 +1569,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   }
 
   int _getOpenPositionsCount(PortfolioProvider positionBook) {
-    int count = 0;
-    for (var position in widget.listofPosition) {
-      final qty = int.tryParse(position.qty ?? '0') ?? 0;
-      if (qty != 0) count++;
-    }
-    return count;
+    // Count all positions (including closed) for display in tab
+    return widget.listofPosition.length;
   }
 
   int _getPositivePositionsCount(PortfolioProvider positionBook) {

@@ -43,78 +43,81 @@ class _MFOrderDetailScreenWebState
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
-          ),
-        ),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with close button (fixed)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildHeader(theme),
-                    ),
-                    MyntCloseButton(
-                      onPressed: () {
-                        shadcn.closeSheet(context);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              // Border divider
-              Container(
-                height: 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with Order Details title
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
                 color: resolveThemeColor(context,
                     dark: MyntColors.dividerDark, light: MyntColors.divider),
+                width: 1,
               ),
-              // Scrollable Content
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildActionButtons(theme),
-                        // Order Details Section
-                        _buildOrderDetailsSection(theme,
-                            hasButtons:
-                                _shouldShowReinitiate() || _shouldShowCancel()),
-                        // Reason/Remarks Section
-                        if (_shouldShowReason()) ...[
-                          const SizedBox(height: 16),
-                          _buildReasonSection(theme),
-                        ],
-                      ],
-                    ),
+            ),
+          ),
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  shadcn.closeSheet(context);
+                },
+                child: Icon(
+                  Icons.close,
+                  size: 20,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                'Order Details',
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
                   ),
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        ),
+        // Scrollable Content
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFundNameHeader(theme),
+                  const SizedBox(height: 16),
+                  _buildActionButtons(theme),
+                  // Order Details Section
+                  _buildOrderDetailsSection(theme,
+                      hasButtons:
+                          _shouldShowReinitiate() || _shouldShowCancel()),
+                  // Reason/Remarks Section
+                  if (_shouldShowReason()) ...[
+                    _buildReasonSection(theme),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildHeader(ThemesProvider theme) {
+  Widget _buildFundNameHeader(ThemesProvider theme) {
     return Text(
       widget.mfOrderData.name ?? "Unknown Scheme",
       style: MyntWebTextStyles.title(
@@ -122,7 +125,7 @@ class _MFOrderDetailScreenWebState
         color: resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
       ),
-      overflow: TextOverflow.ellipsis,
+      // overflow: TextOverflow.ellipsis, // Allow full name to wrap
     );
   }
 
@@ -291,99 +294,161 @@ class _MFOrderDetailScreenWebState
   Widget _buildReasonSection(ThemesProvider theme) {
     final reason = widget.mfOrderData.remarks ?? "No remarks available";
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Reason",
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary),
-            fontWeight: MyntFonts.regular,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          reason,
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-            fontWeight: MyntFonts.medium,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Reason",
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+              // Spacer or Empty for alignment if needed
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            reason,
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors
+                      .lossDark, // Assuming reason is usually an error/rejection
+                  light: MyntColors.loss),
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title1,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
-            Text(
-              value1,
-              style: MyntWebTextStyles.bodySmall(
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
+              title1,
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
                     light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value1,
+              textAlign: TextAlign.end,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _rowOfInfoDataWithColor(
       String title, String value, ThemesProvider theme, Color valueColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
               title,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
-              ),
-            ),
-            Text(
-              value,
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: valueColor,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: valueColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: valueColor,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

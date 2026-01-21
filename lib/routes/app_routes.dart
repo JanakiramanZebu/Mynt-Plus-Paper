@@ -25,6 +25,7 @@ import '../screens/Mobile/algo/algo_strategy_show_list.dart';
 import '../screens/Mobile/algo/create_algo_strategy_screen.dart';
 import '../screens/Mobile/authentication/login/login_banner_screen.dart';
 import '../screens/Mobile/authentication/login/login_screen.dart';
+import '../screens/web/authentication/login/login_web.dart';
 import '../screens/Mobile/authentication/password/change_pass.dart';
 import '../screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
 import '../screens/Mobile/bonds/bonds_main_screen.dart';
@@ -214,7 +215,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const CustomizableSplitHomeScreen());
       case Routes.loginScreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const LoginScreen(),
+          pageBuilder: (_, __, ___) =>
+              kIsWeb ? const LoginScreenWeb() : const LoginScreen(),
           beginOffset: const Offset(1.0, 0.0),
         );
 

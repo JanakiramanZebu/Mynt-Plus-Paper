@@ -31,12 +31,18 @@ class OrderBookScreenWeb extends ConsumerStatefulWidget {
 class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     with TickerProviderStateMixin {
   TabController? _tabController;
-  final ScrollController _openOrdersHorizontalScrollController = ScrollController();
-  final ScrollController _openOrdersVerticalScrollController = ScrollController();
-  final ScrollController _executedOrdersHorizontalScrollController = ScrollController();
-  final ScrollController _executedOrdersVerticalScrollController = ScrollController();
-  final ScrollController _tradeBookHorizontalScrollController = ScrollController();
-  final ScrollController _tradeBookVerticalScrollController = ScrollController();
+  final ScrollController _openOrdersHorizontalScrollController =
+      ScrollController();
+  final ScrollController _openOrdersVerticalScrollController =
+      ScrollController();
+  final ScrollController _executedOrdersHorizontalScrollController =
+      ScrollController();
+  final ScrollController _executedOrdersVerticalScrollController =
+      ScrollController();
+  final ScrollController _tradeBookHorizontalScrollController =
+      ScrollController();
+  final ScrollController _tradeBookVerticalScrollController =
+      ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _gttHorizontalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
@@ -46,6 +52,47 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   // Track initialization state
   bool _isInitialized = false;
+
+  bool _canScrollLeft = false;
+  bool _canScrollRight = true;
+
+  void _updateScrollArrows() {
+    if (!mounted) return;
+    setState(() {
+      _canScrollLeft =
+          _tabScrollController.hasClients && _tabScrollController.offset > 0;
+      _canScrollRight = _tabScrollController.hasClients &&
+          _tabScrollController.offset <
+              _tabScrollController.position.maxScrollExtent;
+    });
+  }
+
+  void _scrollTabs({required bool left}) {
+    if (!_tabScrollController.hasClients) return;
+    final contentSize = _tabScrollController.position.viewportDimension;
+    final maxScroll = _tabScrollController.position.maxScrollExtent;
+    final currentScroll = _tabScrollController.offset;
+    final scrollAmount = contentSize * 0.8; // Scroll 80% of view width
+
+    double target;
+    if (left) {
+      target = (currentScroll - scrollAmount).clamp(0.0, maxScroll);
+    } else {
+      target = (currentScroll + scrollAmount).clamp(0.0, maxScroll);
+    }
+
+    _tabScrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _setupListeners() {
+    _tabScrollController.addListener(_updateScrollArrows);
+    // Initial check
+    Future.delayed(const Duration(milliseconds: 500), _updateScrollArrows);
+  }
 
   @override
   void initState() {
@@ -61,6 +108,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeHeavyComponents();
       _setupSearchListener();
+      _setupListeners();
     });
   }
 
@@ -102,13 +150,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           // Only call when tab change is complete, not during animation
           if (mounted) {
             final orderBook = ref.read(orderProvider);
-            
+
             // Clear search when tab change completes (prevents showing wrong data)
             orderBook.clearOrderSearch();
-            
+
             // Update tab index in provider - this will handle all tab-related logic
             orderBook.changeTabIndex(_tabController!.index, context);
-            
+
             setState(() {
               // Trigger rebuild to update tab selection UI
             });
@@ -146,7 +194,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     } catch (e) {
       // Ignore if provider is not available
     }
-    
+
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
     _openOrdersVerticalScrollController.dispose();
@@ -187,7 +235,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           await orderBook.fetchOrderBook(context, true);
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -226,84 +274,201 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      child: Row(
-        children: [
-          // Shadcn TabList on the left - Direct implementation for better responsiveness
-          // Wrap with shadcn.Theme to use custom primary color for active tab
-          Builder(
-            builder: (context) {
-              final currentTheme = shadcn.Theme.of(context);
-              final isDark = theme.isDarkMode;
-              // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark 
-                  ? shadcn.ColorSchemes.darkDefaultColor
-                  : shadcn.ColorSchemes.lightDefaultColor;
-              
-              // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = theme.isDarkMode 
-                  ? WebDarkColors.primary 
-                  : WebColors.primary;
-              final customColorScheme = baseColorScheme.copyWith(
-                primary: () => primaryColor,
-              );
-              
-              return shadcn.Theme(
-                data: shadcn.ThemeData(
-                  colorScheme: customColorScheme,
-                  radius: currentTheme.radius,
-                ),
-                child: shadcn.TabList(
-                  index: _tabController?.index ?? 0,
-                  onChanged: (value) {
-                    if (_tabController != null && _tabController!.index != value) {
-                      // Just animate the tab - let the listener handle search clearing and provider updates
-                      // This prevents multiple state updates from interfering with the tab switch
-                      _tabController!.animateTo(value);
-                    }
-                  },
-                  children: orderBook.orderTabName.map((tabString) {
-                    final parts = tabString.text?.split(' ') ?? [];
-                    final title = parts.first;
-                    final badge = parts.length > 1 ? parts[1] : null;
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Update scroll arrows state when layout changes
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateScrollArrows();
+          });
 
-                    final isActive = (_tabController?.index ?? 0) == orderBook.orderTabName.indexOf(tabString);
-                    return shadcn.TabItem(
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          color: isActive
-                              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                              : shadcn.Theme.of(context).colorScheme.mutedForeground,
-                          fontWeight: WebFonts.bold,
+          final double availableWidth = constraints.maxWidth;
+          double searchWidth;
+          if (availableWidth >= 1100) {
+            searchWidth = 400;
+          } else if (availableWidth >= 800) {
+            searchWidth = 300;
+          } else if (availableWidth >= 500) {
+            searchWidth = 200;
+          } else {
+            searchWidth = 140;
+          }
+
+          return Row(
+            children: [
+              // Shadcn TabList on the left - Direct implementation for better responsiveness
+              // Wrap with shadcn.Theme to use custom primary color for active tab
+              Expanded(
+                child: Row(
+                  children: [
+                    if (availableWidth < 1300)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: _canScrollLeft
+                              ? () => _scrollTabs(left: true)
+                              : null,
+                          customBorder: const CircleBorder(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Icon(
+                              Icons.chevron_left,
+                              size: 20,
+                              color: _canScrollLeft
+                                  ? (theme.isDarkMode
+                                      ? Colors.white
+                                      : Colors.black)
+                                  : Colors.grey,
+                            ),
+                          ),
                         ),
-                        child: badge != null 
-                            ? Text('$title ($badge)')
-                            : Text(title),
                       ),
-                    );
-                  }).toList(),
-                ),
-              );
-            },
-          ),
-          // Spacer to push search to the right
-          const Spacer(),
-          // Search Bar with shadcn TextField
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Responsive search bar width
-              final screenWidth = MediaQuery.of(context).size.width;
-              double searchWidth;
-              if (screenWidth >= 1200) {
-                searchWidth = 400;
-              } else if (screenWidth >= 800) {
-                searchWidth = 300;
-              } else {
-                searchWidth = 200;
-              }
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: _tabScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Builder(
+                          builder: (context) {
+                            final currentTheme = shadcn.Theme.of(context);
+                            final isDark = theme.isDarkMode;
+                            // Create a new ColorScheme based on the default, but with custom primary color
+                            final baseColorScheme = isDark
+                                ? shadcn.ColorSchemes.darkDefaultColor
+                                : shadcn.ColorSchemes.lightDefaultColor;
 
-              return SizedBox(
+                            final customColorScheme = baseColorScheme.copyWith(
+                              primary: () => Colors.transparent,
+                              border: () => Colors.transparent,
+                            );
+
+                            return shadcn.Theme(
+                              data: shadcn.ThemeData(
+                                colorScheme: customColorScheme,
+                                radius: currentTheme.radius,
+                              ),
+                              child: shadcn.TabList(
+                                index: _tabController?.index ?? 0,
+                                onChanged: (value) {
+                                  if (_tabController != null &&
+                                      _tabController!.index != value) {
+                                    // Just animate the tab - let the listener handle search clearing and provider updates
+                                    // This prevents multiple state updates from interfering with the tab switch
+                                    _tabController!.animateTo(value);
+                                  }
+                                },
+                                children:
+                                    orderBook.orderTabName.map((tabString) {
+                                  final parts =
+                                      tabString.text?.split(' ') ?? [];
+                                  final title = parts.first;
+                                  final badge =
+                                      parts.length > 1 ? parts[1] : null;
+
+                                  final isActive = (_tabController?.index ??
+                                          0) ==
+                                      orderBook.orderTabName.indexOf(tabString);
+                                  return shadcn.TabItem(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? (theme.isDarkMode
+                                                    ? WebDarkColors.primary
+                                                    : const Color.fromARGB(
+                                                        255, 7, 7, 7))
+                                                .withOpacity(0.1)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            title,
+                                            style: TextStyle(
+                                              fontFamily: 'Geist',
+                                              fontSize: availableWidth < 1300
+                                                  ? 13
+                                                  : 14,
+                                              color: isActive
+                                                  ? (theme.isDarkMode
+                                                      ? WebDarkColors.primary
+                                                      : const Color.fromARGB(
+                                                          255, 10, 10, 10))
+                                                  : shadcn.Theme.of(context)
+                                                      .colorScheme
+                                                      .mutedForeground,
+                                              fontWeight: WebFonts.medium,
+                                            ),
+                                          ),
+                                          if (badge != null) ...[
+                                            const SizedBox(width: 4),
+                                            Transform.translate(
+                                              offset: const Offset(0, -6),
+                                              child: Text(
+                                                badge,
+                                                style: TextStyle(
+                                                  fontFamily: 'Geist',
+                                                  fontSize:
+                                                      availableWidth < 1300
+                                                          ? 13
+                                                          : 14,
+                                                  color: isActive
+                                                      ? (theme.isDarkMode
+                                                          ? WebDarkColors
+                                                              .primary
+                                                          : const Color
+                                                              .fromARGB(
+                                                              255, 10, 10, 10))
+                                                      : shadcn.Theme.of(context)
+                                                          .colorScheme
+                                                          .mutedForeground,
+                                                  fontWeight: WebFonts.medium,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    if (availableWidth < 1300)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: InkWell(
+                          onTap: _canScrollRight
+                              ? () => _scrollTabs(left: false)
+                              : null,
+                          customBorder: const CircleBorder(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.0),
+                            child: Icon(
+                              Icons.chevron_right,
+                              size: 20,
+                              color: _canScrollRight
+                                  ? (theme.isDarkMode
+                                      ? Colors.white
+                                      : Colors.black)
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Gap between tabs and search
+              const SizedBox(width: 16),
+              // Search Bar with shadcn TextField
+              SizedBox(
                 height: 40,
                 width: searchWidth,
                 child: DefaultTextStyle(
@@ -315,7 +480,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         shadcn.InputFeature.leading(
                           SvgPicture.asset(
                             assets.searchIcon,
-                            color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                            color: shadcn.Theme.of(context)
+                                .colorScheme
+                                .mutedForeground,
                             fit: BoxFit.scaleDown,
                             width: 18,
                           ),
@@ -342,7 +509,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                     child: Icon(
                                       Icons.close,
                                       size: 16,
-                                      color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+                                      color: shadcn.Theme.of(context)
+                                          .colorScheme
+                                          .mutedForeground,
                                     ),
                                   ),
                                 ),
@@ -352,25 +521,34 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         );
                       }
 
-                      return shadcn.TextField(
-                        controller: orderBook.orderSearchCtrl,
-                        placeholder: const Text(
-                          'Search orders',
-                          style: TextStyle(fontFamily: 'Geist'),
+                      return shadcn.Theme(
+                        data: shadcn.Theme.of(context).copyWith(
+                          radius: () => 0.2,
+                          colorScheme: () =>
+                              shadcn.Theme.of(context).colorScheme.copyWith(
+                                    border: () => Colors.transparent,
+                                    ring: () => Colors.transparent,
+                                  ),
                         ),
-                        features: features,
+                        child: shadcn.TextField(
+                          controller: orderBook.orderSearchCtrl,
+                          placeholder: const Text(
+                            'Search orders',
+                            style: TextStyle(fontFamily: 'Geist'),
+                          ),
+                          features: features,
+                        ),
                       );
                     },
                   ),
                 ),
-              );
-            },
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
-
 
   Widget _buildContentArea(ThemesProvider theme, OrderProvider orderBook) {
     return IndexedStack(
@@ -418,18 +596,17 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               final currentTheme = shadcn.Theme.of(context);
               final isDark = theme.isDarkMode;
               // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark 
+              final baseColorScheme = isDark
                   ? shadcn.ColorSchemes.darkDefaultColor
                   : shadcn.ColorSchemes.lightDefaultColor;
-              
+
               // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = theme.isDarkMode 
-                  ? WebDarkColors.primary 
-                  : WebColors.primary;
+              final primaryColor =
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary;
               final customColorScheme = baseColorScheme.copyWith(
                 primary: () => primaryColor,
               );
-              
+
               return shadcn.Theme(
                 data: shadcn.ThemeData(
                   colorScheme: customColorScheme,
@@ -450,8 +627,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _mfTabIndex == 0
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
                                   : WebColors.primary)
                               : customColorScheme.mutedForeground,
                           fontWeight: WebFonts.bold,
@@ -464,8 +641,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         style: TextStyle(
                           fontFamily: 'Geist',
                           color: _mfTabIndex == 1
-                              ? (theme.isDarkMode 
-                                  ? WebDarkColors.primary 
+                              ? (theme.isDarkMode
+                                  ? WebDarkColors.primary
                                   : WebColors.primary)
                               : customColorScheme.mutedForeground,
                           fontWeight: WebFonts.bold,

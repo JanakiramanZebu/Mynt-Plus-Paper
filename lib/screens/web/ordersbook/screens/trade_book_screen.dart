@@ -1,41 +1,5 @@
 import 'package:flutter/material.dart'
-    show
-        InkWell,
-        Icons,
-        VoidCallback,
-        Icon,
-        TextPainter,
-        TextSpan,
-        TextStyle,
-        TextDirection,
-        GestureDetector,
-        HitTestBehavior,
-        Row,
-        SizedBox,
-        Colors,
-        Widget,
-        BuildContext,
-        Color,
-        EdgeInsets,
-        Alignment,
-        MainAxisAlignment,
-        TextOverflow,
-        Axis,
-        Container,
-        MouseRegion,
-        Expanded,
-        Align,
-        Text,
-        ScrollController,
-        SingleChildScrollView,
-        Scrollbar,
-        Column,
-        ValueKey,
-        Padding,
-        LayoutBuilder,
-        CircularProgressIndicator,
-        Center,
-        RichText;
+    hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/models/order_book_model/trade_book_model.dart';
@@ -828,11 +792,33 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   void _showTradeDetail(TradeBookModel trade) {
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => TradeDetailScreenWeb(
-        trade: trade,
-        parentContext: context,
-      ),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1500 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: TradeDetailScreenWeb(
+            trade: trade,
+            parentContext: context,
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
     );
   }
 }

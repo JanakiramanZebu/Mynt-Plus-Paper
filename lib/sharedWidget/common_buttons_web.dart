@@ -164,7 +164,7 @@ class MyntButton extends StatelessWidget {
           dark: WebColors.primary, // Using primary for dark mode
           light: WebColors.primary,
         );
-    final borderRadiusValue = borderRadius ?? 5.0;
+    final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
     final buttonPadding = padding ?? _getDefaultPadding();
 
     return Container(
@@ -180,7 +180,9 @@ class MyntButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: Colors.white.withOpacity(0.2),
           highlightColor: Colors.white.withOpacity(0.1),
-          child: Center(
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
             child: Padding(
               padding: buttonPadding,
               child: _buildButtonChild(context, txtColor),
@@ -198,10 +200,40 @@ class MyntButton extends StatelessWidget {
           dark: WebColors.textPrimaryDark,
           light: WebColors.textPrimary,
         );
+    final bgColor = backgroundColor ??
+        resolveThemeColor(
+          context,
+          dark: WebColors.listItemBgDark,
+          light: WebColors.listItemBg,
+        );
+    final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
+    final buttonPadding = padding ?? _getDefaultPadding();
 
-    return shadcn.SecondaryButton(
-      onPressed: isLoading ? null : onPressed,
-      child: _buildButtonChild(context, txtColor),
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(borderRadiusValue),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isLoading ? null : onPressed,
+          borderRadius: BorderRadius.circular(borderRadiusValue),
+          splashColor:
+              (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
+          highlightColor:
+              (isDarkMode ? Colors.white : Colors.black).withOpacity(0.02),
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
+            child: Padding(
+              padding: buttonPadding,
+              child: _buildButtonChild(context, txtColor),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -224,7 +256,7 @@ class MyntButton extends StatelessWidget {
           dark: WebColors.primary,
           light: WebColors.primary,
         );
-    final borderRadiusValue = borderRadius ?? 5.0;
+    final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
     final buttonPadding = padding ?? _getDefaultPadding();
 
     return Container(
@@ -244,7 +276,9 @@ class MyntButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: Colors.white.withOpacity(0.2),
           highlightColor: Colors.white.withOpacity(0.1),
-          child: Center(
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
             child: Padding(
               padding: buttonPadding,
               child: _buildButtonChild(context, txtColor),
@@ -463,11 +497,11 @@ class MyntButton extends StatelessWidget {
   double _getDefaultBorderRadius() {
     switch (size) {
       case MyntButtonSize.small:
-        return 6;
+        return 5;
       case MyntButtonSize.medium:
-        return 8;
+        return 5;
       case MyntButtonSize.large:
-        return 10;
+        return 5;
     }
   }
 }
@@ -487,6 +521,11 @@ class MyntPrimaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.backgroundColor,
+    super.textColor,
+    super.borderColor,
+    super.borderRadius,
+    super.padding,
   }) : super(type: MyntButtonType.primary);
 }
 
@@ -503,6 +542,7 @@ class MyntSecondaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.secondary);
 }
 
@@ -520,6 +560,7 @@ class MyntOutlinedButton extends MyntButton {
     super.isFullWidth = false,
     super.borderColor,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.outlined);
 }
 
@@ -536,6 +577,7 @@ class MyntTextButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.text);
 }
 
@@ -552,6 +594,7 @@ class MyntTertiaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.tertiary);
 }
 
@@ -591,8 +634,8 @@ class MyntIconButton extends StatelessWidget {
     final iconColor = color ??
         resolveThemeColor(
           context,
-          dark: WebColors.textPrimaryDark,
-          light: WebColors.textPrimary,
+          dark: WebColors.iconDark,
+          light: WebColors.icon,
         );
 
     final iconSize = _getIconSize();
@@ -606,14 +649,15 @@ class MyntIconButton extends StatelessWidget {
         iconAsset!,
         width: iconSize,
         height: iconSize,
-        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+        color: iconColor,
+        // colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
       );
     } else {
       iconWidget = Icon(icon, size: iconSize, color: iconColor);
     }
 
     return Material(
-      color: Colors.transparent,
+      color: backgroundColor ?? Colors.transparent,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -639,7 +683,7 @@ class MyntIconButton extends StatelessWidget {
   EdgeInsets _getDefaultPadding() {
     switch (size) {
       case MyntButtonSize.small:
-        return const EdgeInsets.all(6);
+        return const EdgeInsets.all(8);
       case MyntButtonSize.medium:
         return const EdgeInsets.all(8);
       case MyntButtonSize.large:

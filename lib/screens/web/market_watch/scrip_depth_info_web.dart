@@ -542,8 +542,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     return Scaffold(
                       body: Container(
                         decoration: BoxDecoration(
-                          color:
-                              shadcn.Theme.of(context).colorScheme.background,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.backgroundColorDark,
+                              light: MyntColors.backgroundColor),
                         ),
                         child: Column(
                           children: [
@@ -1344,10 +1345,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                     CrossAxisAlignment.stretch,
                                                 children: [
                                                   Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 10),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 15,
+                                                            right: 20,
+                                                            top: 10,
+                                                            bottom: 10),
                                                     child: Column(children: [
                                                       // Old 2-column layout - commented out
                                                       // _buildInfoRow(
@@ -1625,7 +1628,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             context,
                                                                             fontWeight:
                                                                                 MyntFonts.medium,
-                                                                            color: MyntColors.loss),
+                                                                            color: MyntColors.tertiary),
                                                                       ),
                                                                       Text(
                                                                         "Quantity",
@@ -2005,326 +2008,134 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                         ]
                                                       ],
 
-                                                      Row(
+                                                      Column(
                                                         children: [
-                                                          if (scripInfo
-                                                              .getOptionawait(
-                                                                  widget.wlValue
-                                                                      .exch,
-                                                                  widget.wlValue
-                                                                      .token))
-                                                            Expanded(
-                                                              child:
-                                                                  _quickActionButton(
-                                                                theme: theme,
-                                                                label:
-                                                                    "Futures",
-                                                                onTap:
-                                                                    () async {
-                                                                  try {
-                                                                    // Fetch linked scripts (this loads futures data)
-                                                                    // await marketWatch.fetchScripQuote(token, exch, context);
-                                                                    // await marketWatch.fetchScripQuoteIndex(token, exch, context);
-                                                                    if (scripInfo.getOptionawait(
-                                                                        widget
-                                                                            .wlValue
-                                                                            .exch,
-                                                                        widget
-                                                                            .wlValue
-                                                                            .token)) {
-                                                                      await scripInfo.fetchScripInfo(
-                                                                          widget
-                                                                              .wlValue
-                                                                              .token,
-                                                                          widget
-                                                                              .wlValue
-                                                                              .exch,
-                                                                          context);
-                                                                      await scripInfo.fetchLinkeScrip(
-                                                                          widget
-                                                                              .wlValue
-                                                                              .token,
-                                                                          widget
-                                                                              .wlValue
-                                                                              .exch,
-                                                                          context);
-                                                                      // Request futures WebSocket data
-                                                                    }
-                                                                    await scripInfo.requestWSFut(
-                                                                        context:
-                                                                            context,
-                                                                        isSubscribe:
-                                                                            true);
-
-                                                                    if (!mounted) {
-                                                                      return;
-                                                                    }
-
-                                                                    // Open only futures screen in a dialog
-                                                                    showDialog(
-                                                                      context:
-                                                                          context,
-                                                                      barrierDismissible:
-                                                                          true,
-                                                                      builder:
-                                                                          (BuildContext
-                                                                              dialogContext) {
-                                                                        return Center(
-                                                                            child:
-                                                                                shadcn.Card(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(8),
-                                                                          padding:
-                                                                              EdgeInsets.zero,
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                800,
-                                                                            constraints:
-                                                                                const BoxConstraints(maxHeight: 500),
-                                                                            child:
-                                                                                PointerInterceptor(
-                                                                              child: MouseRegion(
-                                                                                cursor: SystemMouseCursors.basic,
-                                                                                onEnter: (_) {
-                                                                                  ChartIframeGuard.acquire();
-                                                                                  _disableAllChartIframes();
-                                                                                },
-                                                                                onHover: (_) {
-                                                                                  _disableAllChartIframes();
-                                                                                },
-                                                                                onExit: (_) {
-                                                                                  ChartIframeGuard.release();
-                                                                                  _enableAllChartIframes();
-                                                                                },
-                                                                                child: Listener(
-                                                                                  onPointerMove: (_) {
-                                                                                    _disableAllChartIframes();
-                                                                                  },
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.min,
-                                                                                    children: [
-                                                                                      // Header
-                                                                                      Container(
-                                                                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                                                                        decoration: BoxDecoration(
-                                                                                          border: Border(
-                                                                                            bottom: BorderSide(
-                                                                                              color: shadcn.Theme.of(context).colorScheme.border,
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                        child: Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                          children: [
-                                                                                            Text(
-                                                                                              'Futures',
-                                                                                              style: MyntWebTextStyles.title(context),
-                                                                                            ),
-                                                                                            MyntCloseButton(
-                                                                                              onPressed: () {
-                                                                                                // Unsubscribe from futures WebSocket
-                                                                                                scripInfo.requestWSFut(context: context, isSubscribe: false);
-                                                                                                Navigator.of(context).pop();
-                                                                                              },
-                                                                                            ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      ),
-                                                                                      // Content
-                                                                                      Expanded(
-                                                                                        child: Consumer(
-                                                                                          builder: (context, ref, _) {
-                                                                                            return const FutureScreenWeb();
-                                                                                          },
-                                                                                        ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ));
-                                                                      },
-                                                                    );
-                                                                  } catch (e) {
-                                                                    print(e);
-                                                                  }
-                                                                },
-                                                              ),
+                                                          const ListDivider(),
+                                                          // Expandable Futures Section
+                                                          if (scripInfo.getOptionawait(
+                                                              widget.wlValue.exch,
+                                                              widget.wlValue.token))
+                                                            _buildExpandableFuturesSection(
+                                                              scripInfo,
+                                                              theme,
+                                                              depthData,
                                                             ),
-                                                          if (scripInfo
-                                                              .getOptionawait(
-                                                                  widget.wlValue
-                                                                      .exch,
-                                                                  widget.wlValue
-                                                                      .token))
-                                                            const SizedBox(
-                                                                width: 12),
-                                                          Expanded(
-                                                            child:
-                                                                _quickActionButton(
-                                                              theme: theme,
-                                                              label:
-                                                                  "Set Alert",
+                                                          if (scripInfo.getOptionawait(
+                                                              widget.wlValue.exch,
+                                                              widget.wlValue.token))
+                                                            _buildAccordionItem(
+                                                              context: context,
+                                                              label: "Set Alert",
                                                               onTap: () {
                                                                 showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  barrierDismissible:
-                                                                      true,
-                                                                  builder:
-                                                                      (BuildContext
-                                                                          dialogContext) {
+                                                                  context: context,
+                                                                  barrierDismissible: true,
+                                                                  builder: (BuildContext dialogContext) {
                                                                     return SetAlertWeb(
-                                                                      depthdata:
-                                                                          depthData,
-                                                                      wlvalue:
-                                                                          widget
-                                                                              .wlValue,
+                                                                      depthdata: depthData,
+                                                                      wlvalue: widget.wlValue,
                                                                     );
                                                                   },
                                                                 );
                                                               },
                                                             ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 12),
-                                                          if (scripInfo
-                                                                      .fundamentalData !=
-                                                                  null &&
-                                                              scripInfo
-                                                                      .fundamentalData
-                                                                      ?.msg !=
-                                                                  "no data found")
-                                                            Expanded(
-                                                              child:
-                                                                  _quickActionButton(
-                                                                theme: theme,
-                                                                label:
-                                                                    "Fundamentals",
-                                                                onTap:
-                                                                    () async {
-                                                                  try {
-                                                                    // Always fetch fresh fundamental data for the current scrip
-                                                                    await scripInfo
-                                                                        .fetchFundamentalData(
-                                                                      tradeSym:
-                                                                          "${widget.wlValue.exch}:${widget.wlValue.tsym}",
-                                                                    );
+                                                          if (scripInfo.fundamentalData != null &&
+                                                              scripInfo.fundamentalData?.msg != "no data found")
+                                                            _buildAccordionItem(
+                                                              context: context,
+                                                              label: "Stock report",
+                                                              onTap: () async {
+                                                                try {
+                                                                  await scripInfo.fetchFundamentalData(
+                                                                    tradeSym: "${widget.wlValue.exch}:${widget.wlValue.tsym}",
+                                                                  );
 
-                                                                    if (!mounted) {
-                                                                      return;
-                                                                    }
+                                                                  if (!mounted) return;
 
-                                                                    if (scripInfo.fundamentalData !=
-                                                                            null &&
-                                                                        scripInfo.fundamentalData?.msg !=
-                                                                            "no data found") {
-                                                                      // Create DepthInputArgs and get depth data
-                                                                      DepthInputArgs
-                                                                          depthArgs =
-                                                                          _createDepthArgs();
-                                                                      final depthData =
-                                                                          scripInfo
-                                                                              .getQuotes!;
+                                                                  if (scripInfo.fundamentalData != null &&
+                                                                      scripInfo.fundamentalData?.msg != "no data found") {
+                                                                    DepthInputArgs depthArgs = _createDepthArgs();
+                                                                    final depthData = scripInfo.getQuotes!;
 
-                                                                      // Show as dialog
-                                                                      if (mounted) {
-                                                                        showDialog(
-                                                                          context:
-                                                                              context,
-                                                                          barrierDismissible:
-                                                                              true,
-                                                                          builder:
-                                                                              (BuildContext dialogContext) {
-                                                                            return Center(
-                                                                              child: shadcn.Card(
-                                                                                borderRadius: BorderRadius.circular(12),
-                                                                                child: Container(
-                                                                                  width: 700,
-                                                                                  constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.min,
-                                                                                    children: [
-                                                                                      // Header
-                                                                                      Padding(
-                                                                                        padding: const EdgeInsets.all(16),
-                                                                                        child: Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                          children: [
-                                                                                            Text(
-                                                                                              '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
-                                                                                              style: MyntWebTextStyles.title(
+                                                                    if (mounted) {
+                                                                      showDialog(
+                                                                        context: context,
+                                                                        barrierDismissible: true,
+                                                                        builder: (BuildContext dialogContext) {
+                                                                          return Center(
+                                                                            child: shadcn.Card(
+                                                                              borderRadius: BorderRadius.circular(12),
+                                                                              child: Container(
+                                                                                width: 700,
+                                                                                constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                                                                                child: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    Padding(
+                                                                                      padding: const EdgeInsets.all(16),
+                                                                                      child: Row(
+                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                        children: [
+                                                                                          Text(
+                                                                                            '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
+                                                                                            style: MyntWebTextStyles.title(context),
+                                                                                          ),
+                                                                                          Material(
+                                                                                            color: Colors.transparent,
+                                                                                            shape: const CircleBorder(),
+                                                                                            child: InkWell(
+                                                                                              customBorder: const CircleBorder(),
+                                                                                              splashColor: resolveThemeColor(
                                                                                                 context,
+                                                                                                dark: MyntColors.rippleDark,
+                                                                                                light: MyntColors.rippleLight,
                                                                                               ),
-                                                                                            ),
-                                                                                            Material(
-                                                                                              color: Colors.transparent,
-                                                                                              shape: const CircleBorder(),
-                                                                                              child: InkWell(
-                                                                                                customBorder: const CircleBorder(),
-                                                                                                splashColor: resolveThemeColor(
-                                                                                                  context,
-                                                                                                  dark: MyntColors.rippleDark,
-                                                                                                  light: MyntColors.rippleLight,
-                                                                                                ),
-                                                                                                highlightColor: resolveThemeColor(
-                                                                                                  context,
-                                                                                                  dark: MyntColors.highlightDark,
-                                                                                                  light: MyntColors.highlightLight,
-                                                                                                ),
-                                                                                                onTap: () => Navigator.of(context).pop(),
-                                                                                                child: Padding(
-                                                                                                  padding: const EdgeInsets.all(8),
-                                                                                                  child: Icon(
-                                                                                                    Icons.close,
-                                                                                                    size: 20,
-                                                                                                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                                                                                                  ),
+                                                                                              highlightColor: resolveThemeColor(
+                                                                                                context,
+                                                                                                dark: MyntColors.highlightDark,
+                                                                                                light: MyntColors.highlightLight,
+                                                                                              ),
+                                                                                              onTap: () => Navigator.of(context).pop(),
+                                                                                              child: Padding(
+                                                                                                padding: const EdgeInsets.all(8),
+                                                                                                child: Icon(
+                                                                                                  Icons.close,
+                                                                                                  size: 20,
+                                                                                                  color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                                                                                                 ),
                                                                                               ),
                                                                                             ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      ),
-                                                                                      // Content without AppBar
-                                                                                      Expanded(
-                                                                                        child: ClipRRect(
-                                                                                          borderRadius: const BorderRadius.vertical(
-                                                                                            bottom: Radius.circular(12),
                                                                                           ),
-                                                                                          child: MediaQuery.removePadding(
-                                                                                            context: context,
-                                                                                            removeTop: true,
-                                                                                            child: NewFundamentalScreen(
-                                                                                              wlValue: depthArgs,
-                                                                                              depthData: depthData,
-                                                                                            ),
+                                                                                        ],
+                                                                                      ),
+                                                                                    ),
+                                                                                    Expanded(
+                                                                                      child: ClipRRect(
+                                                                                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                                                                                        child: MediaQuery.removePadding(
+                                                                                          context: context,
+                                                                                          removeTop: true,
+                                                                                          child: NewFundamentalScreen(
+                                                                                            wlValue: depthArgs,
+                                                                                            depthData: depthData,
                                                                                           ),
                                                                                         ),
                                                                                       ),
-                                                                                    ],
-                                                                                  ),
+                                                                                    ),
+                                                                                  ],
                                                                                 ),
                                                                               ),
-                                                                            );
-                                                                          },
-                                                                        );
-                                                                      }
+                                                                            ),
+                                                                          );
+                                                                        },
+                                                                      );
                                                                     }
-                                                                  } finally {}
-                                                                },
-                                                              ),
-                                                            )
-                                                          else
-                                                            const Expanded(
-                                                                child:
-                                                                    SizedBox()),
+                                                                  }
+                                                                } finally {}
+                                                              },
+                                                            ),
                                                         ],
                                                       ),
-                                                      const SizedBox(height: 8),
                                                     ]),
                                                   )
                                                 ])
@@ -2721,7 +2532,355 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     ]);
   }
 
-  // Futures navigation section
+  // Expandable Futures Section - inline list like mobile
+  Widget _buildExpandableFuturesSection(MarketWatchProvider scripInfo,
+      ThemesProvider theme, GetQuotes depthData) {
+    return Column(
+      children: [
+        // Futures Header with expand/collapse
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () async {
+              try {
+                if (!scripInfo.isFuturesExpanded) {
+                  // Only fetch data when expanding
+                  if (scripInfo.getOptionawait(
+                      widget.wlValue.exch, widget.wlValue.token)) {
+                    await scripInfo.fetchScripInfo(
+                        widget.wlValue.token, widget.wlValue.exch, context);
+                    await scripInfo.fetchLinkeScrip(
+                        widget.wlValue.token, widget.wlValue.exch, context);
+                  }
+                  await scripInfo.requestWSFut(
+                      context: context, isSubscribe: true);
+                } else {
+                  // Unsubscribe when collapsing
+                  await scripInfo.requestWSFut(
+                      context: context, isSubscribe: false);
+                }
+                scripInfo.toggleFuturesExpansion();
+              } catch (e) {
+                debugPrint('Error toggling futures: $e');
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Futures",
+                    style: MyntWebTextStyles.para(context),
+                  ),
+                  AnimatedRotation(
+                    turns: scripInfo.isFuturesExpanded ? 0.25 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.iconDark,
+                        light: MyntColors.icon,
+                      ),
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const ListDivider(),
+
+        // Expandable Futures Content - Mobile style list
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: scripInfo.isFuturesExpanded
+              ? _buildFuturesListContent(scripInfo, theme)
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+
+  // Futures list content - similar to mobile FutureScreen
+  Widget _buildFuturesListContent(
+      MarketWatchProvider scripInfo, ThemesProvider theme) {
+    if (scripInfo.fut == null || scripInfo.fut!.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Text(
+            "No futures data available",
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return StreamBuilder<Map>(
+      stream: ref.read(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Info banner
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              decoration: BoxDecoration(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ).withOpacity(0.05),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    assets.dInfo,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                    width: 14,
+                    height: 14,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Long press to add to ${scripInfo.wlName} Watchlist",
+                    style: MyntWebTextStyles.caption(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Futures list
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: scripInfo.fut!.length,
+              separatorBuilder: (BuildContext context, int index) {
+                return const ListDivider();
+              },
+              itemBuilder: (BuildContext context, int index) {
+                var displayData = scripInfo.fut![index];
+
+                // Update with socket data if available
+                final tokenKey = displayData.token?.toString();
+                if (tokenKey != null && socketDatas.containsKey(tokenKey)) {
+                  final socketData = socketDatas[tokenKey];
+                  final lp = socketData['lp']?.toString();
+                  if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
+                    displayData.ltp = lp;
+                  }
+                  final chng = socketData['chng']?.toString();
+                  if (chng != null && chng != "null") {
+                    displayData.change = chng;
+                  }
+                  final pc = socketData['pc']?.toString();
+                  if (pc != null && pc != "null") {
+                    displayData.perChange = pc;
+                  }
+                }
+
+                return _buildFutureListItem(
+                    displayData, scripInfo, theme, index);
+              },
+            ),
+            const ListDivider(),
+          ],
+        );
+      },
+    );
+  }
+
+  // Individual future list item - mobile style
+  Widget _buildFutureListItem(dynamic displayData,
+      MarketWatchProvider scripInfo, ThemesProvider theme, int index) {
+    final change = displayData.change?.toString() ?? "0.00";
+    final perChange = displayData.perChange?.toString() ?? "0.00";
+    final ltp = displayData.ltp ?? displayData.close ?? "0.00";
+
+    // Determine price color based on change
+    Color priceColor;
+    if (change.startsWith("-") || perChange.startsWith('-')) {
+      priceColor = resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
+      );
+    } else if (change == "null" ||
+        perChange == "null" ||
+        change == "0.00" ||
+        perChange == "0.00") {
+      priceColor = resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      );
+    } else {
+      priceColor = resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onLongPress: () async {
+          await scripInfo.addDelMarketScrip(
+            scripInfo.wlName,
+            "${displayData.exch}|${displayData.token}",
+            context,
+            true,
+            true,
+            false,
+            true,
+          );
+        },
+        onTap: () async {
+          await Future.delayed(const Duration(milliseconds: 150));
+          // Collapse futures section before navigating
+          if (scripInfo.isFuturesExpanded) {
+            scripInfo.toggleFuturesExpansion();
+            await scripInfo.requestWSFut(context: context, isSubscribe: false);
+          }
+          if (mounted) {
+            await scripInfo.calldepthApis(context, displayData, "");
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left side - Symbol and exchange info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Symbol name
+                    Row(
+                      children: [
+                        Text(
+                          "${displayData.symbol ?? ''}",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        if (displayData.option != null &&
+                            displayData.option!.isNotEmpty)
+                          Text(
+                            " ${displayData.option}",
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: MyntFonts.medium,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    // Exchange and expiry
+                    Row(
+                      children: [
+                        Text(
+                          "${displayData.exch ?? ''}",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                        if (displayData.expDate != null &&
+                            displayData.expDate!.isNotEmpty)
+                          Text(
+                            " ${displayData.expDate}",
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Right side - Price and change
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // LTP
+                  Text(
+                    "₹$ltp",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                      color: priceColor,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  // Change and percent change
+                  Text(
+                    "${change == "null" ? "0.00" : double.tryParse(change)?.toStringAsFixed(2) ?? "0.00"} "
+                    "(${perChange == "null" ? "0.00" : perChange}%)",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Futures navigation section (legacy - kept for reference)
   Widget _buildFuturesSection(MarketWatchProvider scripInfo,
       ThemesProvider theme, GetQuotes depthData) {
     return Column(
@@ -2885,17 +3044,43 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     );
   }
 
-  // Quick action button used in the three-in-a-row actions row
-  Widget _quickActionButton({
-    required ThemesProvider theme,
+  Widget _buildAccordionItem({
+    required BuildContext context,
     required String label,
     required VoidCallback onTap,
+    bool showArrow = true,
   }) {
-    return shadcn.GhostButton(
-      onPressed: onTap,
-      child: Text(
-        label,
-        style: MyntWebTextStyles.buttonSm(context, color: MyntColors.primary),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    label,
+                    style: MyntWebTextStyles.para(context),
+                  ),
+                  if (showArrow)
+                    Icon(
+                      Icons.chevron_right,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.iconDark,
+                        light: MyntColors.icon,
+                      ),
+                      size: 20,
+                    ),
+                ],
+              ),
+            ),
+            const ListDivider(),
+          ],
+        ),
       ),
     );
   }

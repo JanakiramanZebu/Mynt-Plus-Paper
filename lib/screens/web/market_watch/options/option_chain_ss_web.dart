@@ -552,7 +552,9 @@ void _showStrikeCountSelector(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
                   ),
-                  color: shadcn.Theme.of(context).colorScheme.background,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.backgroundColorDark,
+                      light: MyntColors.backgroundColor),
                   border: Border(
                     top: BorderSide(
                         color: shadcn.Theme.of(context).colorScheme.border),
@@ -689,71 +691,137 @@ void _showStrikeCountSelector(
           ));
 }
 
-// Helper function to show strikes dropdown using showMenu (matching expiry dropdown style)
-void _showStrikesDropdown(BuildContext context, List<String> numStrikes, String numStrike,
-    MarketWatchProvider scripInfo, ThemesProvider theme, VoidCallback scrollToStrikePrice) {
-  final RenderBox button = context.findRenderObject() as RenderBox;
-  final RenderBox overlay =
-      Overlay.of(context).context.findRenderObject() as RenderBox;
+// Helper function to show strikes dropdown using shadcn.showPopover (matching watchlist filter style)
+void _showStrikesDropdown(
+    BuildContext context,
+    WidgetRef ref,
+    MarketWatchProvider scripInfo,
+    ThemesProvider theme,
+    VoidCallback scrollToStrikePrice) {
+  final numStrikes = scripInfo.numStrikes;
+  final numStrike = scripInfo.numStrike;
 
-  final RelativeRect position = RelativeRect.fromRect(
-    Rect.fromPoints(
-      button.localToGlobal(Offset.zero, ancestor: overlay),
-      button.localToGlobal(button.size.bottomRight(Offset.zero),
-          ancestor: overlay),
-    ),
-    Offset.zero & overlay.size,
-  );
-
-  showMenu<String>(
+  shadcn.showPopover(
     context: context,
-    position: position,
-    color: shadcn.Theme.of(context).colorScheme.background,
-    elevation: 8,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.zero,
+    alignment: Alignment.bottomCenter,
+    offset: const Offset(0, 4),
+    overlayBarrier: shadcn.OverlayBarrier(
+      borderRadius: shadcn.Theme.of(context).borderRadiusLg,
     ),
-    items: numStrikes.map((String value) {
-      final isSelected = value == numStrike;
-      return PopupMenuItem<String>(
-        value: value,
-        padding: EdgeInsets.zero,
-        child: SizedBox(
-          width: 150, // Fixed width
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Text(
-              value,
-              style: MyntWebTextStyles.body(
-                context,
-                fontWeight: MyntFonts.medium,
-                color: isSelected
-                    ? shadcn.Theme.of(context).colorScheme.primary
-                    : shadcn.Theme.of(context).colorScheme.foreground,
+    builder: (popoverContext) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: shadcn.Theme.of(popoverContext).borderRadiusLg,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: shadcn.ModalContainer(
+          padding: const EdgeInsets.all(8),
+          child: SizedBox(
+            width: 150,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: numStrikes.map((String value) {
+                  final isSelected = value == numStrike;
+                  return _buildStrikeMenuItem(
+                    popoverContext,
+                    value,
+                    isSelected,
+                    () async {
+                      shadcn.closeOverlay(popoverContext);
+                      scripInfo.selecNumStrike(value);
+                      await scripInfo.fetchOPtionChain(
+                        context: context,
+                        exchange: scripInfo.optionExch!,
+                        numofStrike: value,
+                        strPrc: scripInfo.optionStrPrc,
+                        tradeSym: scripInfo.selectedTradeSym!,
+                      );
+
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (context.mounted) {
+                          scrollToStrikePrice();
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
               ),
             ),
           ),
         ),
       );
-    }).toList(),
-  ).then((value) async {
-    if (value != null) {
-      scripInfo.selecNumStrike(value);
-      await scripInfo.fetchOPtionChain(
-        context: context,
-        exchange: scripInfo.optionExch!,
-        numofStrike: value,
-        strPrc: scripInfo.optionStrPrc,
-        tradeSym: scripInfo.selectedTradeSym!,
-      );
+    },
+  );
+}
 
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (context.mounted) {
-          scrollToStrikePrice();
-        }
-      });
-    }
-  });
+Widget _buildStrikeMenuItem(
+  BuildContext context,
+  String title,
+  bool isActive,
+  VoidCallback onTap,
+) {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      splashColor: resolveThemeColor(
+        context,
+        dark: MyntColors.rippleDark,
+        light: MyntColors.rippleLight,
+      ),
+      highlightColor: resolveThemeColor(
+        context,
+        dark: MyntColors.highlightDark,
+        light: MyntColors.highlightLight,
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: isActive ? MyntFonts.semiBold : MyntFonts.medium,
+                  color: isActive
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        )
+                      : resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                ),
+              ),
+            ),
+            if (isActive)
+              Icon(
+                Icons.check,
+                size: 18,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 // Widget for column headers - updated to ConsumerWidget
@@ -771,7 +839,8 @@ class _ColumnHeaders extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // PERFORMANCE FIX: Watch only specific fields instead of entire provider
-    final numStrikes = ref.watch(marketWatchProvider.select((p) => p.numStrikes));
+    final numStrikes =
+        ref.watch(marketWatchProvider.select((p) => p.numStrikes));
     final numStrike = ref.watch(marketWatchProvider.select((p) => p.numStrike));
 
     // Use ref.read() for everything else
@@ -781,7 +850,9 @@ class _ColumnHeaders extends ConsumerWidget {
     return RepaintBoundary(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        color: shadcn.Theme.of(context).colorScheme.background,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         child: Column(
           children: [
             // Main header row
@@ -796,11 +867,12 @@ class _ColumnHeaders extends ConsumerWidget {
                       Text(
                         "CALLS",
                         style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium , color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            )),
                       ),
                     ],
                   ),
@@ -812,8 +884,8 @@ class _ColumnHeaders extends ConsumerWidget {
                     builder: (context) => Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => _showStrikesDropdown(
-                            context, numStrikes, numStrike, scripInfo, theme, scrollToStrikePrice),
+                        onTap: () => _showStrikesDropdown(context, ref,
+                            scripInfo, theme, scrollToStrikePrice),
                         borderRadius: BorderRadius.circular(5),
                         child: Padding(
                           padding: const EdgeInsets.all(6.0),
@@ -849,12 +921,12 @@ class _ColumnHeaders extends ConsumerWidget {
                       Text(
                         "PUTS",
                         style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium ,
-                             color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            )),
                       ),
                     ],
                   ),
@@ -897,66 +969,38 @@ class _ColumnHeaders extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                // CALLS sub-headers: OI(ch), OI, CH, LTP (reversed from PUTS)
+                // CALLS sub-headers: OI(ch), OI, CH, LTP
                 Expanded(
-                  // flex: 6,
+                  flex: 6,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 20),
-                            _buildSubHeader(context, ref, "OI(ch)", theme),
-                            Expanded(
-                                child:
-                                    _buildSubHeader(context, ref, "OI", theme)),
-                          ],
-                        ),
-                      ),
+                          child:
+                              _buildSubHeader(context, ref, "OI(ch)", theme)),
                       Expanded(
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 15),
-                            _buildSubHeader(context, ref, "CH", theme),
-                            Expanded(
-                                child: _buildSubHeader(
-                                    context, ref, "LTP", theme)),
-                          ],
-                        ),
-                      ),
+                          child: _buildSubHeader(context, ref, "OI", theme)),
+                      Expanded(
+                          child: _buildSubHeader(context, ref, "CH", theme)),
+                      Expanded(
+                          child: _buildSubHeader(context, ref, "LTP", theme)),
                     ],
                   ),
                 ),
                 const SizedBox(width: 150),
-                // PUTS sub-headers: same layout
+                // PUTS sub-headers: LTP, CH, OI, OI(ch)
                 Expanded(
-                  // flex: 6,
+                  flex: 6,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Expanded(
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 15),
-                            Expanded(
-                                child: _buildSubHeader(
-                                    context, ref, "LTP", theme)),
-                            _buildSubHeader(context, ref, "CH", theme),
-                          ],
-                        ),
-                      ),
+                          child: _buildSubHeader(context, ref, "LTP", theme)),
                       Expanded(
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 15),
-                            Expanded(
-                                child:
-                                    _buildSubHeader(context, ref, "OI", theme)),
-                            _buildSubHeader(context, ref, "OI(ch)", theme),
-                          ],
-                        ),
-                      ),
+                          child: _buildSubHeader(context, ref, "CH", theme)),
+                      Expanded(
+                          child: _buildSubHeader(context, ref, "OI", theme)),
+                      Expanded(
+                          child:
+                              _buildSubHeader(context, ref, "OI(ch)", theme)),
                     ],
                   ),
                 ),
@@ -970,11 +1014,17 @@ class _ColumnHeaders extends ConsumerWidget {
 
   Widget _buildSubHeader(
       BuildContext context, WidgetRef ref, String text, ThemesProvider theme) {
-    return Center(
+    return Container(
+      alignment: Alignment.center,
       child: Text(
         text,
-        style:
-            MyntWebTextStyles.bodySmall(context, fontWeight: MyntFonts.medium),
+        style: MyntWebTextStyles.para(
+          context,
+          fontWeight: MyntFonts.medium,
+          color: resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary),
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -988,7 +1038,8 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // PERFORMANCE FIX: Watch only the specific field we need
-    final isPreDefWLs = ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
+    final isPreDefWLs =
+        ref.watch(marketWatchProvider.select((p) => p.isPreDefWLs));
     final theme = ref.read(themeProvider);
 
     if (isPreDefWLs == "Yes") {
@@ -1008,11 +1059,11 @@ class _PreDefinedWatchlistBanner extends ConsumerWidget {
             Text(
               " Long press to add Watchlist / Swipe to Trade",
               style: MyntWebTextStyles.bodySmall(context,
-                  color:  resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary,
-      )),
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  )),
             ),
           ])),
     );
@@ -1036,7 +1087,8 @@ class _OptionChainContent extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_OptionChainContent> createState() => _OptionChainContentState();
+  ConsumerState<_OptionChainContent> createState() =>
+      _OptionChainContentState();
 }
 
 class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
@@ -1048,11 +1100,16 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
     // CRITICAL FIX: Use .select() to watch ONLY the specific fields we need
     // This prevents rebuilding the entire option chain when socket data updates
     final isLoad = ref.watch(marketWatchProvider.select((p) => p.isLoad));
-    final optChainCallUP = ref.watch(marketWatchProvider.select((p) => p.optChainCallUP));
-    final optChainPutUp = ref.watch(marketWatchProvider.select((p) => p.optChainPutUp));
-    final optChainCallDown = ref.watch(marketWatchProvider.select((p) => p.optChainCallDown));
-    final optChainPutDown = ref.watch(marketWatchProvider.select((p) => p.optChainPutDown));
-    final depthData = ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+    final optChainCallUP =
+        ref.watch(marketWatchProvider.select((p) => p.optChainCallUP));
+    final optChainPutUp =
+        ref.watch(marketWatchProvider.select((p) => p.optChainPutUp));
+    final optChainCallDown =
+        ref.watch(marketWatchProvider.select((p) => p.optChainCallDown));
+    final optChainPutDown =
+        ref.watch(marketWatchProvider.select((p) => p.optChainPutDown));
+    final depthData =
+        ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
 
     // PERFORMANCE FIX: Do NOT watch socketDatas at parent level!
     // When parent watches entire socketDatas map, ANY token update causes:
@@ -1177,14 +1234,17 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
 
     // Step 2: Sort strikes numerically
     final sortedStrikes = strikeSet.toList()
-      ..sort((a, b) => (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
+      ..sort((a, b) =>
+          (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
 
     // Step 3: Determine ATM strike based on LIVE LTP (closest strike to current price)
     // Get live LTP from websocket for the underlying token
     final underlyingToken = depthData.token;
     final socketDatas = ref.read(websocketProvider).socketDatas;
     final underlyingData = socketDatas['${depthData.exch}|$underlyingToken'];
-    final liveLtp = double.tryParse(underlyingData?['lp']?.toString() ?? depthData.lp ?? '0') ?? 0;
+    final liveLtp = double.tryParse(
+            underlyingData?['lp']?.toString() ?? depthData.lp ?? '0') ??
+        0;
 
     // Find the closest strike to live LTP (this is the true ATM)
     String atmStrike = '';
@@ -1226,8 +1286,10 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       _hasScrolledInitially = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.mainScrollController.hasClients) {
-          final targetOffset = atmIndex * 40.0 - (MediaQuery.of(context).size.height / 3);
-          widget.mainScrollController.jumpTo(targetOffset.clamp(0.0, widget.mainScrollController.position.maxScrollExtent));
+          final targetOffset =
+              atmIndex * 40.0 - (MediaQuery.of(context).size.height / 3);
+          widget.mainScrollController.jumpTo(targetOffset.clamp(
+              0.0, widget.mainScrollController.position.maxScrollExtent));
         }
       });
     }
@@ -1267,7 +1329,6 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       ),
     );
   }
-
 }
 
 // Widget for the buy/sell action buttons
@@ -1281,9 +1342,12 @@ class _ActionButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // PERFORMANCE FIX: Watch only the specific fields we need
-    final scripDepthloader = ref.watch(marketWatchProvider.select((p) => p.scripDepthloader));
-    final depthData = ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
-    final actDeptBtn = ref.watch(marketWatchProvider.select((p) => p.actDeptBtn));
+    final scripDepthloader =
+        ref.watch(marketWatchProvider.select((p) => p.scripDepthloader));
+    final depthData =
+        ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+    final actDeptBtn =
+        ref.watch(marketWatchProvider.select((p) => p.actDeptBtn));
 
     final theme = ref.read(themeProvider);
 
@@ -1487,7 +1551,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
         duration: const Duration(milliseconds: 200),
         height: _sheetHeight,
         decoration: BoxDecoration(
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -1554,24 +1620,25 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
                   style: MyntWebTextStyles.title(context,
-                    fontWeight: MyntFonts.semiBold, color :  resolveThemeColor(
-        context,
-        dark: MyntColors.textPrimaryDark,
-        light: MyntColors.textPrimary,
-      )),
-
+                      fontWeight: MyntFonts.semiBold,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      )),
                 ),
                 const SizedBox(height: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
                   Text(
                     "${orderProv.bsktScripList.length} items",
-                    style: MyntWebTextStyles.body(context,
-                      color:  resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary,
-      ), ),
-
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -1944,10 +2011,8 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             }
 
             return InkWell(
-              onTap: () =>
-                  _handleBasketItemTap(index, script, orderProvider),
-              onLongPress: () =>
-                  _deleteScript(index, script, orderProvider),
+              onTap: () => _handleBasketItemTap(index, script, orderProvider),
+              onLongPress: () => _deleteScript(index, script, orderProvider),
               child: _buildScriptCard(theme, script, index),
             );
           },
@@ -2749,7 +2814,9 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           ),
-          color: shadcn.Theme.of(context).colorScheme.background,
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           border: Border(
             top: BorderSide(
               color: shadcn.Theme.of(context).colorScheme.border,

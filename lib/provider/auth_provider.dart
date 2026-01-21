@@ -530,15 +530,22 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Call this method while clicking if the login validation process is successful.
 
-  submitLogin(BuildContext context, bool navi) async {
+  submitLogin(BuildContext context, bool navi,
+      {bool preventNavigation = false}) async {
     _loggedMobile = await getLocalData();
     // if (routeTo == "deviceLogin") {
     //   _isMobileLogin = true;
     // }
 
     if (loginMethError == "" && passError == "") {
-      fetchMobileLogin(context, passCtrl.text, loginMethCtrl.text.toUpperCase(),
-          navi ? "pop" : "", imieJson(loginMethCtrl.text.toUpperCase()), _totp);
+      await fetchMobileLogin(
+          context,
+          passCtrl.text,
+          loginMethCtrl.text.toUpperCase(),
+          navi ? "pop" : "",
+          imieJson(loginMethCtrl.text.toUpperCase()),
+          _totp,
+          preventNavigation: preventNavigation);
     }
   }
 
@@ -557,7 +564,8 @@ class AuthProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
 
   fetchMobileLogin(BuildContext context, String password, String mobileRclint,
-      String s, String imei, bool totp) async {
+      String s, String imei, bool totp,
+      {bool preventNavigation = false}) async {
     try {
       print('def $imei');
       pref.setImei(imei);
@@ -604,7 +612,7 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setRiskDiscloser(false);
 
         // Navigate to OTP screen
-        if (context.mounted) {
+        if (context.mounted && !preventNavigation) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -825,6 +833,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   fetchMobileOtp(BuildContext context, String otp) async {
+    bool isSuccess = false;
     try {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       toggleLoadingOn(true);
@@ -838,6 +847,8 @@ class AuthProvider extends DefaultChangeNotifier {
       // print('def sd ${pref.imei!}');
       // final localstorage = await SharedPreferences.getInstance();
       if (_mobileOtp!.stat == "Ok") {
+        isSuccess = true;
+        initLaod(true);
         _isDisableBtn = true;
         clearError();
         clearTextField();
@@ -893,7 +904,14 @@ class AuthProvider extends DefaultChangeNotifier {
         validateOtp('TOTP');
       }
     } finally {
-      toggleLoadingOn(false);
+      if (!isSuccess) {
+        toggleLoadingOn(false);
+      } else {
+        // Reset loading silently or after delay to ensure global state is clean eventually
+        Future.delayed(const Duration(seconds: 1), () {
+          loading = false;
+        });
+      }
     }
   }
 
@@ -1885,7 +1903,7 @@ class AuthProvider extends DefaultChangeNotifier {
             }
             
             // Turn off global loader immediately so screen shows
-            initLaod(false);
+            // initLaod(false);
             ref.read(userProfileProvider).profileloaderfun(false);
             
             // Load data asynchronously in the background (non-blocking)
@@ -2086,7 +2104,9 @@ class AuthProvider extends DefaultChangeNotifier {
     } finally {
       // Only set loader to false if not already done (for web case)
       if (s != "switchAc") {
-        initLaod(false);
+        Future.delayed(const Duration(milliseconds: 1000), () {
+          initLaod(false);
+        });
       }
       ref.read(userProfileProvider).profileloaderfun(false);
     }

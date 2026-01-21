@@ -406,13 +406,25 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _rowOfInfoData(String label, dynamic value, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(
               label,
               style: MyntWebTextStyles.bodySmall(
                 context,
@@ -421,11 +433,16 @@ class _PendingAlertDetailScreenWebState
                     light: MyntColors.textSecondary),
                 fontWeight: MyntFonts.regular,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
-            value is Widget
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: value is Widget
                 ? value
                 : Text(
                     value.toString(),
+                    textAlign: TextAlign.end,
                     style: MyntWebTextStyles.bodySmall(
                       context,
                       color: resolveThemeColor(context,
@@ -433,11 +450,11 @@ class _PendingAlertDetailScreenWebState
                           light: MyntColors.textPrimary),
                       fontWeight: MyntFonts.medium,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-          ],
-        ),
-        const SizedBox(height: 16),
-      ],
+          ),
+        ],
+      ),
     );
   }
 

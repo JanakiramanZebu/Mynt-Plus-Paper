@@ -36,9 +36,9 @@ class StrikePriceListCard extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Text(
             "$strikePrice",
-            style: MyntWebTextStyles.bodySmall(
+            style: MyntWebTextStyles.body(
               context,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.semiBold,
               darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textPrimary,
             ),

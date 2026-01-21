@@ -4,21 +4,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
-import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
-// import '../../../../res/res.dart'; // Unused - hover disabled for test
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/res.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
 
 /// Data class representing a single strike price row
 class StrikeRowData {
@@ -75,22 +74,26 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.read(themeProvider);
-
     // PERFORMANCE FIX: Each row watches ONLY its own token with .select()
     // When token A updates, only row A rebuilds - NOT all 200+ rows!
     // This replaces the 500ms timer that caused 100% CPU with 120 full rebuilds/min
     final callSocketData = widget.rowData.callOption != null
-        ? ref.watch(websocketProvider.select((p) => p.socketDatas[widget.rowData.callOption!.token]))
+        ? ref.watch(websocketProvider
+            .select((p) => p.socketDatas[widget.rowData.callOption!.token]))
         : null;
     final putSocketData = widget.rowData.putOption != null
-        ? ref.watch(websocketProvider.select((p) => p.socketDatas[widget.rowData.putOption!.token]))
+        ? ref.watch(websocketProvider
+            .select((p) => p.socketDatas[widget.rowData.putOption!.token]))
         : null;
 
     // ATM row highlight
     final isATM = widget.rowData.isATM;
     final atmColor = isATM
-        ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.08)
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ).withOpacity(0.08)
         : Colors.transparent;
 
     return RepaintBoundary(
@@ -103,14 +106,14 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             // CALL cell (flex: 6)
             Expanded(
               flex: 6,
-              child: _buildCallCell(callSocketData, theme),
+              child: _buildCallCell(callSocketData),
             ),
             // STRIKE price cell (fixed width: 150)
-            _buildStrikeCell(theme),
+            _buildStrikeCell(),
             // PUT cell (flex: 6)
             Expanded(
               flex: 6,
-              child: _buildPutCell(putSocketData, theme),
+              child: _buildPutCell(putSocketData),
             ),
           ],
         ),
@@ -118,16 +121,20 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Widget _buildCallCell(Map<String, dynamic>? socketData, ThemesProvider theme) {
+  Widget _buildCallCell(Map<String, dynamic>? socketData) {
     final option = widget.rowData.callOption;
     if (option == null) {
-      return const SizedBox.shrink();
+      return const SizedBox.shrink(); 
     }
 
     // Calculate values from websocket data (with fallbacks)
-    final lp = socketData?['lp']?.toString() ?? option.lp ?? option.close ?? "0.00";
-    final perChange = socketData?['pc']?.toString() ?? option.perChange ?? "0.00";
-    final currentOI = double.tryParse(socketData?['oi']?.toString() ?? option.oi ?? "0") ?? 0.0;
+    final lp =
+        socketData?['lp']?.toString() ?? option.lp ?? option.close ?? "0.00";
+    final perChange =
+        socketData?['pc']?.toString() ?? option.perChange ?? "0.00";
+    final currentOI =
+        double.tryParse(socketData?['oi']?.toString() ?? option.oi ?? "0") ??
+            0.0;
     final oiLack = (currentOI / 100000).toStringAsFixed(2);
 
     // Calculate OI percentage change
@@ -140,10 +147,14 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     }
 
     final changeColor = perChange.startsWith("-")
-        ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+        ? resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss)
         : (perChange == "0.00" || perChange == "0.0"
-            ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-            : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : resolveThemeColor(context,
+                dark: MyntColors.profitDark, light: MyntColors.profit));
 
     // Check watchlist status
     final scripToken = "${option.exch}|${option.token}";
@@ -160,23 +171,39 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
           builder: (context, isHovered, child) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 8),
+              alignment: Alignment.center,
               color: isHovered
-                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.15)
+                  ? resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary)
+                      .withOpacity(0.15)
                   : Colors.transparent,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Data row - CALLS: OI% | OI | CH% | LTP
+                  // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
                       // OI% column
                       Expanded(
                         child: Text(
                           "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: (oiPerChng.startsWith("-"))
-                                ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-                                : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
+                          textAlign: TextAlign.center,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: FontWeight.w500,
+                            color: (oiPerChng == "0.00" || oiPerChng == "0.0")
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary)
+                                : (oiPerChng.startsWith("-"))
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.lossDark,
+                                        light: MyntColors.loss)
+                                    : resolveThemeColor(context,
+                                        dark: MyntColors.profitDark,
+                                        light: MyntColors.profit),
                           ),
                         ),
                       ),
@@ -184,9 +211,17 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       Expanded(
                         child: Text(
                           oiLack,
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                          textAlign: TextAlign.center,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: FontWeight.w500,
+                            color: (oiLack == "0.00" || oiLack == "0.0")
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
                           ),
                         ),
                       ),
@@ -194,8 +229,10 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       Expanded(
                         child: Text(
                           "$perChange%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
+                          textAlign: TextAlign.center,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: FontWeight.w500,
                             color: changeColor,
                           ),
                         ),
@@ -204,61 +241,48 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                       Expanded(
                         child: Text(
                           lp,
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                          textAlign: TextAlign.center,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: FontWeight.w500,
+                            color: (lp == "0.00" || lp == "0.0")
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  // Hover buttons - positioned at right
-                  if (isHovered)
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      right: 0,
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHoverButton(
-                              label: 'B',
-                              color: Colors.white,
-                              backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                              onPressed: () => _placeOrder(option, true),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              label: 'S',
-                              color: Colors.white,
-                              backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                              onPressed: () => _placeOrder(option, false),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: Icons.bar_chart,
-                              color: Colors.black,
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleChartTap(option),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
-                              color: isInWatchlist
-                                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                  : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleSaveToWatchlist(option),
-                              theme: theme,
-                            ),
-                          ],
-                        ),
+                  // Hover buttons
+                  HoverActionsContainer(
+                    isVisible: isHovered,
+                    actions: [
+                      HoverActionButton.buy(
+                        context: context,
+                        onPressed: () => _placeOrder(option, true),
                       ),
-                    ),
+                      HoverActionButton.sell(
+                        context: context,
+                        onPressed: () => _placeOrder(option, false),
+                      ),
+                      HoverActionButton.icon(
+                        context: context,
+                        iconAsset: isInWatchlist
+                            ? assets.bookmarkIcon
+                            : assets.bookmarkLineIcon,
+                        iconColor: isInWatchlist
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            : null,
+                        onPressed: () => _handleSaveToWatchlist(option),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             );
@@ -268,7 +292,7 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Widget _buildStrikeCell(ThemesProvider theme) {
+  Widget _buildStrikeCell() {
     final isATM = widget.rowData.isATM;
 
     return SizedBox(
@@ -277,38 +301,49 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isATM
-              ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.15)
+              ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark, light: MyntColors.primary)
+                  .withOpacity(0.15)
               : Colors.transparent,
           border: Border.symmetric(
             vertical: BorderSide(
-              color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
               width: 0.5,
             ),
           ),
         ),
         child: Text(
           widget.rowData.strikePrice,
-          style: WebTextStyles.tableDataCompact(
-            isDarkTheme: theme.isDarkMode,
+          style: MyntWebTextStyles.body(
+            context,
+            fontWeight: isATM ? FontWeight.w700 : FontWeight.w500,
             color: isATM
-                ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                : (theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
-          ).copyWith(fontWeight: isATM ? FontWeight.w600 : FontWeight.w400),
+                ? resolveThemeColor(context,
+                    dark: MyntColors.primaryDark, light: MyntColors.primary)
+                : resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPutCell(Map<String, dynamic>? socketData, ThemesProvider theme) {
+  Widget _buildPutCell(Map<String, dynamic>? socketData) {
     final option = widget.rowData.putOption;
     if (option == null) {
       return const SizedBox.shrink();
     }
 
     // Calculate values from websocket data (with fallbacks)
-    final lp = socketData?['lp']?.toString() ?? option.lp ?? option.close ?? "0.00";
-    final perChange = socketData?['pc']?.toString() ?? option.perChange ?? "0.00";
-    final currentOI = double.tryParse(socketData?['oi']?.toString() ?? option.oi ?? "0") ?? 0.0;
+    final lp =
+        socketData?['lp']?.toString() ?? option.lp ?? option.close ?? "0.00";
+    final perChange =
+        socketData?['pc']?.toString() ?? option.perChange ?? "0.00";
+    final currentOI =
+        double.tryParse(socketData?['oi']?.toString() ?? option.oi ?? "0") ??
+            0.0;
     final oiLack = (currentOI / 100000).toStringAsFixed(2);
 
     // Calculate OI percentage change
@@ -321,10 +356,14 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     }
 
     final changeColor = perChange.startsWith("-")
-        ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
+        ? resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss)
         : (perChange == "0.00" || perChange == "0.0"
-            ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-            : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit));
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : resolveThemeColor(context,
+                dark: MyntColors.profitDark, light: MyntColors.profit));
 
     // Check watchlist status
     final scripToken = "${option.exch}|${option.token}";
@@ -341,157 +380,122 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
           builder: (context, isHovered, child) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 8),
+              alignment: Alignment.center,
               color: isHovered
-                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.15)
+                  ? resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary)
+                      .withOpacity(0.15)
                   : Colors.transparent,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Data row - PUTS: LTP | CH% | OI | OI%
+                  // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
-                      // LTP column
-                      Expanded(
-                        child: Text(
-                          lp,
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                        // LTP column
+                        Expanded(
+                          child: Text(
+                            lp,
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (lp == "0.00" || lp == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                            ),
                           ),
                         ),
+                        // CH% column
+                        Expanded(
+                          child: Text(
+                            "$perChange%",
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: changeColor,
+                            ),
+                          ),
+                        ),
+                        // OI column
+                        Expanded(
+                          child: Text(
+                            oiLack,
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (oiLack == "0.00" || oiLack == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                            ),
+                          ),
+                        ),
+                        // OI% column
+                        Expanded(
+                          child: Text(
+                            "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: (oiPerChng == "0.00" || oiPerChng == "0.0")
+                                  ? resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  : (oiPerChng.startsWith("-"))
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  // Hover buttons
+                  HoverActionsContainer(
+                    isVisible: isHovered,
+                    actions: [
+                      HoverActionButton.sell(
+                        context: context,
+                        onPressed: () => _placeOrder(option, false),
                       ),
-                      // CH% column
-                      Expanded(
-                        child: Text(
-                          "$perChange%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: changeColor,
-                          ),
-                        ),
+                      HoverActionButton.buy(
+                        context: context,
+                        onPressed: () => _placeOrder(option, true),
                       ),
-                      // OI column
-                      Expanded(
-                        child: Text(
-                          oiLack,
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                      // OI% column
-                      Expanded(
-                        child: Text(
-                          "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                          style: WebTextStyles.tableDataCompact(
-                            isDarkTheme: theme.isDarkMode,
-                            color: (oiPerChng.startsWith("-"))
-                                ? (theme.isDarkMode ? WebDarkColors.loss : WebColors.loss)
-                                : (theme.isDarkMode ? WebDarkColors.profit : WebColors.profit),
-                          ),
-                        ),
+                      HoverActionButton.icon(
+                        context: context,
+                        iconAsset: isInWatchlist
+                            ? assets.bookmarkIcon
+                            : assets.bookmarkLineIcon,
+                        iconColor: isInWatchlist
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            : null,
+                        onPressed: () => _handleSaveToWatchlist(option),
                       ),
                     ],
                   ),
-                  // Hover buttons - positioned at left (for PUT side)
-                  if (isHovered)
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      left: 0,
-                      child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _buildHoverButton(
-                              label: 'S',
-                              color: Colors.white,
-                              backgroundColor: theme.isDarkMode ? WebDarkColors.tertiary : WebColors.tertiary,
-                              onPressed: () => _placeOrder(option, false),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              label: 'B',
-                              color: Colors.white,
-                              backgroundColor: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                              onPressed: () => _placeOrder(option, true),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: Icons.bar_chart,
-                              color: Colors.black,
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleChartTap(option),
-                              theme: theme,
-                            ),
-                            const SizedBox(width: 4),
-                            _buildHoverButton(
-                              icon: isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
-                              color: isInWatchlist
-                                  ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                  : (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary),
-                              backgroundColor: Colors.white,
-                              onPressed: () => _handleSaveToWatchlist(option),
-                              theme: theme,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                 ],
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    String? svgIcon,
-    required Color color,
-    Color? backgroundColor,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    return SizedBox(
-      width: 25,
-      height: 25,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(5.0),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: Center(
-              child: svgIcon != null
-                  ? SvgPicture.asset(
-                      svgIcon,
-                      height: 16,
-                      width: 16,
-                      color: color,
-                    )
-                  : icon != null
-                      ? Icon(icon, size: 16, color: color)
-                      : Text(
-                          label ?? "",
-                          style: WebTextStyles.buttonXs(
-                            isDarkTheme: theme.isDarkMode,
-                            color: color,
-                          ),
-                        ),
-            ),
-          ),
         ),
       ),
     );
@@ -612,42 +616,19 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     );
   }
 
-  Future<void> _handleChartTap(OptionValues option) async {
-    final scripData = ref.read(marketWatchProvider);
-
-    await scripData.fetchScripQuoteIndex(
-      "${option.token}",
-      "${option.exch}",
-      context,
-    );
-    final quots = scripData.getQuotes;
-    if (quots != null) {
-      DepthInputArgs depthArgs = DepthInputArgs(
-        exch: quots.exch.toString(),
-        token: quots.token.toString(),
-        tsym: quots.tsym.toString(),
-        instname: quots.instname.toString(),
-        symbol: quots.symbol.toString(),
-        expDate: quots.expDate.toString(),
-        option: quots.option.toString(),
-      );
-      scripData.scripdepthsize(false);
-      await scripData.calldepthApis(context, depthArgs, "");
-    }
-  }
 
   Future<void> _handleSaveToWatchlist(OptionValues option) async {
     final scripData = ref.read(marketWatchProvider);
 
     if (scripData.isPreDefWLs == "Yes") {
-      showResponsiveWarningMessage(context, "This is a pre-defined watchlist that cannot be edited!");
+      showResponsiveWarningMessage(
+          context, "This is a pre-defined watchlist that cannot be edited!");
       return;
     }
 
     final scripToken = "${option.exch}|${option.token}";
-    final isCurrentlyInWatchlist = scripData.scrips.any((scrip) =>
-        "${scrip['exch']}|${scrip['token']}" == scripToken
-    );
+    final isCurrentlyInWatchlist = scripData.scrips
+        .any((scrip) => "${scrip['exch']}|${scrip['token']}" == scripToken);
 
     if (isCurrentlyInWatchlist) {
       // Delete from watchlist
@@ -661,15 +642,16 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
         false, // Set isOptionStike to false to prevent provider's Fluttertoast
       );
       if (success && mounted) {
-        ResponsiveSnackBar.showInfo(context, 'Removed from ${scripData.wlName}');
+        ResponsiveSnackBar.showInfo(
+            context, 'Removed from ${scripData.wlName}');
       }
     } else {
       // Add to watchlist - establish websocket connection first
       ref.read(websocketProvider).establishConnection(
-        channelInput: scripToken,
-        task: "t",
-        context: context,
-      );
+            channelInput: scripToken,
+            task: "t",
+            context: context,
+          );
 
       final success = await scripData.addDelMarketScrip(
         scripData.wlName,

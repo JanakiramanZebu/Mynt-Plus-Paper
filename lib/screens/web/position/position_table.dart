@@ -154,6 +154,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
+    bool isClosed = false,
   }) {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
@@ -177,6 +178,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
 
+    // Grey background for closed positions
+    final closedBgColor = isClosed
+        ? resolveThemeColor(context,
+            dark: MyntColors.primaryDark.withValues(alpha: 0.01),
+            light: MyntColors.primary.withValues(alpha: 0.04))
+        : null;
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -193,6 +201,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         onExit: (_) => _hoveredRowIndex.value = null,
         child: Container(
           padding: cellPadding,
+          color: closedBgColor,
           alignment: alignRight ? Alignment.topRight : null,
           child: child,
         ),
@@ -853,6 +862,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         builder: (context, ref, child) {
           final isExitAllPosition =
               ref.watch(portfolioProvider.select((p) => p.isExitAllPosition));
+          // Only enable if there are open (non-closed) positions
+          final hasOpenPositions = filteredPositions.any((p) {
+            final qty = int.tryParse(p.qty ?? '0') ?? 0;
+            return qty != 0;
+          });
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             alignment: Alignment.centerLeft,
@@ -860,13 +874,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               state: isExitAllPosition
                   ? shadcn.CheckboxState.checked
                   : shadcn.CheckboxState.unchecked,
-              onChanged: filteredPositions.isNotEmpty
+              onChanged: hasOpenPositions
                   ? (state) {
                       positionBook.selectExitAllPosition(
                           state == shadcn.CheckboxState.checked);
                     }
                   : null,
-              enabled: filteredPositions.isNotEmpty,
+              enabled: hasOpenPositions,
               activeColor: resolveThemeColor(
                 context,
                 dark: MyntColors.primaryDark,
@@ -946,21 +960,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             child: _LTPCell(
               token: position.token!,
               initialLtp: position.lp ?? '0.00',
+              isClosed: isClosed,
             ),
           );
         }
       case 'P&L':
+        // For closed positions, use rpnl (realized P&L)
+        // For open positions, use profitNloss (unrealized P&L)
+        final pnlValue = isClosed
+            ? (position.rpnl ?? position.profitNloss ?? '0.00')
+            : (position.profitNloss ?? '0.00');
+
         if (position.token == null || position.token!.isEmpty) {
           return Align(
             alignment: alignment,
             child: Text(
-              position.profitNloss ?? '0.00',
+              pnlValue,
               style: _getTextStyle(context,
-                  color: isClosed
-                      ? textColor
-                      : _getCellColor(
-                          double.tryParse(position.profitNloss ?? '0') ?? 0.0,
-                          context)),
+                  color: _getCellColor(
+                      double.tryParse(pnlValue) ?? 0.0, context)),
             ),
           );
         } else {
@@ -972,7 +990,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               token: position.token!,
               qty: qty,
               avgPrice: avgPrice,
-              initialValue: position.profitNloss ?? '0.00',
+              initialValue: pnlValue,
               isClosed: isClosed,
             ),
           );
@@ -1114,7 +1132,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         width: double.infinity,
         height: double.infinity,
         child: Stack(
-          clipBehavior: Clip.hardEdge,
+          clipBehavior: Clip.none,
           children: [
             // Instrument name - full width, can be partially covered by buttons
             // Only truncate when hovered (buttons visible), otherwise show full text
@@ -1514,8 +1532,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 class _LTPCell extends ConsumerStatefulWidget {
   final String token;
   final String initialLtp;
+  final bool isClosed;
 
-  const _LTPCell({required this.token, required this.initialLtp});
+  const _LTPCell({
+    required this.token,
+    required this.initialLtp,
+    required this.isClosed,
+  });
 
   @override
   ConsumerState<_LTPCell> createState() => _LTPCellState();
@@ -1553,7 +1576,14 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
   Widget build(BuildContext context) {
     return Text(
       ltp,
-      style: MyntWebTextStyles.tableCell(context),
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: widget.isClosed
+            ? resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary)
+            : null,
+      ),
     );
   }
 }
@@ -1586,6 +1616,12 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   void initState() {
     super.initState();
     pnl = widget.initialValue;
+
+    // For closed positions (qty = 0), don't subscribe to updates
+    // Just show the realized P&L from initialValue
+    if (widget.isClosed || widget.qty == 0) {
+      return;
+    }
 
     _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
       if (!mounted || !data.containsKey(widget.token)) return;
@@ -1628,11 +1664,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
       pnl,
       style: MyntWebTextStyles.tableCell(
         context,
-        color: widget.isClosed
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : _getCellColor(pnl, context),
+        // Show profit/loss colors for both open and closed positions
+        color: _getCellColor(pnl, context),
       ),
     );
   }

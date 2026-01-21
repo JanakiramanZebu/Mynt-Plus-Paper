@@ -1172,7 +1172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // Update state locally if needed
       if (mounted) setState(() {});
 
-      ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+      ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
       return false; // Prevent back navigation when chart is visible
       }else{
         if(ref.read(chartUpdateProvider).orientation != 'portrait'){
@@ -1180,7 +1180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         await Future.delayed(const Duration(milliseconds: 700));
         }
         ref.read(chartProvider.notifier).hideChart();
-        ref.read(marketWatchProvider).setChartScript('ABC', '0123', 'ABCD');
+        ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
         return false;
       }
     } else {

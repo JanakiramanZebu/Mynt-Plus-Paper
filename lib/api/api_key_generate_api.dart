@@ -26,9 +26,9 @@ mixin GenerateApiKey on ApiCore {
   }
 
 // Get REgenerate API key from kambala
-Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
+Future<GenerateApikeyModel> generateapikeynewuser(String month, String apistatus) async {
     try {
-      final uri = Uri.parse(apiLinks.generateapiKeynewuser);
+      final uri = Uri.parse(apistatus == "EXPIRED" ? apiLinks.generateapiKey : apiLinks.generateapiKeynewuser);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
@@ -79,7 +79,7 @@ Future<GenerateApikeyModel> generateapikeynewuser(String month) async {
       };
 
       String sessionKey = prefs.clientSession ?? '';
-      final body = 'jData=${jsonEncode(jDataMap)}&jKey=$sessionKey';
+      final body = 'jData=' + jsonEncode(jDataMap) + '&jKey=' + sessionKey;
 
       print('=== AppKeyStore REQUEST === $body');
       final res = await apiClient.post(

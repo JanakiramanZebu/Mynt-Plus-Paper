@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_font_web.dart';
-import '../../../res/web_colors.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 
 class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> selectedPositions;
   final List<int> selectedIndices;
-  
+
   const ExitAllPositionsDialogWeb({
     super.key,
     required this.selectedPositions,
@@ -18,10 +20,12 @@ class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ExitAllPositionsDialogWeb> createState() => _ExitAllPositionsDialogWebState();
+  ConsumerState<ExitAllPositionsDialogWeb> createState() =>
+      _ExitAllPositionsDialogWebState();
 }
 
-class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDialogWeb> {
+class _ExitAllPositionsDialogWebState
+    extends ConsumerState<ExitAllPositionsDialogWeb> {
   final bool _isLoading = false;
 
   @override
@@ -29,396 +33,294 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: 500,
-        height: 520,
-        decoration: BoxDecoration(
-          color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-          borderRadius: BorderRadius.circular(5),
-          border: Border.all(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+    return Center(
+      child: shadcn.Card(
+        borderRadius: BorderRadius.circular(8),
+        padding: EdgeInsets.zero,
+        child: Container(
+          width: 600,
+          constraints: const BoxConstraints(maxHeight: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              _buildHeader(context, theme),
+
+              // Content
+              Flexible(
+                child: _buildContent(context, theme),
+              ),
+
+              // Footer
+              _buildFooter(context, theme, positionBook),
+            ],
           ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            _buildHeader(theme),
-            
-            // Content
-            Expanded(
-              child: _buildContent(theme),
-            ),
-            
-            // Footer
-            _buildFooter(theme, positionBook),
-          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(ThemesProvider theme) {
+  Widget _buildHeader(BuildContext context, ThemesProvider theme) {
     return Container(
-     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                    ),
-                  ),
-                ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: shadcn.Theme.of(context).colorScheme.border,
+          ),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-         
           Text(
-            widget.selectedPositions.length > 1 ? 'Exit All Positions' : 'Exit Position',
-            style: WebTextStyles.dialogTitle(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            widget.selectedPositions.length > 1
+                ? 'Exit All Positions'
+                : 'Exit Position',
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
             ),
           ),
-          Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.15)
-                            : Colors.black.withOpacity(.15),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(.08)
-                            : Colors.black.withOpacity(.08),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6),
-                          child: Icon(
-                            Icons.close,
-                            size: 20,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.iconSecondary
-                                : WebColors.iconSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
+          MyntCloseButton(
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(ThemesProvider theme) {
+  Widget _buildContent(BuildContext context, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
-      child: SingleChildScrollView(
-        child: SizedBox(
-          width: double.infinity,
-          child: DataTable(
-        columnSpacing: 10,
-        horizontalMargin: 0,
-        showCheckboxColumn: false,
-        headingRowHeight: 44,
-        headingRowColor: WidgetStateProperty.all(Colors.transparent),
-        dataRowColor: WidgetStateProperty.resolveWith<Color?>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.hovered)) {
-              return (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  .withOpacity(0.05);
-            }
-            if (states.contains(WidgetState.selected)) {
-              return (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  .withOpacity(0.1);
-            }
-            return null;
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
+      child: shadcn.OutlinedContainer(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate available width (minus padding for OutlinedContainer border)
+            final availableWidth = constraints.maxWidth - 2;
+
+            // Define column proportions (total = 6.5)
+            // Instrument: 2.5, Product: 1, Qty: 1, P&L: 1, LTP: 1
+            const totalProportion = 6.5;
+            final instrumentWidth = (availableWidth * 2.5) / totalProportion;
+            final productWidth = (availableWidth * 1) / totalProportion;
+            final qtyWidth = (availableWidth * 1) / totalProportion;
+            final pnlWidth = (availableWidth * 1) / totalProportion;
+            final ltpWidth = (availableWidth * 1) / totalProportion;
+
+            return SingleChildScrollView(
+              child: SizedBox(
+                width: double.infinity,
+                child: shadcn.Table(
+                  columnWidths: {
+                    0: shadcn.FixedTableSize(instrumentWidth),
+                    1: shadcn.FixedTableSize(productWidth),
+                    2: shadcn.FixedTableSize(qtyWidth),
+                    3: shadcn.FixedTableSize(pnlWidth),
+                    4: shadcn.FixedTableSize(ltpWidth),
+                  },
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        _buildHeaderCell('Instrument', context),
+                        _buildHeaderCell('Product', context),
+                        _buildHeaderCell('Qty', context, alignRight: true),
+                        _buildHeaderCell('P&L', context, alignRight: true),
+                        _buildHeaderCell('LTP', context, alignRight: true),
+                      ],
+                    ),
+                    ...widget.selectedPositions.map((position) {
+                      final qty = int.tryParse(position.qty ?? '0') ?? 0;
+                      final isClosed = _isPositionClosed(position);
+
+                      return shadcn.TableRow(
+                        cells: [
+                          // Instrument
+                          _buildDataCell(
+                            context,
+                            '${position.symbol ?? ''} ${position.exch ?? ''}',
+                            color: _getPositionTextColor(context, position),
+                          ),
+                          // Product
+                          _buildDataCell(
+                            context,
+                            position.sPrdtAli ?? 'N/A',
+                            color: _getPositionTextColor(context, position),
+                          ),
+                          // Qty
+                          _buildDataCell(
+                            context,
+                            _formatQty(qty.toString()),
+                            color: isClosed
+                                ? Colors.grey
+                                : _getQtyColor(context, qty.toString()),
+                            alignRight: true,
+                          ),
+                          // P&L
+                          _buildDataCell(
+                            context,
+                            position.profitNloss ?? '0.00',
+                            color: isClosed
+                                ? Colors.grey
+                                : _getValueColor(
+                                    context, position.profitNloss ?? '0.00'),
+                            alignRight: true,
+                          ),
+                          // LTP
+                          _buildDataCell(
+                            context,
+                            position.lp ?? '0.00',
+                            color: _getPositionTextColor(context, position),
+                            alignRight: true,
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
           },
         ),
-        columns: [
-          DataColumn(
-            label: Text(
-              'Instrument',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
+      ),
+    );
+  }
+
+  // Helper method to build header cells with proper styling
+  shadcn.TableCell _buildHeaderCell(String label, BuildContext context,
+      {bool alignRight = false}) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
           ),
-          DataColumn(
-            label: Text(
-              'Product',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+        child: Text(
+          label,
+          style: MyntWebTextStyles.tableHeader(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary,
             ),
-          ),
-          DataColumn(
-            label: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'Qty',
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'P&L',
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          DataColumn(
-            label: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                'LTP',
-                style: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-        ],
-        rows: widget.selectedPositions.map((position) {
-          final qty = int.tryParse(position.qty ?? '0') ?? 0;
-          final isClosed = _isPositionClosed(position);
-          
-          return DataRow(
-            cells: [
-              // Instrument
-              DataCell(
-                Text(
-                  '${position.symbol ?? ''} ${position.exch ?? ''}',
-                  style: WebTextStyles.tableDataCompact(
-                    isDarkTheme: theme.isDarkMode,
-                    color: _getPositionTextColor(position, theme),
-                  ),
-                ),
-              ),
-              // Product
-              DataCell(
-                Text(
-                  position.sPrdtAli ?? 'N/A',
-                  style: WebTextStyles.tableDataCompact(
-                    isDarkTheme: theme.isDarkMode,
-                    color: _getPositionTextColor(position, theme),
-                  ),
-                ),
-              ),
-              // Qty
-              DataCell(
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    _formatQty(qty.toString()),
-                    style: WebTextStyles.tableDataCompact(
-                      isDarkTheme: theme.isDarkMode,
-                      color: isClosed 
-                          ? Colors.grey
-                          : _getQtyColor(qty.toString(), theme),
-                    ),
-                  ),
-                ),
-              ),
-              // P&L
-              DataCell(
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    position.profitNloss ?? '0.00',
-                    style: WebTextStyles.tableDataCompact(
-                      isDarkTheme: theme.isDarkMode,
-                      color: isClosed 
-                          ? Colors.grey
-                          : _getValueColor(position.profitNloss ?? '0.00', theme),
-                    ),
-                  ),
-                ),
-              ),
-              // LTP
-              DataCell(
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    position.lp ?? '0.00',
-                    style: WebTextStyles.tableDataCompact(
-                      isDarkTheme: theme.isDarkMode,
-                      color: _getPositionTextColor(position, theme),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
           ),
         ),
       ),
     );
   }
 
+  // Helper method to build data cells with proper styling
+  shadcn.TableCell _buildDataCell(
+    BuildContext context,
+    String text, {
+    Color? color,
+    bool alignRight = false,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+        child: Text(
+          text,
+          style: MyntWebTextStyles.tableCell(
+            context,
+            color: color,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
 
-  Widget _buildFooter(ThemesProvider theme, PortfolioProvider positionBook) {
+  Widget _buildFooter(BuildContext context, ThemesProvider theme,
+      PortfolioProvider positionBook) {
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
-      decoration: const BoxDecoration(       
+      decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(5),
           bottomRight: Radius.circular(5),
         ),
-       
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Warning message
-          Container(
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode 
-                  ? const Color(0xFF2D1B1B) 
-                  : const Color(0xFFFFF3CD),
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: theme.isDarkMode 
-                    ? const Color(0xFF5D2D2D) 
-                    : const Color(0xFFFFEAA7),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.warning_amber_rounded,
-                  color: theme.isDarkMode 
-                      ? const Color(0xFFFF6B6B) 
-                      : const Color(0xFF856404),
-                  size: 16,
+          Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.errorDark,
+                  light: MyntColors.error,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.selectedPositions.length > 1 
-                        ? 'This action will place market orders to exit all selected positions. This action cannot be undone.'
-                        : 'This action will place a market order to exit the selected position. This action cannot be undone.',
-                    style: WebTextStyles.caption(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode 
-                          ? const Color(0xFFFF6B6B) 
-                          : const Color(0xFF856404),
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  widget.selectedPositions.length > 1
+                      ? 'This action will place market orders to exit all selected positions. This action cannot be undone.'
+                      : 'This action will place a market order to exit the selected position. This action cannot be undone.',
+                  style: MyntWebTextStyles.caption(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          
-          const SizedBox(height: 16),
-          
+
+          const SizedBox(height: 10),
+
           // Exit All button
           Row(
             children: [
-              // Cancel button
-              // Expanded(
-              //   child: SizedBox(
-              //     height: 40,
-              //     child: OutlinedButton(
-              //       onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-              //       style: OutlinedButton.styleFrom(
-              //         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-              //         side: BorderSide(
-              //           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-              //           width: 1,
-              //         ),
-              //         shape: RoundedRectangleBorder(
-              //           borderRadius: BorderRadius.circular(8),
-              //         ),
-              //         backgroundColor: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-              //       ),
-              //       child: Text(
-              //         'Cancel',
-              //         style: TextWidget.textStyle(
-              //           fontSize: 14,
-              //           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-              //           theme: theme.isDarkMode,
-              //           fw: 2,
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              
-              // const SizedBox(width: 16),
-              
-              // Exit All button
-          Expanded(
-            child: SizedBox(
-              height: 40,
-              child: ElevatedButton(
-                onPressed: _isLoading || widget.selectedPositions.isEmpty
-                          ? null
-                          : () => positionBook.exitPosition(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.selectedPositions.isEmpty 
-                      ? (theme.isDarkMode ? WebDarkColors.divider : WebColors.divider)
-                      : WebColors.tertiary,
-                  foregroundColor: widget.selectedPositions.isEmpty 
-                      ? (theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary)
-                      : Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
+              Expanded(
+                child: MyntPrimaryButton(
+                  onPressed: _isLoading || widget.selectedPositions.isEmpty
+                      ? null
+                      : () => positionBook.exitPosition(context, true),
+                  label: widget.selectedPositions.length > 1
+                      ? 'Exit All Positions'
+                      : 'Exit Position',
+                  isLoading: _isLoading,
+                  backgroundColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.tertiary,
+                    light: MyntColors.tertiary,
                   ),
-                  elevation: 0,
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        widget.selectedPositions.length > 1 ? 'Exit All Positions' : 'Exit Position',
-                        style: WebTextStyles.buttonMd(
-                          isDarkTheme: theme.isDarkMode,
-                          color: Colors.white,
-                          fontWeight: WebFonts.medium,
-                        ),
-                      ),
               ),
-            ),
-          ),
             ],
           ),
         ],
@@ -426,27 +328,49 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     );
   }
 
-  
-
-  Color _getValueColor(String value, ThemesProvider theme) {
+  Color _getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.successDark,
+        light: MyntColors.success,
+      );
     } else if (numValue < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.errorDark,
+        light: MyntColors.error,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary; // Grey
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
-  Color _getQtyColor(String qty, ThemesProvider theme) {
+  Color _getQtyColor(BuildContext context, String qty) {
     final numQty = int.tryParse(qty) ?? 0;
     if (numQty > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.successDark,
+        light: MyntColors.success,
+      );
     } else if (numQty < 0) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.errorDark,
+        light: MyntColors.error,
+      );
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary;
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
     }
   }
 
@@ -455,15 +379,21 @@ class _ExitAllPositionsDialogWebState extends ConsumerState<ExitAllPositionsDial
     return qty == 0;
   }
 
-  Color _getPositionTextColor(PositionBookModel position, ThemesProvider theme) {
+  Color _getPositionTextColor(
+      BuildContext context, PositionBookModel position) {
     if (_isPositionClosed(position)) {
-      return theme.isDarkMode 
-          ? WebDarkColors.textSecondary.withOpacity(0.6)
-          : WebColors.textSecondary.withOpacity(0.6);
+      final color = resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
+      );
+      return color.withValues(alpha: 0.6);
     }
-    return theme.isDarkMode
-        ? WebDarkColors.textPrimary
-        : WebColors.textPrimary;
+    return resolveThemeColor(
+      context,
+      dark: MyntColors.textPrimaryDark,
+      light: MyntColors.textPrimary,
+    );
   }
 
   String _formatQty(String qty) {

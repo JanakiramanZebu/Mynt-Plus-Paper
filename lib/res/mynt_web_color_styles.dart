@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 /// ===============================================================
 /// WEB COLORS (Brand + Business + Semantic Aliases)
 /// ===============================================================
-/// 
+///
+///
 /// Usage: Use the singleton instance `MyntColors` instead of `WebColors()`
 /// Example: MyntColors.primary instead of WebColors().primary
-/// 
+///
+///
 class WebColors {
   // Private constructor for singleton pattern
   const WebColors._();
-  
+
   // Singleton instance - use this instead of WebColors()
   static const WebColors instance = WebColors._();
 
@@ -24,6 +26,9 @@ class WebColors {
   static const Color tertiary = Color(0xFFC40024);
 
   //-------------------------Text---------------------
+
+  static const Color textBlack = Color(0xFF000000);
+  static const Color textWhite = Color(0xFFFFFFFF);
 
   static const Color textPrimary = Color(0xFF121212);
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
@@ -56,6 +61,9 @@ class WebColors {
   static const Color listItemBg = Color(0xFFF1F3F8);
   static const Color listItemBgDark = Color(0xFF1E1E1E);
 
+  static const Color backgroundColor = Color(0xFFffffff);
+  static const Color backgroundColorDark = Color(0xFF000000);
+
   // ---------------- BORDER / DIVIDER (Custom only) ----------------
 
   static const Color divider = Color(0xFFDDE2E7);
@@ -66,29 +74,111 @@ class WebColors {
 
   // ---------------- ICON (Custom only) ----------------
 
-  static const Color icon = Color(0xFF4A4A4A);
-  static const Color iconDark = Color(0xFF8A8A8A);
+  static const Color icon = Color(0xFF000000);
+  static const Color iconDark = Color(0xFFFFFFFF);
 
   static const Color modalBarrierLight = Color(0x66000000); // black @ 40%
-static const Color modalBarrierDark  = Color(0x99000000); // black @ 60%
-
+  static const Color modalBarrierDark = Color(0x99000000); // black @ 60%
 
 // ---------------- SCROLLBAR ----------------
-static const Color scrollbarThumbLight = Color(0x804A4A4A); // textSecondary @ 50%
-static const Color scrollbarThumbDark  = Color(0x808A8A8A); // textSecondaryDark @ 50%
+  static const Color scrollbarThumbLight =
+      Color(0x804A4A4A); // textSecondary @ 50%
+  static const Color scrollbarThumbDark =
+      Color(0x808A8A8A); // textSecondaryDark @ 50%
 
 // ---------------- INTERACTION / RIPPLE ----------------
-static const Color rippleLight = Color(0x26000000); // black @ 15%
-static const Color rippleDark  = Color(0x26FFFFFF); // white @ 15%
+  static const Color rippleLight = Color(0x26000000); // black @ 15%
+  static const Color rippleDark = Color(0x26FFFFFF); // white @ 15%
 
-static const Color highlightLight = Color(0x14000000); // black @ 8%
-static const Color highlightDark  = Color(0x14FFFFFF); // white @ 8%
-
-
-
-
+  static const Color highlightLight = Color(0x14000000); // black @ 8%
+  static const Color highlightDark = Color(0x14FFFFFF); // white @ 8%
 }
 
 /// Convenient alias for WebColors - use this throughout the app
 /// Example: MyntColors.primary, MyntColors.textPrimaryDark
 typedef MyntColors = WebColors;
+
+/// ===============================================================
+/// WEB BOX SHADOWS (Reusable shadow definitions)
+/// ===============================================================
+///
+/// Usage: MyntShadows.panel, MyntShadows.card, etc.
+///
+class MyntShadows {
+  // Private constructor
+  const MyntShadows._();
+
+  // ---------------- PANEL / SHEET SHADOWS ----------------
+  /// Shadow for side panels and sheets sliding from the edge
+  static List<BoxShadow> panel = [
+    BoxShadow(
+      color: const Color(0x26000000), // black @ 15%
+      blurRadius: 20,
+      offset: const Offset(-5, 0),
+      spreadRadius: 2,
+    ),
+  ];
+
+  /// Shadow for panels sliding from right
+  static List<BoxShadow> panelRight = [
+    BoxShadow(
+      color: const Color(0x26000000), // black @ 15%
+      blurRadius: 20,
+      offset: const Offset(-5, 0),
+      spreadRadius: 2,
+    ),
+  ];
+
+  /// Shadow for panels sliding from left
+  static List<BoxShadow> panelLeft = [
+    BoxShadow(
+      color: const Color(0x26000000), // black @ 15%
+      blurRadius: 20,
+      offset: const Offset(5, 0),
+      spreadRadius: 2,
+    ),
+  ];
+
+  // ---------------- CARD SHADOWS ----------------
+  /// Subtle shadow for cards
+  static List<BoxShadow> card = [
+    BoxShadow(
+      color: const Color(0x1A000000), // black @ 10%
+      blurRadius: 10,
+      offset: const Offset(0, 2),
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// Elevated shadow for cards on hover
+  static List<BoxShadow> cardHover = [
+    BoxShadow(
+      color: const Color(0x26000000), // black @ 15%
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+      spreadRadius: 0,
+    ),
+  ];
+
+  // ---------------- MODAL / DIALOG SHADOWS ----------------
+  /// Shadow for modals and dialogs
+  static List<BoxShadow> modal = [
+    BoxShadow(
+      color: const Color(0x33000000), // black @ 20%
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+      spreadRadius: 0,
+    ),
+  ];
+
+  // ---------------- DROPDOWN SHADOWS ----------------
+  /// Shadow for dropdown menus
+  static List<BoxShadow> dropdown = [
+    BoxShadow(
+      color: const Color(0x1A000000), // black @ 10%
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+      spreadRadius: 0,
+    ),
+  ];
+}

@@ -295,16 +295,16 @@ class _PositionDetailScreenWebState
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 4),
-            Text(
-              "${_positionData.exch}",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-              ),
-            ),
+            // const SizedBox(width: 4),
+            // Text(
+            //   "${_positionData.exch}",
+            //   style: MyntWebTextStyles.title(
+            //     context,
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.textSecondaryDark,
+            //         light: MyntColors.textSecondary),
+            //   ),
+            // ),
           ],
         ),
         const SizedBox(height: 8),
@@ -335,7 +335,7 @@ class _PositionDetailScreenWebState
             const SizedBox(width: 4),
             Text(
               "${(double.tryParse(_positionData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_positionData.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textSecondaryDark,
@@ -783,7 +783,7 @@ class _PositionDetailScreenWebState
           children: [
             Text(
               title1,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textSecondaryDark,
@@ -793,11 +793,11 @@ class _PositionDetailScreenWebState
             ),
             Text(
               value1,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary),
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
