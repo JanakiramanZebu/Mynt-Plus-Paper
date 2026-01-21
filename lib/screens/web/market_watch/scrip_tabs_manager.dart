@@ -20,17 +20,20 @@ class ScripTabsManager extends ConsumerStatefulWidget {
 class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
+  VoidCallback?
+      _tabControllerListener; // Store listener reference for proper cleanup
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 0, vsync: this);
-    
+
     // Store listener reference for proper cleanup
     _tabControllerListener = () {
       if (_tabController.indexIsChanging && mounted) {
-        ref.read(scripTabsProvider.notifier).setCurrentTabIndex(_tabController.index);
+        ref
+            .read(scripTabsProvider.notifier)
+            .setCurrentTabIndex(_tabController.index);
       }
     };
     _tabController.addListener(_tabControllerListener!);
@@ -66,7 +69,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
   void _updateTabController(ScripTabsState state) {
     // Check for range errors and empty state
     if (state.openScrips.isEmpty) return;
-    
+
     // Ensure currentTabIndex is within bounds
     int safeCurrentIndex = state.currentTabIndex;
     if (safeCurrentIndex >= state.openScrips.length) {
@@ -75,7 +78,7 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
     if (safeCurrentIndex < 0) {
       safeCurrentIndex = 0;
     }
-    
+
     if (_tabController.length != state.openScrips.length) {
       // Remove old listener before disposing to prevent memory leaks
       if (_tabControllerListener != null) {
@@ -88,15 +91,17 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
         vsync: this,
         initialIndex: safeCurrentIndex,
       );
-      
+
       // Store listener reference for proper cleanup
       _tabControllerListener = () {
         if (_tabController.indexIsChanging && mounted) {
-          ref.read(scripTabsProvider.notifier).setCurrentTabIndex(_tabController.index);
+          ref
+              .read(scripTabsProvider.notifier)
+              .setCurrentTabIndex(_tabController.index);
         }
       };
       _tabController.addListener(_tabControllerListener!);
-      
+
       // Force immediate update after creating new controller
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -105,8 +110,8 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
       });
     } else if (_tabController.index != safeCurrentIndex) {
       // Immediately update the tab index for immediate response
-      if (mounted && 
-          safeCurrentIndex < state.openScrips.length && 
+      if (mounted &&
+          safeCurrentIndex < state.openScrips.length &&
           _tabController.index != safeCurrentIndex) {
         // Use immediate update instead of animation for better responsiveness
         _tabController.index = safeCurrentIndex;
@@ -130,14 +135,14 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final scripTabsState = ref.watch(scripTabsProvider);
-    
+
     // Listen to state changes for immediate updates
     ref.listen(scripTabsProvider, (previous, next) {
       if (mounted && previous != next) {
         _updateTabController(next);
       }
     });
-    
+
     if (scripTabsState.openScrips.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
@@ -148,16 +153,16 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
               Icon(
                 Icons.trending_up,
                 size: 64,
-                color: theme.isDarkMode 
-                    ? colors.textSecondaryDark 
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
               ),
               const SizedBox(height: 16),
-                TextWidget.titleText(
+              TextWidget.titleText(
                 text: 'Select a scrip from the watchlist to view details',
                 theme: theme.isDarkMode,
-                color: theme.isDarkMode 
-                    ? colors.textSecondaryDark 
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark
                     : colors.textSecondaryLight,
               ),
             ],
@@ -171,18 +176,18 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
         // Tab bar
         Container(
           decoration: const BoxDecoration(
-            // color: theme.isDarkMode 
-            //     ? WebDarkColors.surfaceVariant 
-            //     : WebColors.surfaceVariant,
-            // border: Border(
-            //   bottom: BorderSide(
-            //     color: theme.isDarkMode 
-            //         ? WebDarkColors.border
-            //         : WebColors.border,
-            //     width: 1,
-            //   ),
-            // ),
-          ),
+              // color: theme.isDarkMode
+              //     ? WebDarkColors.surfaceVariant
+              //     : WebColors.surfaceVariant,
+              // border: Border(
+              //   bottom: BorderSide(
+              //     color: theme.isDarkMode
+              //         ? WebDarkColors.border
+              //         : WebColors.border,
+              //     width: 1,
+              //   ),
+              // ),
+              ),
           child: Row(
             children: [
               Expanded(
@@ -190,17 +195,19 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
                   controller: _tabController,
                   isScrollable: true,
                   tabAlignment: TabAlignment.start,
-                  indicatorColor: theme.isDarkMode 
-                      ? WebDarkColors.primary 
+                  indicatorColor: theme.isDarkMode
+                      ? WebDarkColors.primary
                       : WebColors.primary,
-                  labelColor: theme.isDarkMode 
-                      ? WebDarkColors.textPrimary 
+                  labelColor: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
                       : WebColors.textPrimary,
-                  unselectedLabelColor: theme.isDarkMode 
-                      ? WebDarkColors.textSecondary 
+                  unselectedLabelColor: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
                       : WebColors.textSecondary,
                   onTap: (index) {
-                    ref.read(scripTabsProvider.notifier).setCurrentTabIndex(index);
+                    ref
+                        .read(scripTabsProvider.notifier)
+                        .setCurrentTabIndex(index);
                   },
                   tabs: scripTabsState.openScrips.map((scrip) {
                     return Tab(
@@ -211,8 +218,8 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
                             scrip.symbol,
                             style: WebTextStyles.para(
                               isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode 
-                                  ? WebDarkColors.textPrimary 
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.textPrimary
                                   : WebColors.textPrimary,
                               fontWeight: WebFonts.medium,
                               letterSpacing: 0.0,
@@ -220,12 +227,13 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
-                            onTap: () => removeScrip(scripTabsState.openScrips.indexOf(scrip)),
+                            onTap: () => removeScrip(
+                                scripTabsState.openScrips.indexOf(scrip)),
                             child: Icon(
                               Icons.close,
                               size: 16,
-                              color: theme.isDarkMode 
-                                  ? WebDarkColors.iconSecondary 
+                              color: theme.isDarkMode
+                                  ? WebDarkColors.iconSecondary
                                   : WebColors.iconSecondary,
                             ),
                           ),
@@ -241,8 +249,8 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
               //     onPressed: closeAllScrips,
               //     icon: Icon(
               //       Icons.close,
-              //       color: theme.isDarkMode 
-              //           ? WebDarkColors.iconSecondary 
+              //       color: theme.isDarkMode
+              //           ? WebDarkColors.iconSecondary
               //           : WebColors.iconSecondary,
               //     ),
               //     tooltip: 'Close all tabs',
@@ -268,7 +276,8 @@ class _ScripTabsManagerState extends ConsumerState<ScripTabsManager>
 }
 
 // Provider to manage scrip tabs globally
-final scripTabsProvider = StateNotifierProvider<ScripTabsNotifier, ScripTabsState>((ref) {
+final scripTabsProvider =
+    StateNotifierProvider<ScripTabsNotifier, ScripTabsState>((ref) {
   return ScripTabsNotifier();
 });
 
@@ -300,17 +309,20 @@ class ScripTabsNotifier extends StateNotifier<ScripTabsState> {
     final existingIndex = state.openScrips.indexWhere(
       (scrip) => scrip.token == scripData.token && scrip.exch == scripData.exch,
     );
-    
+
     if (existingIndex != -1) {
-      // Scrip already exists, switch to that tab
-      if (existingIndex >= 0 && existingIndex < state.openScrips.length) {
-        state = state.copyWith(currentTabIndex: existingIndex);
-      }
+      // Scrip already exists, update its data and switch to it
+      final newScrips = List<DepthInputArgs>.from(state.openScrips);
+      newScrips[existingIndex] = scripData;
+      state = state.copyWith(
+        openScrips: newScrips,
+        currentTabIndex: existingIndex,
+      );
     } else {
       // Add new scrip
       final newScrips = [...state.openScrips, scripData];
       final newIndex = newScrips.length - 1;
-      
+
       // Ensure the new index is valid
       if (newIndex >= 0 && newIndex < newScrips.length) {
         state = state.copyWith(
@@ -338,10 +350,10 @@ class ScripTabsNotifier extends StateNotifier<ScripTabsState> {
   void removeScrip(int index) {
     if (state.openScrips.length <= 1) return; // Don't remove if only one tab
     if (index < 0 || index >= state.openScrips.length) return; // Invalid index
-    
+
     final newScrips = List<DepthInputArgs>.from(state.openScrips);
     newScrips.removeAt(index);
-    
+
     // Adjust current tab index
     int newCurrentIndex = state.currentTabIndex;
     if (newCurrentIndex >= newScrips.length) {
@@ -350,7 +362,7 @@ class ScripTabsNotifier extends StateNotifier<ScripTabsState> {
     if (newCurrentIndex < 0) {
       newCurrentIndex = 0;
     }
-    
+
     state = state.copyWith(
       openScrips: newScrips,
       currentTabIndex: newCurrentIndex,
@@ -363,7 +375,7 @@ class ScripTabsNotifier extends StateNotifier<ScripTabsState> {
 
   void setCurrentTabIndex(int index) {
     if (state.openScrips.isEmpty) return;
-    
+
     // Ensure index is within bounds
     int safeIndex = index;
     if (safeIndex >= state.openScrips.length) {
@@ -372,7 +384,7 @@ class ScripTabsNotifier extends StateNotifier<ScripTabsState> {
     if (safeIndex < 0) {
       safeIndex = 0;
     }
-    
+
     if (state.currentTabIndex != safeIndex) {
       state = state.copyWith(currentTabIndex: safeIndex);
     }

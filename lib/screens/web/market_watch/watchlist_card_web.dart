@@ -2014,13 +2014,22 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       print('Transaction Type: ${transType ? "BUY" : "SELL"}');
       print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
-      // Fetch scrip info first, exactly like reference implementation
+      // Create DepthInputArgs exactly like reference implementation
+      final depthArgs = DepthInputArgs(
+          exch: currentExch,
+          token: currentToken,
+          tsym: currentTsym,
+          instname: widget.watchListData["instname"]?.toString() ??
+              widget.watchListData["symbol"].toString(),
+          symbol: widget.watchListData["symbol"].toString(),
+          expDate: widget.watchListData["expDate"]?.toString() ?? "",
+          option: widget.watchListData["option"]?.toString() ?? "");
+
+      // Use calldepthApis to fetch data and update background views (Chart/Depth)
+      // This is the correct way to ensure background UI stays in sync with order entry
       await ref
           .read(marketWatchProvider)
-          .fetchScripInfo(currentToken, currentExch, context, true);
-      await ref
-          .read(marketWatchProvider)
-          .fetchScripQuote(currentToken, currentExch, context);
+          .calldepthApis(context, depthArgs, "Basket");
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;

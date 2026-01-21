@@ -525,6 +525,7 @@ class MyntPrimaryButton extends MyntButton {
     super.textColor,
     super.borderColor,
     super.borderRadius,
+    super.padding,
   }) : super(type: MyntButtonType.primary);
 }
 
@@ -541,6 +542,7 @@ class MyntSecondaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.secondary);
 }
 
@@ -558,6 +560,7 @@ class MyntOutlinedButton extends MyntButton {
     super.isFullWidth = false,
     super.borderColor,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.outlined);
 }
 
@@ -574,6 +577,7 @@ class MyntTextButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.text);
 }
 
@@ -590,6 +594,7 @@ class MyntTertiaryButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.iconAlignment,
+    super.padding,
   }) : super(type: MyntButtonType.tertiary);
 }
 

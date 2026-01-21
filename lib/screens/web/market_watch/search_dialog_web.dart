@@ -385,6 +385,22 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                       await searchScrip.searchClear();
                       Navigator.of(context).pop();
                     } else if (widget.isBasket == "Option||Is") {
+                      // Create DepthInputArgs from selected scrip with isOption = true
+                      final depthArgs = DepthInputArgs(
+                        exch: scrip.exch.toString(),
+                        token: scrip.token.toString(),
+                        tsym: scrip.tsym.toString(),
+                        instname: scrip.instname ?? "",
+                        symbol: scrip.symbol ?? scrip.tsym.toString(),
+                        expDate: scrip.expDate ?? "",
+                        option: scrip.option ?? "",
+                        isOption: true,
+                      );
+
+                      // Update depth/scrip info panel and header
+                      await searchScrip.calldepthApis(
+                          context, depthArgs, "Option||Is");
+
                       searchScrip.setOptionScript(
                         context,
                         scrip.exch.toString(),
@@ -766,29 +782,20 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       final rootNavigator = Navigator.of(context, rootNavigator: true);
       final rootContext = rootNavigator.context;
 
-      // Fetch scrip info first
-      await marketWatch.fetchScripInfo(
-        scrip.token.toString(),
-        scrip.exch.toString(),
-        context,
-        true,
+      // Create DepthInputArgs exactly like in normal selection flow
+      final depthArgs = DepthInputArgs(
+        exch: scrip.exch.toString(),
+        token: scrip.token.toString(),
+        tsym: scrip.tsym.toString(),
+        instname: scrip.instname ?? "",
+        symbol: scrip.symbol ?? scrip.tsym.toString(),
+        expDate: scrip.expDate ?? "",
+        option: scrip.option ?? "",
       );
 
-      if (!context.mounted) return;
-
-      // Check if scrip info was fetched
-      if (marketWatch.scripInfoModel == null) {
-        showResponsiveErrorMessage(
-            context, "Failed to fetch scrip information.");
-        return;
-      }
-
-      // Fetch depth data (getQuotes) to get LTP and percentage change
-      await marketWatch.fetchScripQuote(
-        scrip.token.toString(),
-        scrip.exch.toString(),
-        context,
-      );
+      // Use calldepthApis to fetch data and update background views (Chart/Depth)
+      // This ensures background stays in sync with what user is buying/selling
+      await marketWatch.calldepthApis(context, depthArgs, "Basket");
 
       if (!context.mounted) return;
 

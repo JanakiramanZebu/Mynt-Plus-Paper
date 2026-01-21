@@ -60,6 +60,17 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
   @override
   void didUpdateWidget(covariant ChartWithDepthWeb oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Check if isOption flag changed (even for the same scrip)
+    if (oldWidget.wlValue.isOption != widget.wlValue.isOption) {
+      if (_tabController != null) {
+        final targetIndex = widget.wlValue.isOption ? 1 : 0;
+        if (_tabController!.index != targetIndex) {
+          _tabController!.animateTo(targetIndex);
+        }
+      }
+    }
+
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
       // Reset depth visibility based on incoming args when scrip changes
@@ -70,7 +81,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
             .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
       });
 
-      Future.microtask(() async {
+      Future.microtask(() async { 
         // await _ensureDataLoaded(force: true);
 
         // If Options tab is active when scrip changes, prepare options for new scrip
@@ -149,7 +160,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
         _tabControllerListener = null;
       }
       _tabController?.dispose();
-      _tabController = TabController(length: 2, vsync: this);
+      _tabController = TabController(
+          length: 2,
+          vsync: this,
+          initialIndex: widget.wlValue.isOption ? 1 : 0);
+      _selectedTabIndex = _tabController!.index;
       // Store listener reference for proper cleanup
       _tabControllerListener = () {
         // Update UI when tab changes (for search icon visibility)
@@ -370,12 +385,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               ),
                             ),
                           ],
-                          // Options header row - only show for Options tab (symbol + dropdown + basket + search)
                           if (hasOptions &&
                               _tabController != null &&
                               _selectedTabIndex == 1) ...[
-                            // const SizedBox(width: 12),
-                            // Symbol Name and Expiry Selection
                             Builder(
                               builder: (buttonContext) {
                                 return Material(
@@ -428,8 +440,6 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               },
                             ),
                             const SizedBox(width: 4),
-                            // const Spacer(),
-                            // Basket Toggle Icon
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -540,12 +550,10 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               ),
                             ),
                           ],
-                          // Chart/Options toggle - only show if options available
                           if (hasOptions) ...[
                             const SizedBox(width: 12),
                             _buildSegmentedControl(context),
                           ],
-                          // Depth toggle icon - ALWAYS show (not conditional on hasOptions)
                           const SizedBox(width: 12),
                           Material(
                             color: Colors.transparent,

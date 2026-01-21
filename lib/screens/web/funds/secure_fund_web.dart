@@ -2,7 +2,7 @@ import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+
 // COMMENTED OUT: No longer using dialog screens, redirecting to external URLs instead
 // import 'fund_screen_web.dart';
 // import 'withdraw_screen_web.dart';
@@ -12,8 +12,9 @@ import '../../../locator/preference.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart' hide WebTextStyles;
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
@@ -67,26 +68,33 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     final trancation = ref.watch(transcationProvider);
 
     return Scaffold(
-      backgroundColor: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Header Section
-              // _buildHeaderSection(funds, theme),
-              // const SizedBox(height: 32),
-              
-              // Available Margin Card
-              _buildAvailableMarginCard(funds, theme, trancation),
-              const SizedBox(height: 24),
-              
-              // Financial Information Cards
-              _buildFinancialInfoCards(funds, theme),
-            ],
-          ),
-        ),
+      backgroundColor: resolveThemeColor(
+        context,
+        dark: MyntColors.backgroundColorDark,
+        light: MyntColors.backgroundColor,
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmallScreen = constraints.maxWidth < 800;
+          final hPadding = isSmallScreen ? 16.0 : 24.0;
+          
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: 24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Available Margin Card
+                  _buildAvailableMarginCard(funds, theme, trancation, isSmallScreen),
+                  const SizedBox(height: 24),
+                  
+                  // Financial Information Cards
+                  _buildFinancialInfoCards(funds, theme, isSmallScreen),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -102,7 +110,11 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
           },
           icon: Icon(
             Icons.refresh,
-            color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
           ),
           tooltip: 'Refresh',
         ),
@@ -110,7 +122,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     );
   }
 
-  Widget _buildAvailableMarginCard(funds, ThemesProvider theme, trancation) {
+  Widget _buildAvailableMarginCard(funds, ThemesProvider theme, trancation, bool isSmallScreen) {
     return Container(     
       padding: const EdgeInsets.all(20),     
       child: Column(
@@ -119,11 +131,10 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
           // Available Margin Title and Value
           Text(
             "Available Margin",
-            style: WebTextStyles.title(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
+            style: MyntWebTextStyles.title(
+              context,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -133,56 +144,34 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
               v4d: false,
               noDecimal: false,
             ),
-            style: WebTextStyles.custom(
-              fontSize: 35,
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: WebFonts.semiBold,
+            style: webText(
+              context,
+              size: isSmallScreen ? 28 : 35,
+              weight: MyntFonts.semiBold,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
-          // Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
             children: [
-              _buildActionButton(
-                "Add Money",
-                true,
-                theme,
-                () {
-                  // Redirect to external fund page for add money
+              MyntPrimaryButton(
+                label: "Add Money",
+                isFullWidth: isSmallScreen,
+                padding: const EdgeInsets.symmetric(horizontal: 35),
+                onPressed: () {
                   openFunds('fund', context);
-                  
-                  // COMMENTED OUT: Original dialog-based add money flow
-                  // showDialog(context: context, builder: (context) => FundScreenWeb(dd: trancation));
                 },
               ),
-              const SizedBox(width: 12),
-              _buildActionButton(
-                "Withdraw",
-                false,
-                theme,
-                () {
-                  // Redirect to external fund page for withdraw
+              MyntOutlinedButton(
+                label: "Withdraw",
+                isFullWidth: isSmallScreen,
+                padding: const EdgeInsets.symmetric(horizontal: 35),
+                onPressed: () {
                   openFunds('withdraw', context);
-                  
-                  // COMMENTED OUT: Original dialog-based withdraw flow
-                  // await trancation.fetchValidateToken(context);
-                  // Future.delayed(
-                  //   const Duration(milliseconds: 100),
-                  //   () async {
-                  //     await trancation.ip();
-                  //     await trancation.fetchupiIdView(
-                  //       trancation.bankdetails!.dATA![trancation.indexss][1],
-                  //       trancation.bankdetails!.dATA![trancation.indexss][2],
-                  //     );
-                  //     await trancation.fetchcwithdraw(context);
-                  //   },
-                  // );
-                  // trancation.changebool(false);
-                  // showDialog(context: context, builder: (context) => WithdrawScreenWeb(withdarw: trancation, foucs: FocusNode(), theme: theme, segment: ""));
                 },
               ),
             ],
@@ -192,184 +181,149 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     );
   }
 
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme, VoidCallback onPressed) {
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isPrimary
-              ? (theme.isDarkMode ? WebDarkColors.primaryDark : WebColors.primaryLight)
-              : (theme.isDarkMode 
-                  ? WebDarkColors.textSecondary.withOpacity(0.6) 
-                  : WebColors.buttonSecondary),
-          foregroundColor: isPrimary
-              ? Colors.white
-              : (theme.isDarkMode ? Colors.white : WebColors.primaryLight),
-          side: isPrimary
-              ? null
-              : BorderSide(
-                  color: theme.isDarkMode ? WebDarkColors.primaryLight : WebColors.primaryDark,
-                  width: 1,
-                ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 8),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: WebTextStyles.buttonMd(
-            isDarkTheme: theme.isDarkMode,
-            color: isPrimary
-                ? Colors.white
-                : (theme.isDarkMode ? Colors.white : WebColors.primaryLight),
-          ),
-        ),
-      ),
-    );
-  }
+  // Action button helper has been replaced by MyntPrimaryButton and MyntOutlinedButton from common_buttons_web.dart
 
-  Widget _buildFinancialInfoCards(funds, ThemesProvider theme) {
+
+  Widget _buildFinancialInfoCards(funds, ThemesProvider theme, bool isSmallScreen) {
+    final content = isSmallScreen
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSection(
+                title: "Available Capital",
+                value: "${funds.fundDetailModel?.totCredit ?? 0.00}",
+                content: _buildAvailableCashContent(funds, theme),
+                context: context,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Divider(
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.divider,
+                  ),
+                  height: 1,
+                ),
+              ),
+              _buildSection(
+                title: "Margin Used",
+                value: "${funds.fundDetailModel?.utilizedMrgn ?? 0.00}",
+                content: _buildMarginUsedContent(funds, theme),
+                context: context,
+              ),
+            ],
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _buildSection(
+                  title: "Available Capital",
+                  value: "${funds.fundDetailModel?.totCredit ?? 0.00}",
+                  content: _buildAvailableCashContent(funds, theme),
+                  context: context,
+                ),
+              ),
+              Container(
+                width: 0.5,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
+              ),
+              Expanded(
+                child: _buildSection(
+                  title: "Margin Used",
+                  value: "${funds.fundDetailModel?.utilizedMrgn ?? 0.00}",
+                  content: _buildMarginUsedContent(funds, theme),
+                  context: context,
+                ),
+              ),
+            ],
+          );
+
     return IntrinsicHeight(
       child: Container(
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
           borderRadius: BorderRadius.circular(0),
           border: Border.all(
-            color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
             width: 1,
           ),
         ),
         padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Left column - Available Capital
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      // color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
-                      
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Available Capital",
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          getFormatter(
-                            value: _safeParseDouble("${funds.fundDetailModel?.totCredit ?? 0.00}"),
-                            v4d: false,
-                            noDecimal: false,
-                          ),
-                          style: WebTextStyles.title(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                            fontWeight: WebFonts.semiBold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Content
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: _buildAvailableCashContent(funds, theme),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Vertical divider
-            Container(
-              width: 0.5,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
-            ),
-            // Right column - Margin Used
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Margin Used",
-                          style: WebTextStyles.sub(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          getFormatter(
-                            value: double.parse("${funds.fundDetailModel?.utilizedMrgn ?? 0.00}"),
-                            v4d: false,
-                            noDecimal: false,
-                          ),
-                          style: WebTextStyles.title(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                            fontWeight: WebFonts.semiBold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Content
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: _buildMarginUsedContent(funds, theme),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        child: content,
       ),
+    );
+  }
+
+  Widget _buildSection({
+    required String title,
+    required String value,
+    required Widget content,
+    required BuildContext context,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
+                width: 1,
+              ),
+            ),
+          ),
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                getFormatter(
+                  value: double.tryParse(value) ?? 0.00,
+                  v4d: false,
+                  noDecimal: false,
+                ),
+                style: MyntWebTextStyles.title(
+                  context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                  fontWeight: MyntFonts.semiBold,
+                ),
+              ),
+            ],
+          ),
+        ),
+        content,
+      ],
     );
   }
 
@@ -573,7 +527,7 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, ThemesProvider theme) {
+  Widget  _buildInfoRow(String label, String value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -581,20 +535,20 @@ class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
         children: [
           Text(
             label,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+            style: MyntWebTextStyles.body(
+              context,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+              fontWeight: MyntFonts.medium,
             ),
           ),
           Text(
             value,
-            style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
+            style: MyntWebTextStyles.body(
+              context,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ],
