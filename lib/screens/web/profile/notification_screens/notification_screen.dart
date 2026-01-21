@@ -3,15 +3,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/notification/notification_navigation_service.dart';
-import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/profile_screen/notification_screens/notification_screen.dart';
+// import '../../../notification/notification_navigation_service.dart';
 import 'package:mynt_plus/provider/notification_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'tabs/broker_message.dart';
-import 'tabs/exchange_message.dart';
-import 'tabs/information_message.dart';
+import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/broker_message.dart';
+import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/exchange_message.dart';
+import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/information_message.dart';
 
 class Notificationpage extends ConsumerStatefulWidget {
   const Notificationpage({super.key});

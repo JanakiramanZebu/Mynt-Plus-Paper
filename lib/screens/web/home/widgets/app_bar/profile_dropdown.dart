@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart' hide WebTextStyles;
-import 'package:mynt_plus/screens/web/profile/profile_main_screen_web.dart';
+import '../../../profile/profile_main_screen_new_ui.dart';
 
 // Profile dropdown widget
 class ProfileDropdown extends StatefulWidget {
@@ -185,7 +185,7 @@ class ProfileMenuContentWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProfileCloseCallback(
       onClose: onNavigate,
-      child: const UserAccountScreenWeb(),
+      child: const UserAccountScreen(),
     );
   }
 }
@@ -209,3 +209,4 @@ class ProfileCloseCallback extends InheritedWidget {
     return onClose != oldWidget.onClose;
   }
 }
+

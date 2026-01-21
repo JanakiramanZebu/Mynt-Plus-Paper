@@ -36,8 +36,8 @@ import '../../../res/web_colors.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
-import 'profile/profile_main_screen_web.dart';
-import 'profile/settings_web.dart';
+import 'profile/profile_main_screen.dart';
+// import 'profile/settings_web.dart';
 import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
@@ -412,7 +412,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.reports:
         return const ReportsScreenWeb();
       case ScreenType.settings:
-        return const SettingsScreenWeb();
+        // return const SettingsScreenWeb();
       case ScreenType.tradeAction:
         return TradeActionScreenWeb(
           key: const ValueKey('tradeAction'),
@@ -1394,7 +1394,13 @@ class ProfileMenuContentWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ProfileCloseCallback(
       onClose: onNavigate,
-      child: const UserAccountScreenWeb(),
+      child: ProfileNavigationCallback(
+        onClose: onNavigate,
+        // WindowBasedHomeScreen doesn't have the same panel system,
+        // so screen navigation will just close the dropdown
+        onNavigateToScreen: null,
+        child: const ProfileMainScreen(),
+      ),
     );
   }
 }
