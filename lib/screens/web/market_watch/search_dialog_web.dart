@@ -163,8 +163,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
             children: [
               // Search Bar Section
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.only(
+                    left: 16, right: 8, top: 16, bottom: 10),
                 child: Row(
                   children: [
                     Expanded(
@@ -207,7 +207,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
               ),
               // Close dialog icon (always visible, outside search bar)
 
-              const SizedBox(height: 10),
+              // const SizedBox(height: 10),
               // Always show tabs and content area
               _buildSearchTabs(ref, theme),
 
@@ -226,75 +226,78 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     final searchTabList =
         ref.read(marketWatchProvider).searchTabList.sublist(0, _tabCount);
 
-    return SingleChildScrollView(
-      controller: _tabScrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
-      child: Builder(
-        builder: (context) {
-          final currentTheme = shadcn.Theme.of(context);
-          final isDark = isDarkMode(context);
-          // Create a new ColorScheme based on the default, but with custom primary color
-          final baseColorScheme = isDark
-              ? shadcn.ColorSchemes.darkDefaultColor
-              : shadcn.ColorSchemes.lightDefaultColor;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      child: SingleChildScrollView(
+        controller: _tabScrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
+        child: Builder(
+          builder: (context) {
+            final currentTheme = shadcn.Theme.of(context);
+            final isDark = isDarkMode(context);
+            // Create a new ColorScheme based on the default, but with custom primary color
+            final baseColorScheme = isDark
+                ? shadcn.ColorSchemes.darkDefaultColor
+                : shadcn.ColorSchemes.lightDefaultColor;
 
-          // Create custom ColorScheme with theme-appropriate primary color
-          final primaryColor = resolveThemeColor(
-            context,
-            dark: WebColors.primaryDark,
-            light: WebColors.primary,
-          );
-          final customColorScheme = baseColorScheme.copyWith(
-            primary: () => primaryColor,
-          );
+            // Create custom ColorScheme with theme-appropriate primary color
+            final primaryColor = resolveThemeColor(
+              context,
+              dark: WebColors.primaryDark,
+              light: WebColors.primary,
+            );
+            final customColorScheme = baseColorScheme.copyWith(
+              primary: () => primaryColor,
+            );
 
-          return shadcn.Theme(
-            data: shadcn.ThemeData(
-              colorScheme: customColorScheme,
-              radius: currentTheme.radius,
-            ),
-            child: shadcn.TabList(
-              index: _tabController.index,
-              onChanged: (value) {
-                if (_tabController.index != value) {
-                  _tabController.animateTo(value);
-                  _scrollToSelectedTab(value);
-                }
-              },
-              children: [
-                for (int index = 0; index < searchTabList.length; index++)
-                  shadcn.TabItem(
-                    child: Builder(
-                      builder: (context) {
-                        final isActive = index == _tabController.index;
-                        return Text(
-                          searchTabList[index].text ?? '',
-                          style: MyntWebTextStyles.body(
-                            context,
-                            // fontSize: WebFonts.subSize,
-                            fontWeight:
-                                isActive ? MyntFonts.bold : MyntFonts.medium,
-                            color: isActive
-                                ? resolveThemeColor(
-                                    context,
-                                    dark: WebColors.primaryDark,
-                                    light: WebColors.primary,
-                                  )
-                                : resolveThemeColor(
-                                    context,
-                                    dark: WebColors.textSecondaryDark,
-                                    light: WebColors.textSecondary,
-                                  ),
-                          ),
-                        );
-                      },
+            return shadcn.Theme(
+              data: shadcn.ThemeData(
+                colorScheme: customColorScheme,
+                radius: currentTheme.radius,
+              ),
+              child: shadcn.TabList(
+                index: _tabController.index,
+                onChanged: (value) {
+                  if (_tabController.index != value) {
+                    _tabController.animateTo(value);
+                    _scrollToSelectedTab(value);
+                  }
+                },
+                children: [
+                  for (int index = 0; index < searchTabList.length; index++)
+                    shadcn.TabItem(
+                      child: Builder(
+                        builder: (context) {
+                          final isActive = index == _tabController.index;
+                          return Text(
+                            searchTabList[index].text ?? '',
+                            style: MyntWebTextStyles.body(
+                              context,
+                              // fontSize: WebFonts.subSize,
+                              fontWeight:
+                                  isActive ? MyntFonts.bold : MyntFonts.medium,
+                              color: isActive
+                                  ? resolveThemeColor(
+                                      context,
+                                      dark: WebColors.primaryDark,
+                                      light: WebColors.primary,
+                                    )
+                                  : resolveThemeColor(
+                                      context,
+                                      dark: WebColors.textSecondaryDark,
+                                      light: WebColors.textSecondary,
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -408,7 +411,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             context,
                             dark: WebColors.primaryDark,
                             light: WebColors.primary,
-                          ).withValues(alpha: 0.1)
+                          ).withValues(alpha: 0.08)
                         : Colors.transparent,
                     child: Row(
                       children: [
@@ -471,7 +474,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                     padding: const EdgeInsets.only(left: 4),
                                     child: Text(
                                       '${scrip.exch}',
-                                      style: MyntWebTextStyles.symbol(
+                                      style: MyntWebTextStyles.exch(
                                         context,
                                         color: resolveThemeColor(
                                           context,
@@ -710,9 +713,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                               )
                                             : resolveThemeColor(
                                                 context,
-                                                dark:
-                                                    WebColors.textSecondaryDark,
-                                                light: WebColors.textSecondary,
+                                                dark: WebColors.iconDark,
+                                                light: WebColors.icon,
                                               ),
                                         height: 18,
                                         width: 18,

@@ -231,7 +231,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 const SizedBox(height: 4),
                                 // PERF FIX: ref.read() for stream
                                 StreamBuilder<Map>(
-                                  stream: ref.read(websocketProvider).socketDataStream,
+                                  stream: ref
+                                      .read(websocketProvider)
+                                      .socketDataStream,
                                   builder: (context, snapshot) {
                                     final socketDatas = snapshot.data ?? {};
                                     final currentToken =
@@ -312,13 +314,42 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 onTap: () {
                                   mw.requestMWScrip(
                                       context: context, isSubscribe: false);
-                                  showDialog(
+                                  showGeneralDialog(
                                     context: context,
-                                    barrierColor: Colors.transparent,
-                                    builder: (BuildContext context) {
+                                    barrierDismissible: true,
+                                    barrierLabel:
+                                        MaterialLocalizations.of(context)
+                                            .modalBarrierDismissLabel,
+                                    barrierColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.modalBarrierDark,
+                                      light: MyntColors.modalBarrierLight,
+                                    ),
+                                    transitionDuration:
+                                        const Duration(milliseconds: 200),
+                                    pageBuilder: (context, animation,
+                                        secondaryAnimation) {
                                       return SearchDialogWeb(
                                         wlName: mw.wlName,
                                         isBasket: "Chart||Is",
+                                      );
+                                    },
+                                    transitionBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      final curvedAnimation = CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOut,
+                                        reverseCurve: Curves.easeIn,
+                                      );
+
+                                      return FadeTransition(
+                                        opacity: curvedAnimation,
+                                        child: ScaleTransition(
+                                          scale: Tween<double>(
+                                                  begin: 0.95, end: 1.0)
+                                              .animate(curvedAnimation),
+                                          child: child,
+                                        ),
                                       );
                                     },
                                   );
@@ -453,13 +484,42 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 onTap: () {
                                   mw.requestMWScrip(
                                       context: context, isSubscribe: false);
-                                  showDialog(
+                                  showGeneralDialog(
                                     context: context,
-                                    barrierColor: Colors.transparent,
-                                    builder: (BuildContext context) {
+                                    barrierDismissible: true,
+                                    barrierLabel:
+                                        MaterialLocalizations.of(context)
+                                            .modalBarrierDismissLabel,
+                                    barrierColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.modalBarrierDark,
+                                      light: MyntColors.modalBarrierLight,
+                                    ),
+                                    transitionDuration:
+                                        const Duration(milliseconds: 200),
+                                    pageBuilder: (context, animation,
+                                        secondaryAnimation) {
                                       return SearchDialogWeb(
                                         wlName: mw.wlName,
                                         isBasket: "Option||Is",
+                                      );
+                                    },
+                                    transitionBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      final curvedAnimation = CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOut,
+                                        reverseCurve: Curves.easeIn,
+                                      );
+
+                                      return FadeTransition(
+                                        opacity: curvedAnimation,
+                                        child: ScaleTransition(
+                                          scale: Tween<double>(
+                                                  begin: 0.95, end: 1.0)
+                                              .animate(curvedAnimation),
+                                          child: child,
+                                        ),
                                       );
                                     },
                                   );
@@ -599,7 +659,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
   void _showExpiryDatePopup(BuildContext context, MarketWatchProvider mw) {
     shadcn.showPopover(
       context: context,
-      alignment: Alignment.bottomLeft,
+      alignment: Alignment.bottomCenter,
       offset: const Offset(0, 4),
       overlayBarrier: shadcn.OverlayBarrier(
         borderRadius: shadcn.Theme.of(context).borderRadiusLg,

@@ -129,9 +129,11 @@ class _MyntTextFieldState extends State<MyntTextField> {
   @override
   Widget build(BuildContext context) {
     // Standardized default height: 40 for all text fields
-    final effectiveHeight = widget.height ?? 40;
-    final effectiveBorderRadius = widget.borderRadius ?? _getDefaultBorderRadius();
-    final effectiveTextStyle = widget.textStyle ?? _getDefaultTextStyle(context);
+    final effectiveHeight = widget.height ?? 45;
+    final effectiveBorderRadius =
+        widget.borderRadius ?? _getDefaultBorderRadius();
+    final effectiveTextStyle =
+        widget.textStyle ?? _getDefaultTextStyle(context);
     final effectivePlaceholderStyle =
         widget.placeholderStyle ?? _getDefaultPlaceholderStyle(context);
 
@@ -174,8 +176,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
 
     // Build suffix icon
     Widget? suffixIconWidget;
-    if (widget.onClear != null && 
-        widget.controller != null && 
+    if (widget.onClear != null &&
+        widget.controller != null &&
         widget.controller!.text.isNotEmpty) {
       suffixIconWidget = IconButton(
         icon: Icon(Icons.clear, size: 16),
@@ -284,6 +286,7 @@ class _MyntTextFieldState extends State<MyntTextField> {
       case MyntTextFieldSize.small:
         return MyntWebTextStyles.bodyMedium(
           context,
+          fontWeight: FontWeight.w500,
           color: resolveThemeColor(
             context,
             dark: WebColors.textSecondaryDark,
@@ -295,6 +298,7 @@ class _MyntTextFieldState extends State<MyntTextField> {
       case MyntTextFieldSize.large:
         return MyntWebTextStyles.body(
           context,
+          fontWeight: FontWeight.w500,
           color: resolveThemeColor(
             context,
             dark: WebColors.textSecondaryDark,
@@ -304,7 +308,6 @@ class _MyntTextFieldState extends State<MyntTextField> {
     }
   }
 }
-
 
 /// Convenience widget for form input text fields
 class MyntFormTextField extends MyntTextField {
@@ -329,4 +332,3 @@ class MyntFormTextField extends MyntTextField {
     super.textInputAction,
   });
 }
-

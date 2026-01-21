@@ -141,150 +141,153 @@ class _SetAlertWebState extends State<SetAlertWeb> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, WidgetRef ref, _) {
-      final scripInfo = ref.watch(marketWatchProvider);
+    return Consumer(
+      builder: (context, WidgetRef ref, _) {
+        final scripInfo = ref.watch(marketWatchProvider);
 
-      return PointerInterceptor(
-        child: MouseRegion(
-          cursor: SystemMouseCursors.basic,
-          onEnter: (_) {
-            ChartIframeGuard.acquire();
-            _disableAllChartIframes();
-          },
-          onHover: (_) {
-            _disableAllChartIframes();
-          },
-          onExit: (_) {
-            ChartIframeGuard.release();
-            _enableAllChartIframes();
-          },
-          child: Listener(
-            onPointerMove: (_) {
+        return PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
               _disableAllChartIframes();
             },
-            child: Dialog(
-              backgroundColor: resolveThemeColor(context,
-                  dark: MyntColors.backgroundColorDark,
-                  light: MyntColors.backgroundColor),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Container(
-                width: 300,
-                constraints: const BoxConstraints(maxHeight: 500),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                              color:
-                                  shadcn.Theme.of(context).colorScheme.border),
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: Dialog(
+                backgroundColor: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Container(
+                  width: 350,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .border),
+                          ),
                         ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          StreamBuilder<Map>(
-                            stream:
-                                ref.watch(websocketProvider).socketDataStream,
-                            builder: (context, snapshot) {
-                              final socketDatas = snapshot.data ?? {};
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            StreamBuilder<Map>(
+                              stream:
+                                  ref.watch(websocketProvider).socketDataStream,
+                              builder: (context, snapshot) {
+                                final socketDatas = snapshot.data ?? {};
 
-                              // Update depth data with WebSocket data if available
-                              if (socketDatas
-                                  .containsKey(widget.wlvalue.token)) {
-                                _processDepthData(
-                                    socketDatas[widget.wlvalue.token]);
-                              }
+                                // Update depth data with WebSocket data if available
+                                if (socketDatas
+                                    .containsKey(widget.wlvalue.token)) {
+                                  _processDepthData(
+                                      socketDatas[widget.wlvalue.token]);
+                                }
 
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${widget.wlvalue.symbol.toUpperCase()} ${widget.wlvalue.option}",
-                                    style: MyntWebTextStyles.title(
-                                      context,
-                                      fontWeight: MyntFonts.medium,
-                                      color: resolveThemeColor(
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${widget.wlvalue.symbol.toUpperCase()} ${widget.wlvalue.option}",
+                                      style: MyntWebTextStyles.title(
                                         context,
-                                        dark: MyntColors.textPrimaryDark,
-                                        light: MyntColors.textPrimary,
-                                      ),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
-                                        style: MyntWebTextStyles.price(
+                                        fontWeight: MyntFonts.medium,
+                                        color: resolveThemeColor(
                                           context,
-                                          fontWeight: MyntFonts.medium,
-                                          color: (depthdata.chng == "null" ||
-                                                      depthdata.chng == null) ||
-                                                  depthdata.chng == "0.00"
-                                              ? resolveThemeColor(
-                                                  context,
-                                                  dark: MyntColors
-                                                      .textSecondaryDark,
-                                                  light:
-                                                      MyntColors.textSecondary,
-                                                )
-                                              : depthdata.chng!
-                                                          .startsWith("-") ||
-                                                      depthdata.pc!
-                                                          .startsWith("-")
-                                                  ? resolveThemeColor(
-                                                      context,
-                                                      dark: MyntColors.lossDark,
-                                                      light: MyntColors.loss,
-                                                    )
-                                                  : resolveThemeColor(
-                                                      context,
-                                                      dark:
-                                                          MyntColors.profitDark,
-                                                      light: MyntColors.profit,
-                                                    ),
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary,
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                                        style: MyntWebTextStyles.priceChange(
-                                          context,
-                                          fontWeight: MyntFonts.medium,
-                                          color: resolveThemeColor(
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "${depthdata.lp != "null" ? depthdata.lp ?? depthdata.c ?? 0.00 : '0.00'}",
+                                          style: MyntWebTextStyles.price(
                                             context,
-                                            dark: MyntColors.textPrimaryDark,
-                                            light: MyntColors.textPrimary,
+                                            fontWeight: MyntFonts.medium,
+                                            color: (depthdata.chng == "null" ||
+                                                        depthdata.chng ==
+                                                            null) ||
+                                                    depthdata.chng == "0.00"
+                                                ? resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors
+                                                        .textSecondaryDark,
+                                                    light: MyntColors
+                                                        .textSecondary,
+                                                  )
+                                                : depthdata.chng!
+                                                            .startsWith("-") ||
+                                                        depthdata.pc!
+                                                            .startsWith("-")
+                                                    ? resolveThemeColor(
+                                                        context,
+                                                        dark:
+                                                            MyntColors.lossDark,
+                                                        light: MyntColors.loss,
+                                                      )
+                                                    : resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors
+                                                            .profitDark,
+                                                        light:
+                                                            MyntColors.profit,
+                                                      ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          MyntCloseButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                        ],
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          "${(double.tryParse(depthdata.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(depthdata.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
+                                          style: MyntWebTextStyles.priceChange(
+                                            context,
+                                            fontWeight: MyntFonts.medium,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                            MyntCloseButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    // Content
-                    Flexible(
-                      child: SingleChildScrollView(
+                      // Content
+                      SingleChildScrollView(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 16, right: 16, bottom: 16),
+                              left: 16, right: 16, bottom: 16, top: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -307,13 +310,13 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   const SizedBox(height: 8),
                                   SizedBox(
-                                    height: 40,
+                                    height: 45,
                                     child: DropdownButtonHideUnderline(
                                       child: DropdownButton2(
                                         dropdownStyleData: DropdownStyleData(
                                             decoration: BoxDecoration(
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(5),
                                           color: shadcn.Theme.of(context)
                                               .colorScheme
                                               .background,
@@ -323,7 +326,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                                   .border),
                                         )),
                                         buttonStyleData: ButtonStyleData(
-                                            height: 40,
+                                            height: 45,
                                             decoration: BoxDecoration(
                                                 color: resolveThemeColor(
                                                   context,
@@ -339,7 +342,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                                   ),
                                                 ),
                                                 borderRadius:
-                                                    BorderRadius.circular(8))),
+                                                    BorderRadius.circular(5))),
                                         isExpanded: true,
                                         menuItemStyleData:
                                             const MenuItemStyleData(
@@ -381,6 +384,8 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                                       style: MyntWebTextStyles
                                                           .body(
                                                         context,
+                                                        fontWeight:
+                                                            MyntFonts.medium,
                                                         color:
                                                             resolveThemeColor(
                                                           context,
@@ -428,11 +433,11 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   const SizedBox(height: 8),
                                   SizedBox(
-                                    height: 40,
+                                    height: 45,
                                     child: Material(
                                       color: Colors.transparent,
                                       child: InkWell(
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(5),
                                         splashColor: resolveThemeColor(
                                           context,
                                           dark: MyntColors.primaryDark,
@@ -452,7 +457,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                           validatesetalret(valueCtrl.text);
                                         },
                                         child: Container(
-                                          height: 40,
+                                          height: 45,
                                           decoration: BoxDecoration(
                                             color: resolveThemeColor(
                                               context,
@@ -466,7 +471,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                               light: MyntColors.primary,
                                             )),
                                             borderRadius:
-                                                BorderRadius.circular(8),
+                                                BorderRadius.circular(5),
                                           ),
                                           child: Row(
                                             mainAxisAlignment:
@@ -479,6 +484,8 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                                   alertValue,
                                                   style: MyntWebTextStyles.body(
                                                     context,
+                                                    fontWeight:
+                                                        MyntFonts.medium,
                                                     color: resolveThemeColor(
                                                       context,
                                                       dark: MyntColors
@@ -531,7 +538,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                               ),
                               const SizedBox(height: 8),
                               SizedBox(
-                                height: 40,
+                                height: 45,
                                 child: MyntTextField(
                                   controller: valueCtrl,
                                   placeholder: '0',
@@ -541,6 +548,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   leadingIcon: assets.ruppeIcon,
                                   textStyle: MyntWebTextStyles.body(
                                     context,
+                                    fontWeight: MyntFonts.medium,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textPrimaryDark,
@@ -549,6 +557,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   placeholderStyle: MyntWebTextStyles.body(
                                     context,
+                                    fontWeight: MyntFonts.medium,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textSecondaryDark,
@@ -616,6 +625,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   size: MyntTextFieldSize.medium,
                                   textStyle: MyntWebTextStyles.body(
                                     context,
+                                    fontWeight: MyntFonts.medium,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textPrimaryDark,
@@ -624,6 +634,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   placeholderStyle: MyntWebTextStyles.body(
                                     context,
+                                    fontWeight: MyntFonts.medium,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.textSecondaryDark,
@@ -642,7 +653,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 16),
 
                               Builder(builder: (context) {
                                 final bool isDisabled = _handlesetalert ||
@@ -716,14 +727,14 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

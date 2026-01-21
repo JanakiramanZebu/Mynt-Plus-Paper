@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -188,7 +187,9 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                     try {
                       setState(() => _isNavigating = true);
                       WidgetsBinding.instance.addPostFrameCallback((_) async {
-                        ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
+                        ref
+                            .read(marketWatchProvider)
+                            .setIsDepthVisibleWeb(false);
 
                         DepthInputArgs depthArgs = DepthInputArgs(
                           exch: _exch,
@@ -200,252 +201,272 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                           option: _option,
                         );
 
-                    widget.marketWatch.scripdepthsize(false);
-                    await widget.marketWatch
-                        .calldepthApis(context, depthArgs, "");
-                  });
-                } catch (e) {
-                  debugPrint('Error opening chart: $e');
-                } finally {
-                  if (mounted) {
-                    Future.delayed(const Duration(milliseconds: 500), () {
+                        widget.marketWatch.scripdepthsize(false);
+                        await widget.marketWatch
+                            .calldepthApis(context, depthArgs, "");
+                      });
+                    } catch (e) {
+                      debugPrint('Error opening chart: $e');
+                    } finally {
                       if (mounted) {
-                        setState(() => _isNavigating = false);
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          if (mounted) {
+                            setState(() => _isNavigating = false);
+                          }
+                        });
                       }
-                    });
-                  }
-                }
-              },
-              child: Container(
-                color: isHovered
-                    ? MyntColors.primary.withOpacity(0.10)
-                    : resolveThemeColor(context,
-                        dark: MyntColors.backgroundColorDark,
-                        light: MyntColors.backgroundColor),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // First row: Symbol name | LTP
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    }
+                  },
+                  child: Container(
+                    color: isHovered
+                        ? MyntColors.primary.withOpacity(0.10)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.backgroundColorDark,
+                            light: MyntColors.backgroundColor),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Left: Symbol name and option
-                        Expanded(
+                        // First row: Symbol name | LTP
+                        SizedBox(
+                          height: 24,
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                _symbol.replaceAll("-EQ", "").toUpperCase(),
-                                style: MyntWebTextStyles.symbol(
-                                  context,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary),
+                              // Left: Symbol name and option
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _symbol
+                                          .replaceAll("-EQ", "")
+                                          .toUpperCase(),
+                                      style: MyntWebTextStyles.symbol(
+                                        context,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
+                                      ),
+                                    ),
+                                    if (_option.isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 4),
+                                        child: Text(
+                                          _option,
+                                          style: MyntWebTextStyles.symbol(
+                                            context,
+                                            color: resolveThemeColor(context,
+                                                dark:
+                                                    MyntColors.textPrimaryDark,
+                                                light: MyntColors.textPrimary),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
-                              if (_option.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4),
-                                  child: Text(
-                                    _option,
-                                    style: MyntWebTextStyles.symbol(
+                              // Right: LTP only
+                              RepaintBoundary(
+                                child: _LTPWidgetWeb(
+                                  token: _token,
+                                  initialData: {
+                                    'ltp': widget.holding.exchTsym?[0].lp ??
+                                        '0.00',
+                                    'change':
+                                        widget.holding.exchTsym?[0].change ??
+                                            '0.00',
+                                    'perChange':
+                                        widget.holding.exchTsym?[0].perChange ??
+                                            '0.00',
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Second row: Exchange | Action buttons | Price Change
+                        SizedBox(
+                          height: 24,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Left: Exchange info
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '$_exch ',
+                                    style: MyntWebTextStyles.exch(
                                       context,
+                                      fontWeight: FontWeight.w500,
                                       color: resolveThemeColor(context,
-                                          dark: MyntColors.textPrimaryDark,
-                                          light: MyntColors.textPrimary),
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        // Right: LTP only
-                        RepaintBoundary(
-                          child: _LTPWidgetWeb(
-                            token: _token,
-                            initialData: {
-                              'ltp': widget.holding.exchTsym?[0].lp ?? '0.00',
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    // Second row: Exchange | Action buttons | Price Change
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Left: Exchange info
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '$_exch ',
-                              style: MyntWebTextStyles.exch(
-                                context,
-                                fontWeight: FontWeight.w500,
-                                color: resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary),
+                                  if (_expDate.isNotEmpty)
+                                    Text(
+                                      _expDate,
+                                      style: MyntWebTextStyles.exch(
+                                        context,
+                                        fontWeight: FontWeight.w500,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
+                                      ),
+                                    ),
+                                  if (_currentQty != "0" &&
+                                      _currentQty.isNotEmpty) ...[
+                                    SvgPicture.asset(
+                                      assets.suitcase,
+                                      height: 14,
+                                      width: 18,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.iconDark,
+                                          light: MyntColors.icon),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _currentQty,
+                                      style: MyntWebTextStyles.exch(
+                                        context,
+                                        fontWeight: FontWeight.w500,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
-                            ),
-                            if (_expDate.isNotEmpty)
-                              Text(
-                                _expDate,
-                                style: MyntWebTextStyles.exch(
-                                  context,
-                                  fontWeight: FontWeight.w500,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary),
-                                ),
-                              ),
-                            if (_currentQty != "0" &&
-                                _currentQty.isNotEmpty) ...[
-                              SvgPicture.asset(
-                                assets.suitcase,
-                                height: 14,
-                                width: 18,
-                                color: resolveThemeColor(context,
-                                    dark: MyntColors.iconDark,
-                                    light: MyntColors.icon),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _currentQty,
-                                style: MyntWebTextStyles.exch(
-                                  context,
-                                  fontWeight: FontWeight.w500,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        // Left spacer to push buttons toward center
-                        Expanded(
-                          child: Container(),
-                        ),
-                        // Fixed-width container for action buttons (centered in available space)
-                        AnimatedOpacity(
-                          opacity: isHovered ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 150),
-                          child: IgnorePointer(
-                            ignoring: !isHovered,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildHoverButton(
-                                  label: 'B',
-                                  color: Colors.white,
-                                  backgroundColor: resolveThemeColor(context,
-                                      dark: MyntColors.primary,
-                                      light: MyntColors.primary),
-                                  onPressed: () async {
-                                    try {
-                                      await _placeOrderInput(context, true);
-                                    } catch (e) {
-                                      debugPrint('Buy button error: $e');
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 4),
-                                _buildHoverButton(
-                                  label: 'S',
-                                  color: Colors.white,
-                                  backgroundColor: resolveThemeColor(context,
-                                      dark: MyntColors.tertiary,
-                                      light: MyntColors.tertiary),
-                                  onPressed: () async {
-                                    try {
-                                      await _placeOrderInput(context, false);
-                                    } catch (e) {
-                                      debugPrint('Sell button error: $e');
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 4),
-                                _buildHoverButton(
-                                  iconAsset: assets.depthIcon,
-                                  color: Colors.black,
-                                  backgroundColor: Colors.white,
-                                  borderColor: resolveThemeColor(context,
-                                      dark: MyntColors.dividerDark,
-                                      light: MyntColors.divider),
-                                  borderRadius: 5.0,
-                                  onPressed: () async {
-                                    if (_isNavigating) return;
-                                    try {
-                                      setState(() => _isNavigating = true);
-                                      WidgetsBinding.instance
-                                          .addPostFrameCallback((_) async {
-                                        ref
-                                            .read(marketWatchProvider)
-                                            .setIsDepthVisibleWeb(true);
-
-                                        DepthInputArgs depthArgs =
-                                            DepthInputArgs(
-                                          exch: _exch,
-                                          token: _token,
-                                          tsym: _tsym,
-                                          instname: _symbol,
-                                          symbol: _symbol,
-                                          expDate: _expDate,
-                                          option: _option,
-                                        );
-
-                                        widget.marketWatch
-                                            .scripdepthsize(false);
-                                        await widget.marketWatch.calldepthApis(
-                                            context, depthArgs, "");
-                                      });
-                                    } catch (e) {
-                                      debugPrint('Error opening chart: $e');
-                                    } finally {
-                                      if (mounted) {
-                                        Future.delayed(
-                                            const Duration(milliseconds: 500),
-                                            () {
-                                          if (mounted) {
-                                            setState(
-                                                () => _isNavigating = false);
+                              // Left spacer
+                              const Spacer(),
+                              // Fixed-width container for action buttons
+                              AnimatedOpacity(
+                                opacity: isHovered ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 150),
+                                child: IgnorePointer(
+                                  ignoring: !isHovered,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _buildHoverButton(
+                                        label: 'B',
+                                        color: Colors.white,
+                                        backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.primary,
+                                            light: MyntColors.primary),
+                                        onPressed: () async {
+                                          try {
+                                            await _placeOrderInput(
+                                                context, true);
+                                          } catch (e) {
+                                            debugPrint('Buy button error: $e');
                                           }
-                                        });
-                                      }
-                                    }
+                                        },
+                                      ),
+                                      const SizedBox(width: 4),
+                                      _buildHoverButton(
+                                        label: 'S',
+                                        color: Colors.white,
+                                        backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.tertiary,
+                                            light: MyntColors.tertiary),
+                                        onPressed: () async {
+                                          try {
+                                            await _placeOrderInput(
+                                                context, false);
+                                          } catch (e) {
+                                            debugPrint('Sell button error: $e');
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(width: 4),
+                                      _buildHoverButton(
+                                        iconAsset: assets.depthIcon,
+                                        color: Colors.black,
+                                        backgroundColor: Colors.white,
+                                        borderColor: resolveThemeColor(context,
+                                            dark: MyntColors.dividerDark,
+                                            light: MyntColors.divider),
+                                        borderRadius: 5.0,
+                                        onPressed: () async {
+                                          if (_isNavigating) return;
+                                          try {
+                                            setState(
+                                                () => _isNavigating = true);
+                                            WidgetsBinding.instance
+                                                .addPostFrameCallback(
+                                                    (_) async {
+                                              ref
+                                                  .read(marketWatchProvider)
+                                                  .setIsDepthVisibleWeb(true);
+
+                                              DepthInputArgs depthArgs =
+                                                  DepthInputArgs(
+                                                exch: _exch,
+                                                token: _token,
+                                                tsym: _tsym,
+                                                instname: _symbol,
+                                                symbol: _symbol,
+                                                expDate: _expDate,
+                                                option: _option,
+                                              );
+
+                                              widget.marketWatch
+                                                  .scripdepthsize(false);
+                                              await widget.marketWatch
+                                                  .calldepthApis(
+                                                      context, depthArgs, "");
+                                            });
+                                          } catch (e) {
+                                            debugPrint(
+                                                'Error opening chart: $e');
+                                          } finally {
+                                            if (mounted) {
+                                              Future.delayed(
+                                                  const Duration(
+                                                      milliseconds: 500), () {
+                                                if (mounted) {
+                                                  setState(() =>
+                                                      _isNavigating = false);
+                                                }
+                                              });
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Right spacer
+                              const Spacer(),
+                              // Right: Price change only
+                              RepaintBoundary(
+                                child: _PriceChangeWidgetWeb(
+                                  token: _token,
+                                  initialData: {
+                                    'change':
+                                        widget.holding.exchTsym?[0].change ??
+                                            '0.00',
+                                    'perChange':
+                                        widget.holding.exchTsym?[0].perChange ??
+                                            '0.00',
                                   },
                                 ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Right spacer to push price change to right
-                        Expanded(
-                          child: Container(),
-                        ),
-                        // Right: Price change only
-                        RepaintBoundary(
-                          child: _PriceChangeWidgetWeb(
-                            token: _token,
-                            initialData: {
-                              'change':
-                                  widget.holding.exchTsym?[0].change ?? '0.00',
-                              'perChange':
-                                  widget.holding.exchTsym?[0].perChange ??
-                                      '0.00',
-                            },
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
               );
             },
           ),
@@ -723,17 +744,23 @@ class _LTPWidgetWeb extends ConsumerStatefulWidget {
 
 class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
   late String ltp;
+  late String change;
+  late String perChange;
   StreamSubscription? _subscription;
 
   @override
   void initState() {
     super.initState();
     ltp = widget.initialData['ltp']?.toString() ?? '0.00';
+    change = widget.initialData['change']?.toString() ?? '0.00';
+    perChange = widget.initialData['perChange']?.toString() ?? '0.00';
 
     // Pre-load from current socket data if available
     final socketData = ref.read(websocketProvider).socketDatas[widget.token];
     if (socketData != null) {
       ltp = socketData['lp']?.toString() ?? ltp;
+      change = socketData['chng']?.toString() ?? change;
+      perChange = socketData['pc']?.toString() ?? perChange;
     }
 
     _setupSubscription();
@@ -751,16 +778,39 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
       if (rawNewData == null) return;
 
       final newData = Map<String, dynamic>.from(rawNewData as Map);
+      bool valueChanged = false;
+
       final newLtp = newData['lp']?.toString();
+      final newChange = newData['chng']?.toString();
+      final newPerChange = newData['pc']?.toString();
 
       if (newLtp != null &&
           newLtp != ltp &&
           newLtp != '0.00' &&
           newLtp != '0.0' &&
           newLtp != 'null') {
-        setState(() {
-          ltp = newLtp;
-        });
+        ltp = newLtp;
+        valueChanged = true;
+      }
+
+      if (newChange != null &&
+          newChange != change &&
+          newChange != '0.0' &&
+          newChange != 'null') {
+        change = newChange;
+        valueChanged = true;
+      }
+
+      if (newPerChange != null &&
+          newPerChange != perChange &&
+          newPerChange != '0.0' &&
+          newPerChange != 'null') {
+        perChange = newPerChange;
+        valueChanged = true;
+      }
+
+      if (valueChanged && mounted) {
+        setState(() {});
       }
     });
   }
@@ -785,16 +835,27 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
   @override
   Widget build(BuildContext context) {
     final displayLtp = _safeFormatPrice(ltp);
+    final displayChange = _safeFormatPrice(change);
+    final displayPerChange = _safeFormatPrice(perChange);
 
-    final changeColor = displayLtp.startsWith("-") || displayLtp.startsWith('-')
-        ? resolveThemeColor(context,
-            dark: MyntColors.lossDark, light: MyntColors.loss)
-        : (displayLtp == "0.00" || displayLtp == "0.00")
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : resolveThemeColor(context,
-                dark: MyntColors.profitDark, light: MyntColors.profit);
+    final changeColor =
+        displayChange.startsWith("-") || displayPerChange.startsWith('-')
+            ? resolveThemeColor(
+                context,
+                dark: MyntColors.lossDark,
+                light: MyntColors.loss,
+              )
+            : (displayChange == "0.00" || displayPerChange == "0.00")
+                ? resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  )
+                : resolveThemeColor(
+                    context,
+                    dark: MyntColors.profitDark,
+                    light: MyntColors.profit,
+                  );
     return Text(
       displayLtp,
       style: MyntWebTextStyles.price(

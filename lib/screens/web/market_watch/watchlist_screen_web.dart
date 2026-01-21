@@ -473,14 +473,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               // Before: ref.watch(marketWatchProvider) - ANY change triggers rebuild
               // After: Only rebuild when wlName, scrips, or marketWatchScripData changes
               // This prevents socket data updates from rebuilding the entire watchlist
-              final wlName = ref.watch(marketWatchProvider.select((p) => p.wlName));
-              final scrips = ref.watch(marketWatchProvider.select((p) => p.scrips));
-              final marketWatchScripData = ref.watch(marketWatchProvider.select((p) => p.marketWatchScripData));
+              final wlName =
+                  ref.watch(marketWatchProvider.select((p) => p.wlName));
+              final scrips =
+                  ref.watch(marketWatchProvider.select((p) => p.scrips));
+              final marketWatchScripData = ref.watch(
+                  marketWatchProvider.select((p) => p.marketWatchScripData));
 
               // Get data immediately - no async waiting
               List pageScrips = [];
-              if (index == _currentPageIndex &&
-                  pageName == wlName) {
+              if (index == _currentPageIndex && pageName == wlName) {
                 pageScrips = scrips;
               } else {
                 final cachedData = marketWatchScripData[pageName];
@@ -497,7 +499,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               return RefreshIndicator(
                 onRefresh: () async {
                   // Use ref.read() for method calls - doesn't affect rebuilds
-                  await ref.read(marketWatchProvider).fetchMWScrip(pageName, context);
+                  await ref
+                      .read(marketWatchProvider)
+                      .fetchMWScrip(pageName, context);
                 },
                 child: _buildPageContent(ref, pageName, pageScrips, sortBy),
               );
@@ -541,8 +545,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             child: MyntIconButton(
               iconAsset: assets.hamMenu,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary),
+                  dark: MyntColors.iconDark, light: MyntColors.icon),
               size: MyntButtonSize.medium,
               onPressed: () => _showWatchlistDialog(context, ref, wlName),
             ),
@@ -580,8 +583,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         return MyntIconButton(
                           iconAsset: assets.searchFilter,
                           color: resolveThemeColor(context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary),
+                              dark: MyntColors.iconDark,
+                              light: MyntColors.icon),
                           size: MyntButtonSize.small,
                           onPressed: () async {
                             await Future.delayed(
@@ -640,8 +643,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         size: 20,
                         color: resolveThemeColor(
                           context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon,
                         ).withValues(alpha: _canScrollLeft ? 1.0 : 0.3),
                       ),
                     ),
@@ -747,8 +750,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         size: 20,
                         color: resolveThemeColor(
                           context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon,
                         ).withValues(alpha: _canScrollRight ? 1.0 : 0.3),
                       ),
                     ),
@@ -1216,7 +1219,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                       Flexible(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              left: 10, top: 10, bottom: 10),
+                              top: 10, bottom: 10, left: 0, right: 0),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1224,7 +1227,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                               if (watchlist.length - preDefWl.length < 10)
                                 Padding(
                                   padding: const EdgeInsets.only(
-                                      bottom: 6, right: 10),
+                                      bottom: 6, right: 10, left: 16),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -1257,8 +1260,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                         builder: (context, setDialogState) {
                                       return ListView.builder(
                                         shrinkWrap: true,
-                                        padding:
-                                            const EdgeInsets.only(right: 4),
+                                        // padding:
+                                        //     const EdgeInsets.only(right: 4),
                                         itemCount: watchlist.length,
                                         itemBuilder: (context, index) {
                                           final watchlistName =
@@ -1286,18 +1289,18 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                                 padding: const EdgeInsets.only(
                                                     top: 8,
                                                     bottom: 8,
-                                                    left: 4,
-                                                    right: 12),
+                                                    left: 14,
+                                                    right: 10),
                                                 color: (dialogHoveredItems[
                                                             index] ??
                                                         false)
                                                     ? resolveThemeColor(
                                                         context,
-                                                        dark: WebColors
+                                                        dark: MyntColors
                                                             .primaryDark,
                                                         light:
-                                                            WebColors.primary,
-                                                      ).withValues(alpha: 0.03)
+                                                            MyntColors.primary,
+                                                      ).withValues(alpha: 0.08)
                                                     : Colors.transparent,
                                                 child: Row(
                                                   children: [
@@ -1350,6 +1353,14 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                                             Icons.edit_outlined,
                                                         size: MyntButtonSize
                                                             .medium,
+                                                        color:
+                                                            resolveThemeColor(
+                                                          context,
+                                                          dark: MyntColors
+                                                              .iconDark,
+                                                          light:
+                                                              MyntColors.icon,
+                                                        ),
                                                         onPressed: () {
                                                           Navigator.of(context)
                                                               .pop();
@@ -2265,21 +2276,21 @@ class _WatchlistLivePriceWidgetState
     if (change.startsWith("-") || perChange.startsWith('-')) {
       return resolveThemeColor(
         context,
-        dark: WebColors.lossDark,
-        light: WebColors.loss,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else if ((change == "null" || perChange == "null") ||
         (change == "0.00" || perChange == "0.00")) {
       return resolveThemeColor(
         context,
-        dark: WebColors.textSecondaryDark,
-        light: WebColors.textSecondary,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
     } else {
       return resolveThemeColor(
         context,
-        dark: WebColors.profitDark,
-        light: WebColors.profit,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
       );
     }
   }
@@ -2308,8 +2319,8 @@ class _WatchlistLivePriceWidgetState
             style: _getTextStyle(
               resolveThemeColor(
                 context,
-                dark: WebColors.textSecondaryDark,
-                light: WebColors.textSecondary,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
               ),
               13,
               1,

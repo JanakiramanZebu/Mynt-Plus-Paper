@@ -70,7 +70,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
     // PERFORMANCE FIX: Use .select() to watch only getQuotes, not entire provider
-    final depthData = ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+    final depthData =
+        ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
     // final expandedToken = ref.watch(expandedWatchlistItemProvider);
 
     // Check if this card is expanded
@@ -86,187 +87,149 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             child: ValueListenableBuilder<bool>(
               valueListenable: _isHovered,
               builder: (context, isHovered, _) => InkWell(
-              // Increased border radius for web
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(0.15)
-                  : Colors.black.withOpacity(0.15),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.08),
-              // onLongPress: () {
-              //   if (marketWatch.isPreDefWLs == "Yes") {
-              //     showResponsiveWarningMessage(context,
-              //         "This is a pre-defined watchlist that cannot be edited!");
-              //   } else {
-              //     ref
-              //         .read(marketWatchProvider)
-              //         .requestMWScrip(context: context, isSubscribe: false);
-              //     Navigator.push(
-              //         context,
-              //         MaterialPageRoute(
-              //             builder: (context) =>
-              //                 EditScrip(wlName: marketWatch.wlName)));
-              //   }
-              // },
-              onTap: () async {
-                // Clicking the list item opens the chart
-                if (_isNavigating) return;
+                // Increased border radius for web
+                splashColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.15),
+                highlightColor: theme.isDarkMode
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.08),
+                // onLongPress: () {
+                //   if (marketWatch.isPreDefWLs == "Yes") {
+                //     showResponsiveWarningMessage(context,
+                //         "This is a pre-defined watchlist that cannot be edited!");
+                //   } else {
+                //     ref
+                //         .read(marketWatchProvider)
+                //         .requestMWScrip(context: context, isSubscribe: false);
+                //     Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //             builder: (context) =>
+                //                 EditScrip(wlName: marketWatch.wlName)));
+                //   }
+                // },
+                onTap: () async {
+                  // Clicking the list item opens the chart
+                  if (_isNavigating) return;
 
-                try {
-                  setState(() {
-                    _isNavigating = true;
-                  });
-
-                  ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
-
-                  // Create proper DepthInputArgs object
-                  DepthInputArgs depthArgs = DepthInputArgs(
-                      exch: widget.watchListData["exch"].toString(),
-                      token: widget.watchListData["token"].toString(),
-                      tsym: widget.watchListData["tsym"].toString(),
-                      instname:
-                          widget.watchListData["instname"]?.toString() ??
-                              widget.watchListData["symbol"].toString(),
-                      symbol: widget.watchListData["symbol"].toString(),
-                      expDate:
-                          widget.watchListData["expDate"]?.toString() ?? "",
-                      option:
-                          widget.watchListData["option"]?.toString() ?? "");
-
-                  // Call depth APIs which handles everything including tab management
-                  marketWatch.scripdepthsize(false);
-                  await marketWatch.calldepthApis(context, depthArgs, "");
-                } catch (e) {
-                  debugPrint('Error opening chart: $e');
-                } finally {
-                  if (mounted) {
-                    Future.delayed(const Duration(milliseconds: 500), () {
-                      if (mounted) {
-                        setState(() {
-                          _isNavigating = false;
-                        });
-                      }
+                  try {
+                    setState(() {
+                      _isNavigating = true;
                     });
+
+                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(false);
+
+                    // Create proper DepthInputArgs object
+                    DepthInputArgs depthArgs = DepthInputArgs(
+                        exch: widget.watchListData["exch"].toString(),
+                        token: widget.watchListData["token"].toString(),
+                        tsym: widget.watchListData["tsym"].toString(),
+                        instname:
+                            widget.watchListData["instname"]?.toString() ??
+                                widget.watchListData["symbol"].toString(),
+                        symbol: widget.watchListData["symbol"].toString(),
+                        expDate:
+                            widget.watchListData["expDate"]?.toString() ?? "",
+                        option:
+                            widget.watchListData["option"]?.toString() ?? "");
+
+                    // Call depth APIs which handles everything including tab management
+                    marketWatch.scripdepthsize(false);
+                    await marketWatch.calldepthApis(context, depthArgs, "");
+                  } catch (e) {
+                    debugPrint('Error opening chart: $e');
+                  } finally {
+                    if (mounted) {
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        if (mounted) {
+                          setState(() {
+                            _isNavigating = false;
+                          });
+                        }
+                      });
+                    }
                   }
-                }
-              },
-              child: Container(
-                color: isHovered
-                    ? MyntColors.primary.withOpacity(0.10)
-                    : resolveThemeColor(context,
-                        dark: MyntColors.backgroundColorDark,
-                        light: MyntColors.backgroundColor),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // First row: Symbol name | LTP
-                    SizedBox(
-                      height:
-                          24, // Fixed height matching row 2 (accommodates 24px buttons)
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Left: Symbol name and option
-                          Expanded(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  widget.watchListData["symbol"]
-                                      .toString()
-                                      .replaceAll("-EQ", "")
-                                      .toUpperCase(),
-                                  style: MyntWebTextStyles.symbol(
-                                    context,
-                                    color: resolveThemeColor(
+                },
+                child: Container(
+                  color: isHovered
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.08)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.backgroundColorDark,
+                          light: MyntColors.backgroundColor),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // First row: Symbol name | LTP
+                      SizedBox(
+                        height:
+                            24, // Fixed height matching row 2 (accommodates 24px buttons)
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Left: Symbol name and option
+                            Expanded(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    widget.watchListData["symbol"]
+                                        .toString()
+                                        .replaceAll("-EQ", "")
+                                        .toUpperCase(),
+                                    style: MyntWebTextStyles.symbol(
                                       context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                                if (widget.watchListData["option"]
-                                    .toString()
-                                    .isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4),
-                                    child: Text(
-                                      "${widget.watchListData["option"]}",
-                                      style: MyntWebTextStyles.symbol(
+                                      color: resolveThemeColor(
                                         context,
-                                        color: resolveThemeColor(
-                                          context,
-                                          dark: MyntColors.textPrimaryDark,
-                                          light: MyntColors.textPrimary,
-                                        ),
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
                                       ),
                                     ),
                                   ),
-                              ],
-                            ),
-                          ),
-                          // Right: LTP only
-                          RepaintBoundary(
-                            child: _LTPWidgetWeb(
-                                token: widget.watchListData['token'],
-                                initialData: widget.watchListData),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 24,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                '${widget.watchListData["exch"]} ',
-                                style: MyntWebTextStyles.exch(
-                                  context,
-                                  fontWeight: FontWeight.w500,
-                                  color: resolveThemeColor(
-                                    context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary,
-                                  ),
-                                ),
-                              ),
-                              if (widget.watchListData['expDate']
-                                  .toString()
-                                  .isNotEmpty)
-                                Text(
-                                  "${widget.watchListData['expDate']}",
-                                  style: MyntWebTextStyles.exch(
-                                    context,
-                                    fontWeight: FontWeight.w500,
-                                    color: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                              if (widget.watchListData['holdingQty'] != null &&
-                                  widget.watchListData['holdingQty']
+                                  if (widget.watchListData["option"]
                                       .toString()
-                                      .isNotEmpty &&
-                                  widget.watchListData['holdingQty'] !=
-                                      "null") ...[
-                                SvgPicture.asset(assets.suitcase,
-                                    height: 14,
-                                    width: 18,
-                                    color: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.iconDark,
-                                      light: MyntColors.icon,
-                                    )),
-                                const SizedBox(width: 4),
+                                      .isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4),
+                                      child: Text(
+                                        "${widget.watchListData["option"]}",
+                                        style: MyntWebTextStyles.symbol(
+                                          context,
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            // Right: LTP only
+                            RepaintBoundary(
+                              child: _LTPWidgetWeb(
+                                  token: widget.watchListData['token'],
+                                  initialData: widget.watchListData),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 24,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: [
                                 Text(
-                                  "${widget.watchListData['holdingQty']}",
+                                  '${widget.watchListData["exch"]} ',
                                   style: MyntWebTextStyles.exch(
                                     context,
                                     fontWeight: FontWeight.w500,
@@ -277,219 +240,321 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                     ),
                                   ),
                                 ),
-                              ]
-                            ],
-                          ),
-                          // Left spacer to push buttons toward center
-                          Expanded(
-                            child: Container(),
-                          ),
-                          // Fixed-width container for action buttons (centered in available space)
-                          Builder(
-                            builder: (context) {
-                              // Check if this is an index or commodity
-                              final instname = widget.watchListData["instname"]
-                                      ?.toString() ??
-                                  "";
-                              final isIndexOrCommodity =
-                                  instname == "UNDIND" || instname == "COM";
-                              final bool isPredefined =
-                                  marketWatch.isPreDefWLs == "Yes";
-
-                              return AnimatedOpacity(
-                                opacity:
-                                    (isHovered || _isMenuOpen) ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 150),
-                                child: IgnorePointer(
-                                  ignoring: !isHovered && !_isMenuOpen,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Only show Buy/Sell buttons if not index or commodity
-                                      if (!isIndexOrCommodity) ...[
-                                        _buildHoverButton(
-                                          label: 'B',
-                                          color: Colors.white,
-                                          backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primaryDark,
-                                            light: MyntColors.primary,
-                                          ),
-                                          onPressed: () async {
-                                            try {
-                                              await _placeOrderInput(
-                                                  context, depthData, true);
-                                            } catch (e) {
-                                              print('Buy button error: $e');
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(width: 4),
-                                        _buildHoverButton(
-                                          label: 'S',
-                                          color: Colors.white,
-                                          backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.errorDark,
-                                            light: MyntColors.tertiary,
-                                          ),
-                                          onPressed: () async {
-                                            try {
-                                              await _placeOrderInput(
-                                                  context, depthData, false);
-                                            } catch (e) {
-                                              print('Sell button error: $e');
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(width: 4),
-                                      ],
-                                      _buildHoverButton(
-                                        iconAsset: assets.depthIcon,
-                                        color: Colors.black,
-                                        backgroundColor: Colors.white,
-                                        borderColor: shadcn.Theme.of(context)
-                                            .colorScheme
-                                            .border,
-                                        borderRadius: 5.0,
-                                        onPressed: () async {
-                                          if (_isNavigating) return;
-
-                                    ref
-                                        .read(expandedWatchlistItemProvider.notifier)
-                                        .setExpandedToken(null);
-
-                                    try {
-                                      setState(() {
-                                        _isNavigating = true;
-                                      });
-
-                                      DepthInputArgs depthArgs = DepthInputArgs(
-                                          exch: widget.watchListData["exch"].toString(),
-                                          token: widget.watchListData["token"].toString(),
-                                          tsym: widget.watchListData["tsym"].toString(),
-                                          instname:
-                                              widget.watchListData["instname"]?.toString() ??
-                                              widget.watchListData["symbol"].toString(),
-                                          symbol: widget.watchListData["symbol"].toString(),
-                                          expDate:
-                                              widget.watchListData["expDate"]?.toString() ?? "",
-                                          option:
-                                              widget.watchListData["option"]?.toString() ?? "",
-                                      );
-
-                                      marketWatch.scripdepthsize(false);
-                                      // Call depth APIs first to set active tab
-                                      await marketWatch.calldepthApis(context, depthArgs, "");
-                                      
-                                      // Set depth visible AFTER calldepthApis completes
-                                      // Pass depth args directly to ensure correct token/exch/tsym are used
-                                      // This triggers lazy load of depth data with proper context
-                                      await ref.read(marketWatchProvider).setIsDepthVisibleWeb(
-                                        true,
-                                        context: context,
-                                        exch: depthArgs.exch,
-                                        token: depthArgs.token,
-                                        tsym: depthArgs.tsym,
-                                      );
-                                    } catch (e) {
-                                      debugPrint('Error opening chart: $e');
-                                    } finally {
-                                      if (mounted) {
-                                        Future.delayed(const Duration(milliseconds: 500), () {
-                                          if (mounted) {
-                                            setState(() {
-                                              _isNavigating = false;
-                                            });
-                                          }
-                                        });
-                                      }
-                                    }
-                                  },
-                                ),
-                                const SizedBox(width: 4),
-                                // Delete button (only for non-predefined watchlists)
-                                if (!isPredefined)
-                                  _buildHoverButton(
-                                    iconAsset: assets.trash,
-                                    color: Colors.black,
-                                    backgroundColor: Colors.white,
-                                    borderColor: theme.isDarkMode
-                                        ? MyntColors.textSecondaryDark
-                                        : MyntColors.textSecondary,
-                                    borderRadius: 5.0,
-                                    onPressed: () async {
-                                      try {
-                                        final String exch = widget.watchListData["exch"]?.toString() ?? "";
-                                        final String token = widget.watchListData["token"]?.toString() ?? "";
-                                        final String input = "$exch|$token#";
-
-                                        if (_isNavigating) return;
-                                        setState(() { _isNavigating = true; });
-
-                                        await ref
-                                            .read(marketWatchProvider)
-                                            .addDelMarketScrip(marketWatch.wlName, input, context, false, false, false, false);
-                                        if (mounted) {
-                                          showResponsiveSuccess(context, 'Scrip removed from watchlist');
-                                        }
-                                      } catch (e) {
-                                        if (mounted) {
-                                          showResponsiveError(context, 'Failed to delete scrip');
-                                        }
-                                      } finally {
-                                        if (mounted) {
-                                          Future.delayed(const Duration(milliseconds: 400), () {
-                                            if (mounted) {
-                                              setState(() { _isNavigating = false; });
-                                            }
-                                          });
-                                        }
-                                      }
-                                    },
+                                if (widget.watchListData['expDate']
+                                    .toString()
+                                    .isNotEmpty)
+                                  Text(
+                                    "${widget.watchListData['expDate']}",
+                                    style: MyntWebTextStyles.exch(
+                                      context,
+                                      fontWeight: FontWeight.w500,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary,
+                                      ),
+                                    ),
                                   ),
+                                if (widget.watchListData['holdingQty'] !=
+                                        null &&
+                                    widget.watchListData['holdingQty']
+                                        .toString()
+                                        .isNotEmpty &&
+                                    widget.watchListData['holdingQty'] !=
+                                        "null") ...[
+                                  SvgPicture.asset(assets.suitcase,
+                                      height: 14,
+                                      width: 18,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.iconDark,
+                                        light: MyntColors.icon,
+                                      )),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "${widget.watchListData['holdingQty']}",
+                                    style: MyntWebTextStyles.exch(
+                                      context,
+                                      fontWeight: FontWeight.w500,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ]
                               ],
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                          // Right spacer to push price change to right
-                          Expanded(
-                            child: Container(),
-                          ),
-                          // Right: Price change only
-                          RepaintBoundary(
-                            child: _PriceChangeWidgetWeb(
-                                token: widget.watchListData['token'],
-                                initialData: widget.watchListData),
-                          ),
-                        ],
+                            // Left spacer to push buttons toward center
+                            Expanded(
+                              child: Container(),
+                            ),
+                            // Fixed-width container for action buttons (centered in available space)
+                            Builder(
+                              builder: (context) {
+                                // Check if this is an index or commodity
+                                final instname = widget
+                                        .watchListData["instname"]
+                                        ?.toString() ??
+                                    "";
+                                final isIndexOrCommodity =
+                                    instname == "UNDIND" || instname == "COM";
+                                final bool isPredefined =
+                                    marketWatch.isPreDefWLs == "Yes";
+
+                                return AnimatedOpacity(
+                                  opacity:
+                                      (isHovered || _isMenuOpen) ? 1.0 : 0.0,
+                                  duration: const Duration(milliseconds: 150),
+                                  child: IgnorePointer(
+                                    ignoring: !isHovered && !_isMenuOpen,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Only show Buy/Sell buttons if not index or commodity
+                                        if (!isIndexOrCommodity) ...[
+                                          _buildHoverButton(
+                                            label: 'B',
+                                            color: Colors.white,
+                                            backgroundColor: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary,
+                                            ),
+                                            borderColor: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary,
+                                            ),
+                                            onPressed: () async {
+                                              try {
+                                                await _placeOrderInput(
+                                                    context, depthData, true);
+                                              } catch (e) {
+                                                print('Buy button error: $e');
+                                              }
+                                            },
+                                          ),
+                                          const SizedBox(width: 4),
+                                          _buildHoverButton(
+                                            label: 'S',
+                                            color: Colors.white,
+                                            backgroundColor: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.tertiary,
+                                            ),
+                                            borderColor: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.errorDark,
+                                              light: MyntColors.tertiary,
+                                            ),
+                                            onPressed: () async {
+                                              try {
+                                                await _placeOrderInput(
+                                                    context, depthData, false);
+                                              } catch (e) {
+                                                print('Sell button error: $e');
+                                              }
+                                            },
+                                          ),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        _buildHoverButton(
+                                          iconAsset: assets.depthIcon,
+                                          color: Colors.black,
+                                          backgroundColor: Colors.white,
+                                          borderColor: shadcn.Theme.of(context)
+                                              .colorScheme
+                                              .border,
+                                          borderRadius: 5.0,
+                                          onPressed: () async {
+                                            if (_isNavigating) return;
+
+                                            ref
+                                                .read(
+                                                    expandedWatchlistItemProvider
+                                                        .notifier)
+                                                .setExpandedToken(null);
+
+                                            try {
+                                              setState(() {
+                                                _isNavigating = true;
+                                              });
+
+                                              DepthInputArgs depthArgs =
+                                                  DepthInputArgs(
+                                                exch: widget
+                                                    .watchListData["exch"]
+                                                    .toString(),
+                                                token: widget
+                                                    .watchListData["token"]
+                                                    .toString(),
+                                                tsym: widget
+                                                    .watchListData["tsym"]
+                                                    .toString(),
+                                                instname: widget.watchListData[
+                                                            "instname"]
+                                                        ?.toString() ??
+                                                    widget
+                                                        .watchListData["symbol"]
+                                                        .toString(),
+                                                symbol: widget
+                                                    .watchListData["symbol"]
+                                                    .toString(),
+                                                expDate: widget.watchListData[
+                                                            "expDate"]
+                                                        ?.toString() ??
+                                                    "",
+                                                option: widget
+                                                        .watchListData["option"]
+                                                        ?.toString() ??
+                                                    "",
+                                              );
+
+                                              marketWatch.scripdepthsize(false);
+                                              // Call depth APIs first to set active tab
+                                              await marketWatch.calldepthApis(
+                                                  context, depthArgs, "");
+
+                                              // Set depth visible AFTER calldepthApis completes
+                                              // Pass depth args directly to ensure correct token/exch/tsym are used
+                                              // This triggers lazy load of depth data with proper context
+                                              await ref
+                                                  .read(marketWatchProvider)
+                                                  .setIsDepthVisibleWeb(
+                                                    true,
+                                                    context: context,
+                                                    exch: depthArgs.exch,
+                                                    token: depthArgs.token,
+                                                    tsym: depthArgs.tsym,
+                                                  );
+                                            } catch (e) {
+                                              debugPrint(
+                                                  'Error opening chart: $e');
+                                            } finally {
+                                              if (mounted) {
+                                                Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 500), () {
+                                                  if (mounted) {
+                                                    setState(() {
+                                                      _isNavigating = false;
+                                                    });
+                                                  }
+                                                });
+                                              }
+                                            }
+                                          },
+                                        ),
+                                        const SizedBox(width: 4),
+                                        // Delete button (only for non-predefined watchlists)
+                                        if (!isPredefined)
+                                          _buildHoverButton(
+                                            iconAsset: assets.trash,
+                                            color: Colors.black,
+                                            backgroundColor: Colors.white,
+                                            borderColor:
+                                                shadcn.Theme.of(context)
+                                                    .colorScheme
+                                                    .border,
+                                            borderRadius: 5.0,
+                                            onPressed: () async {
+                                              try {
+                                                final String exch = widget
+                                                        .watchListData["exch"]
+                                                        ?.toString() ??
+                                                    "";
+                                                final String token = widget
+                                                        .watchListData["token"]
+                                                        ?.toString() ??
+                                                    "";
+                                                final String input =
+                                                    "$exch|$token#";
+
+                                                if (_isNavigating) return;
+                                                setState(() {
+                                                  _isNavigating = true;
+                                                });
+
+                                                await ref
+                                                    .read(marketWatchProvider)
+                                                    .addDelMarketScrip(
+                                                        marketWatch.wlName,
+                                                        input,
+                                                        context,
+                                                        false,
+                                                        false,
+                                                        false,
+                                                        false);
+                                                if (mounted) {
+                                                  showResponsiveSuccess(context,
+                                                      'Scrip removed from watchlist');
+                                                }
+                                              } catch (e) {
+                                                if (mounted) {
+                                                  showResponsiveError(context,
+                                                      'Failed to delete scrip');
+                                                }
+                                              } finally {
+                                                if (mounted) {
+                                                  Future.delayed(
+                                                      const Duration(
+                                                          milliseconds: 400),
+                                                      () {
+                                                    if (mounted) {
+                                                      setState(() {
+                                                        _isNavigating = false;
+                                                      });
+                                                    }
+                                                  });
+                                                }
+                                              }
+                                            },
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            // Right spacer to push price change to right
+                            Expanded(
+                              child: Container(),
+                            ),
+                            // Right: Price change only
+                            RepaintBoundary(
+                              child: _PriceChangeWidgetWeb(
+                                  token: widget.watchListData['token'],
+                                  initialData: widget.watchListData),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        // Expandable content section
-        // if (_isExpanded)
-        //   AnimatedSize(
-        //     duration: const Duration(milliseconds: 300),
-        //     curve: Curves.easeInOut,
-        //     child: Container(
-        //       width: double.infinity,
-        //       // color: theme.isDarkMode ? MyntColors.surfaceVariant : MyntColors.surfaceVariant,
-        //       padding: const EdgeInsets.fromLTRB(16, 16, 28,
-        //           16), // Extra right padding to prevent scrollbar overlap
-        //       child: _buildExpandedContent(depthData, theme),
-        //     ),
-        //   ),
-      ],
-    ),
-  );
-}
+          // Expandable content section
+          // if (_isExpanded)
+          //   AnimatedSize(
+          //     duration: const Duration(milliseconds: 300),
+          //     curve: Curves.easeInOut,
+          //     child: Container(
+          //       width: double.infinity,
+          //       // color: theme.isDarkMode ? MyntColors.surfaceVariant : MyntColors.surfaceVariant,
+          //       padding: const EdgeInsets.fromLTRB(16, 16, 28,
+          //           16), // Extra right padding to prevent scrollbar overlap
+          //       child: _buildExpandedContent(depthData, theme),
+          //     ),
+          //   ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildExpandedContent(GetQuotes depthData, ThemesProvider theme) {
     // Get current token for this specific card
@@ -534,105 +599,121 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         final avgPrice = socketData['ap']?.toString() ?? '0.00';
 
         return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Open, High, Low, Prev Close in grid format (always shown)
-        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(theme, "Open", open),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoItem(theme, "High", high),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(theme, "Low", low),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoItem(theme, "Prev Close", close),
-                  ),
-                ],
-              ),
-          ],
-        ),
-        // Market Depth Section (only for non-index/non-commodity)
-        if (widget.watchListData['instname']?.toString() != "UNDIND" &&
-            widget.watchListData['instname']?.toString() != "COM") ...[
-          const SizedBox(height: 16),
-          _buildMarketDepthSection(socketData, theme),
-          const SizedBox(height: 16),
-        ],
-        
-        // Trading Info Section
-        const SizedBox(height: 16),
-        Column(
-          children: [
-            Row(
+            // Open, High, Low, Prev Close in grid format (always shown)
+            Column(
               children: [
-                Expanded(
-                  child: _buildInfoItem(theme, "Avg Price", avgPrice),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(theme, "Open", open),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(theme, "High", high),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildInfoItem(theme, "Volume", volume),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(theme, "Low", low),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(theme, "Prev Close", close),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildInfoItem(theme, "LTQ", 
-                      socketData['ltq']?.toString() ?? widget.watchListData['ltq']?.toString() ?? "0"),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildInfoItem(theme, "LTT", 
-                      socketData['ltt']?.toString() ?? widget.watchListData['ltt']?.toString() ?? "--"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            
-            // Open Interest (only for futures/options, not equity)
-            if (depthData.seg != "EQT") ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(theme, "Open Interest", 
-                        socketData['oi']?.toString() ?? widget.watchListData['oi']?.toString() ?? "0"),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildInfoItem(theme, "Change in OI", 
-                        socketData['poi']?.toString() ?? widget.watchListData['poi']?.toString() ?? "0"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+            // Market Depth Section (only for non-index/non-commodity)
+            if (widget.watchListData['instname']?.toString() != "UNDIND" &&
+                widget.watchListData['instname']?.toString() != "COM") ...[
+              const SizedBox(height: 16),
+              _buildMarketDepthSection(socketData, theme),
+              const SizedBox(height: 16),
             ],
-            
-            // 52 Week High-Low
-            _buildInfoItem(theme, "52 Weeks High-Low", 
-                "${socketData['52h']?.toString() ?? widget.watchListData['52h']?.toString() ?? "0.00"} - ${socketData['52l']?.toString() ?? widget.watchListData['52l']?.toString() ?? "0.00"}"),
-            const SizedBox(height: 12),
-            
-            // Daily Price Range (DPR)
-            _buildInfoItem(theme, "DPR", 
-                "${socketData['uc']?.toString() ?? widget.watchListData['uc']?.toString() ?? "0.00"} - ${socketData['lc']?.toString() ?? widget.watchListData['lc']?.toString() ?? "0.00"}"),
+
+            // Trading Info Section
+            const SizedBox(height: 16),
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(theme, "Avg Price", avgPrice),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(theme, "Volume", volume),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoItem(
+                          theme,
+                          "LTQ",
+                          socketData['ltq']?.toString() ??
+                              widget.watchListData['ltq']?.toString() ??
+                              "0"),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoItem(
+                          theme,
+                          "LTT",
+                          socketData['ltt']?.toString() ??
+                              widget.watchListData['ltt']?.toString() ??
+                              "--"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Open Interest (only for futures/options, not equity)
+                if (depthData.seg != "EQT") ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildInfoItem(
+                            theme,
+                            "Open Interest",
+                            socketData['oi']?.toString() ??
+                                widget.watchListData['oi']?.toString() ??
+                                "0"),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildInfoItem(
+                            theme,
+                            "Change in OI",
+                            socketData['poi']?.toString() ??
+                                widget.watchListData['poi']?.toString() ??
+                                "0"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // 52 Week High-Low
+                _buildInfoItem(theme, "52 Weeks High-Low",
+                    "${socketData['52h']?.toString() ?? widget.watchListData['52h']?.toString() ?? "0.00"} - ${socketData['52l']?.toString() ?? widget.watchListData['52l']?.toString() ?? "0.00"}"),
+                const SizedBox(height: 12),
+
+                // Daily Price Range (DPR)
+                _buildInfoItem(theme, "DPR",
+                    "${socketData['uc']?.toString() ?? widget.watchListData['uc']?.toString() ?? "0.00"} - ${socketData['lc']?.toString() ?? widget.watchListData['lc']?.toString() ?? "0.00"}"),
+              ],
+            ),
           ],
-        ),
-      ],
-    );
+        );
       },
     );
   }
@@ -653,7 +734,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         //   ),
         // ),
         // const SizedBox(height: 12),
-        
+
         Row(
           children: [
             // Bid Side
@@ -756,13 +837,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       ],
     );
   }
-  
+
   // Helper to build total quantities with percentages
-  Widget _buildTotalQuantities(Map<String, dynamic> socketData, ThemesProvider theme) {
+  Widget _buildTotalQuantities(
+      Map<String, dynamic> socketData, ThemesProvider theme) {
     final scripInfo = ref.read(marketWatchProvider);
     final tbq = socketData['tbq']?.toString() ?? "0";
     final tsq = socketData['tsq']?.toString() ?? "0";
-    
+
     return Column(
       children: [
         Row(
@@ -774,7 +856,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tbq,
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
+                    color: theme.isDarkMode
+                        ? MyntColors.textSecondary
+                        : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -784,7 +868,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
+                    color: theme.isDarkMode
+                        ? MyntColors.textSecondary
+                        : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -797,7 +883,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   "(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)",
                   style: WebTextStyles.para(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
+                    color: theme.isDarkMode
+                        ? MyntColors.textSecondary
+                        : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -807,7 +895,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   tsq,
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
+                    color: theme.isDarkMode
+                        ? MyntColors.textSecondary
+                        : MyntColors.textSecondary,
                     fontWeight: WebFonts.regular,
                     letterSpacing: 0.0,
                   ),
@@ -816,7 +906,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             ),
           ],
         ),
-        if (scripInfo.totBuyQtyPer.toStringAsFixed(2) != "0.00" || 
+        if (scripInfo.totBuyQtyPer.toStringAsFixed(2) != "0.00" ||
             scripInfo.totSellQtyPer.toStringAsFixed(2) != "0.00")
           Column(
             children: [
@@ -824,14 +914,12 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               LinearPercentIndicator(
                 lineHeight: 5.0,
                 barRadius: const Radius.circular(4.0),
-                backgroundColor: theme.isDarkMode 
-                    ? MyntColors.error 
-                    : MyntColors.error,
+                backgroundColor:
+                    theme.isDarkMode ? MyntColors.error : MyntColors.error,
                 percent: scripInfo.totBuyQtyPerChng,
                 padding: const EdgeInsets.symmetric(horizontal: 0),
-                progressColor: theme.isDarkMode 
-                    ? MyntColors.primary 
-                    : MyntColors.primary,
+                progressColor:
+                    theme.isDarkMode ? MyntColors.primary : MyntColors.primary,
               ),
             ],
           ),
@@ -1115,9 +1203,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           " ${price != "null" ? price : '0.00'} ",
           style: WebTextStyles.para(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? MyntColors.secondary
-                : MyntColors.secondary,
+            color:
+                theme.isDarkMode ? MyntColors.secondary : MyntColors.secondary,
           ),
         ),
       ],
@@ -1179,9 +1266,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           ),
           const SizedBox(height: 4),
           Divider(
-            color: theme.isDarkMode
-                ? MyntColors.divider
-                : MyntColors.divider,
+            color: theme.isDarkMode ? MyntColors.divider : MyntColors.divider,
           ),
         ],
       ),
@@ -1201,6 +1286,54 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
     final theme = ref.read(themeProvider);
     final borderRadiusValue = borderRadius ?? 5.0;
 
+    // Use same Material + InkWell pattern for icon buttons for consistent height
+    if (icon != null || iconAsset != null) {
+      return SizedBox(
+        width: 26,
+        height: 26,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(borderRadiusValue),
+            splashColor: color.withOpacity(0.15),
+            highlightColor: color.withOpacity(0.08),
+            onTap: onPressed,
+            child: Container(
+              decoration: BoxDecoration(
+                color: backgroundColor ?? Colors.transparent,
+                borderRadius: BorderRadius.circular(borderRadiusValue),
+                border: borderColor != null
+                    ? Border.all(
+                        color: borderColor,
+                        width: 1,
+                      )
+                    : null,
+              ),
+              child: Center(
+                child: iconAsset != null
+                    ? SvgPicture.asset(
+                        iconAsset,
+                        width: 13,
+                        height: 13,
+                        color: color,
+                        // colorFilter: ColorFilter.mode(
+                        //   color,
+                        //   BlendMode.srcIn,
+                        // ),
+                      )
+                    : Icon(
+                        icon,
+                        size: 13,
+                        color: color,
+                      ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Keep original implementation for label buttons
     return SizedBox(
       width: 24,
       height: 24,
@@ -1208,8 +1341,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withValues(alpha: 0.15),
-          highlightColor: color.withValues(alpha: 0.08),
+          splashColor: color.withOpacity(0.15),
+          highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
@@ -1223,30 +1356,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   : null,
             ),
             child: Center(
-              child: iconAsset != null
-                  ? SvgPicture.asset(
-                      iconAsset,
-                      width: 13,
-                      height: 13,
-                      colorFilter: ColorFilter.mode(
-                        color,
-                        BlendMode.srcIn,
-                      ),
-                    )
-                  : icon != null
-                      ? Icon(
-                          icon,
-                          size: 13,
-                          color: color,
-                        )
-                      : Text(
-                          label ?? "",
-                          style: MyntWebTextStyles.para(
-                            context,
-                            fontWeight: FontWeight.bold,
-                            color: color,
-                          ),
-                        ),
+              child: Text(
+                label ?? "",
+                style: WebTextStyles.buttonXs(
+                  isDarkTheme: theme.isDarkMode,
+                  color: color,
+                ),
+              ),
             ),
           ),
         ),
@@ -1281,14 +1397,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
             setState(() {
               _isMenuOpen = true;
             });
-            
+
             // Use GlobalKey to get the correct render box position
-            final RenderBox? button = _menuButtonKey.currentContext?.findRenderObject() as RenderBox?;
+            final RenderBox? button =
+                _menuButtonKey.currentContext?.findRenderObject() as RenderBox?;
             if (button == null || !button.attached) return;
-            
+
             final RenderBox overlay =
                 Overlay.of(context).context.findRenderObject() as RenderBox;
-            
+
             // Get the button's position in overlay coordinates
             final Offset buttonTopLeft = button.localToGlobal(
               Offset.zero,
@@ -1298,15 +1415,21 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
               button.size.bottomRight(Offset.zero),
               ancestor: overlay,
             );
-            
+
             // Position menu below the button, with menu's top-right aligned to button's bottom-right
             // Calculate with a small offset for spacing
             const double menuSpacing = 4.0; // Small gap between button and menu
             final RelativeRect position = RelativeRect.fromLTRB(
-              buttonTopLeft.dx,                                 // Left edge starts from button left (menu can extend left)
-              buttonBottomRight.dy + menuSpacing,                // Menu top is below button bottom with spacing
-              overlay.size.width - buttonBottomRight.dx,         // Menu right edge aligns with button right edge
-              overlay.size.height - buttonBottomRight.dy - 200,  // Leave room for menu height
+              buttonTopLeft
+                  .dx, // Left edge starts from button left (menu can extend left)
+              buttonBottomRight.dy +
+                  menuSpacing, // Menu top is below button bottom with spacing
+              overlay.size.width -
+                  buttonBottomRight
+                      .dx, // Menu right edge aligns with button right edge
+              overlay.size.height -
+                  buttonBottomRight.dy -
+                  200, // Leave room for menu height
             );
 
             showMenu<String>(
@@ -1317,8 +1440,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   light: MyntColors.backgroundColor),
               elevation: 8,
               shape: const RoundedRectangleBorder(
-                // borderRadius: BorderRadius.circular(),
-              ),
+                  // borderRadius: BorderRadius.circular(),
+                  ),
               items: [
                 if (hasFutures)
                   PopupMenuItem<String>(
@@ -1448,14 +1571,14 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
         try {
           // Fetch linked scripts (this loads futures data)
-        // await marketWatch.fetchScripQuote(token, exch, context);
+          // await marketWatch.fetchScripQuote(token, exch, context);
           // await marketWatch.fetchScripQuoteIndex(token, exch, context);
           if (marketWatch.getOptionawait(exch, token)) {
-        await marketWatch.fetchScripInfo(token, exch, context);
+            await marketWatch.fetchScripInfo(token, exch, context);
             await marketWatch.fetchLinkeScrip(token, exch, context);
             // Request futures WebSocket data
           }
-            await marketWatch.requestWSFut(context: context, isSubscribe: true);
+          await marketWatch.requestWSFut(context: context, isSubscribe: true);
 
           if (!mounted) return;
 
@@ -1481,7 +1604,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                     children: [
                       // Header
                       Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 8),
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 16, top: 10, bottom: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -1705,7 +1829,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           if (kIsWeb && WebNavigationHelper.isAvailable) {
             WebNavigationHelper.navigateTo("optionChain", arguments: wlValue);
           } else {
-            await Navigator.pushNamed(context, Routes.optionChainWeb, arguments: wlValue);
+            await Navigator.pushNamed(context, Routes.optionChainWeb,
+                arguments: wlValue);
           }
         } catch (e) {
           if (mounted) {
@@ -1722,7 +1847,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
           // Get depth data from provider and create depth args
           final depthData = marketWatch.getQuotes!;
           final depthArgs = _createDepthArgs();
-          
+
           // Show Set Alert dialog
           _showSetAlertDialog(context, depthData, depthArgs);
 
@@ -1772,21 +1897,23 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       exch: widget.watchListData["exch"].toString(),
       token: widget.watchListData["token"].toString(),
       tsym: widget.watchListData["tsym"].toString(),
-      instname: widget.watchListData["instname"]?.toString() ?? widget.watchListData["symbol"].toString(),
+      instname: widget.watchListData["instname"]?.toString() ??
+          widget.watchListData["symbol"].toString(),
       symbol: widget.watchListData["symbol"].toString(),
       expDate: widget.watchListData["expDate"]?.toString() ?? "",
       option: widget.watchListData["option"]?.toString() ?? "",
     );
   }
 
-  void _showSetAlertDialog(BuildContext context, GetQuotes depthData, DepthInputArgs depthArgs) {
+  void _showSetAlertDialog(
+      BuildContext context, GetQuotes depthData, DepthInputArgs depthArgs) {
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
         return SetAlertWeb(
-                  depthdata: depthData,
-                  wlvalue: depthArgs,
+          depthdata: depthData,
+          wlvalue: depthArgs,
         );
       },
     );
@@ -1855,17 +1982,18 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       final currentTsym = widget.watchListData['tsym']?.toString() ?? "";
 
       print('==================== WATCHLIST ORDER DEBUG ====================');
-      print('Symbol: $currentTsym | Token: $currentToken | Exchange: $currentExch');
+      print(
+          'Symbol: $currentTsym | Token: $currentToken | Exchange: $currentExch');
       print('Transaction Type: ${transType ? "BUY" : "SELL"}');
       print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
       // Fetch scrip info first, exactly like reference implementation
-      await ref.read(marketWatchProvider).fetchScripInfo(
-          currentToken,
-          currentExch,
-          context,
-          true);
-      await ref.read(marketWatchProvider).fetchScripQuote(currentToken, currentExch, context);
+      await ref
+          .read(marketWatchProvider)
+          .fetchScripInfo(currentToken, currentExch, context, true);
+      await ref
+          .read(marketWatchProvider)
+          .fetchScripQuote(currentToken, currentExch, context);
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
@@ -1875,29 +2003,31 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
 
       // Get fresh quote data after fetchScripQuote
       final freshQuoteData = ref.read(marketWatchProvider).getQuotes;
-      print('Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
+      print(
+          'Fresh Quote Data: lp=${freshQuoteData?.lp ?? "NULL"}, c=${freshQuoteData?.c ?? "NULL"}, pc=${freshQuoteData?.pc ?? "NULL"}');
 
       // Also check websocket data for the current token as it has the most up-to-date LTP
       final wsProvider = ref.read(websocketProvider);
       final socketData = wsProvider.socketDatas[currentToken];
-      print('Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
-      
+      print(
+          'Websocket Data: ${socketData != null ? "lp=${socketData['lp']}, pc=${socketData['pc']}" : "NO WEBSOCKET DATA"}');
+
       // Priority: Websocket data > Fresh quote data > Watchlist data > Stale depthData
       String? ltp;
       String? perChange;
-      
+
       // Helper function to check if a value is valid
       bool isValidPrice(String? value) {
         if (value == null || value.isEmpty) return false;
         final normalized = value.trim();
-        return normalized != '0' && 
-               normalized != '0.0' && 
-               normalized != '0.00' && 
-               normalized != 'null' &&
-               normalized != 'NaN' &&
-               normalized != 'Infinity';
+        return normalized != '0' &&
+            normalized != '0.0' &&
+            normalized != '0.00' &&
+            normalized != 'null' &&
+            normalized != 'NaN' &&
+            normalized != 'Infinity';
       }
-      
+
       // Try websocket data first (most up-to-date)
       if (socketData != null) {
         final wsLtp = socketData['lp']?.toString();
@@ -1955,8 +2085,10 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       // Use exact lot size logic from reference implementation
       final isBasketMode = widget.watchListData['isBasket']?.toString() ?? "";
       final lotSize = isBasketMode == "BasketMode"
-          ? _safeParseLotSize(scripInfo.ls, freshQuoteData?.ls ?? depthData.ls, "1")
-          : _safeParseLotSize(freshQuoteData?.ls ?? depthData.ls, scripInfo.ls, "1");
+          ? _safeParseLotSize(
+              scripInfo.ls, freshQuoteData?.ls ?? depthData.ls, "1")
+          : _safeParseLotSize(
+              freshQuoteData?.ls ?? depthData.ls, scripInfo.ls, "1");
 
       // Use safe parsing for price values with fresh data
       final safeLtp = _safeParseNumeric(ltp, "0.00");
@@ -1971,7 +2103,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Price data not available yet. Please wait a moment and try again.'),
+              content: Text(
+                  'Price data not available yet. Please wait a moment and try again.'),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 2),
             ),
@@ -2065,16 +2198,19 @@ class _PriceDataWidgetWebState extends ConsumerState<_PriceDataWidgetWeb> {
   Widget build(BuildContext context) {
     // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
     // This prevents unnecessary rebuilds when other tokens update
-    final socketData = ref.watch(
-      websocketProvider.select((provider) =>
-        provider.socketDatas[widget.token]
-      )
-    );
+    final socketData = ref.watch(websocketProvider
+        .select((provider) => provider.socketDatas[widget.token]));
 
     // Calculate values fresh from socket data or fall back to initial data
-    final ltp = socketData?['lp']?.toString() ?? widget.initialData['ltp']?.toString() ?? '0.00';
-    final change = socketData?['chng']?.toString() ?? widget.initialData['change']?.toString() ?? '0.00';
-    final perChange = socketData?['pc']?.toString() ?? widget.initialData['perChange']?.toString() ?? '0.00';
+    final ltp = socketData?['lp']?.toString() ??
+        widget.initialData['ltp']?.toString() ??
+        '0.00';
+    final change = socketData?['chng']?.toString() ??
+        widget.initialData['change']?.toString() ??
+        '0.00';
+    final perChange = socketData?['pc']?.toString() ??
+        widget.initialData['perChange']?.toString() ??
+        '0.00';
 
     // Don't read theme on every rebuild - cache it once per build
     final theme = ref.read(themeProvider);
@@ -2155,28 +2291,47 @@ class _LTPWidgetWebState extends ConsumerState<_LTPWidgetWeb> {
   @override
   Widget build(BuildContext context) {
     // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
-    final socketData = ref.watch(
-      websocketProvider.select((provider) =>
-        provider.socketDatas[widget.token]
-      )
-    );
+    final socketData = ref.watch(websocketProvider
+        .select((provider) => provider.socketDatas[widget.token]));
 
     // Calculate values fresh from socket data or fall back to initial data
-    final ltp = socketData?['lp']?.toString() ?? widget.initialData['ltp']?.toString() ?? '0.00';
+    final ltp = socketData?['lp']?.toString() ??
+        widget.initialData['ltp']?.toString() ??
+        '0.00';
+    final change = socketData?['chng']?.toString() ??
+        widget.initialData['change']?.toString() ??
+        '0.00';
+    final perChange = socketData?['pc']?.toString() ??
+        widget.initialData['perChange']?.toString() ??
+        '0.00';
 
     final displayLtp = _safeFormatPrice(ltp);
+    final displayChange = _safeFormatPrice(change);
+    final displayPerChange = _safeFormatPrice(perChange);
 
-     final changeColor =
-        displayLtp.startsWith("-") || displayLtp.startsWith('-')
-            ? shadcn.Theme.of(context).colorScheme.destructiveForeground
-            : (displayLtp == "0.00" || displayLtp == "0.00")
-                  ? shadcn.Theme.of(context).colorScheme.mutedForeground
-                : shadcn.Theme.of(context).colorScheme.chart2;
+    final changeColor =
+        displayChange.startsWith("-") || displayPerChange.startsWith('-')
+            ? resolveThemeColor(
+                context,
+                dark: MyntColors.lossDark,
+                light: MyntColors.loss,
+              )
+            : (displayChange == "0.00" || displayPerChange == "0.00")
+                ? resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  )
+                : resolveThemeColor(
+                    context,
+                    dark: MyntColors.profitDark,
+                    light: MyntColors.profit,
+                  );
 
     return Text(
       displayLtp,
-      style: TextStyle(
-        fontFamily: 'Geist',
+      style: MyntWebTextStyles.price(
+        context,
         color: changeColor,
       ),
     );
@@ -2216,26 +2371,38 @@ class _PriceChangeWidgetWebState extends ConsumerState<_PriceChangeWidgetWeb> {
   @override
   Widget build(BuildContext context) {
     // PERFORMANCE FIX: Watch ONLY this token's data using Riverpod's selective watching
-    final socketData = ref.watch(
-      websocketProvider.select((provider) =>
-        provider.socketDatas[widget.token]
-      )
-    );
+    final socketData = ref.watch(websocketProvider
+        .select((provider) => provider.socketDatas[widget.token]));
 
     // Calculate values fresh from socket data or fall back to initial data
-    final change = socketData?['chng']?.toString() ?? widget.initialData['change']?.toString() ?? '0.00';
-    final perChange = socketData?['pc']?.toString() ?? widget.initialData['perChange']?.toString() ?? '0.00';
+    final change = socketData?['chng']?.toString() ??
+        widget.initialData['change']?.toString() ??
+        '0.00';
+    final perChange = socketData?['pc']?.toString() ??
+        widget.initialData['perChange']?.toString() ??
+        '0.00';
 
     final displayChange = _safeFormatPrice(change);
     final displayPerChange = _safeFormatPrice(perChange);
 
-   
+    // final changeColor =
+    //     displayChange.startsWith("-") || displayPerChange.startsWith('-')
+    //         ? resolveThemeColor(context,
+    //             dark: MyntColors.lossDark, light: MyntColors.loss)
+    //         : (displayChange == "0.00" || displayPerChange == "0.00")
+    //             ? resolveThemeColor(context,
+    //                 dark: MyntColors.textSecondaryDark,
+    //                 light: MyntColors.textSecondary)
+    //             : resolveThemeColor(context,
+    //                 dark: MyntColors.profitDark, light: MyntColors.profit);
 
     return Text(
       "$displayChange ($displayPerChange%)",
-      style: TextStyle(
-        fontFamily: 'Geist',
-        color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+      style: MyntWebTextStyles.priceChange(
+        context,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary),
       ),
     );
   }

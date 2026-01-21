@@ -535,10 +535,14 @@ class _CustomizableSplitHomeScreenState
         // PERFORMANCE FIX: Use .select() to only watch connection status fields
         // Before: ref.watch(websocketProvider) - ENTIRE provider caused rebuilds every 500ms!
         // After: Only rebuild when connection status actually changes
-        final connectionCount = ref.watch(websocketProvider.select((p) => p.connectioncount));
-        final reconnectionSuccess = ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
-        final wsConnected = ref.watch(websocketProvider.select((p) => p.wsConnected));
-        final retryscreen = ref.watch(websocketProvider.select((p) => p.retryscreen));
+        final connectionCount =
+            ref.watch(websocketProvider.select((p) => p.connectioncount));
+        final reconnectionSuccess =
+            ref.watch(websocketProvider.select((p) => p.reconnectionSuccess));
+        final wsConnected =
+            ref.watch(websocketProvider.select((p) => p.wsConnected));
+        final retryscreen =
+            ref.watch(websocketProvider.select((p) => p.retryscreen));
 
         if ((internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
@@ -1508,7 +1512,8 @@ class _CustomizableSplitHomeScreenState
             if (args == null) {
               // PERFORMANCE FIX: Use .select() to only watch getQuotes
               // Watching entire marketWatchProvider causes unnecessary rebuilds
-              final quotes = ref.watch(marketWatchProvider.select((p) => p.getQuotes));
+              final quotes =
+                  ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
                   ChartArgs(exch: 'ABC', tsym: 'ABCD', token: '0123');
               return ChartWithDepthWeb(
@@ -3908,7 +3913,7 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                     context,
                     dark: WebColors.primaryDark,
                     light: WebColors.primary,
-                  ).withValues(alpha: 0.03)
+                  ).withValues(alpha: 0.08)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(0),
           ),
@@ -3983,8 +3988,8 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
                           size: 14,
                           color: resolveThemeColor(
                             context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
                           ),
                         ),
                       ),
