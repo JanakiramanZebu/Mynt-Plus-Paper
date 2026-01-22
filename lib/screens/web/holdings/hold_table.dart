@@ -28,6 +28,7 @@ import 'package:flutter/material.dart'
         Container,
         MouseRegion,
         Expanded,
+        Flexible,
         Align,
         Text,
         AnimatedOpacity,
@@ -705,53 +706,96 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                           right: isRowHovered
                                                               ? 8.0
                                                               : 0.0),
-                                                      child: RichText(
-                                                        overflow: isRowHovered
-                                                            ? TextOverflow
-                                                                .ellipsis
-                                                            : TextOverflow
-                                                                .visible,
-                                                        maxLines: 1,
-                                                        softWrap: false,
-                                                        text: TextSpan(
-                                                          children: [
-                                                            // Symbol (normal color, without -EQ, fixed 14px)
-                                                            TextSpan(
-                                                              text: (exchTsym
-                                                                          ?.tsym ??
-                                                                      'N/A')
-                                                                  .replaceAll(
-                                                                      "-EQ", "")
-                                                                  .trim(),
-                                                              style:
-                                                                  _getTextStyle(
-                                                                      context),
-                                                            ),
-                                                            // Exchange (mutedForeground color, smaller font, fixed 12px)
-                                                            if (exchTsym?.exch !=
-                                                                    null &&
-                                                                exchTsym!.exch!
-                                                                    .isNotEmpty)
-                                                              TextSpan(
-                                                                text:
-                                                                    ' ${exchTsym.exch}',
-                                                                style:
-                                                                    MyntWebTextStyles
-                                                                        .para(
-                                                                  context,
-                                                                  darkColor:
-                                                                      MyntColors
-                                                                          .textSecondaryDark,
-                                                                  lightColor:
-                                                                      MyntColors
-                                                                          .textSecondary,
-                                                                  fontWeight:
-                                                                      MyntFonts
-                                                                          .medium,
-                                                                ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Flexible(
+                                                            child: RichText(
+                                                              overflow: isRowHovered
+                                                                  ? TextOverflow
+                                                                      .ellipsis
+                                                                  : TextOverflow
+                                                                      .visible,
+                                                              maxLines: 1,
+                                                              softWrap: false,
+                                                              text: TextSpan(
+                                                                children: [
+                                                                  // Symbol (normal color, without -EQ, fixed 14px)
+                                                                  TextSpan(
+                                                                    text: (exchTsym
+                                                                                ?.tsym ??
+                                                                            'N/A')
+                                                                        .replaceAll(
+                                                                            "-EQ", "")
+                                                                        .trim(),
+                                                                    style:
+                                                                        _getTextStyle(
+                                                                            context),
+                                                                  ),
+                                                                  // Exchange (mutedForeground color, smaller font, fixed 12px)
+                                                                  if (exchTsym?.exch !=
+                                                                          null &&
+                                                                      exchTsym!.exch!
+                                                                          .isNotEmpty)
+                                                                    TextSpan(
+                                                                      text:
+                                                                          ' ${exchTsym.exch}',
+                                                                      style:
+                                                                          MyntWebTextStyles
+                                                                              .para(
+                                                                        context,
+                                                                        darkColor:
+                                                                            MyntColors
+                                                                                .textSecondaryDark,
+                                                                        lightColor:
+                                                                            MyntColors
+                                                                                .textSecondary,
+                                                                        fontWeight:
+                                                                            MyntFonts
+                                                                                .medium,
+                                                                      ),
+                                                                    ),
+                                                                ],
                                                               ),
-                                                          ],
-                                                        ),
+                                                            ),
+                                                          ),
+                                                          // Show lock icon with pledged qty if brkcolqty > 0
+                                                          Builder(
+                                                            builder: (ctx) {
+                                                              final pledgedQty = int.tryParse(holding.brkcolqty ?? '0') ?? 0;
+                                                              if (pledgedQty > 0) {
+                                                                return Padding(
+                                                                  padding: const EdgeInsets.only(left: 6),
+                                                                  child: Tooltip(
+                                                                    message: 'Pledged Qty: $pledgedQty',
+                                                                    child: Row(
+                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      children: [
+                                                                        const Icon(
+                                                                          Icons.lock,
+                                                                          size: 12,
+                                                                          color: Color(0xFFFF6161),
+                                                                        ),
+                                                                        const SizedBox(width: 2),
+                                                                        Text(
+                                                                          '$pledgedQty',
+                                                                          style: MyntWebTextStyles.para(
+                                                                            ctx,
+                                                                            color: const Color(0xFFFF6161),
+                                                                            darkColor: const Color(0xFFFF6161),
+                                                                            lightColor: const Color(0xFFFF6161),
+                                                                            fontWeight: MyntFonts.medium,
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                );
+                                                              }
+                                                              return const SizedBox.shrink();
+                                                            },
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
@@ -1140,6 +1184,32 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }
 
   Widget _buildColoredText(String value) {
+    // Check if the value contains a percentage in brackets
+    if (value.contains('(') && value.contains(')')) {
+      final parts = value.split('(');
+      final mainValue = parts[0];
+      final percentPart = '(${parts[1]}';
+
+      final numValue =
+          double.tryParse(mainValue.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+      final color = _getValueColor(numValue);
+      final baseStyle = _getTextStyle(context, color: color);
+
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(text: mainValue, style: baseStyle),
+            TextSpan(
+              text: percentPart,
+              style: baseStyle.copyWith(
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
     final color = _getValueColor(numValue);
 
@@ -1570,14 +1640,24 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
   @override
   Widget build(BuildContext context) {
     final color = _getCellColor(overallPnL);
-    return Text(
-      '$overallPnL\u00A0($overallPercent%)',
-      style: MyntWebTextStyles.tableCell(
-        context,
-        color: color,
-        darkColor: color,
-        lightColor: color,
-        fontWeight: MyntFonts.medium,
+    final baseStyle = MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color,
+      lightColor: color,
+      fontWeight: MyntFonts.medium,
+    );
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(text: '$overallPnL\u00A0', style: baseStyle),
+          TextSpan(
+            text: '($overallPercent%)',
+            style: baseStyle.copyWith(
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1662,11 +1742,25 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '$dayPnL\u00A0($dayPercent%)',
-      style: MyntWebTextStyles.tableCell(
-        context,
-        fontWeight: MyntFonts.medium,
+    final color = _getCellColor(dayPnL);
+    final baseStyle = MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color,
+      lightColor: color,
+      fontWeight: MyntFonts.medium,
+    );
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(text: '$dayPnL\u00A0', style: baseStyle),
+          TextSpan(
+            text: '($dayPercent%)',
+            style: baseStyle.copyWith(
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

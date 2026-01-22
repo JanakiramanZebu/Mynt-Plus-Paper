@@ -213,59 +213,63 @@ class _PositionDetailScreenWebState
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.dividerDark,
-              light: MyntColors.divider,
-            ),
-            width: 1,
-          ),
-        ),
-      ),
+      color: resolveThemeColor(context,
+          dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with close button
+          // Header: Close icon and "Position Details" title
           Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: _buildSymbolSection(theme, scripInfo, depthArgs),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
+                  width: 1,
                 ),
-                MyntCloseButton(
-                  onPressed: () {
-                    shadcn.closeSheet(context);
-                  },
+              ),
+            ),
+            child: Row(
+              children: [
+                shadcn.IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => shadcn.closeSheet(context),
+                  variance: shadcn.ButtonVariance.ghost,
+                  size: shadcn.ButtonSize.small,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "Position Details",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ],
             ),
           ),
-          // Border divider
-          Container(
-            height: 1,
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-          ),
+
           // Content
-          Container(
-            padding: const EdgeInsets.all(16),
+          Flexible(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Action Buttons
+                  // Symbol and Price Section
+                  _buildSymbolSection(theme, scripInfo, depthArgs),
+                  const SizedBox(height: 24),
+
+                  // Action Buttons: Exit and Conversion
                   _buildActionButtons(theme, scripInfo, positions),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _buildPnLSection(theme, positions),
-                  ),
-                  // Details Section
+                  const SizedBox(height: 24),
+
+                  // Details Section with Dividers
                   _buildDetailsSection(theme, positions),
                 ],
               ),
@@ -278,68 +282,62 @@ class _PositionDetailScreenWebState
 
   Widget _buildSymbolSection(ThemesProvider theme,
       MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Symbol and Exchange
         Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
-            Flexible(
-              child: Text(
-                "${_positionData.symbol?.replaceAll("-EQ", "") ?? ''} ${_positionData.expDate ?? ''} ${_positionData.option ?? ''} ",
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: colorScheme.foreground,
-                ),
-                overflow: TextOverflow.ellipsis,
+            Text(
+              "${_positionData.symbol?.replaceAll("-EQ", "") ?? ''}-EQ",
+              style: MyntWebTextStyles.head(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.semiBold,
               ),
             ),
-            // const SizedBox(width: 4),
-            // Text(
-            //   "${_positionData.exch}",
-            //   style: MyntWebTextStyles.title(
-            //     context,
-            //     color: resolveThemeColor(context,
-            //         dark: MyntColors.textSecondaryDark,
-            //         light: MyntColors.textSecondary),
-            //   ),
-            // ),
+            const SizedBox(width: 8),
+            Text(
+              _positionData.exch ?? "NSE",
+              style: MyntWebTextStyles.para(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 1),
 
         // Price and Change
         Row(
           children: [
             Text(
               "${_positionData.lp != "null" ? _positionData.lp ?? '0.00' : '0.00'}",
-              style: MyntWebTextStyles.title(
+              style: MyntWebTextStyles.body(
                 context,
-                color: (_positionData.chng == "null" ||
-                            _positionData.chng == null) ||
-                        _positionData.chng == "0.00"
-                    ? resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary)
-                    : (_positionData.chng?.startsWith("-") == true ||
-                            _positionData.perChange?.startsWith("-") == true)
-                        ? resolveThemeColor(context,
-                            dark: MyntColors.lossDark, light: MyntColors.loss)
-                        : resolveThemeColor(context,
-                            dark: MyntColors.profitDark,
-                            light: MyntColors.profit),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
             Text(
               "${(double.tryParse(_positionData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(_positionData.perChange ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
               style: MyntWebTextStyles.body(
                 context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+                color: (_positionData.chng?.startsWith("-") == true ||
+                        _positionData.perChange?.startsWith("-") == true)
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.lossDark, light: MyntColors.loss)
+                    : resolveThemeColor(context,
+                        dark: MyntColors.profitDark, light: MyntColors.profit),
                 fontWeight: MyntFonts.medium,
               ),
             ),
@@ -354,185 +352,44 @@ class _PositionDetailScreenWebState
   Widget _buildActionButtons(ThemesProvider theme,
       MarketWatchProvider scripInfo, PortfolioProvider positions) {
     final isClosed = _isPositionClosed();
-    final hasQty = _positionData.qty != "0" && _positionData.qty != null;
-    final isDay = positions.isDay;
-    final isBOorCO =
-        _positionData.sPrdtAli == "BO" || _positionData.sPrdtAli == "CO";
 
-    // Don't show buttons for BO/CO products
-    if (isBOorCO) {
+    // Don't show buttons if position is closed
+    if (isClosed) {
       return const SizedBox.shrink();
     }
 
-    // Don't show Add/Exit if it's day or position is closed
-    final showAddExit = hasQty && !isDay && !isClosed;
-    final showConvert = !isClosed && hasQty;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Add and Exit buttons in a row
-          if (showAddExit) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    "Add",
-                    true,
-                    theme,
-                    _handleAdd,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    "Exit",
-                    false,
-                    theme,
-                    _handleExit,
-                  ),
-                ),
-              ],
+    return Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: MyntOutlinedButton(
+              label: "Exit",
+              onPressed: _handleExit,
+              isFullWidth: true,
+              textColor: resolveThemeColor(context,
+                  dark: MyntColors.primaryDark, light: MyntColors.primary),
             ),
-            if (showConvert) const SizedBox(height: 12),
-          ],
-          // Convert Position as text button
-          if (showConvert)
-            MyntTextButton(
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Conversion button (right) - Styled as primary filled
+        Expanded(
+          child: SizedBox(
+            height: 44,
+            child: MyntPrimaryButton(
+              label: "Conversion",
               onPressed: _handleConvert,
-              label: 'Convert Position',
+              isFullWidth: true,
             ),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
-  }
-
-  Widget _buildActionButton(String text, bool isPrimary, ThemesProvider theme,
-      VoidCallback onPressed) {
-    if (isPrimary) {
-      return MyntPrimaryButton(
-        label: text,
-        onPressed: onPressed,
-        isFullWidth: true,
-      );
-    } else {
-      return MyntOutlinedButton(
-        label: text,
-        onPressed: onPressed,
-        isFullWidth: true,
-      );
-    }
   }
 
   bool _isPositionClosed() {
     return _positionData.qty == "0" || _positionData.qty == null;
-  }
-
-  // Handle add position
-  Future<void> _handleAdd() async {
-    try {
-      // Get root navigator context
-      final rootContext = rootNavigatorKey.currentContext;
-      if (rootContext == null) {
-        if (mounted) {
-          showResponsiveWarningMessage(
-              context, "Unable to access root context");
-        }
-        return;
-      }
-
-      final scripData = ref.read(marketWatchProvider);
-      await scripData
-          .fetchScripInfo(
-        _positionData.token ?? "",
-        _positionData.exch ?? "",
-        rootContext,
-        true,
-      )
-          .timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception("Request timed out");
-        },
-      );
-
-      if (scripData.scripInfoModel == null) {
-        if (!mounted) return;
-        showResponsiveWarningMessage(
-            rootContext, "Unable to fetch scrip information");
-        return;
-      }
-
-      final lotSize = scripData.scripInfoModel!.ls?.toString() ?? "1";
-      final netQty = int.tryParse(_positionData.netqty ?? "0") ?? 0;
-
-      OrderScreenArgs orderArgs = OrderScreenArgs(
-        exchange: _positionData.exch ?? "",
-        tSym: _positionData.tsym ?? "",
-        isExit: false,
-        token: _positionData.token ?? "",
-        transType: netQty < 0 ? false : true,
-        prd: _positionData.prd ?? "",
-        lotSize: lotSize,
-        ltp: _positionData.lp ?? "0.00",
-        perChange: _positionData.perChange ?? "0.00",
-        orderTpye: '',
-        holdQty: _positionData.netqty ?? '',
-        isModify: false,
-        raw: {},
-      );
-
-      // Use parent context (from position_table) if available, otherwise use root context
-      final targetContext = widget.parentContext ?? rootContext;
-
-      if (targetContext.mounted) {
-        ResponsiveNavigation.toPlaceOrderScreen(
-          context: targetContext,
-          arguments: {
-            "orderArg": orderArgs,
-            "scripInfo": scripData.scripInfoModel!,
-            "isBskt": "",
-          },
-        );
-      } else {
-        if (mounted) {
-          showResponsiveWarningMessage(context, "Unable to access context");
-        }
-        return;
-      }
-
-      // Close the sheet AFTER opening the order screen
-      if (mounted) {
-        try {
-          shadcn.closeSheet(context);
-        } catch (e) {
-          // Ignore sheet close errors
-        }
-      }
-    } catch (e) {
-      if (!mounted) return;
-
-      // Try to close sheet on error
-      if (mounted) {
-        try {
-          shadcn.closeSheet(context);
-        } catch (_) {
-          // Ignore sheet close errors
-        }
-      }
-
-      final rootCtx = rootNavigatorKey.currentContext;
-      if (rootCtx != null) {
-        try {
-          showResponsiveWarningMessage(
-              rootCtx, "Error adding position: ${e.toString()}");
-        } catch (displayError) {
-          print("Failed to show error message: $displayError");
-        }
-      }
-    }
   }
 
   // Handle exit position
@@ -651,6 +508,9 @@ class _PositionDetailScreenWebState
         if (rootContext != null) {
           showDialog(
             context: rootContext,
+            barrierColor: resolveThemeColor(context,
+                dark: MyntColors.modalBarrierDark,
+                light: MyntColors.modalBarrierLight),
             builder: (BuildContext context) {
               return ConvertPositionDialogueWeb(convertPosition: _positionData);
             },
@@ -661,41 +521,6 @@ class _PositionDetailScreenWebState
       if (!mounted) return;
       print("Error opening convert dialog: $e");
     }
-  }
-
-  Widget _buildPnLSection(ThemesProvider theme, PortfolioProvider positions) {
-    final displayValue = positions.isNetPnl
-        ? (_positionData.profitNloss ?? _positionData.rpnl ?? "0.00")
-        : (_positionData.mTm ?? "0.00");
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Column(
-          children: [
-            Text(
-              positions.isNetPnl ? "P&L" : "MTM",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              displayValue,
-              style: MyntWebTextStyles.head(
-                context,
-                color: _getPnLColor(displayValue),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
   }
 
   Color _getPnLColor(String value) {
@@ -715,95 +540,141 @@ class _PositionDetailScreenWebState
 
   Widget _buildDetailsSection(
       ThemesProvider theme, PortfolioProvider positions) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _rowOfInfoData(
-            "Net Qty",
+    final pnlValue = positions.isNetPnl
+        ? (_positionData.profitNloss ?? _positionData.rpnl ?? "0.00")
+        : (_positionData.mTm ?? "0.00");
+    final pnlColor = _getPnLColor(pnlValue);
+
+    return Column(
+      children: [
+        // P&L item
+        _rowOfInfoData(
+          "P&L",
+          Text(
+            pnlValue,
+            style: MyntWebTextStyles.body(context,
+                color: pnlColor, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Net Qty",
+          Text(
             "${(int.tryParse(_positionData.netqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Avg Price",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Avg Price",
+          Text(
             "${_positionData.netupldprc ?? 0.00}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Product",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Product",
+          Text(
             _positionData.sPrdtAli != "null"
                 ? "${_positionData.sPrdtAli}"
                 : "--",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Buy Qty ( Day / CF )",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Buy Qty ( Day / CF )",
+          Text(
             "${(int.tryParse(_positionData.daybuyqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)} / ${_positionData.cfbuyqty ?? 0}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Sell Qty ( Day / CF )",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Sell Qty ( Day / CF )",
+          Text(
             "${(int.tryParse(_positionData.daysellqty?.toString() ?? '0') ?? 0) ~/ (_positionData.exch == 'MCX' ? (int.tryParse(_positionData.ls?.toString() ?? '1') ?? 1) : 1)} / ${_positionData.cfsellqty ?? 0}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Buy Avg prc ( Day / CF )",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Buy Avg prc ( Day / CF )",
+          Text(
             "${_positionData.daybuyavgprc ?? 0.00} / ${_positionData.cfbuyavgprc ?? 0.00}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Sell Avg prc ( Day / CF )",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Sell Avg prc ( Day / CF )",
+          Text(
             "${_positionData.daysellavgprc ?? 0.00} / ${_positionData.cfsellavgprc ?? 0.00}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-            "Actual Avg Price",
+          theme,
+        ),
+        _rowOfInfoData(
+          "Actual Avg Price",
+          Text(
             "${_positionData.upldprc ?? 0.00}",
-            theme,
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
-        ],
-      ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Buy / Sell Value",
+          Text(
+            "929.90 / 0.00", // Placeholder matching screenshot style
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+          showDivider: false,
+        ),
+      ],
     );
   }
 
-  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+  Widget _rowOfInfoData(String title1, Widget valueWidget, ThemesProvider theme,
+      {bool showDivider = true}) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title1,
-              style: MyntWebTextStyles.body(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title1,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
               ),
-            ),
-            Text(
-              value1,
-              style: MyntWebTextStyles.body(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
+              valueWidget,
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+          ),
       ],
     );
   }

@@ -8,11 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../provider/index_list_provider.dart';
@@ -35,10 +38,10 @@ import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
-import '../../../sharedWidget/splash_loader.dart';
+// import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
-import 'profile/profile_main_screen_web.dart';
-import 'profile/settings_web.dart';
+import 'profile/profile_main_screen.dart';
+// import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -62,6 +65,7 @@ import 'market_watch/chart_with_depth_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../res/mynt_web_text_styles.dart';
 import 'market_watch/index/index_bottom_sheet_web.dart';
+import 'home/widgets/app_bar/profile_dropdown.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -340,7 +344,7 @@ class _CustomizableSplitHomeScreenState
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     // Helper function to check if portfolio screens are active
     bool hasPortfolioScreen() {
       for (var panel in _panels) {
@@ -826,17 +830,7 @@ class _CustomizableSplitHomeScreenState
             // Navigation screens
             _buildNavigationScreens(isDarkMode),
             const SizedBox(width: 20),
-            // Swap button
-            RepaintBoundary(
-              child: _buildSwapButton(isDarkMode),
-            ),
-            const SizedBox(width: 12),
-            // Theme toggle button
-            RepaintBoundary(
-              child: _buildThemeToggleButton(isDarkMode),
-            ),
-            const SizedBox(width: 12),
-            // Profile section
+            // Profile section (contains swap, theme toggle, switch account in dropdown)
             RepaintBoundary(
               child: _buildProfileSection(isDarkMode),
             ),
@@ -890,26 +884,14 @@ class _CustomizableSplitHomeScreenState
                   ),
                 ),
                 const Spacer(),
-                // Right side items in order: Navigation (3) → Index slots (5) → Swap (6) → Theme (7) → Profile (4)
+                // Right side items: Navigation → Profile (contains swap, theme, switch account in dropdown) → Index slots
                 _buildNavigationScreens(isDarkMode),
                 const SizedBox(width: 20),
-
-                RepaintBoundary(
-                  child: _buildSwapButton(isDarkMode),
-                ),
-                const SizedBox(width: 12),
-                // Theme toggle button
-                RepaintBoundary(
-                  child: _buildThemeToggleButton(isDarkMode),
-                ),
-                const SizedBox(width: 12),
-                // Profile section
+                // Profile section (contains swap, theme toggle, switch account in dropdown)
                 RepaintBoundary(
                   child: _buildProfileSection(isDarkMode),
                 ),
                 const SizedBox(width: 12),
-
-                // Swap button
                 // Index slots section
                 _buildAppBarIndexSlots(isDarkMode),
               ],
@@ -1288,81 +1270,6 @@ class _CustomizableSplitHomeScreenState
     );
   }
 
-  // Build swap button for app bar with glassmorphism
-  Widget _buildSwapButton(bool isDarkMode) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: _handleSwapPanels,
-        borderRadius: BorderRadius.circular(10),
-        splashColor: resolveThemeColor(
-          context,
-          dark: MyntColors.rippleDark,
-          light: MyntColors.rippleLight,
-        ),
-        highlightColor: resolveThemeColor(
-          context,
-          dark: MyntColors.highlightDark,
-          light: MyntColors.highlightLight,
-        ),
-        child: Icon(
-          Icons.swap_horiz,
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.iconDark,
-            light: MyntColors.icon,
-          ),
-          size: 22,
-        ),
-      ),
-    );
-  }
-
-  // Build theme toggle button for app bar
-  Widget _buildThemeToggleButton(bool isDarkMode) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: () {
-          // Toggle theme
-          final themeProv = ref.read(themeProvider.notifier);
-          themeProv.toggleTheme(
-            themeMod: isDarkMode ? 'Light' : 'Dark',
-          );
-        },
-        borderRadius: BorderRadius.circular(10),
-        splashColor: resolveThemeColor(
-          context,
-          dark: MyntColors.rippleDark,
-          light: MyntColors.rippleLight,
-        ),
-        highlightColor: resolveThemeColor(
-          context,
-          dark: MyntColors.highlightDark,
-          light: MyntColors.highlightLight,
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.muted,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: shadcn.Theme.of(context).colorScheme.border,
-              width: 1,
-            ),
-          ),
-          child: Icon(
-            isDarkMode ? Icons.light_mode : Icons.dark_mode,
-            size: 18,
-            color: isDarkMode
-                ? MyntColors.textSecondaryDark
-                : MyntColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
   // Build profile section for app bar
   Widget _buildProfileSection(bool isDarkMode) {
     return Consumer(
@@ -1370,16 +1277,50 @@ class _CustomizableSplitHomeScreenState
         final userProfile = ref.watch(userProfileProvider);
         final userDetail = userProfile.userDetailModel;
         final clientDetail = userProfile.clientDetailModel;
+        final isDark = ref.watch(themeProvider).isDarkMode;
 
         // Get client ID
         String clientId = userDetail?.actid ?? clientDetail?.actid ?? '';
 
-        return _ProfileDropdown(
+        return ProfileDropdown(
           isDarkMode: isDarkMode,
           clientId: clientId,
+          onNavigateToScreen: (screenType) {
+            _navigateToScreen(screenType);
+          },
+          onThemeToggle: () {
+            ref.read(themeProvider.notifier).toggleTheme(
+              themeMod: isDark ? 'Light' : 'Dark',
+            );
+          },
+          onSwapPanels: () {
+            _handleSwapPanels();
+          },
         );
       },
     );
+  }
+
+  // Navigate to a specific screen type in the main panel
+  void _navigateToScreen(ScreenType screenType) {
+    // Find the active panel (not watchlist) and switch to the new screen
+    int targetPanelIndex = 0;
+    for (int i = 0; i < _panels.length; i++) {
+      if (_panels[i].screenType != ScreenType.watchlist &&
+          !(_panels[i].screens.isNotEmpty &&
+              _panels[i].screens.contains(ScreenType.watchlist))) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+
+    setState(() {
+      _panels[targetPanelIndex].screenType = screenType;
+      _panels[targetPanelIndex].screens = [screenType];
+      _panels[targetPanelIndex].activeScreenIndex = 0;
+    });
+    _saveLayout();
+    _handleScreenTypeChange(screenType);
   }
 
   // Build index slots for app bar
@@ -1544,7 +1485,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         return const ReportsScreenWeb();
       case ScreenType.settings:
-        return const SettingsScreenWeb();
+        return const ProfileMainScreen(initialIndex: 3);
       case ScreenType.tradeAction:
         // Get tab index from stored state or use null for default
         final tabIndex = _tradeActionTabIndex;
@@ -3316,213 +3257,6 @@ class _CustomizableSplitHomeScreenState
               }) ??
           false;
     }
-  }
-}
-
-// Profile dropdown widget
-class _ProfileDropdown extends StatefulWidget {
-  final bool isDarkMode;
-  final String clientId;
-
-  const _ProfileDropdown({
-    required this.isDarkMode,
-    required this.clientId,
-  });
-
-  @override
-  State<_ProfileDropdown> createState() => _ProfileDropdownState();
-}
-
-class _ProfileDropdownState extends State<_ProfileDropdown> {
-  bool _isDropdownOpen = false;
-  OverlayEntry? _overlayEntry;
-
-  @override
-  void dispose() {
-    _removeOverlay();
-    super.dispose();
-  }
-
-  void _toggleDropdown() {
-    if (_isDropdownOpen) {
-      _removeOverlay();
-    } else {
-      _showOverlay();
-    }
-  }
-
-  void _showOverlay() {
-    _removeOverlay();
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => _ProfileDropdownOverlay(
-        isDarkMode: widget.isDarkMode,
-        clientId: widget.clientId,
-        onClose: () {
-          _removeOverlay();
-        },
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-    setState(() {
-      _isDropdownOpen = true;
-    });
-  }
-
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-    setState(() {
-      _isDropdownOpen = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: InkWell(
-        onTap: _toggleDropdown,
-        borderRadius: BorderRadius.circular(10),
-        splashColor: resolveThemeColor(
-          context,
-          dark: MyntColors.rippleDark,
-          light: MyntColors.rippleLight,
-        ),
-        highlightColor: resolveThemeColor(
-          context,
-          dark: MyntColors.highlightDark,
-          light: MyntColors.highlightLight,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.clientId,
-              style: MyntWebTextStyles.body(
-                context,
-                fontWeight: MyntFonts.semiBold,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              _isDropdownOpen
-                  ? Icons.keyboard_arrow_up
-                  : Icons.keyboard_arrow_down,
-              size: 20,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// InheritedWidget to provide close callback to UserAccountScreen
-class _ProfileCloseCallback extends InheritedWidget {
-  final VoidCallback onClose;
-
-  const _ProfileCloseCallback({
-    required this.onClose,
-    required super.child,
-  });
-
-  @override
-  bool updateShouldNotify(_ProfileCloseCallback oldWidget) {
-    return onClose != oldWidget.onClose;
-  }
-}
-
-// Wrapper widget that provides close callback to UserAccountScreen via InheritedWidget
-class ProfileMenuContentWrapper extends StatelessWidget {
-  final VoidCallback onNavigate;
-
-  const ProfileMenuContentWrapper({
-    super.key,
-    required this.onNavigate,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _ProfileCloseCallback(
-      onClose: onNavigate,
-      child: const UserAccountScreenWeb(),
-    );
-  }
-}
-
-// Profile dropdown overlay widget
-class _ProfileDropdownOverlay extends StatelessWidget {
-  final bool isDarkMode;
-  final String clientId;
-  final VoidCallback onClose;
-
-  const _ProfileDropdownOverlay({
-    required this.isDarkMode,
-    required this.clientId,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: onClose,
-      child: Material(
-        color: Colors.transparent,
-        child: Stack(
-          children: [
-            // NO background overlay - removed as per request
-            // Profile dropdown content positioned at top-right
-            Positioned(
-              top: 55, // Position below the app bar
-              right: 16, // Align with the profile section
-              child: GestureDetector(
-                onTap: () {}, // Prevent closing when tapping on content
-                child: Container(
-                  width: 350,
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  decoration: BoxDecoration(
-                    color: colorScheme.background,
-                    border: Border.all(
-                      color: colorScheme.border,
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: ProfileMenuContentWrapper(
-                      onNavigate:
-                          onClose, // Pass callback to close on any navigation
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

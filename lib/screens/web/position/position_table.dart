@@ -47,7 +47,9 @@ import 'package:flutter/material.dart'
         Clip,
         MediaQuery,
         Builder,
-        Tooltip, ValueNotifier, ValueListenableBuilder,
+        Tooltip,
+        ValueNotifier,
+        ValueListenableBuilder,
         Visibility;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -70,8 +72,9 @@ import 'convert_position_dialogue_web.dart';
 // Shadcn Table for Positions with WebSocket updates
 class PositionTable extends ConsumerStatefulWidget {
   final String? searchQuery;
+  final String filterType;
 
-  const PositionTable({super.key, this.searchQuery});
+  const PositionTable({super.key, this.searchQuery, this.filterType = 'All'});
 
   @override
   ConsumerState<PositionTable> createState() => _PositionTableState();
@@ -353,7 +356,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // Format quantity
   String _formatQty(String qty) {
     final numQty = int.tryParse(qty) ?? 0;
-    return numQty > 0 ? '+$qty' : qty;
+    return numQty > 0 ? '$qty' : qty;
   }
 
   // Check if position is closed
@@ -390,6 +393,13 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         final symbol = position.symbol?.toLowerCase() ?? '';
         final exch = position.exch?.toLowerCase() ?? '';
         return symbol.contains(searchQuery) || exch.contains(searchQuery);
+      }).toList();
+    }
+
+    // Apply product filter
+    if (widget.filterType != 'All') {
+      filtered = filtered.where((position) {
+        return position.sPrdtAli == widget.filterType;
       }).toList();
     }
 
@@ -765,7 +775,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                               final isNumeric = _isNumericColumn(header);
 
                               // Make cells clickable except Select (checkbox) and Instrument (has buttons)
-                              final isClickable = header != 'Select' && header != 'Instrument';
+                              final isClickable =
+                                  header != 'Select' && header != 'Instrument';
 
                               // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent content
                               return buildCellWithHover(
@@ -778,7 +789,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                     final isRowHovered = hoveredIndex == index;
                                     return isClickable
                                         ? GestureDetector(
-                                            onTap: () => _showPositionDetail(position),
+                                            onTap: () =>
+                                                _showPositionDetail(position),
                                             behavior: HitTestBehavior.opaque,
                                             child: SizedBox(
                                               width: double.infinity,
@@ -977,8 +989,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             child: Text(
               pnlValue,
               style: _getTextStyle(context,
-                  color: _getCellColor(
-                      double.tryParse(pnlValue) ?? 0.0, context)),
+                  color:
+                      _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
             ),
           );
         } else {
@@ -1002,11 +1014,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             child: Text(
               position.mTm ?? '0.00',
               style: _getTextStyle(context,
-                  color: isClosed
-                      ? textColor
-                      : _getCellColor(
-                          double.tryParse(position.mTm ?? '0') ?? 0.0,
-                          context)),
+                  // Show profit/loss colors for both open and closed positions
+                  color: _getCellColor(
+                      double.tryParse(position.mTm ?? '0') ?? 0.0,
+                      context)),
             ),
           );
         } else {
@@ -1385,9 +1396,16 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
     shadcn.openSheet(
       context: context,
-      builder: (sheetContext) => PositionDetailScreenWeb(
-        positionList: position,
-        parentContext: parentCtx, // Pass parent context for navigation
+      barrierColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: BoxDecoration(
+          color: MyntColors.textWhite,
+          boxShadow: MyntShadows.panelRight,
+        ),
+        child: PositionDetailScreenWeb(
+          positionList: position,
+          parentContext: parentCtx, // Pass parent context for navigation
+        ),
       ),
       position: shadcn.OverlayPosition.end,
     );
@@ -1700,6 +1718,12 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
     super.initState();
     mtm = widget.initialValue;
 
+    // For closed positions (qty = 0), don't subscribe to updates
+    // Just show the realized MTM from initialValue
+    if (widget.isClosed || widget.qty == 0) {
+      return;
+    }
+
     _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
       if (!mounted || !data.containsKey(widget.token)) return;
 
@@ -1741,11 +1765,8 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
       mtm,
       style: MyntWebTextStyles.tableCell(
         context,
-        color: widget.isClosed
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : _getCellColor(mtm, context),
+        // Show profit/loss colors for both open and closed positions
+        color: _getCellColor(mtm, context),
       ),
     );
   }

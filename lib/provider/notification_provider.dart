@@ -31,20 +31,6 @@ class NotificationProvider extends DefaultChangeNotifier {
   List<BrokerMessage>? _brokermsg;
   List<BrokerMessage>? get brokermsg => _brokermsg;
 
-  // Search results for triggered alerts (broker messages)
-  List<BrokerMessage>? _triggeredAlertSearch = [];
-  List<BrokerMessage>? get triggeredAlertSearch => _triggeredAlertSearch;
-
-  void setTriggeredAlertSearch(List<BrokerMessage>? searchResult) {
-    _triggeredAlertSearch = searchResult;
-    notifyListeners();
-  }
-
-  void clearTriggeredAlertSearch() {
-    _triggeredAlertSearch = [];
-    notifyListeners();
-  }
-
   List<InformationMessageModel>? _informationMessages;
   List<InformationMessageModel>? get informationMessages => _informationMessages;
 
@@ -68,6 +54,36 @@ class NotificationProvider extends DefaultChangeNotifier {
   changeTabIndex(int index) {
     _selectedTab = index;
   }
+
+  // ========== PUSH NOTIFICATION HANDLING ==========
+  // Stores the unique message ID that should be highlighted in the notification list
+  // Used when user taps on a push notification to show which message triggered it
+  String? _highlightedMessageId;
+  String? get highlightedMessageId => _highlightedMessageId;
+
+  /// Sets which message should be highlighted in the notification list
+  /// The highlighted message will have visual feedback (background color, border, etc.)
+  void setHighlightedMessage(String? messageId) {
+    _highlightedMessageId = messageId;
+    notifyListeners();
+
+    // Auto-clear highlight after 5 seconds for better UX
+    if (messageId != null) {
+      Future.delayed(const Duration(seconds: 5), () {
+        if (_highlightedMessageId == messageId) {
+          _highlightedMessageId = null;
+          notifyListeners();
+        }
+      });
+    }
+  }
+
+  /// Clears highlighted message immediately
+  void clearHighlightedMessage() {
+    _highlightedMessageId = null;
+    notifyListeners();
+  }
+  // ========== END PUSH NOTIFICATION HANDLING ==========
 
 // Assigning Tab for Notification screen
   tabSize() {
@@ -94,6 +110,19 @@ class NotificationProvider extends DefaultChangeNotifier {
 
     ];
 
+    notifyListeners();
+  }
+
+  List<BrokerMessage>? _triggeredAlertSearch = [];
+  List<BrokerMessage>? get triggeredAlertSearch => _triggeredAlertSearch;
+
+  void clearTriggeredAlertSearch() {
+    _triggeredAlertSearch = [];
+    notifyListeners();
+  }
+
+  void setTriggeredAlertSearch(List<BrokerMessage>? searchResult) {
+    _triggeredAlertSearch = searchResult;
     notifyListeners();
   }
 
@@ -177,4 +206,5 @@ class NotificationProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {}
   }
+  
 }

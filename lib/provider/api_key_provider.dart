@@ -151,9 +151,9 @@ class ApikeyProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-Future fetchgenerateapikey(BuildContext context, String month) async {
+Future fetchgenerateapikey(BuildContext context, String month, String apistatus) async {
     try {
-      _generateApikey = await api.generateapikeynewuser(month);
+      _generateApikey = await api.generateapikeynewuser(month, apistatus);
       ConstantName.sessCheck = true;
       if (_generateApikey!.emsg == "Session Expired :  Invalid Session Key" &&
           _generateApikey!.stat == "Not_Ok") {

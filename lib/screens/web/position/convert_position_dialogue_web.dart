@@ -57,45 +57,52 @@ class _ConvertPositionDialogueWebState
     final theme = ref.watch(themeProvider);
 
     return Center(
-      child: shadcn.Card(
-        borderRadius: BorderRadius.circular(8),
-        padding: EdgeInsets.zero,
-        child: Container(
-          width: 380,
-          constraints: const BoxConstraints(maxHeight: 400),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with close button
-              _buildHeader(context),
+      child: Container(
+        width: 380,
+        margin: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header with close button
+            _buildHeader(context),
 
-              // Content
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Order Type Section
-                        _buildOrderTypeSection(context),
-                        const SizedBox(height: 16),
+            // Content
+            Flexible(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Order Type Section
+                      _buildOrderTypeSection(context),
+                      const SizedBox(height: 20),
 
-                        // Quantity Section
-                        _buildQuantitySection(context, theme),
-                        const SizedBox(height: 24),
+                      // Quantity Section
+                      _buildQuantitySection(context, theme),
+                      const SizedBox(height: 24),
 
-                        // Convert Position Button
-                        _buildConvertButton(context),
-                      ],
-                    ),
+                      // Convert Position Button
+                      _buildConvertButton(context),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -103,11 +110,13 @@ class _ConvertPositionDialogueWebState
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: shadcn.Theme.of(context).colorScheme.border,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
           ),
         ),
       ),
@@ -124,12 +133,16 @@ class _ConvertPositionDialogueWebState
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary,
                 ),
+                fontWeight: MyntFonts.medium,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          MyntCloseButton(
+          shadcn.IconButton(
+            icon: const Icon(Icons.close, size: 20),
             onPressed: () => Navigator.of(context).pop(),
+            variance: shadcn.ButtonVariance.ghost,
+            size: shadcn.ButtonSize.small,
           ),
         ],
       ),
@@ -237,11 +250,11 @@ class _ConvertPositionDialogueWebState
         ),
         const SizedBox(height: 10),
         SizedBox(
-          height: 40,
+          height: 44,
           child: shadcn.TextField(
             controller: qty,
             placeholder: const Text("0"),
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.left,
             style: MyntWebTextStyles.body(
               context,
               color: resolveThemeColor(
@@ -274,6 +287,7 @@ class _ConvertPositionDialogueWebState
   Widget _buildConvertButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+      height: 44,
       child: MyntPrimaryButton(
         label: "Convert Position",
         isFullWidth: true,

@@ -2139,29 +2139,15 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-        // Switch to Orders tab in Portfolio screen
-        ref.read(portfolioProvider).changeTabIndex(2);
-        ref.read(orderProvider).changeTabIndex(3, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
-        // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
         if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
-        } else {
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(successMessage(context, "Order Placed Successfully"));
-        }
-
-        if (kIsWeb) {
-          // On web, skip Navigator.pop and bottomMenu navigation
-          // The draggable dialog will handle closing itself
+          // On web, let the screen handle closing the dialog
+          // Don't call Navigator.pop here as it causes context issues
         } else {
           Navigator.pop(context);
           ref.read(indexListProvider).bottomMenu(2, context);
           // Switch to Orders tab in Portfolio screen
           ref.read(portfolioProvider).changeTabIndex(2);
+          changeTabIndex(3, context);
           HapticFeedback.heavyImpact();
           SystemSound.play(SystemSoundType.click);
         }
@@ -2282,12 +2268,17 @@ class OrderProvider extends DefaultChangeNotifier {
         ref.read(ordInputProvider).clearTextField();
         await fetchGTTOrderBook(context, "");
 
-        Navigator.pop(context);
-        ref.read(indexListProvider).bottomMenu(2, context);
-         ref.read(portfolioProvider).changeTabIndex(2);
-        ref.read(orderProvider).changeTabIndex(3, context);
-        HapticFeedback.heavyImpact();
-        SystemSound.play(SystemSoundType.click);
+        if (kIsWeb) {
+          // On web, let the screen handle closing the dialog
+          // Don't call Navigator.pop here as it causes context issues
+        } else {
+          Navigator.pop(context);
+          ref.read(indexListProvider).bottomMenu(2, context);
+          ref.read(portfolioProvider).changeTabIndex(2);
+          changeTabIndex(3, context);
+          HapticFeedback.heavyImpact();
+          SystemSound.play(SystemSoundType.click);
+        }
       } else {
         if (_placeGttOrderModel!.emsg ==
                 "Session Expired :  Invalid Session Key" &&

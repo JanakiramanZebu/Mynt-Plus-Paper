@@ -1,0 +1,121 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/provider/notification_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/exch_message_link.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'dart:convert';
+
+class BrokerMsg extends ConsumerWidget {
+  const BrokerMsg({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final noftification = ref.watch(notificationprovider);
+    final theme = ref.read(themeProvider);
+
+    String cleanMessage(String text) {
+      try {
+        // Step 1: Fix encoding issues (Latin1 -> UTF-8)
+        final bytes = latin1.encode(text);
+        String decoded = utf8.decode(bytes);
+
+        // Step 2: Remove common corrupted characters
+        decoded = decoded.replaceAll(RegExp(r'[âÂ�]+'), '');
+
+        // Step 3: Remove weird control characters except line breaks and spaces
+        decoded =
+            decoded.replaceAll(RegExp(r'[\u0000-\u001F\u007F-\u009F]'), '');
+
+        // Step 4: Trim unnecessary whitespace & blank lines
+        decoded = decoded
+            .replaceAll(RegExp(r'(^[ \t]*\n)+', multiLine: true),
+                '') // leading blank lines
+            .replaceAll(RegExp(r'\n{2,}'), '\n') // collapse multiple newlines
+            .trim();
+
+        return decoded;
+      } catch (_) {
+        // Fallback if decoding fails, just clean up basic characters
+        return text
+            .replaceAll(RegExp(r'[âÂ�]+'), '')
+            .replaceAll(RegExp(r'[\u0000-\u001F\u007F-\u009F]'), '')
+            .replaceAll(RegExp(r'(^[ \t]*\n)+', multiLine: true), '')
+            .replaceAll(RegExp(r'\n{2,}'), '\n')
+            .trim();
+      }
+    }
+
+    // Check if data is loading
+    if (noftification.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Check if brokermsg is null or empty
+    final brokermsg = noftification.brokermsg;
+    if (brokermsg == null || brokermsg.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 220),
+        child: NoDataFound(
+          secondaryEnabled: false,
+        ),
+      );
+    }
+
+    // Check if first message has no content
+    if (brokermsg[0].dmsg == null || brokermsg[0].dmsg!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 220),
+        child: NoDataFound(
+          secondaryEnabled: false,
+        ),
+      );
+    }
+
+    // Display list of messages
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        itemCount: brokermsg.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextWidget.paraText(
+                  text: "${brokermsg[index].norentm ?? ''}",
+                  theme: false,
+                  color: colors.textSecondaryLight,
+                  fw: 0,
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                LinkExtractor(
+                  theme: theme,
+                  text: cleanMessage("${brokermsg[index].dmsg ?? ''}"),
+                )
+              ],
+            ),
+          );
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Divider(
+              color: theme.isDarkMode
+                  ? colors.darkColorDivider
+                  : colors.colorDivider,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

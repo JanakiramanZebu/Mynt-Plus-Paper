@@ -1,7 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -19,6 +18,8 @@ import 'screens/open_orders_screen.dart';
 import 'screens/executed_orders_screen.dart';
 import 'screens/trade_book_screen.dart';
 import 'screens/gtt_orders_screen.dart';
+// import '../../../sharedWidget/common_search_fields_web.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Main Order Book Screen - Now just a coordinator
 /// All table logic is in separate screen widgets

@@ -114,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
 // Determining the app's state, such as inactive, stopped, resumed, and so forth
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         // Cancel the inactive timer since app is resumed

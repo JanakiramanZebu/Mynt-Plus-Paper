@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../../provider/change_password_provider.dart';
-import '../../../../provider/user_profile_provider.dart';
-import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
+import '../../../provider/change_password_provider.dart';
+import '../../../provider/user_profile_provider.dart';
+import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/api_key_provider.dart';
@@ -16,10 +17,10 @@ import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
-import '../../Mobile/profile_screen/topt_screen.dart';
+import 'topt_screen.dart';
 
-class SettingsScreenWeb extends ConsumerWidget {
-  const SettingsScreenWeb({super.key});
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -410,7 +411,7 @@ class SettingsScreenWeb extends ConsumerWidget {
                                   await ref
                                       .read(apikeyprovider)
                                       .fetchapikey(context);
-                                  showResponsiveSuccess(context,
+                                      successMessage(context,
                                           'API Key as been ${apikeys.generateApikey?.status}');
                                 },
                                 child: TextWidget.subText(
@@ -531,17 +532,23 @@ class SettingsScreenWeb extends ConsumerWidget {
   // }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return TextWidget.textStyle(
-        fontSize: fontSize, 
-        color: color, 
-        theme: false, 
-        fw: fWeight);
+    return GoogleFonts.inter(
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 
   copyToClipboard(String text, String? status, BuildContext context) {
     Clipboard.setData(ClipboardData(text: text));
     if (status == "VALID") {
-      showResponsiveSuccess(context, 'Text copied to clipboard');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: TextWidget.titleText(
+          text: 'Text copied to clipboard',
+          theme: false,
+          color: colors.colorBlue,
+          fw: 0,
+        )),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
