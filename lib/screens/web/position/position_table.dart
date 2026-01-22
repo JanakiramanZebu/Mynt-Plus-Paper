@@ -965,11 +965,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           );
         }
       case 'P&L':
-        // For closed positions, use rpnl (realized P&L)
-        // For open positions, use profitNloss (unrealized P&L)
-        final pnlValue = isClosed
-            ? (position.rpnl ?? position.profitNloss ?? '0.00')
-            : (position.profitNloss ?? '0.00');
+        // Use profitNloss for both open and closed positions
+        // positionCal() already calculates this correctly:
+        // - Open: actualBookedPnl + actualUnrealizedPnl
+        // - Closed: actualBookedPnl (unrealized = 0 when qty = 0)
+        final pnlValue = position.profitNloss ?? '0.00';
 
         if (position.token == null || position.token!.isEmpty) {
           return Align(

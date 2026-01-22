@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +19,7 @@ import '../../../sharedWidget/common_search_fields_web.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
+import 'tv_chart/chart_iframe_guard.dart';
 
 class SearchDialogWeb extends ConsumerStatefulWidget {
   final String wlName;
@@ -57,6 +60,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   @override
   void initState() {
     super.initState();
+    // Disable chart iframe pointer events when dialog opens
+    _disableAllChartIframes();
+
     _tabCount = widget.isBasket == "Basket" ? 5 : 6;
     _tabController =
         TabController(length: _tabCount, vsync: this, initialIndex: 0);
@@ -108,7 +114,42 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     }
     _tabController.dispose();
     _textController.dispose();
+    // Re-enable chart iframe pointer events when dialog closes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
     super.dispose();
+  }
+
+  // Disable all chart iframes to allow dialog interaction
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  // Re-enable all chart iframes
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
   }
 
   void _scrollToSelectedTab(int index) {
