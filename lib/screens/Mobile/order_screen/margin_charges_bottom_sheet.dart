@@ -322,7 +322,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                     TextWidget.subText(
-                                      text: "${orderBrokerage.brkageAmt}",
+                                      text: "${orderBrokerage.brkageAmt?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -345,7 +345,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                     TextWidget.subText(
-                                      text: "${orderBrokerage.sttAmt}",
+                                      text: "${orderBrokerage.sttAmt?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -368,7 +368,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                     TextWidget.subText(
-                                      text: "${orderBrokerage.exchChrg}",
+                                      text: "${orderBrokerage.exchChrg?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -392,7 +392,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                     TextWidget.subText(
-                                      text: "${orderBrokerage.sebiChrg}",
+                                      text: "${orderBrokerage.sebiChrg?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -415,7 +415,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                       TextWidget.subText(
-                                      text: "${orderBrokerage.stampDuty}",
+                                      text: "${orderBrokerage.stampDuty?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -437,7 +437,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                       TextWidget.subText(
-                                      text: "${orderBrokerage.clrChrg}",
+                                      text: "${orderBrokerage.clrChrg?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -459,7 +459,7 @@ class _MarginDetailsBottomsheetState extends State<MarginDetailsBottomsheet> {
                                       fw: 0
                                     ),
                                       TextWidget.subText(
-                                      text: "${orderBrokerage.gst}",
+                                      text: "${orderBrokerage.gst?? 0.00}",
                                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                                       theme: theme.isDarkMode,
                                       fw: 0
@@ -623,7 +623,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : colors.colorWhite,
                                       14,
                                       FontWeight.w500)),
-                              Text("${orderBrokerage?.brkageAmt}",
+                              Text("${orderBrokerage?.brkageAmt?? 0.00}",
                                   style: textStyle(
                                       !theme.isDarkMode
                                           ? colors.colorBlack
@@ -647,7 +647,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : colors.colorWhite,
                                       14,
                                       FontWeight.w500)),
-                              Text("${orderBrokerage?.sttAmt}",
+                              Text("${orderBrokerage?.sttAmt?? 0.00}",
                                   style: textStyle(
                                       !theme.isDarkMode
                                           ? colors.colorBlack
@@ -671,7 +671,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : colors.colorWhite,
                                       14,
                                       FontWeight.w500)),
-                              Text("${orderBrokerage?.exchChrg}",
+                              Text("${orderBrokerage?.exchChrg?? 0.00}",
                                   style: textStyle(
                                       !theme.isDarkMode
                                           ? colors.colorBlack
@@ -695,7 +695,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : colors.colorWhite,
                                       14,
                                       FontWeight.w500)),
-                              Text("${orderBrokerage?.sebiChrg}",
+                              Text("${orderBrokerage?.sebiChrg?? 0.00}",
                                   style: textStyle(
                                       !theme.isDarkMode
                                           ? colors.colorBlack
@@ -719,7 +719,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                             : colors.colorWhite,
                                         14,
                                         FontWeight.w500)),
-                                Text("${orderBrokerage?.stampDuty}",
+                                Text("${orderBrokerage?.stampDuty?? 0.00}",
                                     style: textStyle(
                                         !theme.isDarkMode
                                             ? colors.colorBlack
@@ -742,7 +742,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                             : colors.colorWhite,
                                         14,
                                         FontWeight.w500)),
-                                Text("${orderBrokerage?.clrChrg}",
+                                Text("${orderBrokerage?.clrChrg?? 0.00}",
                                     style: textStyle(
                                         !theme.isDarkMode
                                             ? colors.colorBlack
@@ -765,7 +765,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                             : colors.colorWhite,
                                         14,
                                         FontWeight.w500)),
-                                Text("${orderBrokerage?.gst}",
+                                Text("${orderBrokerage?.gst?? 0.00}",
                                     style: textStyle(
                                         !theme.isDarkMode
                                             ? colors.colorBlack
