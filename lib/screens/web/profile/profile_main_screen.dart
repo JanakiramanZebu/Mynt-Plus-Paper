@@ -1,8 +1,11 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use
-
+import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:crypto/crypto.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/provider/api_key_provider.dart';
@@ -14,8 +17,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/screens/Mobile/profile_screen/topt_screen.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart' show ScreenType;
 
 import 'Api_key_screen.dart';
@@ -130,20 +133,30 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: _navigateBack,
-                    icon: Icon(
-                      Icons.arrow_back_ios_rounded,
-                      size: 18,
-                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  TextWidget.titleText(
-                    text: _currentChildTitle ?? '',
-                    theme: false,
-                    color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 2,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _currentChildTitle ?? '',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                        ),
+                      ),
+                      if (_currentChildTitle == 'Settings')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "Catch the log, setting up preference, get API key, and change themes.",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -471,204 +484,794 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
 // -----------------------------------------------------------------------------
 // SETTINGS SECTION
 // -----------------------------------------------------------------------------
-class _SettingsSection extends ConsumerWidget {
+class _SettingsSection extends ConsumerStatefulWidget {
   const _SettingsSection();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SettingsSection> createState() => _SettingsSectionState();
+}
+
+class _SettingsSectionState extends ConsumerState<_SettingsSection> {
+  // Order preference state
+  String _selectedProductType = 'Delivery / Carry';
+  String _selectedOrderType = 'Market';
+  String _selectedValidity = 'DAY';
+  String _selectedMarketProtection = '%';
+  String _selectedQuantityPref = 'Default Qty / Lot';
+  String _selectedPositionExit = 'Limit';
+  bool _stickyOrderWindow = true;
+  bool _quickOrderScreen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch API keys and TOTP on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(apikeyprovider).fetchapikey(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSettingsItem(
-          context, theme,
-          title: "Themes",
-          subtitle: "Switch between Light and Dark mode",
-          icon: Icons.brightness_6_outlined,
-          onTap: () => _showThemeDialog(context, theme, ref),
-        ),
-        _buildSettingsItem(
-          context, theme,
-          title: "Change Password",
-          subtitle: "Update your account password",
-          icon: Icons.lock_outline,
-          onTap: () {
-            final pref = locator<Preferences>();
-            ref.read(changePasswordProvider).userIdController.text = "${pref.clientId}";
-            Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
-          },
-        ),
-        _buildSettingsItem(
-          context, theme,
-          title: "Order Preference",
-          subtitle: "Manage default order settings",
-          icon: Icons.tune,
-          onTap: () => Navigator.pushNamed(context, Routes.orderPrefer),
-        ),
-        _buildSettingsItem(
-          context, theme,
-          title: "Generate TOTP",
-          subtitle: "Setup 2FA for your account",
-          icon: Icons.security,
-          onTap: () async {
-            final apikeys = ref.read(apikeyprovider);
-            await apikeys.fetchTotp();
-            showDialog(
-              context: context,
-              builder: (_) => Dialog(
-                child: Container(
-                  width: 400,
-                  padding: const EdgeInsets.all(16),
-                  child: TotpScreen(secretKey: ref.read(apikeyprovider).totpkey!.pwd),
+        Container(
+          padding: const EdgeInsets.only(right: 16.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: shadcn.Accordion(
+            items: [
+            // API Key
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('API Key', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-        _buildSettingsItem(
-          context, theme,
-          title: "API Keys",
-          subtitle: "Manage your API access keys",
-          icon: Icons.vpn_key_rounded,
-          onTap: () async {
-            final apikeys = ref.read(apikeyprovider);
-            await apikeys.fetchapikey(context);
-            showDialog(
-              context: context,
-              builder: (_) => Dialog(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600, maxHeight: 700),
-                  child: const ApiKeyBottomTabs(),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildApiKeyContent(theme),
                 ),
               ),
-            );
-          },
+            ),
+            
+            // TOTP
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('TOTP', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                  ),
+                ),
+              ),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildTotpContent(theme),
+                ),
+              ),
+            ),
+            
+            // Password & Security
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('Change Password ', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                  ),
+                ),
+              ),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildPasswordSecurityContent(theme),
+                ),
+              ),
+            ),
+            
+            // Themes
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('Themes', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                  ),
+                ),
+              ),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildThemesContent(theme),
+                ),
+              ),
+            ),
+            
+            // Order Preference
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('Order Preference', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                  ),
+                ),
+              ),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildOrderPreferenceContent(theme),
+                ),
+              ),
+            ),
+            
+            // Freeze Account
+            shadcn.AccordionItem(
+              trigger: shadcn.AccordionTrigger(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text('Freeze Account', style: MyntWebTextStyles.title(context, 
+                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight).copyWith(decoration: TextDecoration.none)),
+                  ),
+                ),
+              ),
+              content: FractionallySizedBox(
+                widthFactor: 0.5,
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: _buildFreezeAccountContent(theme),
+                ),
+              ),
+            ),
+          ],
         ),
-        _buildSettingsItem(
-          context, theme,
-          title: "Freeze Account",
-          subtitle: "Temporarily disable your account",
-          icon: Icons.ac_unit,
-          isDestructive: true,
-          onTap: () => _showFreezeDialog(context, theme, ref),
         ),
       ],
     );
   }
 
-  Widget _buildSettingsItem(
-    BuildContext context, ThemesProvider theme, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
+  Widget _buildApiKeyContent(ThemesProvider theme) {
+    // Use ConstrainedBox to allow content to grow while maintaining reasonable bounds
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: 300,
+        maxHeight: 500,
+      ),
+      child: const ApiKeyBottomTabs(),
+    );
+  }
+
+  Widget _buildTotpContent(ThemesProvider theme) {
+    final apikeys = ref.watch(apikeyprovider);
     final isDark = theme.isDarkMode;
-    return ListTile(
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isDestructive
-              ? (isDark ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1))
-              : (isDark ? colors.textSecondaryDark.withOpacity(0.1) : colors.textSecondaryLight.withOpacity(0.1)),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: isDestructive
-              ? (isDark ? colors.lossDark : colors.lossLight)
-              : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
-        ),
-      ),
-      title: TextWidget.subText(
-        text: title,
-        theme: false,
-        color: isDestructive
-            ? (isDark ? colors.lossDark : colors.lossLight)
-            : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
-        fw: 2,
-      ),
-      subtitle: TextWidget.captionText(
-        text: subtitle,
-        theme: false,
-        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-      ),
-      trailing: Icon(
-        Icons.chevron_right_rounded,
-        size: 20,
-        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-      ),
-    );
-  }
 
-  void _showThemeDialog(BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: theme.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
-        title: Text("Choose Theme", style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: theme.themeTypes.map((t) => ListTile(
-            title: Text(t, style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black)),
-            leading: Icon(Icons.circle, color: t == theme.deviceTheme ? colors.primaryLight : Colors.grey),
-            onTap: () {
-              theme.toggleTheme(themeMod: t);
-              Navigator.pop(context);
+    // If we have a TOTP key, show the inline TOTP widget
+    final totpPwd = apikeys.totpkey?.pwd;
+    if (totpPwd != null) {
+      return _TotpInlineWidget(
+        secretKey: totpPwd,
+        isDark: isDark,
+      );
+    }
+
+    // Otherwise show generate button
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.captionText(
+            text: 'Generate TOTP for 2FA authentication',
+            theme: false,
+            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () async {
+              await ref.read(apikeyprovider).fetchTotp();
+              setState(() {});
             },
-          )).toList(),
-        ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.primaryLight,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Generate TOTP'),
+          ),
+        ],
       ),
     );
   }
 
-  void _showFreezeDialog(BuildContext context, ThemesProvider theme, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: theme.isDarkMode ? const Color(0xFF1E1E1E) : colors.colorWhite,
-          title: TextWidget.titleText(
-            text: "Freeze Account",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 1,
+  Widget _buildPasswordSecurityContent(ThemesProvider theme) {
+    final isDark = theme.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.captionText(
+            text: 'Update your account password',
+            theme: false,
+            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextWidget.subText(
-                text: "Are you sure you want to freeze your account? Open orders will be cancelled.",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 200,
+            child: ElevatedButton(
               onPressed: () {
-                ref.read(userProfileProvider).fetchFreezeAc(context);
-                Navigator.pop(context);
+                final pref = locator<Preferences>();
+                ref.read(changePasswordProvider).userIdController.text = "${pref.clientId}";
+                Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: colors.lossLight,
+                backgroundColor: colors.primaryLight,
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
-              child: const Text("Freeze"),
+              child: const Text('Change Password'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemesContent(ThemesProvider theme) {
+    final isDark = theme.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: theme.themeTypes.map((t) {
+          final isSelected = t == theme.deviceTheme;
+          return Padding(
+            padding: const EdgeInsets.only(right: 24),
+            child: InkWell(
+              onTap: () => theme.toggleTheme(themeMod: t),
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? colors.primaryLight : (isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                        width: 2,
+                      ),
+                      color: Colors.transparent,
+                    ),
+                    child: isSelected
+                        ? Center(
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: colors.primaryLight,
+                              ),
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    t,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildOrderPreferenceContent(ThemesProvider theme) {
+    final isDark = theme.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product Type
+          _buildLabel('Product type', isDark),
+          const SizedBox(height: 12),
+          _buildSegmentedButton(
+            options: ['Delivery / Carry', 'Intraday', 'CO - BO'],
+            selected: _selectedProductType,
+            onChanged: (val) => setState(() => _selectedProductType = val),
+            isDark: isDark,
+          ),
+          const SizedBox(height: 24),
+
+          // Order Type
+          _buildLabel('Order type', isDark),
+          const SizedBox(height: 12),
+          _buildSegmentedButton(
+            options: ['Limit', 'Market', 'SL Limit', 'SL MKT'],
+            selected: _selectedOrderType,
+            onChanged: (val) => setState(() => _selectedOrderType = val),
+            isDark: isDark,
+          ),
+          const SizedBox(height: 24),
+
+          // Validity
+          _buildLabel('Validity', isDark),
+          const SizedBox(height: 12),
+          _buildSegmentedButton(
+            options: ['DAY', 'IOC'],
+            selected: _selectedValidity,
+            onChanged: (val) => setState(() => _selectedValidity = val),
+            isDark: isDark,
+            compact: true,
+          ),
+          const SizedBox(height: 24),
+
+          // Market Protection
+          _buildLabel('Market Protection', isDark),
+          const SizedBox(height: 12),
+          Container(
+            width: 100,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              border: Border.all(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  '%',
+                  style: MyntWebTextStyles.bodySmall(context,
+                    color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '5',
+                  style: MyntWebTextStyles.bodySmall(context,
+                    color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Quantity Preference
+          _buildLabel('Quantity preference', isDark),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildRadioOption('Default Qty / Lot', _selectedQuantityPref == 'Default Qty / Lot', 
+                () => setState(() => _selectedQuantityPref = 'Default Qty / Lot'), isDark),
+              const SizedBox(width: 80),
+              _buildRadioOption('Multiples of Qty / Lot', _selectedQuantityPref == 'Multiples of Qty / Lot', 
+                () => setState(() => _selectedQuantityPref = 'Multiples of Qty / Lot'), isDark),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Position Exit Market
+          _buildLabel('Position Exit Market', isDark),
+          const SizedBox(height: 12),
+          _buildSegmentedButton(
+            options: ['Limit', 'Market'],
+            selected: _selectedPositionExit,
+            onChanged: (val) => setState(() => _selectedPositionExit = val),
+            isDark: isDark,
+            compact: true,
+          ),
+          const SizedBox(height: 24),
+
+          // Toggles
+          _buildToggleRow('Sticky Order Window', _stickyOrderWindow, 
+            (val) => setState(() => _stickyOrderWindow = val), isDark),
+          const SizedBox(height: 12),
+          _buildToggleRow('Quick Order Screen', _quickOrderScreen, 
+            (val) => setState(() => _quickOrderScreen = val), isDark),
+          const SizedBox(height: 40),
+
+          // Buttons - 50% width
+          // Buttons
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 200, // Fixed width for buttons
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedProductType = 'Delivery / Carry';
+                        _selectedOrderType = 'Market';
+                        _selectedValidity = 'DAY';
+                        _selectedMarketProtection = '%';
+                        _selectedQuantityPref = 'Default Qty / Lot';
+                        _selectedPositionExit = 'Limit';
+                        _stickyOrderWindow = true;
+                        _quickOrderScreen = false;
+                      });
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colors.primaryDark,
+                      backgroundColor:  const Color(0xFFEFF4FF),
+                      side: BorderSide(color: colors.primaryLight),
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    child: const Text('Reset'),
+                  ),
+                ),
+                const SizedBox(width: 24),
+                SizedBox(
+                  width: 200, // Fixed width for buttons
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Save preferences
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Preferences saved')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.primaryLight,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    child: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFreezeAccountContent(ThemesProvider theme) {
+    final isDark = theme.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextWidget.subText(
+            text: 'Freezing your account will temporarily disable trading. All open orders will be cancelled.',
+            theme: false,
+            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 200,
+            child: ElevatedButton(
+              onPressed: () {
+              showDialog(
+                context: context,
+                builder: (ctx) => Dialog(
+                  backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  child: Container(
+                    width: 450,
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Freeze Account',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              icon: Icon(Icons.close, color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Freezing your account will lock access for everyone, including you.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'All open orders will be automatically cancelled.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Existing positions will remain unaffected.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'You can unfreeze your account anytime by verifying your identity.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              ref.read(userProfileProvider).fetchFreezeAc(context);
+                              Navigator.pop(ctx);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.primaryLight,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            child: const Text('Freeze My Account'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
+              foregroundColor: isDark ? colors.lossDark : colors.lossLight,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
+            child: const Text('Freeze Account'),
+          ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text, bool isDark) {
+    return Text(
+      text,
+      style: MyntWebTextStyles.body(context,
+        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+      ),
+    );
+  }
+
+  Widget _buildSegmentedButton({
+    required List<String> options,
+    required String selected,
+    required Function(String) onChanged,
+    required bool isDark,
+    bool compact = false,
+  }) {
+    return Row(
+      children: options.map((option) {
+        final isSelected = option == selected;
+        return compact
+            ? Padding(
+                padding: EdgeInsets.only(right: option == options.last ? 0 : 12.0),
+                child: InkWell(
+                  onTap: () => onChanged(option),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    width: 70, // Fixed width for compact buttons like Validity
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? (isDark ? colors.primaryLight.withOpacity(0.1) : const Color(0xFFEFF4FF))
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: isSelected
+                            ? (isDark ? colors.primaryDark : colors.primaryLight)
+                            : (isDark ? colors.darkColorDivider : colors.colorDivider),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      option,
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.bodySmall(context,
+                        fontWeight: FontWeight.w500,
+                        color: isSelected
+                            ? (isDark ? colors.primaryDark : colors.primaryLight)
+                            : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: option == options.last ? 0 : 12.0),
+                  child: InkWell(
+                    onTap: () => onChanged(option),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? (isDark ? colors.primaryLight.withOpacity(0.1) : const Color(0xFFEFF4FF))
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected
+                              ? (isDark ? colors.primaryDark : colors.primaryLight)
+                              : (isDark ? colors.darkColorDivider : colors.colorDivider),
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        option,
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(context, // Changed from sub to body
+                          fontWeight: FontWeight.w500,
+                          color: isSelected
+                              ? (isDark ? colors.primaryDark : colors.primaryLight)
+                              : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+      }).toList(),
+    );
+  }
+
+  Widget _buildRadioOption(String label, bool isSelected, VoidCallback onTap, bool isDark) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? colors.primaryLight : (isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                width: 2,
+              ),
+            ),
+            child: isSelected
+                ? Center(
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colors.primaryLight,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: MyntWebTextStyles.bodySmall(context,
+              color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleRow(String label, bool value, Function(bool) onChanged, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: MyntWebTextStyles.body(context,
+                color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.info_outline,
+              size: 16,
+              color: isDark ? colors.textSecondaryDark.withOpacity(0.7) : colors.textSecondaryLight.withOpacity(0.7),
             ),
           ],
-        );
-      },
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: colors.primaryLight,
+        ),
+      ],
     );
   }
 }
@@ -694,8 +1297,6 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
     'Form Download',
     'Closure',
   ];
-
-  String? _expandedSection;
 
   @override
   void initState() {
@@ -754,54 +1355,29 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
           ),
         ),
 
-        // Sections
-        ..._sections.map((section) => _buildExpansionTile(section, theme)).toList(),
+        // Shadcn Accordion for profile sections
+        shadcn.Accordion(
+          items: _sections.map((section) => _buildAccordionItem(section, theme)).toList(),
+        ),
       ],
     );
   }
 
-  Widget _buildExpansionTile(String title, ThemesProvider theme) {
-    final isExpanded = _expandedSection == title;
+  shadcn.AccordionItem _buildAccordionItem(String title, ThemesProvider theme) {
     final isDark = theme.isDarkMode;
-
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          key: Key(title),
-          initiallyExpanded: isExpanded,
-          iconColor: isDark ? colors.primaryDark : colors.primaryLight,
-          collapsedIconColor: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-          title: TextWidget.subText(
-            text: title,
-            theme: false,
-            color: isExpanded
-                ? (isDark ? colors.primaryDark : colors.primaryLight)
-                : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
-            fw: isExpanded ? 2 : 0,
+    
+    return shadcn.AccordionItem(
+      trigger: shadcn.AccordionTrigger(
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
           ),
-          onExpansionChanged: (val) {
-            if (val) {
-              setState(() => _expandedSection = title);
-              if (title == 'Profile' || title == 'Bank') {
-                ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
-              }
-            } else {
-              setState(() => _expandedSection = null);
-            }
-          },
-          children: [
-            _buildSectionContent(title, theme),
-          ],
         ),
       ),
+      content: _buildSectionContent(title, theme),
     );
   }
 
@@ -819,26 +1395,31 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
     final data = _getDataForSection(section);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: data.entries.map((e) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.captionText(
-                text: e.key,
-                theme: false,
-                color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+              Expanded(
+                flex: 2,
+                child: TextWidget.captionText(
+                  text: e.key,
+                  theme: false,
+                  color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                ),
               ),
-              const SizedBox(height: 4),
-              TextWidget.subText(
-                text: e.value,
-                theme: false,
-                color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                fw: 1,
+              Expanded(
+                flex: 3,
+                child: TextWidget.subText(
+                  text: e.value,
+                  theme: false,
+                  color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  fw: 1,
+                ),
               ),
             ],
           ),
@@ -870,6 +1451,38 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
           };
         }
         return {"No Bank Details": "Found"};
+      case "Depository":
+        return {
+          "DP ID": "--",
+          "DP Name": "--",
+          "BO ID": "--",
+        };
+      case "Margin Trading Facility (MTF)":
+        return {
+          "MTF Status": "--",
+          "MTF Limit": "--",
+        };
+      case "Trading Preferences":
+        return {
+          "Exchange": "NSE, BSE",
+          "Segments": "Equity, F&O",
+        };
+      case "Nominee":
+        return {
+          "Nominee Name": "--",
+          "Relationship": "--",
+          "Share %": "--",
+        };
+      case "Form Download":
+        return {
+          "Account Opening Form": "Download",
+          "DDPI Form": "Download",
+        };
+      case "Closure":
+        return {
+          "Status": "Active",
+          "Close Account": "Contact Support",
+        };
       default:
         return {"Details": "View details for $section"};
     }
@@ -930,3 +1543,234 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
     );
   }
 }
+
+// -----------------------------------------------------------------------------
+// TOTP INLINE WIDGET
+// -----------------------------------------------------------------------------
+class _TotpInlineWidget extends StatefulWidget {
+  final String secretKey;
+  final bool isDark;
+
+  const _TotpInlineWidget({
+    required this.secretKey,
+    required this.isDark,
+  });
+
+  @override
+  State<_TotpInlineWidget> createState() => _TotpInlineWidgetState();
+}
+
+class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
+  bool isObscure = true;
+  String otp = 'Loading...';
+  late Timer timer;
+  String totpkey = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  int remainingSeconds = 30;
+
+  @override
+  void initState() {
+    super.initState();
+    setTOTP();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  String base32ToHex(String base32) {
+    var base32Chars = totpkey;
+    String bits = '';
+    String hex = '';
+
+    for (int i = 0; i < base32.length; i++) {
+      int val = base32Chars.indexOf(base32[i].toUpperCase());
+      bits += val.toRadixString(2).padLeft(5, '0');
+    }
+
+    for (int i = 0; i + 8 <= bits.length; i += 8) {
+      String byte = bits.substring(i, i + 8);
+      hex += int.parse(byte, radix: 2).toRadixString(16).padLeft(2, '0');
+    }
+
+    return hex;
+  }
+
+  Uint8List hexToBytes(String hex) {
+    List<int> bytes = [];
+    for (int i = 0; i < hex.length; i += 2) {
+      bytes.add(int.parse(hex.substring(i, i + 2), radix: 16));
+    }
+    return Uint8List.fromList(bytes);
+  }
+
+  void setTOTP() async {
+    generateTOTP();
+    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      generateTOTP();
+      setState(() {
+        int currentSecond = DateTime.now().second;
+        remainingSeconds = 30 - (currentSecond % 30);
+      });
+    });
+  }
+
+  void generateTOTP() async {
+    String key = base32ToHex(widget.secretKey);
+
+    int epoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    int time = (epoch ~/ 30);
+    String timeHex = time.toRadixString(16).padLeft(16, '0');
+
+    Uint8List timeBuffer = hexToBytes(timeHex);
+    Uint8List keyBuffer = hexToBytes(key);
+
+    Hmac hmac = Hmac(sha1, keyBuffer);
+    Digest digest = hmac.convert(timeBuffer);
+
+    List<int> hash = digest.bytes;
+    int offset = hash[hash.length - 1] & 0xf;
+    int binary = ((hash[offset] & 0x7f) << 24) |
+        ((hash[offset + 1] & 0xff) << 16) |
+        ((hash[offset + 2] & 0xff) << 8) |
+        (hash[offset + 3] & 0xff);
+
+    int otpNumber = binary % 1000000;
+    String otpCode = otpNumber.toString().padLeft(6, '0');
+
+    setState(() {
+      otp = otpCode;
+    });
+  }
+
+  void _copyToClipboard(String text, String message) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          // TextWidget.titleText(
+          //   text: 'Your TOTP',
+          //   theme: false,
+          //   color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+          //   fw: 0,
+          // ),
+          // const SizedBox(height: 16),
+          // Divider(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+          // const SizedBox(height: 8),
+
+          // Token Label
+          TextWidget.subText(
+            text: 'Token',
+            theme: false,
+            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+            fw: 1,
+          ),
+          const SizedBox(height: 8),
+
+          // Token Value with Copy and Timer
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    otp.length >= 6 ? '${otp.substring(0, 3)} ${otp.substring(3, 6)}' : otp,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.copy, size: 18, color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    onPressed: () => _copyToClipboard(otp, 'TOTP copied to clipboard'),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+              Text(
+                '$remainingSeconds sec',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Authenticator Key Label
+          TextWidget.subText(
+            text: 'Authenticator Key',
+            theme: false,
+            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+            fw: 0,
+          ),
+          const SizedBox(height: 8),
+
+          // Authenticator Key Input
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1E1E1E) : const Color(0xffF1F3F8),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: colors.primaryLight, width: 1),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    isObscure ? '••••••••••••••••••••' : widget.secretKey,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isObscure ? Icons.visibility_off : Icons.visibility,
+                        size: 18,
+                        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      ),
+                      onPressed: () => setState(() => isObscure = !isObscure),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton(
+                      icon: Icon(Icons.copy, size: 18, color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                      onPressed: () => _copyToClipboard(widget.secretKey, 'Auth key copied to clipboard'),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
