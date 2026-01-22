@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/thems.dart';
-import '../../../../provider/mf_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
-import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
-import '../../../sharedWidget/common_buttons_web.dart';
-import '../../../../main.dart';
 
 class MfHoldingDetailScreenWeb extends ConsumerStatefulWidget {
   final dynamic holding;
@@ -27,61 +23,74 @@ class _MfHoldingDetailScreenWebState
     extends ConsumerState<MfHoldingDetailScreenWeb> {
   @override
   Widget build(BuildContext context) {
-    // Use read instead of watch to avoid rebuilds - theme won't change while sheet is open
     final theme = ref.read(themeProvider);
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
+      color: resolveThemeColor(context,
+          dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header: Close icon and "Holding Details" title
           Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.holding.name ?? 'N/A',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                    ),
-                  ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
+                  width: 1,
                 ),
-                MyntCloseButton(
-                  onPressed: () {
-                    shadcn.closeSheet(context);
-                  },
+              ),
+            ),
+            child: Row(
+              children: [
+                shadcn.IconButton(
+                  icon: const Icon(Icons.close, size: 20),
+                  onPressed: () => shadcn.closeSheet(context),
+                  variance: shadcn.ButtonVariance.ghost,
+                  size: shadcn.ButtonSize.small,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  "Holding Details",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ],
             ),
           ),
-          // Border after header
-          Container(
-            height: 1,
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-          ),
+
           // Content
-          Container(
-            padding: const EdgeInsets.all(16),
+          Flexible(
             child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Returns Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: _buildReturnsSection(theme),
+                  // Fund Name
+                  Text(
+                    widget.holding.name ?? 'Mutual Fund',
+                    style: MyntWebTextStyles.head(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.medium,
+                    ),
                   ),
+                  const SizedBox(height: 1),
 
-                  // Action Buttons
+                  // Action Buttons (keep existing logic but styled)
                   _buildActionButtons(theme),
+                  const SizedBox(height: 5),
 
                   // Details Section
                   _buildDetailsSection(theme),
@@ -95,172 +104,117 @@ class _MfHoldingDetailScreenWebState
   }
 
   Widget _buildActionButtons(ThemesProvider theme) {
-    final avgQty = double.tryParse(widget.holding.avgQty ?? '0') ?? 0.0;
-    final hasQty = avgQty > 0;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Redeem button
-          if (hasQty) ...[
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    "Redeem",
-                    false,
-                    theme,
-                    _handleRedeem,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
-  Widget _buildActionButton(
-    String text,
-    bool isPrimary,
-    ThemesProvider theme,
-    VoidCallback onPressed,
-  ) {
-    if (text == 'Redeem') {
-      return MyntTertiaryButton(
-        label: text,
-        onPressed: onPressed,
-        isFullWidth: true,
-      );
-    }
+  Widget _buildDetailsSection(ThemesProvider theme) {
+    final pnlValue = widget.holding.profitLoss ?? "0.00";
+    final pnlPer = widget.holding.changeprofitLoss ?? "0.00";
+    final pnlColor = _getValueColor(pnlValue, context);
 
-    if (isPrimary) {
-      return MyntPrimaryButton(
-        label: text,
-        onPressed: onPressed,
-        isFullWidth: true,
-      );
-    } else {
-      return MyntOutlinedButton(
-        label: text,
-        onPressed: onPressed,
-        isFullWidth: true,
-      );
-    }
-  }
-
-  void _handleRedeem() {
-    final mfData = ref.read(mfProvider);
-    // Set the holding data for redemption using the ISIN
-    mfData.fetchmfholdsingpage(widget.holding.iSIN ?? '');
-    // Call the redeem evaluation function
-    mfData.recdemevalu();
-
-    // Get root context before closing sheet
-    final rootContext = rootNavigatorKey.currentContext ?? context;
-
-    // Close the sheet
-    shadcn.closeSheet(context);
-
-    // Show web redeem dialog using root context to ensure it shows even after sheet closes
-    Future.delayed(const Duration(milliseconds: 150), () {
-      if (rootContext.mounted) {
-        showDialog(
-          context: rootContext,
-          builder: (context) => const RedemptionBottomSheetWeb(),
-        );
-      }
-    });
-  }
-
-  Widget _buildReturnsSection(ThemesProvider theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Column(
-          children: [
-            Text(
-              "Returns",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "${widget.holding.profitLoss ?? "0.00"}",
-              style: MyntWebTextStyles.head(
-                context,
-                color: _getValueColor(
-                    widget.holding.profitLoss ?? '0.00', context),
-                fontWeight: MyntFonts.medium,
-              ),
-            ),
-          ],
+        // Returns item
+        _rowOfInfoData(
+          "Returns",
+          Text(
+            "$pnlValue ($pnlPer %)",
+            style: MyntWebTextStyles.body(context,
+                color: pnlColor, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Units",
+          Text(
+            "${widget.holding.avgQty ?? '0'}",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Avg Price",
+          Text(
+            "${widget.holding.avgNav ?? '0.00'}",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "NAV",
+          Text(
+            "${widget.holding.curNav ?? '0.00'}",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Pledged Units",
+          Text(
+            "0",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Current",
+          Text(
+            "${widget.holding.currentValue ?? '0.00'}",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        _rowOfInfoData(
+          "Invested",
+          Text(
+            "${widget.holding.investedValue ?? '0.00'}",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+          showDivider: false,
         ),
       ],
     );
   }
 
-  Widget _buildDetailsSection(ThemesProvider theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _rowOfInfoData("Units", widget.holding.avgQty ?? '0', theme),
-          const SizedBox(height: 8),
-          _rowOfInfoData("Avg Price", widget.holding.avgNav ?? '0.00', theme),
-          const SizedBox(height: 8),
-          _rowOfInfoData("NAV", widget.holding.curNav ?? '0.00', theme),
-          const SizedBox(height: 8),
-          _rowOfInfoData("Pledged Units", "0", theme),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-              "Current Value", widget.holding.currentValue ?? '0.00', theme),
-          const SizedBox(height: 8),
-          _rowOfInfoData(
-              "Invested", widget.holding.investedValue ?? '0.00', theme),
-        ],
-      ),
+  Widget _rowOfInfoData(String title1, Widget valueWidget, ThemesProvider theme,
+      {bool showDivider = true}) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title1,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+              valueWidget,
+            ],
+          ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+          ),
+      ],
     );
-  }
-
-  Widget _rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title1,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary),
-              fontWeight: MyntFonts.medium,
-            ),
-          ),
-          Text(
-            value1,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-    ]);
   }
 
   Color _getValueColor(String value, BuildContext context) {

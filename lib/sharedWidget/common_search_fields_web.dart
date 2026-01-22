@@ -124,7 +124,6 @@ class MyntSearchTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveHeight = height ?? 40;
-    final effectiveBorderRadius = borderRadius ?? 5;
 
     // Placeholder style: textSecondary
     final effectivePlaceholderStyle = placeholderStyle ??
@@ -161,19 +160,27 @@ class MyntSearchTextField extends StatelessWidget {
     // Build features (icons)
     final features = _buildFeatures(context);
 
-    Widget textField = shadcn.TextField(
-      controller: controller,
-      enabled: enabled,
-      autofocus: false, // Always disabled
-      inputFormatters: inputFormatters,
-      textCapitalization: textCapitalization,
-      onChanged: onChanged,
-      onSubmitted: onSubmitted,
-      focusNode: focusNode,
-      placeholder: placeholder,
-      style: effectiveTextStyle,
-      borderRadius: BorderRadius.circular(effectiveBorderRadius),
-      features: features,
+    Widget textField = shadcn.Theme(
+      data: shadcn.Theme.of(context).copyWith(
+        radius: () => 0.2,
+        colorScheme: () => shadcn.Theme.of(context).colorScheme.copyWith(
+              border: () => Colors.transparent,
+              ring: () => Colors.transparent,
+            ),
+      ),
+      child: shadcn.TextField(
+        controller: controller,
+        enabled: enabled,
+        autofocus: autofocus,
+        inputFormatters: inputFormatters,
+        textCapitalization: textCapitalization,
+        onChanged: onChanged,
+        onSubmitted: onSubmitted,
+        focusNode: focusNode,
+        placeholder: placeholder,
+        style: effectiveTextStyle,
+        features: features,
+      ),
     );
 
     // Apply height constraint

@@ -360,8 +360,15 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     // Open sheet immediately without waiting
     shadcn.openSheet(
       context: context,
-      builder: (context) => MfHoldingDetailScreenWeb(
-        holding: holding,
+      barrierColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        decoration: BoxDecoration(
+          color: MyntColors.textWhite,
+          boxShadow: MyntShadows.panelRight,
+        ),
+        child: MfHoldingDetailScreenWeb(
+          holding: holding,
+        ),
       ),
       position: shadcn.OverlayPosition.end,
     );
@@ -794,9 +801,9 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                                                     resolveThemeColor(
                                                                   buttonContext,
                                                                   dark: MyntColors
-                                                                      .tertiary,
+                                                                      .primaryDark,
                                                                   light: MyntColors
-                                                                      .tertiary,
+                                                                      .primary,
                                                                 ),
                                                                 textColor:
                                                                     Colors

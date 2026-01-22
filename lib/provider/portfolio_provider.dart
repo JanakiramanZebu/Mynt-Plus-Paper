@@ -245,6 +245,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
     _selectedTab = index;
     print("selectedTab: $index");
 
+    // Animate the TabController to the new index
+
     // Animate the TabController to the new index if initialized
     try {
       portTab.animateTo(index);
@@ -258,18 +260,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
   int _selectedHoldingsTab = 0;
   int get selectedHoldingsTab => _selectedHoldingsTab;
 
-changeHoldingsTabIndex(int index) {
-  _selectedHoldingsTab = index;
-  
-  // Animate the TabController to the new index
-  try {
-    holdingsTabController.animateTo(index);
-  } catch (e) {
-    print("TabController animation error: $e");
+  changeHoldingsTabIndex(int index) {
+    _selectedHoldingsTab = index;
+
+    // Animate the TabController to the new index
+    try {
+      holdingsTabController.animateTo(index);
+    } catch (e) {
+      print("TabController animation error: $e");
+    }
+
+    notifyListeners();
   }
-  
-  notifyListeners();
-}
 
   chngPosSelection(String val) {
     _posSelection = val;
@@ -649,12 +651,14 @@ changeHoldingsTabIndex(int index) {
             element.exchTsym![0].expDate = "${spilitSymbol["expDate"]}";
             element.exchTsym![0].option = "${spilitSymbol["option"]}";
             int qty = (
-              // int.parse("${element.npoadqty ?? 0}") +
+                    // int.parse("${element.npoadqty ?? 0}") +
                     // int.parse("${element.brkcolqty ?? 0}") +
                     // int.parse("${element.npoadt1qty ?? 0}") +
-                    max(int.parse("${element.dpQty ?? 0}"), int.parse("${element.npoadqty ?? 0}"))+
-                    int.parse("${element.npoadt1qty ?? 0}") +
-                    int.parse("${element.holdqty ?? 0}") + (int.parse("${element.npoadt1qty ?? 0}") > 0 ? 0 : int.parse("${element.btstqty ?? 0}"))) -
+                    max(int.parse("${element.dpQty ?? 0}"),
+                            int.parse("${element.npoadqty ?? 0}")) +
+                        int.parse("${element.npoadt1qty ?? 0}") +
+                        int.parse("${element.holdqty ?? 0}") +
+                        int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
             element.currentQty = qty;
             ref
@@ -683,7 +687,10 @@ changeHoldingsTabIndex(int index) {
                     int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.usedqty ?? 0}");
             if (element.sellAmt != null && element.sellAmt != "0.000000") {
-              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") - ((double.parse("${element.trdqty ?? 0.00}")) * (double.parse("${element.avgPrc ?? 0.00}")))).toStringAsFixed(2);
+              element.rpnl = (double.parse("${element.sellAmt ?? 0.00}") -
+                      ((double.parse("${element.trdqty ?? 0.00}")) *
+                          (double.parse("${element.avgPrc ?? 0.00}"))))
+                  .toStringAsFixed(2);
               // element.rpnl = (double.parse("${element.invested ?? 0.00}") - double.parse("${element.sellAmt ?? 0.00}")).toString();
             }
 
@@ -784,7 +791,7 @@ changeHoldingsTabIndex(int index) {
             await sortPositions(sorting: _currentPositionSortOption);
           }
 
-          // await requestWSPosition(context: context, isSubscribe: true);
+          await requestWSPosition(context: context, isSubscribe: true);
         } else {
           //
 
@@ -965,10 +972,14 @@ changeHoldingsTabIndex(int index) {
         final holding = holdingsModel![i];
 
         // Direct non-null access with fallbacks
-        final profitNloss = double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0')! + double.tryParse(holding.rpnl ?? '0.0')!;
-        final oneDayChg = double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
+        final profitNloss =
+            double.tryParse(holding.exchTsym![0].profitNloss ?? '0.0')! +
+                double.tryParse(holding.rpnl ?? '0.0')!;
+        final oneDayChg =
+            double.tryParse(holding.exchTsym![0].oneDayChg ?? '0.0') ?? 0.0;
         final invested = double.tryParse(holding.invested ?? '0.0') ?? 0.0;
-        final currentValue = double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
+        final currentValue =
+            double.tryParse(holding.currentValue ?? '0.0') ?? 0.0;
 
         // Accumulate totals
         totalPnl += profitNloss;
@@ -991,7 +1002,9 @@ changeHoldingsTabIndex(int index) {
 
         // Calculate percentages
         _oneDayChngPer = currentVal > 0 ? (dayChange / currentVal) * 100 : 0.0;
-        _totPnlPercHolding = invest > 0 ? ((totalPnl / invest) * 100).toStringAsFixed(2) : '0.00';
+        _totPnlPercHolding = invest > 0
+            ? ((totalPnl / invest) * 100).toStringAsFixed(2)
+            : '0.00';
         notifyListeners();
       }
     }
@@ -1492,7 +1505,7 @@ changeHoldingsTabIndex(int index) {
       _allPostionList.sort((a, b) {
         int aQty = int.parse("${a.netqty}");
         int bQty = int.parse("${b.netqty}");
-        
+
         // If both are closed (zero), maintain original order
         if (aQty == 0 && bQty == 0) return 0;
         // If both are open (non-zero), maintain original order
@@ -1509,7 +1522,7 @@ changeHoldingsTabIndex(int index) {
       _allPostionList.sort((a, b) {
         int aQty = int.parse("${a.netqty}");
         int bQty = int.parse("${b.netqty}");
-        
+
         // If both are closed (zero), maintain original order
         if (aQty == 0 && bQty == 0) return 0;
         // If both are open (non-zero), maintain original order
@@ -1912,10 +1925,14 @@ changeHoldingsTabIndex(int index) {
     holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
 
     // Get average cost with fallback to closing price
-    final closeVal = double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
+    final closeVal =
+        double.tryParse(holding.exchTsym![0].close ?? "0.00") ?? 0.0;
     final avgCost = double.tryParse(holding.upldprc == "0.00"
-        ? (closeVal > 0 ? closeVal.toString() : holding.exchTsym![0].close ?? '0.0')
-        : holding.upldprc ?? '0.00') ?? 0.0;
+            ? (closeVal > 0
+                ? closeVal.toString()
+                : holding.exchTsym![0].close ?? '0.0')
+            : holding.upldprc ?? '0.00') ??
+        0.0;
 
     if (avgCost <= 0) return; // Can't calculate with invalid cost
 
@@ -1924,22 +1941,31 @@ changeHoldingsTabIndex(int index) {
 
     // Calculate profit/loss
     final currentValue = double.tryParse(holding.currentValue ?? "0.00") ?? 0.0;
-    holding.exchTsym![0].profitNloss = ((currentValue - investedValue) + double.tryParse(holding.rpnl ?? '0.0')!).toStringAsFixed(2);
-    
+    holding.exchTsym![0].profitNloss = ((currentValue - investedValue) +
+            double.tryParse(holding.rpnl ?? '0.0')!)
+        .toStringAsFixed(2);
+
     // Calculate percentage change if invested amount exists
     if (investedValue > 0.0 || double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
-      final profitValue = double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-      if(double.tryParse(holding.sellAmt ?? '0.0')! > 0){
-        holding.exchTsym![0].pNlChng = ((profitValue / (investedValue + (double.tryParse(holding.sellAmt ?? '0.0')!) - profitValue)) * 100).toStringAsFixed(2);
-      }
-      else{
-      holding.exchTsym![0].pNlChng = ((profitValue / investedValue) * 100).toStringAsFixed(2);
+      final profitValue =
+          double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
+      if (double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
+        holding.exchTsym![0].pNlChng = ((profitValue /
+                    (investedValue +
+                        (double.tryParse(holding.sellAmt ?? '0.0')!) -
+                        profitValue)) *
+                100)
+            .toStringAsFixed(2);
+      } else {
+        holding.exchTsym![0].pNlChng =
+            ((profitValue / investedValue) * 100).toStringAsFixed(2);
       }
     }
-    
+
     // Calculate one day change if close value is valid
     if (closeVal > 0) {
-      holding.exchTsym![0].oneDayChg = ((lpDouble - closeVal) * qty).toStringAsFixed(2);
+      holding.exchTsym![0].oneDayChg =
+          ((lpDouble - closeVal) * qty).toStringAsFixed(2);
     }
 
     // Update totals
@@ -2156,7 +2182,8 @@ changeHoldingsTabIndex(int index) {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
           if (kIsWeb) {
-            ResponsiveSnackBar.showSuccess(context, "${_placeOrderModel!.emsg}");
+            ResponsiveSnackBar.showSuccess(
+                context, "${_placeOrderModel!.emsg}");
           } else {
             successMessage(context, "${_placeOrderModel!.emsg}");
           }
@@ -2273,14 +2300,16 @@ changeHoldingsTabIndex(int index) {
         await fetchPositionBook(context, _isDay);
         Navigator.pop(context);
         if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(context, "Position converted successfully");
+          ResponsiveSnackBar.showSuccess(
+              context, "Position converted successfully");
         } else {
           successMessage(context, "Position converted successfully");
         }
       } else {
         Navigator.pop(context);
         if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(context, "${_positionConvertionModel!.emsg}");
+          ResponsiveSnackBar.showWarning(
+              context, "${_positionConvertionModel!.emsg}");
         } else {
           warningMessage(context, "${_positionConvertionModel!.emsg}");
         }
@@ -2291,7 +2320,8 @@ changeHoldingsTabIndex(int index) {
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
       if (kIsWeb) {
-        ResponsiveSnackBar.showWarning(context, "Failed to convert position: $e");
+        ResponsiveSnackBar.showWarning(
+            context, "Failed to convert position: $e");
       } else {
         warningMessage(context, "Failed to convert position: $e");
       }
@@ -2488,7 +2518,8 @@ changeHoldingsTabIndex(int index) {
   bool get isExitingAll => _isExitingAll;
 
   // Add this near the other state variables
-  String _currentPositionSortOption = "OpenDSC"; // Default to show 0 qty positions at bottom
+  String _currentPositionSortOption =
+      "OpenDSC"; // Default to show 0 qty positions at bottom
   String get currentPositionSortOption => _currentPositionSortOption;
 
   // Add this near the other state variables and _currentHoldingSortOption

@@ -12,6 +12,7 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../sharedWidget/common_search_fields_web.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -104,7 +105,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           onTap: () => FocusScope.of(context).unfocus(),
           child: RefreshIndicator(
             onRefresh: () async {
-              await portfolioData.fetchHoldings(context, "Refresh");
+              if (_selectedTabIndex == 0) {
+                await portfolioData.fetchHoldings(context, "Refresh");
+              } else {
+                await ref.read(mfProvider).fetchmfholdingnew();
+              }
             },
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -431,20 +436,51 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                       borderRadius: BorderRadius.circular(6),
                       border: null, // ✅ no border
                     ),
-                    child: Text(
-                      'Equity ($stocksCount)',
-                      style: MyntWebTextStyles.body(
-                        context,
-                        fontWeight: _selectedTabIndex == 0
-                            ? MyntFonts.semiBold
-                            : MyntFonts.medium,
-                      ).copyWith(
-                        color: _selectedTabIndex == 0
-                            ? shadcn.Theme.of(context).colorScheme.foreground
-                            : shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Equity',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: _selectedTabIndex == 0
+                                ? MyntFonts.semiBold
+                                : MyntFonts.medium,
+                          ).copyWith(
+                            color: _selectedTabIndex == 0
+                                ? shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .foreground
+                                : shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .mutedForeground,
+                          ),
+                        ),
+                        if (stocksCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Transform.translate(
+                            offset: const Offset(0, -6),
+                            child: Text(
+                              '$stocksCount',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: _selectedTabIndex == 0
+                                    ? MyntFonts.semiBold
+                                    : MyntFonts.medium,
+                              ).copyWith(
+                                fontSize: 13,
+                                color: _selectedTabIndex == 0
+                                    ? shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .foreground
+                                    : shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .mutedForeground,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
@@ -475,20 +511,51 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                       borderRadius: BorderRadius.circular(6),
                       border: null,
                     ),
-                    child: Text(
-                      'Mutual Fund ($mutualFundsCount)',
-                      style: MyntWebTextStyles.body(
-                        context,
-                        fontWeight: _selectedTabIndex == 1
-                            ? MyntFonts.semiBold
-                            : MyntFonts.medium,
-                      ).copyWith(
-                        color: _selectedTabIndex == 1
-                            ? shadcn.Theme.of(context).colorScheme.foreground
-                            : shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Mutual Fund',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: _selectedTabIndex == 1
+                                ? MyntFonts.semiBold
+                                : MyntFonts.medium,
+                          ).copyWith(
+                            color: _selectedTabIndex == 1
+                                ? shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .foreground
+                                : shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .mutedForeground,
+                          ),
+                        ),
+                        if (mutualFundsCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Transform.translate(
+                            offset: const Offset(0, -6),
+                            child: Text(
+                              '$mutualFundsCount',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: _selectedTabIndex == 1
+                                    ? MyntFonts.semiBold
+                                    : MyntFonts.medium,
+                              ).copyWith(
+                                fontSize: 13,
+                                color: _selectedTabIndex == 1
+                                    ? shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .foreground
+                                    : shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .mutedForeground,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ),
@@ -514,77 +581,12 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 }
 
                 return SizedBox(
-                  height: 40,
                   width: searchWidth,
-                  child: DefaultTextStyle(
-                    style: MyntWebTextStyles.body(context),
-                    child: ValueListenableBuilder<String>(
-                      valueListenable: _searchQuery,
-                      builder: (context, searchValue, child) {
-                        final features = <shadcn.InputFeature>[
-                          shadcn.InputFeature.leading(
-                            SvgPicture.asset(
-                              assets.searchIcon,
-                              color: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .mutedForeground,
-                              fit: BoxFit.scaleDown,
-                              width: 18,
-                            ),
-                          ),
-                        ];
-
-                        // Add clear button if there's text
-                        if (searchValue.isNotEmpty) {
-                          features.add(
-                            shadcn.InputFeature.trailing(
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    onTap: () {
-                                      _stocksSearchController.clear();
-                                    },
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 16,
-                                        color: shadcn.Theme.of(context)
-                                            .colorScheme
-                                            .mutedForeground,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return shadcn.Theme(
-                          data: shadcn.Theme.of(context).copyWith(
-                            radius: () => 0.2,
-                            colorScheme: () =>
-                                shadcn.Theme.of(context).colorScheme.copyWith(
-                                      border: () => Colors.transparent,
-                                      ring: () => Colors.transparent,
-                                    ),
-                          ),
-                          child: shadcn.TextField(
-                            controller: _stocksSearchController,
-                            placeholder: Text(
-                              'Search on holdings',
-                              style: MyntWebTextStyles.placeholder(context),
-                            ),
-                            features: features,
-                          ),
-                        );
-                      },
-                    ),
+                  child: MyntSearchTextField.withSmartClear(
+                    controller: _stocksSearchController,
+                    placeholder: 'Search on holdings',
+                    leadingIcon: assets.searchIcon,
+                    onClear: () => _stocksSearchController.clear(),
                   ),
                 );
               },
@@ -606,85 +608,23 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 }
 
                 return SizedBox(
-                  height: 40,
                   width: searchWidth,
-                  child: DefaultTextStyle(
-                    style: MyntWebTextStyles.body(context),
-                    child: ValueListenableBuilder<String>(
-                      valueListenable: _mfSearchQuery,
-                      builder: (context, searchValue, child) {
-                        final features = <shadcn.InputFeature>[
-                          shadcn.InputFeature.leading(
-                            SvgPicture.asset(
-                              assets.searchIcon,
-                              color: shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .mutedForeground,
-                              fit: BoxFit.scaleDown,
-                              width: 18,
-                            ),
-                          ),
-                        ];
-
-                        // Add clear button if there's text
-                        if (searchValue.isNotEmpty) {
-                          features.add(
-                            shadcn.InputFeature.trailing(
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Material(
-                                  color: Colors.transparent,
-                                  shape: const CircleBorder(),
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    onTap: () {
-                                      _mfSearchController.clear();
-                                    },
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.close,
-                                        size: 16,
-                                        color: shadcn.Theme.of(context)
-                                            .colorScheme
-                                            .mutedForeground,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return shadcn.Theme(
-                          data: shadcn.Theme.of(context).copyWith(
-                            colorScheme: () =>
-                                shadcn.Theme.of(context).colorScheme.copyWith(
-                                      border: () => Colors.transparent,
-                                      ring: () => Colors.transparent,
-                                    ),
-                          ),
-                          child: shadcn.TextField(
-                            controller: _mfSearchController,
-                            placeholder: Text(
-                              'Search on mutual funds',
-                              style: MyntWebTextStyles.placeholder(context),
-                            ),
-                            features: features,
-                          ),
-                        );
-                      },
-                    ),
+                  child: MyntSearchTextField.withSmartClear(
+                    controller: _mfSearchController,
+                    placeholder: 'Search on mutual funds',
+                    leadingIcon: assets.searchIcon,
+                    onClear: () => _mfSearchController.clear(),
                   ),
                 );
               },
             ),
             // const SizedBox(width: 16),
           ],
-          // Filter dropdown button
-          const SizedBox(width: 12),
-          _buildFilterButton(theme),
+          // Filter dropdown button (only for Equity tab)
+          if (_selectedTabIndex == 0) ...[
+            const SizedBox(width: 12),
+            _buildFilterButton(theme),
+          ],
           // E-DIS button (only for Stocks tab)
           if (_selectedTabIndex == 0) ...[
             const SizedBox(width: 12),
