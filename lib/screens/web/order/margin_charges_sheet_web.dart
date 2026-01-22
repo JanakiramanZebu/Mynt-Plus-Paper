@@ -325,7 +325,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage.brkageAmt}",
+                                        "${orderBrokerage.brkageAmt?? 0.00}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -352,7 +352,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage.sttAmt}",
+                                        "${orderBrokerage.sttAmt?? 0.00}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -379,7 +379,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage.exchChrg}",
+                                        "${orderBrokerage.exchChrg?? 0.00}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -406,7 +406,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                     Text(
-                                        "${orderBrokerage.sebiChrg}",
+                                        "${orderBrokerage.sebiChrg?? 0.00}",
                                         style: WebTextStyles.custom(
                                           fontSize: 13,
                                           isDarkTheme: theme.isDarkMode,
@@ -433,7 +433,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage.stampDuty}",
+                                          "${orderBrokerage.stampDuty?? 0.00}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -459,7 +459,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage.clrChrg}",
+                                          "${orderBrokerage.clrChrg?? 0.00}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -485,7 +485,7 @@ class _MarginDetailsSheetWebState extends State<MarginDetailsSheetWeb> {
                                             fontWeight: WebFonts.semiBold,
                                           )),
                                       Text(
-                                          "${orderBrokerage.gst}",
+                                          "${orderBrokerage.gst?? 0.00}",
                                           style: WebTextStyles.custom(
                                             fontSize: 13,
                                             isDarkTheme: theme.isDarkMode,
@@ -656,7 +656,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                         : WebColors.textPrimary,
                                     fontWeight: WebFonts.medium,
                                   )),
-                              Text("${orderBrokerage?.brkageAmt}",
+                              Text("${orderBrokerage?.brkageAmt?? 0.00}",
                                   style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
@@ -682,7 +682,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                         : WebColors.textPrimary,
                                     fontWeight: WebFonts.medium,
                                   )),
-                              Text("${orderBrokerage?.sttAmt}",
+                              Text("${orderBrokerage?.sttAmt?? 0.00}",
                                   style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
@@ -708,7 +708,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                         : WebColors.textPrimary,
                                     fontWeight: WebFonts.medium,
                                   )),
-                              Text("${orderBrokerage?.exchChrg}",
+                              Text("${orderBrokerage?.exchChrg?? 0.00}",
                                   style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
@@ -734,7 +734,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                         : WebColors.textPrimary,
                                     fontWeight: WebFonts.medium,
                                   )),
-                              Text("${orderBrokerage?.sebiChrg}",
+                              Text("${orderBrokerage?.sebiChrg?? 0.00}",
                                   style: WebTextStyles.sub(
                                     isDarkTheme: theme.isDarkMode,
                                     color: theme.isDarkMode
@@ -760,7 +760,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : WebColors.textPrimary,
                                       fontWeight: WebFonts.medium,
                                     )),
-                                Text("${orderBrokerage?.stampDuty}",
+                                Text("${orderBrokerage?.stampDuty?? 0.00}",
                                     style: WebTextStyles.sub(
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
@@ -785,7 +785,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : WebColors.textPrimary,
                                       fontWeight: WebFonts.medium,
                                     )),
-                                Text("${orderBrokerage?.clrChrg}",
+                                Text("${orderBrokerage?.clrChrg?? 0.00}",
                                     style: WebTextStyles.sub(
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode
@@ -810,7 +810,7 @@ class _ChargesDetailsBottomsheetState extends State<ChargesDetailsBottomsheet> {
                                           : WebColors.textPrimary,
                                       fontWeight: WebFonts.medium,
                                     )),
-                                Text("${orderBrokerage?.gst}",
+                                Text("${orderBrokerage?.gst?? 0.00}",
                                     style: WebTextStyles.sub(
                                       isDarkTheme: theme.isDarkMode,
                                       color: theme.isDarkMode

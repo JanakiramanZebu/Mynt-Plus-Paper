@@ -135,7 +135,7 @@ class _CustomizableSplitHomeScreenState
     // Load saved layout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedLayout();
-      _addDefaultScreens();
+      // Panels already initialized with defaults in initState(), no need to call _addDefaultScreens()
       // Mark initial load as complete after setup and initialize default screens
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
@@ -298,15 +298,24 @@ class _CustomizableSplitHomeScreenState
 
     _panels.clear();
     for (int i = 0; i < count; i++) {
-      // Preserve existing screen if available, otherwise null
-      ScreenType? existingScreen =
-          i < existingScreens.length ? existingScreens[i] : null;
+      // Preserve existing screen if available, otherwise use default for each panel
+      ScreenType? screenType;
+      if (i < existingScreens.length && existingScreens[i] != null) {
+        screenType = existingScreens[i];
+      } else {
+        // Set default screens: panel 0 = watchlist (left), panel 1 = dashboard (right)
+        if (i == 0) {
+          screenType = ScreenType.watchlist;
+        } else if (i == 1) {
+          screenType = ScreenType.dashboard;
+        }
+      }
 
       _panels.add(
         PanelConfig(
           id: 'panel_${i + 1}',
-          screenType: existingScreen, // Preserve existing screen or null
-          screens: existingScreen != null ? [existingScreen] : [],
+          screenType: screenType,
+          screens: screenType != null ? [screenType] : [],
           activeScreenIndex: 0,
           width: 1.0, // Equal width for all panels
           height: 1.0, // Equal height for all panels
@@ -325,9 +334,8 @@ class _CustomizableSplitHomeScreenState
   }
 
   Future<void> _loadSavedLayout() async {
-    // Always initialize with default panels and show dashboard screen
-    // This ensures the app always starts with dashboard screen, not the saved state
-    _initializeDefaultPanels();
+    // Panels are already initialized with defaults in initState()
+    // No need to reinitialize here - this ensures no flickering on first render
   }
 
   Future<void> _saveLayout() async {
@@ -1240,7 +1248,7 @@ class _CustomizableSplitHomeScreenState
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
         const SizedBox(width: 8),
-        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
+        // _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -2319,40 +2327,40 @@ class _CustomizableSplitHomeScreenState
   // Initialize default screen data after initial load
   void _initializeDefaultScreenData() {
     if (_panels.length >= 2) {
-      // Right panel should only have watchlist - move any other screens to left panel
-      if (_panels[1].screenType != null &&
-          _panels[1].screenType != ScreenType.watchlist) {
-        // Move the screen from right panel to left panel
-        _panels[0].screenType = _panels[1].screenType;
-        _panels[0].screens = List<ScreenType>.from(_panels[1].screens);
-        _panels[0].activeScreenIndex = _panels[1].activeScreenIndex;
+      // Left panel should have watchlist - move any other screens to right panel
+      if (_panels[0].screenType != null &&
+          _panels[0].screenType != ScreenType.watchlist) {
+        // Move the screen from left panel to right panel
+        _panels[1].screenType = _panels[0].screenType;
+        _panels[1].screens = List<ScreenType>.from(_panels[0].screens);
+        _panels[1].activeScreenIndex = _panels[0].activeScreenIndex;
 
-        // Clear right panel and set watchlist
-        _panels[1].screenType = ScreenType.watchlist;
-        _panels[1].screens = [ScreenType.watchlist];
-        _panels[1].activeScreenIndex = 0;
+        // Clear left panel and set watchlist
+        _panels[0].screenType = ScreenType.watchlist;
+        _panels[0].screens = [ScreenType.watchlist];
+        _panels[0].activeScreenIndex = 0;
       }
 
-      // Initialize the screen on the left panel (which is now the primary content panel)
-      if (_panels[0].screenType != null) {
-        if (_panels[0].screenType == ScreenType.dashboard) {
+      // Initialize watchlist on left panel if it exists
+      if (_panels[0].screenType == ScreenType.watchlist) {
+        _handleWatchlistTap();
+      }
+
+      // Initialize the screen on the right panel (which is now the primary content panel)
+      if (_panels[1].screenType != null) {
+        if (_panels[1].screenType == ScreenType.dashboard) {
           _handleDashboardTap();
-        } else if (_panels[0].screenType == ScreenType.watchlist) {
+        } else if (_panels[1].screenType == ScreenType.watchlist) {
           _handleWatchlistTap();
-        } else if (_panels[0].screenType == ScreenType.holdings) {
+        } else if (_panels[1].screenType == ScreenType.holdings) {
           _handleHoldingsTap();
-        } else if (_panels[0].screenType == ScreenType.positions) {
+        } else if (_panels[1].screenType == ScreenType.positions) {
           _handlePositionsTap();
-        } else if (_panels[0].screenType == ScreenType.orderBook) {
+        } else if (_panels[1].screenType == ScreenType.orderBook) {
           _handleOrderBookTap();
-        } else if (_panels[0].screenType == ScreenType.funds) {
+        } else if (_panels[1].screenType == ScreenType.funds) {
           _handleFundsTap();
         }
-      }
-
-      // Initialize watchlist on right panel if it exists
-      if (_panels[1].screenType == ScreenType.watchlist) {
-        _handleWatchlistTap();
       }
 
       // NOTE: Don't call _updateSubscriptionManagerForPanels() here
@@ -3159,29 +3167,6 @@ class _CustomizableSplitHomeScreenState
     return !alreadyExistsInPanel && !alreadyExistsInOtherPanel;
   }
 
-  // Add default screens to empty panels
-  void _addDefaultScreens() {
-    // Always set up default panels: dashboard screen on left panel, watchlist on right panel
-    if (_panels.length >= 2) {
-      // Right panel - watchlist only (fixed, cannot be replaced)
-      _panels[1] = _panels[1].copyWith(
-        screenType: ScreenType.watchlist,
-        screens: [ScreenType.watchlist],
-        activeScreenIndex: 0,
-      );
-
-      // Left panel - always set dashboard screen as default
-      _panels[0] = _panels[0].copyWith(
-        screenType: ScreenType.dashboard,
-        screens: [ScreenType.dashboard],
-        activeScreenIndex: 0,
-      );
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
-  }
 
   void _handleReconnectionSuccess() {
     if (!mounted) return;
