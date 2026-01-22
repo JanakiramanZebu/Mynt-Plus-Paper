@@ -434,7 +434,6 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
           // Logout
           MenuButton(
             onPressed: (ctx) {
-              Navigator.pop(ctx); // Close the dropdown first
               _showLogoutDialog(widget.parentContext, ref, theme);
             },
             child: Padding(
