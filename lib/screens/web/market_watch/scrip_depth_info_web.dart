@@ -570,30 +570,81 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                       style: MyntWebTextStyles.body(context,
                                           fontWeight: MyntFonts.bold),
                                     ),
-                                    // if (widget.onClose != null)
-                                    //   Material(
-                                    //     color: Colors.transparent,
-                                    //     shape: const CircleBorder(),
-                                    //     child: InkWell(
-                                    //       customBorder: const CircleBorder(),
-                                    //       splashColor: theme.isDarkMode
-                                    //           ? Colors.white.withOpacity(0.15)
-                                    //           : Colors.black
-                                    //               .withOpacity(0.15),
-                                    //       highlightColor: theme.isDarkMode
-                                    //           ? Colors.white.withOpacity(0.08)
-                                    //           : Colors.black
-                                    //               .withOpacity(0.08),
-                                    //       onTap: widget.onClose,
-                                    //       child: const Padding(
-                                    //         padding: EdgeInsets.all(4),
-                                    //         child: Icon(
-                                    //           Icons.close,
-                                    //           size: 18,
-                                    //         ),
-                                    //       ),
-                                    //     ),
-                                    //   ),
+                                    const Spacer(),
+                                    Tooltip(
+                                      message: "Set Alert",
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          splashColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.15)
+                                              : Colors.black.withOpacity(0.15),
+                                          highlightColor: theme.isDarkMode
+                                              ? Colors.white.withOpacity(0.08)
+                                              : Colors.black.withOpacity(0.08),
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              barrierDismissible: true,
+                                              builder: (BuildContext dialogContext) {
+                                                return SetAlertWeb(
+                                                  depthdata: depthData,
+                                                  wlvalue: widget.wlValue,
+                                                );
+                                              },
+                                            );
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.all(6),
+                                            child: Icon(
+                                              Icons.notifications_none_outlined,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (scripInfo.actDeptBtn == "Overview" &&
+                                !scripInfo.scripDepthloader &&
+                                widget.wlValue.instname != "UNDIND" &&
+                                widget.wlValue.instname != "COM")
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: MyntButton(
+                                        label: "Buy",
+                                        backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.primary,
+                                            light: MyntColors.primary),
+                                        onPressed: () async {
+                                          await placeOrderInput(scripInfo,
+                                              context, depthData, true);
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: MyntButton(
+                                        label: "Sell",
+                                        backgroundColor: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.tertiary,
+                                            light: MyntColors.tertiary),
+                                        onPressed: () async {
+                                          await placeOrderInput(scripInfo,
+                                              context, depthData, false);
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -620,59 +671,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                          // if (!scripInfo.scripDepthloader &&
-                                          //     widget.wlValue.instname !=
-                                          //         "UNDIND" &&
-                                          //     widget.wlValue.instname != "COM")
-                                          //   Padding(
-                                          //     padding:
-                                          //         const EdgeInsets.symmetric(
-                                          //             horizontal: 10,
-                                          //             vertical: 16),
-                                          //     child: Row(
-                                          //       children: [
-                                          //         Expanded(
-                                          //           child: MyntButton(
-                                          //             label: "Buy",
-                                          //             backgroundColor:
-                                          //                 resolveThemeColor(
-                                          //                     context,
-                                          //                     dark: MyntColors
-                                          //                         .primary,
-                                          //                     light: MyntColors
-                                          //                         .primary),
-                                          //             onPressed: () async {
-                                          //               await placeOrderInput(
-                                          //                   scripInfo,
-                                          //                   context,
-                                          //                   depthData,
-                                          //                   true);
-                                          //             },
-                                          //           ),
-                                          //         ),
-                                          //         const SizedBox(width: 12),
-                                          //         Expanded(
-                                          //           child: MyntButton(
-                                          //             label: "Sell",
-                                          //             backgroundColor:
-                                          //                 resolveThemeColor(
-                                          //                     context,
-                                          //                     dark: MyntColors
-                                          //                         .loss,
-                                          //                     light: MyntColors
-                                          //                         .loss),
-                                          //             onPressed: () async {
-                                          //               await placeOrderInput(
-                                          //                   scripInfo,
-                                          //                   context,
-                                          //                   depthData,
-                                          //                   false);
-                                          //             },
-                                          //           ),
-                                          //         ),
-                                          //       ],
-                                          //     ),
-                                          //   ),
                                           /*
                                       Symbol and price section (temporarily commented)
                                       Container(
@@ -2019,25 +2017,6 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                               scripInfo,
                                                               theme,
                                                               depthData,
-                                                            ),
-                                                          if (scripInfo.getOptionawait(
-                                                              widget.wlValue.exch,
-                                                              widget.wlValue.token))
-                                                            _buildAccordionItem(
-                                                              context: context,
-                                                              label: "Set Alert",
-                                                              onTap: () {
-                                                                showDialog(
-                                                                  context: context,
-                                                                  barrierDismissible: true,
-                                                                  builder: (BuildContext dialogContext) {
-                                                                    return SetAlertWeb(
-                                                                      depthdata: depthData,
-                                                                      wlvalue: widget.wlValue,
-                                                                    );
-                                                                  },
-                                                                );
-                                                              },
                                                             ),
                                                           if (scripInfo.fundamentalData != null &&
                                                               scripInfo.fundamentalData?.msg != "no data found")
