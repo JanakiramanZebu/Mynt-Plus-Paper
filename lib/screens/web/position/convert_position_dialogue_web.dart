@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,6 +14,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 
 class ConvertPositionDialogueWeb extends ConsumerStatefulWidget {
   final PositionBookModel convertPosition;
@@ -30,6 +33,8 @@ class _ConvertPositionDialogueWebState
   @override
   void initState() {
     super.initState();
+    // Disable chart iframe pointer events when dialog opens
+    _disableAllChartIframes();
 
     maxQty = TextEditingController(
         text: widget.convertPosition.netqty!.replaceAll("-", ""));
@@ -49,7 +54,42 @@ class _ConvertPositionDialogueWebState
   void dispose() {
     qty.dispose();
     maxQty.dispose();
+    // Re-enable chart iframe pointer events when dialog closes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
     super.dispose();
+  }
+
+  // Disable all chart iframes to allow dialog interaction
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  // Re-enable all chart iframes
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
   }
 
   @override

@@ -354,7 +354,6 @@ class OptimizedIndexItemWeb extends ConsumerWidget {
             );
           },
         );
-       
 
         await indexProvider.fetchIndexList("exit", context);
         await marketWatch.requestMWScrip(context: context, isSubscribe: true);

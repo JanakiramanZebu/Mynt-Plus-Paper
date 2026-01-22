@@ -849,91 +849,108 @@ class _ColumnHeaders extends ConsumerWidget {
 
     return RepaintBoundary(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        color: resolveThemeColor(context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor),
+        // padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+        // color: resolveThemeColor(context,
+        //     dark: MyntColors.backgroundColorDark,
+        //     light: MyntColors.backgroundColor),
         child: Column(
           children: [
-            // Main header row
-            Row(
-              children: [
-                // CALLS header
-                Expanded(
-                  flex: 6,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "CALLS",
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium,
-                            color: resolveThemeColor(
-                              context,
-                              dark: MyntColors.textPrimaryDark,
-                              light: MyntColors.textPrimary,
-                            )),
-                      ),
-                    ],
-                  ),
-                ),
-                // STRIKES header
-                SizedBox(
-                  width: 150,
-                  child: Builder(
-                    builder: (context) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => _showStrikesDropdown(context, ref,
-                            scripInfo, theme, scrollToStrikePrice),
-                        borderRadius: BorderRadius.circular(5),
-                        child: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "STRIKES",
-                                style: MyntWebTextStyles.body(context,
-                                    fontWeight: MyntFonts.medium),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                Icons.arrow_drop_down,
-                                size: 20,
-                                color: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .mutedForeground,
-                              ),
-                            ],
-                          ),
-                        ),
+            // Main header row with blue background
+            Container(
+              height: 35,
+              decoration: BoxDecoration(
+                // color: resolveThemeColor(context,
+                //     dark: Color(0xFFF1F3F8),
+                //     light: MyntColors.primary.withValues(alpha: 0.07)),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(context,
+                            dark: Color(0xFFF1F3F8),
+                            light: MyntColors.primary.withValues(alpha: 0.07)),
                       ),
                     ),
+              ),
+              child: Row(
+                children: [
+                  // CALLS header
+                  Expanded(
+                    flex: 6,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "CALLS",
+                          style: MyntWebTextStyles.body(context,
+                              fontWeight: MyntFonts.medium,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                // PUTS header
-                Expanded(
-                  flex: 6,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "PUTS",
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.medium,
-                            color: resolveThemeColor(
-                              context,
-                              dark: MyntColors.textPrimaryDark,
-                              light: MyntColors.textPrimary,
-                            )),
-                      ),
-                    ],
+                  // STRIKES header - MOVED TO SECONDARY HEADER
+                  // SizedBox(
+                  //   width: 150,
+                  //   child: Builder(
+                  //     builder: (context) => Material(
+                  //       color: Colors.transparent,
+                  //       child: InkWell(
+                  //         onTap: () => _showStrikesDropdown(context, ref,
+                  //             scripInfo, theme, scrollToStrikePrice),
+                  //         borderRadius: BorderRadius.circular(5),
+                  //         child: Padding(
+                  //           padding: const EdgeInsets.all(6.0),
+                  //           child: Row(
+                  //             mainAxisAlignment: MainAxisAlignment.center,
+                  //             children: [
+                  //               Text(
+                  //                 "STRIKES",
+                  //                 style: MyntWebTextStyles.body(context,
+                  //                     fontWeight: MyntFonts.medium),
+                  //               ),
+                  //               const SizedBox(width: 6),
+                  //               Icon(
+                  //                 Icons.arrow_drop_down,
+                  //                 size: 20,
+                  //                 color: shadcn.Theme.of(context)
+                  //                     .colorScheme
+                  //                     .mutedForeground,
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  Container(
+                    width: 150,
+                    alignment: Alignment.center,
+                    child: Text(
+                      "STRIKES",
+                      style: MyntWebTextStyles.body(context,
+                          fontWeight: MyntFonts.medium,
+                          color: Colors.black),
+                    ),
                   ),
-                ),
-              ],
+                  // PUTS header
+                  Expanded(
+                    flex: 6,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "PUTS",
+                          style: MyntWebTextStyles.body(context,
+                              fontWeight: MyntFonts.medium,
+                              color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
+            // const SizedBox(height: 8),
             // Sub-header row for Price and OI
             // Row(
             //   children: [
@@ -966,45 +983,60 @@ class _ColumnHeaders extends ConsumerWidget {
             //     ),
             //   ],
             // ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                // CALLS sub-headers: OI(ch), OI, CH, LTP
-                Expanded(
-                  flex: 6,
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child:
-                              _buildSubHeader(context, ref, "OI(ch)", theme)),
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "OI", theme)),
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "CH", theme)),
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "LTP", theme)),
-                    ],
+            Container(
+              // color: resolveThemeColor(context,
+              //     dark: Color(0xFFF1F3F8),
+              //     light: Color(0xFFF1F3F8)),
+
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: resolveThemeColor(context,
+                        dark: Color(0xFFF1F3F8),
+                        light: MyntColors.primary.withValues(alpha: 0.07)),
                   ),
                 ),
-                const SizedBox(width: 150),
-                // PUTS sub-headers: LTP, CH, OI, OI(ch)
-                Expanded(
-                  flex: 6,
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "LTP", theme)),
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "CH", theme)),
-                      Expanded(
-                          child: _buildSubHeader(context, ref, "OI", theme)),
-                      Expanded(
-                          child:
-                              _buildSubHeader(context, ref, "OI(ch)", theme)),
-                    ],
+              ),
+              height: 48,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // CALLS sub-headers: OI/(OI ch) | LTP/(CH)
+                  Expanded(
+                    flex: 6,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildStackedSubHeader(
+                              context, ref, "OI", "OI ch", theme),
+                        ),
+                        Expanded(
+                          child: _buildStackedSubHeader(
+                              context, ref, "LTP", "CH", theme),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 150),
+                  // PUTS sub-headers: LTP/(CH) | OI/(OI ch)
+                  Expanded(
+                    flex: 6,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildStackedSubHeader(
+                              context, ref, "LTP", "CH", theme),
+                        ),
+                        Expanded(
+                          child: _buildStackedSubHeader(
+                              context, ref, "OI", "OI ch", theme),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1012,20 +1044,36 @@ class _ColumnHeaders extends ConsumerWidget {
     );
   }
 
-  Widget _buildSubHeader(
-      BuildContext context, WidgetRef ref, String text, ThemesProvider theme) {
+  Widget _buildStackedSubHeader(BuildContext context, WidgetRef ref,
+      String topText, String bottomText, ThemesProvider theme) {
     return Container(
       alignment: Alignment.center,
-      child: Text(
-        text,
-        style: MyntWebTextStyles.para(
-          context,
-          fontWeight: MyntFonts.medium,
-          color: resolveThemeColor(context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary),
-        ),
-        textAlign: TextAlign.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            topText,
+            style: MyntWebTextStyles.para(
+              context,
+              fontWeight: MyntFonts.medium,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            "($bottomText)",
+            style: MyntWebTextStyles.para(
+              context,
+              fontWeight: MyntFonts.regular,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -1295,22 +1343,28 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
     }
 
     // VIRTUALIZED LIST: Only visible rows (~20) are built at a time!
-    return Scrollbar(
+    return RawScrollbar(
       controller: widget.mainScrollController,
-      thickness: 8,
+      thumbVisibility: true,
+      thickness: 6,
       radius: const Radius.circular(0),
-      thumbVisibility: false,
+      thumbColor: resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark.withValues(alpha: 0.5),
+              light: MyntColors.textSecondary)
+          .withValues(alpha: 0.5),
       child: Column(
         children: [
           // Virtualized option chain list
           // PERFORMANCE: Timer triggers setState(_refreshTick++) every 500ms for live data
           Expanded(
-            child: ListView.builder(
-              controller: widget.mainScrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: strikeRowData.length,
-              itemExtent: 40, // Fixed height for better scroll performance
-              itemBuilder: (context, index) {
+            child: ScrollConfiguration(
+              behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
+              child: ListView.builder(
+                controller: widget.mainScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: strikeRowData.length,
+                itemExtent: 56, // Fixed height for better scroll performance
+                itemBuilder: (context, index) {
                 final rowData = strikeRowData[index];
                 return OptionChainRowWeb(
                   key: ValueKey('row-${rowData.strikePrice}'),
@@ -1323,6 +1377,7 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
                   atmKey: rowData.isATM ? widget.strikePriceKey : null,
                 );
               },
+            ),
             ),
           ),
         ],

@@ -1,3 +1,5 @@
+import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -7,6 +9,7 @@ import '../../../provider/portfolio_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 
 class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> selectedPositions;
@@ -30,6 +33,53 @@ class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
 class _ExitAllPositionsDialogWebState
     extends ConsumerState<ExitAllPositionsDialogWeb> {
   final bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Disable chart iframe pointer events when dialog opens
+    _disableAllChartIframes();
+  }
+
+  @override
+  void dispose() {
+    // Re-enable chart iframe pointer events when dialog closes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
+  // Disable all chart iframes to allow dialog interaction
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  // Re-enable all chart iframes
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

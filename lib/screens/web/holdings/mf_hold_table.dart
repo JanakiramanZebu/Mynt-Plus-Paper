@@ -3,8 +3,6 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
-        VoidCallback,
-        BorderRadius,
         Icon,
         BoxDecoration,
         TextPainter,
@@ -18,6 +16,7 @@ import 'package:flutter/material.dart'
         Text,
         Align,
         TextOverflow,
+        TextAlign,
         Alignment,
         Container,
         SingleChildScrollView,
@@ -28,11 +27,11 @@ import 'package:flutter/material.dart'
         BuildContext,
         Widget,
         ValueKey,
-        Scrollbar,
         EdgeInsets,
         Color,
-        IconData,
         MainAxisAlignment,
+        CrossAxisAlignment,
+        MainAxisSize,
         MouseRegion,
         showDialog,
         ScrollController,
@@ -42,22 +41,24 @@ import 'package:flutter/material.dart'
         CircularProgressIndicator,
         Padding,
         Stack,
-        LinearGradient,
-        BoxConstraints,
         Clip,
         MediaQuery,
-        Builder,
         Tooltip,
         Visibility,
-        AnimatedOpacity;
+        BoxShadow,
+        Offset,
+        ValueNotifier,
+        ValueListenableBuilder,
+        RawScrollbar,
+        Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
-import '../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/hover_actions_web.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
@@ -74,7 +75,7 @@ class MfTableExample extends ConsumerStatefulWidget {
 class _MfTableExampleState extends ConsumerState<MfTableExample> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredRowIndex;
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
   // Helper method to get appropriate text style for table cells
   TextStyle _getTextStyle(BuildContext context, {Color? color}) {
@@ -115,7 +116,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     bool alignRight = false,
   }) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
-    final isLastColumn = columnIndex == 7; // P&L % column
+    final isLastColumn = columnIndex == 6; // P&L column
 
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -143,12 +144,24 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
-        child: Container(
-          padding: cellPadding,
-          alignment: alignRight ? Alignment.topRight : null,
-          child: child,
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+
+            return Container(
+              padding: cellPadding,
+              color: isRowHovered
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  : null,
+              alignment: alignRight ? Alignment.topRight : null,
+              child: child,
+            );
+          },
         ),
       ),
     );
@@ -172,7 +185,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
-    final isLastColumn = columnIndex == 7; // P&L % column
+    final isLastColumn = columnIndex == 6; // P&L column
 
     // Match the cell padding logic - Fund Name column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -278,7 +291,6 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
       'Invested',
       'Current Value',
       'P&L',
-      'P&L %',
     ];
 
     final minWidths = <int, double>{};
@@ -301,13 +313,17 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             cellText = holding.name ?? 'N/A';
             break;
           case 1: // Units
-            cellText = holding.avgQty ?? '0';
+            // cellText = holding.avgQty ?? '0';
+            final nav = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
+            cellText = nav.toStringAsFixed(4);
             break;
           case 2: // Avg NAV
-            cellText = holding.avgNav ?? '0.00';
+            final nav = double.tryParse(holding.avgNav ?? '0') ?? 0.0;
+            cellText = nav.toStringAsFixed(4);
             break;
           case 3: // Current NAV
-            cellText = holding.curNav ?? '0.00';
+            final nav = double.tryParse(holding.curNav ?? '0') ?? 0.0;
+            cellText = nav.toStringAsFixed(4);
             break;
           case 4: // Invested
             final invested =
@@ -319,11 +335,14 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 double.tryParse(holding.currentValue ?? '0') ?? 0.0;
             cellText = currentValue.toStringAsFixed(2);
             break;
-          case 6: // P&L
-            cellText = holding.profitLoss ?? '0.00';
-            break;
-          case 7: // P&L %
-            cellText = '${holding.changeprofitLoss ?? '0.00'}%';
+          case 6: // P&L (with percentage - measure longest)
+            final pnl = holding.profitLoss ?? '0.00';
+            final pct = holding.changeprofitLoss ?? '0.00';
+            // Measure both value and percentage, use the longer one
+            final pnlWidth = _measureTextWidth(pnl, textStyle);
+            final pctWidth =
+                _measureTextWidth('$pct%', textStyle.copyWith(fontSize: 10));
+            cellText = pnlWidth > pctWidth ? pnl : '$pct%';
             break;
         }
 
@@ -346,30 +365,63 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     return minWidths;
   }
 
-  // Helper method to build colored text for P&L values
-  Widget _buildColoredText(String value) {
-    final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
-    return Text(
-      value,
-      style: _getTextStyle(context, color: _getCellColor(numValue, context)),
+  // Helper method to build colored text for P&L values with percentage (stacked)
+  Widget _buildPnLWithPercentage(String pnlValue, String percentValue) {
+    final numValue = double.tryParse(pnlValue) ?? 0.0;
+    final color = _getCellColor(numValue, context);
+    final baseStyle = _getTextStyle(context, color: color);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(pnlValue, textAlign: TextAlign.end, style: baseStyle),
+        Text(
+          '$percentValue%',
+          textAlign: TextAlign.end,
+          style: baseStyle.copyWith(
+            fontSize: 10,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            fontWeight: MyntFonts.medium,
+          ),
+        ),
+      ],
     );
   }
 
   // Handler: Show holding detail sheet
   void _showHoldingDetail(dynamic holding) {
-    // Open sheet immediately without waiting
     shadcn.openSheet(
       context: context,
       barrierColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: MyntColors.textWhite,
-          boxShadow: MyntShadows.panelRight,
-        ),
-        child: MfHoldingDetailScreenWeb(
-          holding: holding,
-        ),
-      ),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: MfHoldingDetailScreenWeb(
+            holding: holding,
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
     );
   }
@@ -388,79 +440,9 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     );
   }
 
-  Widget _buildHoverButton({
-    required ThemesProvider theme,
-    String? label,
-    IconData? icon,
-    required VoidCallback onPressed,
-    Color? backgroundColor,
-    Color? textColor,
-    Color? iconColor,
-    required BuildContext context,
-  }) {
-    final borderRadiusValue = 5.0;
-
-    // Detect screen size for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-
-    // Responsive sizes
-    final buttonPadding = isVerySmallScreen
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-    final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-
-    // Use Container only for background color, shadcn handles size/shape
-    return Container(
-      decoration: backgroundColor != null
-          ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-            )
-          : null,
-      child: icon != null
-          ? shadcn.IconButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              variance: shadcn.ButtonVariance.ghost,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              icon: Icon(
-                icon,
-                size: iconSize,
-                color: iconColor ?? Colors.white,
-              ),
-            )
-          : shadcn.TextButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              child: Padding(
-                padding: buttonPadding,
-                child: Text(
-                  label ?? "",
-                  style: MyntWebTextStyles.buttonSm(
-                    context,
-                    color: textColor ?? Colors.white,
-                  ).copyWith(
-                    fontSize: fontSize,
-                    fontWeight: MyntFonts.bold,
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
-    final theme = ref.watch(themeProvider);
 
     // Show loading indicator while fetching data
     if (mfData.holdstatload ?? false) {
@@ -512,15 +494,10 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             final bValue = double.tryParse(b.currentValue ?? '0') ?? 0;
             comparison = aValue.compareTo(bValue);
             break;
-          case 6: // P&L
+          case 6: // P&L (sorts by P&L value, not percentage)
             final aPnL = double.tryParse(a.profitLoss ?? '0') ?? 0;
             final bPnL = double.tryParse(b.profitLoss ?? '0') ?? 0;
             comparison = aPnL.compareTo(bPnL);
-            break;
-          case 7: // P&L %
-            final aPnLPercent = double.tryParse(a.changeprofitLoss ?? '0') ?? 0;
-            final bPnLPercent = double.tryParse(b.changeprofitLoss ?? '0') ?? 0;
-            comparison = aPnLPercent.compareTo(bPnLPercent);
             break;
         }
         return _sortAscending ? comparison : -comparison;
@@ -556,7 +533,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 7; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -579,13 +556,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < 7; i++) {
               if (i == 0) {
                 // Column 0 is Fund Name
                 growthFactors[i] = fundNameGrowthFactor;
                 totalGrowthFactor += fundNameGrowthFactor;
               } else {
-                // Columns 1-7 are numeric
+                // Columns 1-6 are numeric
                 growthFactors[i] = numericGrowthFactor;
                 totalGrowthFactor += numericGrowthFactor;
               }
@@ -593,7 +570,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 8; i++) {
+              for (int i = 0; i < 7; i++) {
                 if (growthFactors[i]! > 0) {
                   final extraForThisColumn =
                       (extraSpace * growthFactors[i]!) / totalGrowthFactor;
@@ -625,7 +602,6 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                     4: shadcn.FixedTableSize(columnWidths[4]!),
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
-                    7: shadcn.FixedTableSize(columnWidths[7]!),
                   },
                   defaultRowHeight: const shadcn.FixedTableSize(40),
                   rows: [
@@ -638,16 +614,25 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                         buildHeaderCell('Invested', 4, true),
                         buildHeaderCell('Current Value', 5, true),
                         buildHeaderCell('P&L', 6, true),
-                        buildHeaderCell('P&L %', 7, true),
                       ],
                     ),
                   ],
                 ),
                 // Scrollable Body (vertical scroll)
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: verticalScrollController,
                     thumbVisibility: true,
+                    trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
+                    interactive: true,
                     child: SingleChildScrollView(
                       controller: verticalScrollController,
                       scrollDirection: Axis.vertical,
@@ -662,9 +647,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                           4: shadcn.FixedTableSize(columnWidths[4]!),
                           5: shadcn.FixedTableSize(columnWidths[5]!),
                           6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
                           // Data Rows
                           ...displayHoldings.asMap().entries.map((entry) {
@@ -672,7 +656,6 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                             final holding = entry.value;
                             final avgQty =
                                 double.tryParse(holding.avgQty ?? '0') ?? 0.0;
-                            final isRowHovered = _hoveredRowIndex == index;
 
                             return shadcn.TableRow(
                               cells: [
@@ -680,152 +663,81 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 0,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: SizedBox(
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      child: Stack(
-                                        clipBehavior: Clip.hardEdge,
-                                        children: [
-                                          // Fund name - full width, can be partially covered by buttons
-                                          // Only truncate when hovered (buttons visible), otherwise show full text
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Tooltip(
-                                              message: holding.name ?? 'N/A',
-                                              child: Padding(
-                                                padding: EdgeInsets.only(
-                                                    right: isRowHovered
-                                                        ? 8.0
-                                                        : 0.0),
-                                                child: Text(
-                                                  holding.name ?? 'N/A',
-                                                  overflow: isRowHovered
-                                                      ? TextOverflow.ellipsis
-                                                      : TextOverflow.visible,
-                                                  maxLines: 1,
-                                                  softWrap: false,
-                                                  style: _getTextStyle(context),
+                                  child: ValueListenableBuilder<int?>(
+                                    valueListenable: _hoveredRowIndex,
+                                    builder: (context, hoveredIndex, _) {
+                                      final isRowHovered =
+                                          hoveredIndex == index;
+                                      return GestureDetector(
+                                        onTap: () =>
+                                            _showHoldingDetail(holding),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: SizedBox(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          child: Stack(
+                                            clipBehavior: Clip.hardEdge,
+                                            children: [
+                                              // Fund name - full width, can be partially covered by buttons
+                                              // Only truncate when hovered (buttons visible), otherwise show full text
+                                              Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Tooltip(
+                                                  message:
+                                                      holding.name ?? 'N/A',
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        right: isRowHovered
+                                                            ? 8.0
+                                                            : 0.0),
+                                                    child: Text(
+                                                      holding.name ?? 'N/A',
+                                                      overflow: isRowHovered
+                                                          ? TextOverflow
+                                                              .ellipsis
+                                                          : TextOverflow
+                                                              .visible,
+                                                      maxLines: 1,
+                                                      softWrap: false,
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          // Action button - overlay on the right side, covering only half the text
-                                          // Use Visibility to ensure buttons don't take space when not hovered
-                                          Visibility(
-                                            visible: isRowHovered,
-                                            maintainSize: false,
-                                            maintainAnimation: false,
-                                            maintainState: false,
-                                            child: Align(
-                                              alignment: Alignment.centerRight,
-                                              child: LayoutBuilder(
-                                                builder:
-                                                    (context, constraints) {
-                                                  // Responsive max width based on screen size
-                                                  final screenWidth =
-                                                      MediaQuery.of(context)
-                                                          .size
-                                                          .width;
-                                                  final isSmallScreen =
-                                                      screenWidth < 768;
-                                                  final isVerySmallScreen =
-                                                      screenWidth < 480;
-                                                  final responsiveMaxWidth =
-                                                      isVerySmallScreen
-                                                          ? 100.0
-                                                          : (isSmallScreen
-                                                              ? 120.0
-                                                              : 150.0);
-
-                                                  // Use available width, but cap at responsive max to prevent overflow
-                                                  final maxButtonWidth =
-                                                      constraints.maxWidth.clamp(
-                                                          0.0,
-                                                          responsiveMaxWidth);
-                                                  return GestureDetector(
-                                                    onTap:
-                                                        () {}, // Empty handler to stop propagation
-                                                    behavior:
-                                                        HitTestBehavior.opaque,
-                                                    child: AnimatedOpacity(
-                                                      opacity:
-                                                          isRowHovered ? 1 : 0,
-                                                      duration: const Duration(
-                                                          milliseconds: 140),
-                                                      child: Container(
-                                                        constraints: BoxConstraints(
-                                                            maxWidth:
-                                                                maxButtonWidth),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          // Subtle background gradient for better button visibility
-                                                          gradient:
-                                                              LinearGradient(
-                                                            begin: Alignment
-                                                                .centerLeft,
-                                                            end: Alignment
-                                                                .centerRight,
-                                                            colors: [
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withOpacity(
-                                                                      0.0),
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withOpacity(
-                                                                      0.95),
-                                                            ],
-                                                          ),
+                                              // Action button - overlay on the right side, covering only half the text
+                                              // Use Visibility to ensure buttons don't take space when not hovered
+                                              if (avgQty > 0)
+                                                Visibility(
+                                                  visible: isRowHovered,
+                                                  maintainSize: false,
+                                                  maintainAnimation: false,
+                                                  maintainState: false,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child:
+                                                        HoverActionsContainer(
+                                                      isVisible: isRowHovered,
+                                                      borderRadius: 6.0,
+                                                      actions: [
+                                                        HoverActionButton
+                                                            .redeem(
+                                                          context: context,
+                                                          borderRadius: 5.0,
+                                                          onPressed: () =>
+                                                              _handleRedeem(
+                                                                  holding),
                                                         ),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 8),
-                                                        child: Builder(
-                                                          builder:
-                                                              (buttonContext) {
-                                                            if (avgQty > 0) {
-                                                              return _buildHoverButton(
-                                                                theme: theme,
-                                                                label: 'Redeem',
-                                                                onPressed: () =>
-                                                                    _handleRedeem(
-                                                                        holding),
-                                                                backgroundColor:
-                                                                    resolveThemeColor(
-                                                                  buttonContext,
-                                                                  dark: MyntColors
-                                                                      .primaryDark,
-                                                                  light: MyntColors
-                                                                      .primary,
-                                                                ),
-                                                                textColor:
-                                                                    Colors
-                                                                        .white,
-                                                                context:
-                                                                    buttonContext,
-                                                              );
-                                                            }
-                                                            return const SizedBox
-                                                                .shrink();
-                                                          },
-                                                        ),
-                                                      ),
+                                                      ],
                                                     ),
-                                                  );
-                                                },
-                                              ),
-                                            ),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                                 // Units - Make clickable for row tap
@@ -839,7 +751,11 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        holding.avgQty ?? '0',
+                                        // holding.avgQty ?? '0',
+                                        (double.tryParse(
+                                                    holding.avgQty ?? '0') ??
+                                                0.0)
+                                            .toStringAsFixed(4),
                                         style: _getTextStyle(context),
                                       ),
                                     ),
@@ -856,7 +772,10 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        holding.avgNav ?? '0.00',
+                                        (double.tryParse(
+                                                    holding.avgNav ?? '0') ??
+                                                0.0)
+                                            .toStringAsFixed(4),
                                         style: _getTextStyle(context),
                                       ),
                                     ),
@@ -873,7 +792,10 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        holding.curNav ?? '0.00',
+                                        (double.tryParse(
+                                                    holding.curNav ?? '0') ??
+                                                0.0)
+                                            .toStringAsFixed(4),
                                         style: _getTextStyle(context),
                                       ),
                                     ),
@@ -920,7 +842,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     ),
                                   ),
                                 ),
-                                // P&L - Make clickable for row tap
+                                // P&L with percentage - Make clickable for row tap
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 6,
@@ -930,23 +852,17 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                     behavior: HitTestBehavior.opaque,
                                     child: Align(
                                       alignment: Alignment.centerRight,
-                                      child: _buildColoredText(
-                                          holding.profitLoss ?? '0.00'),
-                                    ),
-                                  ),
-                                ),
-                                // P&L % - Make clickable for row tap
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 7,
-                                  alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: _buildColoredText(
-                                          '${holding.changeprofitLoss ?? '0.00'}%'),
+                                      child: _buildPnLWithPercentage(
+                                        (double.tryParse(holding.profitLoss ??
+                                                    '0') ??
+                                                0.0)
+                                            .toStringAsFixed(2),
+                                        (double.tryParse(
+                                                    holding.changeprofitLoss ??
+                                                        '0') ??
+                                                0.0)
+                                            .toStringAsFixed(2),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -963,9 +879,19 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
           }
 
           // Wrap with scrollbars - horizontal on the outside
-          return Scrollbar(
+          return RawScrollbar(
             controller: horizontalScrollController,
             thumbVisibility: true,
+            trackVisibility: true,
+            trackColor: resolveThemeColor(context,
+                dark: Colors.grey.withOpacity(0.1),
+                light: Colors.grey.withOpacity(0.1)),
+            thumbColor: resolveThemeColor(context,
+                dark: Colors.grey.withOpacity(0.3),
+                light: Colors.grey.withOpacity(0.3)),
+            thickness: 6,
+            radius: const Radius.circular(3),
+            interactive: true,
             child: SingleChildScrollView(
               controller: horizontalScrollController,
               scrollDirection: Axis.horizontal,

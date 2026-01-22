@@ -8,10 +8,14 @@ import 'package:mynt_plus/screens/web/market_watch/scrip_depth_info_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/search_dialog_web.dart';
+import 'package:mynt_plus/screens/web/market_watch/set_alert_web.dart';
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../models/order_book_model/order_book_model.dart';
+import '../../../utils/responsive_navigation.dart';
 import '../../../../provider/websocket_provider.dart';
 
 class ChartWithDepthWeb extends ConsumerStatefulWidget {
@@ -31,7 +35,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
   TabController? _tabController;
   VoidCallback?
       _tabControllerListener; // Store listener reference for proper cleanup
-  int _selectedTabIndex = 0; // 0 for Chart, 1 for Options
+  int _selectedTabIndex = 0; // 0 for Overview, 1 for Chart, 2 for Options
   bool _isBasketMode = false; // Track basket mode from OptionChainSSWeb
   VoidCallback? _toggleBasketModeCallback; // Callback to toggle basket mode
   BuildContext? _storedContext; // Store context for cleanup in dispose
@@ -64,7 +68,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     // Check if isOption flag changed (even for the same scrip)
     if (oldWidget.wlValue.isOption != widget.wlValue.isOption) {
       if (_tabController != null) {
-        final targetIndex = widget.wlValue.isOption ? 1 : 0;
+        // Options tab is now at index 2 (Overview=0, Chart=1, Options=2)
+        final targetIndex = widget.wlValue.isOption ? 2 : 0;
         if (_tabController!.index != targetIndex) {
           _tabController!.animateTo(targetIndex);
         }
@@ -81,14 +86,15 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
             .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
       });
 
-      Future.microtask(() async { 
-        // await _ensureDataLoaded(force: true);
+      Future.microtask(() async {
+        await _ensureDataLoaded(force: true);
 
         // If Options tab is active when scrip changes, prepare options for new scrip
+        // Options tab is now at index 2 (Overview=0, Chart=1, Options=2)
         final mw = ref.read(marketWatchProvider);
         final hasOptions =
             mw.getOptionawait(widget.wlValue.exch, widget.wlValue.token);
-        if (hasOptions && (_tabController?.index ?? 0) == 1) {
+        if (hasOptions && (_tabController?.index ?? 0) == 2) {
           mw.setOptionScript(context, widget.wlValue.exch, widget.wlValue.token,
               widget.wlValue.tsym);
         }
@@ -143,27 +149,22 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
   }
 
   void _setupTabControllerIfNeeded({required bool hasOptions}) {
-    if (!hasOptions) {
-      // Remove listener before disposing to prevent memory leaks
-      if (_tabController != null && _tabControllerListener != null) {
-        _tabController!.removeListener(_tabControllerListener!);
-        _tabControllerListener = null;
-      }
-      _tabController?.dispose();
-      _tabController = null;
-      return;
-    }
-    if (_tabController == null || _tabController!.length != 2) {
+    // Tab structure:
+    // - hasOptions: [Overview, Chart, Options] (3 tabs)
+    // - !hasOptions: [Overview, Chart] (2 tabs)
+    final targetLength = hasOptions ? 3 : 2;
+
+    if (_tabController == null || _tabController!.length != targetLength) {
       // Remove old listener before disposing to prevent memory leaks
       if (_tabController != null && _tabControllerListener != null) {
         _tabController!.removeListener(_tabControllerListener!);
         _tabControllerListener = null;
       }
       _tabController?.dispose();
+      // Initial index: Options tab is at index 2 when hasOptions
+      final initialIndex = widget.wlValue.isOption && hasOptions ? 2 : 0;
       _tabController = TabController(
-          length: 2,
-          vsync: this,
-          initialIndex: widget.wlValue.isOption ? 1 : 0);
+          length: targetLength, vsync: this, initialIndex: initialIndex);
       _selectedTabIndex = _tabController!.index;
       // Store listener reference for proper cleanup
       _tabControllerListener = () {
@@ -172,8 +173,19 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
           setState(() {
             _selectedTabIndex = _tabController!.index;
           });
+          // Handle depth visibility based on tab
+          final mw = ref.read(marketWatchProvider);
+          if (_tabController!.index == 0) {
+            // Overview tab: show depth
+            mw.setIsDepthVisibleWeb(true, context: context);
+          } else if (_tabController!.index == 1) {
+            // Chart tab: hide depth
+            mw.setIsDepthVisibleWeb(false, context: context);
+          }
         }
-        if (_tabController!.index == 1 &&
+        // Options tab is now at index 2
+        if (hasOptions &&
+            _tabController!.index == 2 &&
             _tabController!.indexIsChanging == false) {
           // Prepare option chain data when switching to Options tab
           final mw = ref.read(marketWatchProvider);
@@ -183,6 +195,163 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
       };
       _tabController!.addListener(_tabControllerListener!);
     }
+  }
+
+  Future<void> _placeOrderInput(
+      BuildContext ctx, GetQuotes? depthData, bool transType) async {
+    if (depthData == null) return;
+
+    await ref.read(marketWatchProvider).fetchScripInfo(
+        widget.wlValue.token, widget.wlValue.exch, context, true);
+
+    // Use lot size from scripInfoModel if available, otherwise use depthData
+    final lotSize = depthData.ls?.isNotEmpty == true
+        ? depthData.ls
+        : ref.read(marketWatchProvider).scripInfoModel?.ls.toString();
+
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: widget.wlValue.exch,
+        tSym: widget.wlValue.tsym,
+        isExit: false,
+        token: widget.wlValue.token,
+        transType: transType,
+        lotSize: lotSize,
+        ltp: "${depthData.lp ?? depthData.c ?? 0.00}",
+        perChange: depthData.pc ?? "0.00",
+        orderTpye: '',
+        holdQty: '',
+        isModify: false,
+        raw: {});
+
+    ResponsiveNavigation.toPlaceOrderScreen(
+      context: ctx,
+      arguments: {
+        "orderArg": orderArgs,
+        "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
+        "isBskt": widget.isBasket
+      },
+    );
+  }
+
+  void _showStrikesDropdown(BuildContext context, MarketWatchProvider mw) {
+    final numStrikes = mw.numStrikes;
+    final numStrike = mw.numStrike;
+
+    shadcn.showPopover(
+      context: context,
+      alignment: Alignment.bottomCenter,
+      offset: const Offset(0, 4),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
+      builder: (popoverContext) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(popoverContext).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 150,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: numStrikes.map((String value) {
+                    final isSelected = value == numStrike;
+                    return _buildStrikeMenuItem(
+                      popoverContext,
+                      value,
+                      isSelected,
+                      () async {
+                        shadcn.closeOverlay(popoverContext);
+                        mw.selecNumStrike(value);
+                        await mw.fetchOPtionChain(
+                          context: popoverContext,
+                          exchange: mw.optionExch!,
+                          numofStrike: value,
+                          strPrc: mw.optionStrPrc,
+                          tradeSym: mw.selectedTradeSym!,
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStrikeMenuItem(
+    BuildContext context,
+    String title,
+    bool isActive,
+    VoidCallback onTap,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: resolveThemeColor(
+          context,
+          dark: MyntColors.rippleDark,
+          light: MyntColors.rippleLight,
+        ),
+        highlightColor: resolveThemeColor(
+          context,
+          dark: MyntColors.highlightDark,
+          light: MyntColors.highlightLight,
+        ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: isActive ? MyntFonts.semiBold : MyntFonts.medium,
+                    color: isActive
+                        ? resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          )
+                        : resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                  ),
+                ),
+              ),
+              if (isActive)
+                Icon(
+                  Icons.check,
+                  size: 18,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -197,19 +366,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
       color: resolveThemeColor(context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Chart area - 100% when depth hidden, 70% when visible
-              Expanded(
-                flex: mw.isDepthVisible ? 7 : 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header: Left 50% scrip title, Right 50% tabs (when available)
-                    Container(
+          // Primary Header - Full Width
+          Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 10),
                       decoration: BoxDecoration(
@@ -227,12 +388,165 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Column(
+                          // Tabs
+                          _buildSegmentedControl(context, hasOptions),
+                          const Spacer(),
+                          // Right side: Buy/Sell/Alert/Sidebar icons
+                          if (widget.wlValue.instname != "UNDIND" &&
+                              widget.wlValue.instname != "COM") ...[
+                            // Buy button
+                            SizedBox(
+                              width: 70,
+                              height: 32,
+                              child: MyntButton(
+                                label: "Buy",
+                                size: MyntButtonSize.small,
+                                backgroundColor: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.primary,
+                                    light: MyntColors.primary),
+                                textColor: Colors.white,
+                                onPressed: () async {
+                                  await _placeOrderInput(context, depthData, true);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Sell button
+                            SizedBox(
+                              width: 70,
+                              height: 32,
+                              child: MyntButton(
+                                label: "Sell",
+                                size: MyntButtonSize.small,
+                                backgroundColor: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.tertiary,
+                                    light: MyntColors.tertiary),
+                                textColor: Colors.white,
+                                onPressed: () async {
+                                  await _placeOrderInput(context, depthData, false);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Create Alert icon
+                            Tooltip(
+                              message: "Set Alert",
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.rippleDark,
+                                    light: MyntColors.rippleLight,
+                                  ),
+                                  highlightColor: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.highlightDark,
+                                    light: MyntColors.highlightLight,
+                                  ),
+                                  onTap: () {
+                                    if (depthData == null) return;
+                                    showDialog(
+                                      context: context,
+                                      barrierDismissible: true,
+                                      builder: (BuildContext dialogContext) {
+                                        return SetAlertWeb(
+                                          depthdata: depthData,
+                                          wlvalue: widget.wlValue,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Icon(
+                                      Icons.notifications_none_outlined,
+                                      size: 20,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.iconDark,
+                                        light: MyntColors.icon,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          // Sidebar toggle icon
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              splashColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.rippleDark,
+                                light: MyntColors.rippleLight,
+                              ),
+                              highlightColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.highlightDark,
+                                light: MyntColors.highlightLight,
+                              ),
+                              onTap: () {
+                                ref
+                                    .read(marketWatchProvider)
+                                    .setIsDepthVisibleWeb(
+                                      !mw.isDepthVisible,
+                                      context: context,
+                                    );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  mw.isDepthVisible
+                                      ? Icons.view_sidebar
+                                      : Icons.view_sidebar_outlined,
+                                  size: 20,
+                                  color: mw.isDepthVisible
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary)
+                                      : resolveThemeColor(context,
+                                          dark: MyntColors.iconDark,
+                                          light: MyntColors.icon),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Secondary Header (Options-specific controls) - Only visible when Options tab is active
+                    if (hasOptions && _selectedTabIndex == 2)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: shadcn.Theme.of(context).colorScheme.card,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.dividerDark,
+                                light: MyntColors.divider,
+                              ),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            // Symbol name + LTP + Price change (Options only)
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // ${depthData?.exch ?? widget.wlValue.exch}
                                 Text(
                                   "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ",
                                   overflow: TextOverflow.ellipsis,
@@ -244,7 +558,6 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                // PERF FIX: ref.read() for stream
                                 StreamBuilder<Map>(
                                   stream: ref
                                       .read(websocketProvider)
@@ -307,87 +620,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 ),
                               ],
                             ),
-                          ),
-                          // Search icon - only show for Chart tab (when no tabs or Chart tab is active)
-                          if (_tabController == null ||
-                              _tabController!.index == 0) ...[
-                            const SizedBox(width: 12),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.rippleDark,
-                                  light: MyntColors.rippleLight,
-                                ),
-                                highlightColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.highlightDark,
-                                  light: MyntColors.highlightLight,
-                                ),
-                                onTap: () {
-                                  mw.requestMWScrip(
-                                      context: context, isSubscribe: false);
-                                  showGeneralDialog(
-                                    context: context,
-                                    barrierDismissible: true,
-                                    barrierLabel:
-                                        MaterialLocalizations.of(context)
-                                            .modalBarrierDismissLabel,
-                                    barrierColor: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.modalBarrierDark,
-                                      light: MyntColors.modalBarrierLight,
-                                    ),
-                                    transitionDuration:
-                                        const Duration(milliseconds: 200),
-                                    pageBuilder: (context, animation,
-                                        secondaryAnimation) {
-                                      return SearchDialogWeb(
-                                        wlName: mw.wlName,
-                                        isBasket: "Chart||Is",
-                                      );
-                                    },
-                                    transitionBuilder: (context, animation,
-                                        secondaryAnimation, child) {
-                                      final curvedAnimation = CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOut,
-                                        reverseCurve: Curves.easeIn,
-                                      );
-
-                                      return FadeTransition(
-                                        opacity: curvedAnimation,
-                                        child: ScaleTransition(
-                                          scale: Tween<double>(
-                                                  begin: 0.95, end: 1.0)
-                                              .animate(curvedAnimation),
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SvgPicture.asset(
-                                    assets.searchIcon1,
-                                    width: 16,
-                                    height: 16,
-                                    color: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.iconDark,
-                                      light: MyntColors.icon,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                          if (hasOptions &&
-                              _tabController != null &&
-                              _selectedTabIndex == 1) ...[
+                            const SizedBox(width: 20),
+                            // Expiry date selector
                             Builder(
                               builder: (buttonContext) {
                                 return Material(
@@ -407,9 +641,19 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                     onTap: () {
                                       _showExpiryDatePopup(buttonContext, mw);
                                     },
-                                    child: Padding(
+                                    child: Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 6),
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.dividerDark,
+                                            light: MyntColors.divider,
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
@@ -422,10 +666,10 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                               fontWeight: MyntFonts.medium,
                                             ),
                                           ),
-                                          const SizedBox(width: 4),
+                                          const SizedBox(width: 8),
                                           Icon(
                                             Icons.keyboard_arrow_down,
-                                            size: 18,
+                                            size: 16,
                                             color: resolveThemeColor(
                                               context,
                                               dark: MyntColors.iconDark,
@@ -439,7 +683,69 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 );
                               },
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 12),
+                            // Strikes dropdown
+                            Builder(
+                              builder: (buttonContext) {
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(4),
+                                    splashColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.rippleDark,
+                                      light: MyntColors.rippleLight,
+                                    ),
+                                    highlightColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.highlightDark,
+                                      light: MyntColors.highlightLight,
+                                    ),
+                                    onTap: () {
+                                      _showStrikesDropdown(buttonContext, mw);
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.dividerDark,
+                                            light: MyntColors.divider,
+                                          ),
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "${mw.numStrike} Strike",
+                                            style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.medium,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Icon(
+                                            Icons.keyboard_arrow_down,
+                                            size: 16,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.iconDark,
+                                              light: MyntColors.icon,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const Spacer(),
+                            // Basket mode icon
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -476,7 +782,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               ),
                             ),
                             const SizedBox(width: 4),
-                            // Search Icon
+                            // Search icon
                             Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -492,54 +798,13 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                   light: MyntColors.highlightLight,
                                 ),
                                 onTap: () {
-                                  mw.requestMWScrip(
-                                      context: context, isSubscribe: false);
-                                  showGeneralDialog(
-                                    context: context,
-                                    barrierDismissible: true,
-                                    barrierLabel:
-                                        MaterialLocalizations.of(context)
-                                            .modalBarrierDismissLabel,
-                                    barrierColor: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.modalBarrierDark,
-                                      light: MyntColors.modalBarrierLight,
-                                    ),
-                                    transitionDuration:
-                                        const Duration(milliseconds: 200),
-                                    pageBuilder: (context, animation,
-                                        secondaryAnimation) {
-                                      return SearchDialogWeb(
-                                        wlName: mw.wlName,
-                                        isBasket: "Option||Is",
-                                      );
-                                    },
-                                    transitionBuilder: (context, animation,
-                                        secondaryAnimation, child) {
-                                      final curvedAnimation = CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOut,
-                                        reverseCurve: Curves.easeIn,
-                                      );
-
-                                      return FadeTransition(
-                                        opacity: curvedAnimation,
-                                        child: ScaleTransition(
-                                          scale: Tween<double>(
-                                                  begin: 0.95, end: 1.0)
-                                              .animate(curvedAnimation),
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                  );
+                                  // Open search dialog for options
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: SvgPicture.asset(
-                                    assets.searchIcon1,
-                                    width: 16,
-                                    height: 16,
+                                  child: Icon(
+                                    Icons.search,
+                                    size: 18,
                                     color: resolveThemeColor(
                                       context,
                                       dark: MyntColors.iconDark,
@@ -550,114 +815,63 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                               ),
                             ),
                           ],
-                          if (hasOptions) ...[
-                            const SizedBox(width: 12),
-                            _buildSegmentedControl(context),
-                          ],
-                          const SizedBox(width: 12),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.rippleDark,
-                                light: MyntColors.rippleLight,
-                              ),
-                              highlightColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.highlightDark,
-                                light: MyntColors.highlightLight,
-                              ),
-                              onTap: () {
-                                ref
-                                    .read(marketWatchProvider)
-                                    .setIsDepthVisibleWeb(
-                                      !mw.isDepthVisible,
-                                      context: context,
-                                    );
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(
-                                  mw.isDepthVisible
-                                      ? Icons.view_sidebar
-                                      : Icons.view_sidebar_outlined,
-                                  size: 20,
-                                  color: mw.isDepthVisible
-                                      ? resolveThemeColor(context,
-                                          dark: MyntColors.primaryDark,
-                                          light: MyntColors.primary)
-                                      : resolveThemeColor(context,
-                                          dark: MyntColors.iconDark,
-                                          light: MyntColors.icon),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                    // Content area
-                    Expanded(
-                      child: hasOptions && _tabController != null
-                          ? _selectedTabIndex == 0
-                              ? ChartScreenWebViews(
-                                  chartArgs: ChartArgs(
-                                    exch: widget.wlValue.exch,
-                                    tsym: widget.wlValue.tsym,
-                                    token: widget.wlValue.token,
-                                  ),
-                                )
-                              : OptionChainSSWeb(
-                                  wlValue: widget.wlValue,
-                                  onBasketModeChanged: (bool isBasketMode) {
-                                    setState(() {
-                                      _isBasketMode = isBasketMode;
-                                    });
-                                  },
-                                  onToggleCallbackReady:
-                                      (VoidCallback toggleCallback) {
-                                    setState(() {
-                                      _toggleBasketModeCallback =
-                                          toggleCallback;
-                                    });
-                                  },
-                                )
-                          : ChartScreenWebViews(
-                              chartArgs: ChartArgs(
-                                exch: widget.wlValue.exch,
-                                tsym: widget.wlValue.tsym,
-                                token: widget.wlValue.token,
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-              // Divider between chart and depth (only when depth is visible)
-              if (mw.isDepthVisible)
-                Container(
-                  width: 1,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.divider,
-                  ),
-                ),
-              // Depth/Overview area - 30% (only when visible)
-              if (mw.isDepthVisible)
+          // Content area below headers
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Chart/Options area - 100% when depth hidden, 70% when visible
                 Expanded(
-                  flex: 3,
-                  child: ScripDepthInfoWeb(
-                    wlValue: widget.wlValue,
-                    isBasket: widget.isBasket,
-                    onClose: () {
-                      mw.setIsDepthVisibleWeb(false);
-                    },
-                  ),
+                  flex: mw.isDepthVisible ? 7 : 1,
+                  child: (hasOptions && _selectedTabIndex == 2)
+                      ? OptionChainSSWeb(
+                          wlValue: widget.wlValue,
+                          onBasketModeChanged: (bool isBasketMode) {
+                            setState(() {
+                              _isBasketMode = isBasketMode;
+                            });
+                          },
+                          onToggleCallbackReady:
+                              (VoidCallback toggleCallback) {
+                            setState(() {
+                              _toggleBasketModeCallback = toggleCallback;
+                            });
+                          },
+                        )
+                      : ChartScreenWebViews(
+                          chartArgs: ChartArgs(
+                            exch: widget.wlValue.exch,
+                            tsym: widget.wlValue.tsym,
+                            token: widget.wlValue.token,
+                          ),
+                        ),
                 ),
-            ],
+                // Divider between chart and depth (only when depth is visible)
+                if (mw.isDepthVisible)
+                  Container(
+                    width: 1,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
+                  ),
+                // Depth/Overview area - 30% (only when visible)
+                if (mw.isDepthVisible)
+                  Expanded(
+                    flex: 3,
+                    child: ScripDepthInfoWeb(
+                      wlValue: widget.wlValue,
+                      isBasket: widget.isBasket,
+                      onClose: () {
+                        mw.setIsDepthVisibleWeb(false);
+                      },
+                    ),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
@@ -802,76 +1016,75 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     );
   }
 
-  Widget _buildSegmentedControl(BuildContext context) {
-    final tabs = ['Chart', 'Options'];
-    final currentTheme = shadcn.Theme.of(context);
+  Widget _buildSegmentedControl(BuildContext context, bool hasOptions) {
+    // Tab structure: [Overview, Chart] or [Overview, Chart, Options]
+    final tabs = hasOptions
+        ? ['Overview', 'Chart', 'Options']
+        : ['Overview', 'Chart'];
+    final theme = shadcn.Theme.of(context);
     final isDark = isDarkMode(context);
 
-    // Create a new ColorScheme based on the default, but with custom primary color
-    final baseColorScheme = isDark
-        ? shadcn.ColorSchemes.darkDefaultColor
-        : shadcn.ColorSchemes.lightDefaultColor;
-
-    // Create custom ColorScheme with theme-appropriate primary color
-    final primaryColor = resolveThemeColor(
-      context,
-      dark: MyntColors.primaryDark,
-      light: MyntColors.primary,
-    );
-    final customColorScheme = baseColorScheme.copyWith(
-      primary: () => primaryColor,
-    );
-
-    return shadcn.Theme(
-      data: shadcn.ThemeData(
-        colorScheme: customColorScheme,
-        radius: currentTheme.radius,
-      ),
-      child: shadcn.TabList(
-        index: _selectedTabIndex,
-        onChanged: (value) {
-          if (_tabController != null) {
-            _tabController!.animateTo(value);
-          }
-          setState(() {
-            _selectedTabIndex = value;
-          });
-          // Prepare option chain data when switching to Options tab
-          if (value == 1) {
-            final mw = ref.read(marketWatchProvider);
-            mw.setOptionScript(context, widget.wlValue.exch,
-                widget.wlValue.token, widget.wlValue.tsym);
-          }
-        },
-        children: [
-          for (int index = 0; index < tabs.length; index++)
-            shadcn.TabItem(
-              child: Builder(
-                builder: (context) {
-                  final isActive = index == _selectedTabIndex;
-                  return Text(
-                    tabs[index],
-                    style: MyntWebTextStyles.body(
-                      context,
-                      fontWeight: isActive ? MyntFonts.bold : MyntFonts.medium,
-                      color: isActive
-                          ? resolveThemeColor(
-                              context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary,
-                            )
-                          : resolveThemeColor(
-                              context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary,
-                            ),
-                    ),
-                  );
-                },
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int index = 0; index < tabs.length; index++) ...[
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                if (mounted && _selectedTabIndex != index) {
+                  if (_tabController != null) {
+                    _tabController!.animateTo(index);
+                  }
+                  setState(() {
+                    _selectedTabIndex = index;
+                  });
+                  // Handle depth visibility based on tab
+                  final mw = ref.read(marketWatchProvider);
+                  if (index == 0) {
+                    // Overview tab: show depth
+                    mw.setIsDepthVisibleWeb(true, context: context);
+                  } else if (index == 1) {
+                    // Chart tab: hide depth
+                    mw.setIsDepthVisibleWeb(false, context: context);
+                  }
+                  // Prepare option chain data when switching to Options tab (index 2)
+                  if (hasOptions && index == 2) {
+                    mw.setOptionScript(context, widget.wlValue.exch,
+                        widget.wlValue.token, widget.wlValue.tsym);
+                  }
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _selectedTabIndex == index
+                      ? (isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05))
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                  border: null,
+                ),
+                child: Text(
+                  tabs[index],
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: _selectedTabIndex == index
+                        ? MyntFonts.semiBold
+                        : MyntFonts.medium,
+                  ).copyWith(
+                    color: _selectedTabIndex == index
+                        ? theme.colorScheme.foreground
+                        : theme.colorScheme.mutedForeground,
+                  ),
+                ),
               ),
             ),
+          ),
+          if (index < tabs.length - 1) const SizedBox(width: 8),
         ],
-      ),
+      ],
     );
   }
 }

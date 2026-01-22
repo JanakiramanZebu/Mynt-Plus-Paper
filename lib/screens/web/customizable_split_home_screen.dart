@@ -11,7 +11,7 @@ import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
-import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
+// import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
@@ -526,7 +526,7 @@ class _CustomizableSplitHomeScreenState
         body: Stack(
           children: [
             _buildMainScaffold(),
-            const WebChartOverlay(), // New simplified chart overlay
+            // const WebChartOverlay(), // Commented out - using panel chart only
           ],
         ),
       ),
@@ -1225,7 +1225,7 @@ class _CustomizableSplitHomeScreenState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildNavItem('Dashboard', isDarkMode, ScreenType.dashboard,
+        _buildNavItem('Home', isDarkMode, ScreenType.dashboard,
             () => _handleDashboardTap()),
         const SizedBox(width: 8),
         _buildNavItem('Positions', isDarkMode, ScreenType.positions,
@@ -2355,8 +2355,10 @@ class _CustomizableSplitHomeScreenState
         _handleWatchlistTap();
       }
 
-      // Update subscription manager with initial screens
-      _updateSubscriptionManagerForPanels();
+      // NOTE: Don't call _updateSubscriptionManagerForPanels() here
+      // Each screen handler (dashboard, holdings, etc.) calls it AFTER their async
+      // data fetching completes. Calling it here causes a race condition where
+      // subscriptions happen before data is ready (e.g., trade action stocks empty).
 
       // Ensure websocket connections are established for real-time data
       if (mounted &&
@@ -2376,19 +2378,22 @@ class _CustomizableSplitHomeScreenState
   Map<int, ScreenType?> _lastSubscriptionUpdate = {};
 
   // Update subscription manager based on current active panels (with debouncing)
-  void _updateSubscriptionManagerForPanels() {
+  // Set forceRefresh=true to refresh subscriptions even if screen hasn't changed
+  // (useful when data becomes available after initial load)
+  void _updateSubscriptionManagerForPanels({bool forceRefresh = false}) {
     // Cancel any pending debounce timer
     _subscriptionUpdateDebounceTimer?.cancel();
 
     // Debounce the update to prevent rapid calls
     _subscriptionUpdateDebounceTimer =
         Timer(_subscriptionUpdateDebounceDelay, () {
-      _performSubscriptionManagerUpdate();
+      _performSubscriptionManagerUpdate(forceRefresh: forceRefresh);
     });
   }
 
   /// Actually perform the subscription manager update (called after debounce)
-  void _performSubscriptionManagerUpdate() {
+  /// Set forceRefresh=true to refresh subscriptions even if screen hasn't changed
+  void _performSubscriptionManagerUpdate({bool forceRefresh = false}) {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
 
     // Update subscription manager for each panel
@@ -2404,10 +2409,15 @@ class _CustomizableSplitHomeScreenState
         activeScreen = panel.screenType;
       }
 
-      // Only update if the screen actually changed
+      // Only update if the screen actually changed, OR if forceRefresh is true
       final lastScreen = _lastSubscriptionUpdate[i];
-      if (lastScreen != activeScreen) {
-        subscriptionManager.updateActiveScreen(i, activeScreen);
+      if (forceRefresh || lastScreen != activeScreen) {
+        // For force refresh, pass null as previous to trigger fresh subscription
+        if (forceRefresh && lastScreen == activeScreen) {
+          subscriptionManager.refreshCurrentScreen(i, activeScreen);
+        } else {
+          subscriptionManager.updateActiveScreen(i, activeScreen);
+        }
         _lastSubscriptionUpdate[i] = activeScreen;
       }
     }
@@ -2449,10 +2459,18 @@ class _CustomizableSplitHomeScreenState
       // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
       await portfolio.fetchHoldings(context, "Refresh");
 
-      // Update subscription manager AFTER data is fetched
-      // This ensures tokens are available for subscription
+      // Fetch positions for dashboard stats and subscribe to WebSocket for live updates
+      await portfolio.fetchPositionBook(context, false);
+      // Subscribe position tokens to WebSocket for real-time price updates
       if (mounted) {
-        _updateSubscriptionManagerForPanels();
+        portfolio.requestWSPosition(context: context, isSubscribe: true);
+      }
+
+      // Update subscription manager AFTER data is fetched
+      // Use forceRefresh=true to ensure subscriptions are updated even if
+      // the screen was already set (e.g., initial load where data wasn't ready)
+      if (mounted) {
+        _updateSubscriptionManagerForPanels(forceRefresh: true);
       }
     });
   }
@@ -2463,11 +2481,17 @@ class _CustomizableSplitHomeScreenState
 
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
+
+    // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+    portfolio.requestWSPosition(context: context, isSubscribe: false);
   }
 
   void _handleMutualFundTap() {
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
+
+    // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+    portfolio.requestWSPosition(context: context, isSubscribe: false);
   }
 
   // Check if there are any screens available to add to a panel
@@ -2552,6 +2576,9 @@ class _CustomizableSplitHomeScreenState
 
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
+
+      // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
 
       final orderProviderRef = ref.read(orderProvider);
 
@@ -2673,6 +2700,9 @@ class _CustomizableSplitHomeScreenState
 
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
+
+      // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
 
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('holdings')) {
@@ -3823,18 +3853,29 @@ class _AppBarLivePriceWidgetState
   }
 
   Color _getChangeColor(String change, String perChange) {
-    if (change.startsWith("-") || perChange.startsWith('-')) {
+    if (change == "null" || perChange == "null") {
       return resolveThemeColor(
         context,
-        dark: MyntColors.lossDark,
-        light: MyntColors.loss,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
-    } else if ((change == "null" || perChange == "null") ||
-        (change == "0.00" || perChange == "0.00")) {
+    }
+
+    final double changeVal = double.tryParse(change.replaceAll(',', '')) ?? 0.0;
+    final double perChangeVal =
+        double.tryParse(perChange.replaceAll(',', '')) ?? 0.0;
+
+    if (changeVal > 0 || perChangeVal > 0) {
       return resolveThemeColor(
         context,
         dark: MyntColors.profitDark,
         light: MyntColors.profit,
+      );
+    } else if (changeVal < 0 || perChangeVal < 0) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else {
       return resolveThemeColor(
@@ -3850,12 +3891,15 @@ class _AppBarLivePriceWidgetState
     final changeColor = _getChangeColor(_change, _perChange);
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         Text(
           "$_ltp  ",
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,
+            fontWeight: MyntFonts.medium,
           ),
         ),
         Text(

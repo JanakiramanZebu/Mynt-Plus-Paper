@@ -69,6 +69,8 @@ class HoverActionButton extends StatelessWidget {
   final double? borderRadius;
   final VoidCallback? onPressed;
   final double? size;
+  final double? width;
+  final double? height;
   final double? iconSize;
 
   const HoverActionButton({
@@ -82,6 +84,8 @@ class HoverActionButton extends StatelessWidget {
     this.borderRadius,
     this.onPressed,
     this.size,
+    this.width,
+    this.height,
     this.iconSize,
   }) : assert(
           label != null || icon != null || iconAsset != null,
@@ -144,6 +148,34 @@ class HoverActionButton extends StatelessWidget {
     );
   }
 
+  /// Factory constructor for Redeem button
+  factory HoverActionButton.redeem({
+    required BuildContext context,
+    required VoidCallback? onPressed,
+    double? borderRadius,
+    double? width,
+    double? height,
+  }) {
+    return HoverActionButton(
+      label: 'Redeem',
+      color: Colors.white,
+      backgroundColor: resolveThemeColor(
+        context,
+        dark: MyntColors.primaryDark,
+        light: MyntColors.primary,
+      ),
+      borderColor: resolveThemeColor(
+        context,
+        dark: MyntColors.primaryDark,
+        light: MyntColors.primary,
+      ),
+      onPressed: onPressed,
+      borderRadius: borderRadius,
+      width: width ?? 60.0,
+      height: height ?? 24.0,
+    );
+  }
+
   /// Factory constructor for icon-only button with transparent background
   factory HoverActionButton.icon({
     required BuildContext context,
@@ -175,12 +207,14 @@ class HoverActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadiusValue = borderRadius ?? 5.0;
-    final buttonSize = size ?? (label != null ? 24.0 : 26.0);
+    final defaultSize = label != null ? 24.0 : 26.0;
+    final w = width ?? size ?? defaultSize;
+    final h = height ?? size ?? defaultSize;
     final iconSizeValue = iconSize ?? 13.0;
 
     return SizedBox(
-      width: buttonSize,
-      height: buttonSize,
+      width: w,
+      height: h,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -252,6 +286,7 @@ class HoverActionsContainer extends StatelessWidget {
   final double? borderRadius;
   final Color? backgroundColor;
   final List<BoxShadow>? boxShadow;
+  final Border? border;
 
   const HoverActionsContainer({
     super.key,
@@ -263,6 +298,7 @@ class HoverActionsContainer extends StatelessWidget {
     this.borderRadius,
     this.backgroundColor,
     this.boxShadow,
+    this.border,
   });
 
   @override
@@ -298,6 +334,7 @@ class HoverActionsContainer extends StatelessWidget {
             color: defaultBackgroundColor,
             borderRadius: BorderRadius.circular(defaultBorderRadius),
             boxShadow: defaultBoxShadow,
+            border: border,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
