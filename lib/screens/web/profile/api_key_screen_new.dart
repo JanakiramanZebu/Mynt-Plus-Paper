@@ -98,12 +98,8 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    // Show message before closing bottom sheet using project's successMessage
+    // Show message using project's successMessage
     successMessage(context, "Copied to clipboard");
-    // Close bottom sheet after a short delay
-    Future.delayed(Duration(milliseconds: 100), () {
-      Navigator.pop(context);
-    });
   }
 
   void _showRegenerateConfirmation() {
@@ -247,7 +243,6 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
 
       if (result?.stat == "Ok") {
         successMessage(context, "API Key updated successfully");
-        Navigator.pop(context);
       } else {
         error(context, result?.emsg ?? "");
     }

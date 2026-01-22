@@ -1,7 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -10,6 +9,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'mf/mf_order_book_screen_web.dart';
 import 'mf/mf_sip_screen_web.dart';
@@ -18,6 +18,8 @@ import 'screens/open_orders_screen.dart';
 import 'screens/executed_orders_screen.dart';
 import 'screens/trade_book_screen.dart';
 import 'screens/gtt_orders_screen.dart';
+// import '../../../sharedWidget/common_search_fields_web.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Main Order Book Screen - Now just a coordinator
 /// All table logic is in separate screen widgets
@@ -262,8 +264,6 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // Tabs and Search Bar in same row
         _buildTabsAndActionBar(theme, orderBook),
 
-        const SizedBox(height: 16),
-
         // Content Area - Now just delegates to separate screens
         Expanded(
           child: _buildContentArea(theme, orderBook),
@@ -274,7 +274,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Update scroll arrows state when layout changes
@@ -327,116 +327,61 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                       child: SingleChildScrollView(
                         controller: _tabScrollController,
                         scrollDirection: Axis.horizontal,
-                        child: Builder(
-                          builder: (context) {
-                            final currentTheme = shadcn.Theme.of(context);
-                            final isDark = theme.isDarkMode;
-                            // Create a new ColorScheme based on the default, but with custom primary color
-                            final baseColorScheme = isDark
-                                ? shadcn.ColorSchemes.darkDefaultColor
-                                : shadcn.ColorSchemes.lightDefaultColor;
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: orderBook.orderTabName.map((tabString) {
+                            final parts = tabString.text?.split(' ') ?? [];
+                            final title = parts.first;
+                            final badge = parts.length > 1 ? parts[1] : null;
 
-                            final customColorScheme = baseColorScheme.copyWith(
-                              primary: () => Colors.transparent,
-                              border: () => Colors.transparent,
-                            );
+                            final tabIndex =
+                                orderBook.orderTabName.indexOf(tabString);
+                            final isActive =
+                                (_tabController?.index ?? 0) == tabIndex;
 
-                            return shadcn.Theme(
-                              data: shadcn.ThemeData(
-                                colorScheme: customColorScheme,
-                                radius: currentTheme.radius,
-                              ),
-                              child: shadcn.TabList(
-                                index: _tabController?.index ?? 0,
-                                onChanged: (value) {
+                            return MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: GestureDetector(
+                                onTap: () {
                                   if (_tabController != null &&
-                                      _tabController!.index != value) {
-                                    // Just animate the tab - let the listener handle search clearing and provider updates
-                                    // This prevents multiple state updates from interfering with the tab switch
-                                    _tabController!.animateTo(value);
+                                      _tabController!.index != tabIndex) {
+                                    _tabController!.animateTo(tabIndex);
+                                    setState(() {});
                                   }
                                 },
-                                children:
-                                    orderBook.orderTabName.map((tabString) {
-                                  final parts =
-                                      tabString.text?.split(' ') ?? [];
-                                  final title = parts.first;
-                                  final badge =
-                                      parts.length > 1 ? parts[1] : null;
-
-                                  final isActive = (_tabController?.index ??
-                                          0) ==
-                                      orderBook.orderTabName.indexOf(tabString);
-                                  return shadcn.TabItem(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: isActive
-                                            ? (theme.isDarkMode
-                                                    ? WebDarkColors.primary
-                                                    : const Color.fromARGB(
-                                                        255, 7, 7, 7))
-                                                .withOpacity(0.1)
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            title,
-                                            style: TextStyle(
-                                              fontFamily: 'Geist',
-                                              fontSize: availableWidth < 1300
-                                                  ? 13
-                                                  : 14,
-                                              color: isActive
-                                                  ? (theme.isDarkMode
-                                                      ? WebDarkColors.primary
-                                                      : const Color.fromARGB(
-                                                          255, 10, 10, 10))
-                                                  : shadcn.Theme.of(context)
-                                                      .colorScheme
-                                                      .mutedForeground,
-                                              fontWeight: WebFonts.medium,
-                                            ),
-                                          ),
-                                          if (badge != null) ...[
-                                            const SizedBox(width: 4),
-                                            Transform.translate(
-                                              offset: const Offset(0, -6),
-                                              child: Text(
-                                                badge,
-                                                style: TextStyle(
-                                                  fontFamily: 'Geist',
-                                                  fontSize:
-                                                      availableWidth < 1300
-                                                          ? 13
-                                                          : 14,
-                                                  color: isActive
-                                                      ? (theme.isDarkMode
-                                                          ? WebDarkColors
-                                                              .primary
-                                                          : const Color
-                                                              .fromARGB(
-                                                              255, 10, 10, 10))
-                                                      : shadcn.Theme.of(context)
-                                                          .colorScheme
-                                                          .mutedForeground,
-                                                  fontWeight: WebFonts.medium,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? (theme.isDarkMode
+                                            ? Colors.white.withOpacity(0.1)
+                                            : Colors.black.withOpacity(0.05))
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    badge != null ? '$title ($badge)' : title,
+                                    style: MyntWebTextStyles.body(
+                                      context,
+                                      fontWeight: isActive
+                                          ? MyntFonts.semiBold
+                                          : MyntFonts.medium,
+                                    ).copyWith(
+                                      color: isActive
+                                          ? shadcn.Theme.of(context)
+                                              .colorScheme
+                                              .foreground
+                                          : shadcn.Theme.of(context)
+                                              .colorScheme
+                                              .mutedForeground,
                                     ),
-                                  );
-                                }).toList(),
+                                  ),
+                                ),
                               ),
                             );
-                          },
+                          }).toList(),
                         ),
                       ),
                     ),

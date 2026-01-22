@@ -38,7 +38,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   // TextEditingController to control the TextField value
   final TextEditingController _searchController = TextEditingController();
-  final String _selectedFilter = 'All';
+  final ValueNotifier<String> _selectedFilter =
+      ValueNotifier<String>('All'); // Filter options: All, MIS, NRML, CNC
   int? _sortColumnIndex;
   bool _sortAscending = true;
   // ✅ Use ValueNotifier instead of setState to avoid rebuilding entire widget
@@ -138,20 +139,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Summary Cards Section (includes Trade Positions)
-                _buildSummaryCards(theme, positionBook),
-                const SizedBox(height: 24),
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await positionBook.fetchPositionBook(context, false);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Summary Cards Section (includes Trade Positions)
+                  _buildSummaryCards(theme, positionBook),
+                  const SizedBox(height: 20),
 
-                // Main Content Area - Expanded to take remaining space
-                Expanded(
-                  child: _buildMainContent(theme, positionBook),
-                ),
-              ],
+                  // Main Content Area - Expanded to take remaining space
+                  Expanded(
+                    child: _buildMainContent(theme, positionBook),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -161,59 +168,35 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildSummaryCards(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    // Use Consumer to watch for live updates to position stats (MTM, P&L)
-    return Consumer(
-      builder: (context, ref, _) {
-        // Watch totMtM and totPnL for live WebSocket updates
-        final totMtM = ref.watch(portfolioProvider.select((p) => p.totMtM));
-        final totPnL = ref.watch(portfolioProvider.select((p) => p.totPnL));
-
-        return Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                label: 'MTM',
-                value: totMtM,
-                valueColor: _getValueColor(totMtM, theme),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Profit/Loss',
-                value: totPnL,
-                valueColor: _getValueColor(totPnL, theme),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Trade Value',
-                value: _calculateTradeValue(positionBook),
-                valueColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Open Position',
-                value: _calculateOpenPositionValue(positionBook),
-                valueColor:
-                    _getValueColor(_calculateOpenPositionValue(positionBook), theme),
-                theme: theme,
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    return Row(children: [
+      // Expanded(
+      //   child: _buildStatCard(
+      //     label: 'Trade Value',
+      //     value: _calculateTradeValue(positionBook),
+      //     valueColor:
+      //         _getStatValueColor(_calculateTradeValue(positionBook), theme),
+      //     theme: theme,
+      //   ),
+      // ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: _buildStatCard(
+          label: 'Total P&L',
+          value: positionBook.totPnL,
+          valueColor: _getValueColor(positionBook.totPnL, theme),
+          theme: theme,
+        ),
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: _buildStatCard(
+          label: 'Total MTM',
+          value: positionBook.totMtM,
+          valueColor: _getValueColor(positionBook.totMtM, theme),
+          theme: theme,
+        ),
+      ),
+    ]);
   }
 
   Widget _buildStatCard({
@@ -323,67 +306,87 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
       child: Row(
         children: [
-          Builder(
-            builder: (context) {
-              final currentTheme = shadcn.Theme.of(context);
-              final isDark = theme.isDarkMode;
-              // Create a new ColorScheme based on the default, but with custom primary color
-              final baseColorScheme = isDark
-                  ? shadcn.ColorSchemes.darkDefaultColor
-                  : shadcn.ColorSchemes.lightDefaultColor;
-
-              // Create custom ColorScheme with theme-appropriate primary color
-              final primaryColor = resolveThemeColor(
-                context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary,
-              );
-              final customColorScheme = baseColorScheme.copyWith(
-                primary: () => primaryColor,
-              );
-
-              return shadcn.Theme(
-                data: shadcn.ThemeData(
-                  colorScheme: customColorScheme,
-                  radius: currentTheme.radius,
-                ),
-                child: shadcn.TabList(
-                  index: _selectedTabIndex,
-                  onChanged: (value) {
-                    // Update state immediately without any delays or async operations
-                    if (mounted && _selectedTabIndex != value) {
+          // Custom chip-style tabs matching the design
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Positions tab
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    if (mounted && _selectedTabIndex != 0) {
                       setState(() {
-                        _selectedTabIndex = value;
+                        _selectedTabIndex = 0;
                       });
                     }
                   },
-                  children: [
-                    shadcn.TabItem(
-                      child: DefaultTextStyle(
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          color: _selectedTabIndex == 0
-                              ? resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary,
-                                )
-                              : customColorScheme.mutedForeground,
-                          fontWeight: MyntFonts.bold,
-                        ),
-                        child: Text(
-                          'Positions ($openPositionsCount)',
-                        ),
-                      ),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedTabIndex == 0
+                          ? (theme.isDarkMode
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.black.withOpacity(0.05))
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: null, // ✅ no border
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Positions',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: _selectedTabIndex == 0
+                                ? MyntFonts.semiBold
+                                : MyntFonts.medium,
+                          ).copyWith(
+                            color: _selectedTabIndex == 0
+                                ? shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .foreground
+                                : shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .mutedForeground,
+                          ),
+                        ),
+                        if (openPositionsCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Transform.translate(
+                            offset: const Offset(0, -6),
+                            child: Text(
+                              '$openPositionsCount',
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: _selectedTabIndex == 0
+                                    ? MyntFonts.semiBold
+                                    : MyntFonts.medium,
+                              ).copyWith(
+                                fontSize: 13,
+                                color: _selectedTabIndex == 0
+                                    ? shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .foreground
+                                    : shadcn.Theme.of(context)
+                                        .colorScheme
+                                        .mutedForeground,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
           // Spacer to push action items to the right
           const Spacer(),
-          // Search Bar - Using MyntSearchTextField for consistent styling
+          // Search Bar - Use shadcn.TextField to match Holdings exactly
           LayoutBuilder(
             builder: (context, constraints) {
               // Responsive search bar width
@@ -403,22 +406,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   controller: _searchController,
                   placeholder: 'Search positions',
                   leadingIcon: assets.searchIcon,
-                  onChanged: (value) {
-                    _searchQuery.value = value;
-                  },
+                  onClear: () => _searchController.clear(),
                 ),
               );
             },
           ),
+
+          // Filter dropdown button
+          const SizedBox(width: 12),
+          _buildFilterButton(theme),
+
           // Exit All Button - only show if there are open positions
           // Use Consumer to watch exitPositionQty which changes when selections change
           Consumer(
             builder: (context, ref, _) {
               // Watch exitPositionQty - this primitive value changes when selections change
               // (watching openPosition list doesn't work because list reference stays same)
-              final selectedCount = ref.watch(
-                  portfolioProvider.select((p) => p.exitPositionQty));
-              final openPositions = ref.read(portfolioProvider).openPosition ?? [];
+              final selectedCount =
+                  ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
+              final openPositions =
+                  ref.read(portfolioProvider).openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
 
@@ -427,28 +434,228 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 return const SizedBox.shrink();
               }
 
-              return MyntTextButton(
-                onPressed: () => _exitAllPositions(),
-                label: selectedCount == 0
-                    ? 'Exit All'
-                    : (selectedCount == 1
-                        ? 'Exit (1)'
-                        : 'Exit ($selectedCount)'),
+              return SizedBox(
+                height: 35,
+                child: ElevatedButton(
+                  onPressed: () => _exitAllPositions(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ),
+                    foregroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    selectedCount == 0
+                        ? 'Exit All'
+                        : (selectedCount == 1
+                            ? 'Exit (1)'
+                            : 'Exit ($selectedCount)'),
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: Colors.white,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                  ),
+                ),
               );
             },
           ),
-          const SizedBox(width: 16),
+
+          const SizedBox(width: 12),
           // Refresh Button
-          MyntIconButton(
+          _buildIconButton(
             icon: Icons.refresh,
             onPressed: () async {
               await positionBook.fetchPositionBook(context, false);
             },
-            size: MyntButtonSize.medium,
+            theme: theme,
           ),
           const SizedBox(width: 8),
         ],
       ),
+    );
+  }
+
+  // Icon button helper matching Holdings
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required ThemesProvider theme,
+  }) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onPressed,
+          child: Center(
+            child: Icon(
+              icon,
+              size: 28,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.iconDark,
+                light: MyntColors.icon,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Filter dropdown button matching Holdings
+  Widget _buildFilterButton(ThemesProvider theme) {
+    return Builder(
+      builder: (buttonContext) {
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () => _showFilterPopup(buttonContext, theme),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  assets.searchFilter,
+                  width: 20,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.iconDark,
+                    light: MyntColors.icon,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFilterPopup(BuildContext context, ThemesProvider theme) {
+    shadcn.showPopover(
+      context: context,
+      alignment: Alignment.topCenter,
+      offset: const Offset(0, 8),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+      ),
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: shadcn.ModalContainer(
+            padding: const EdgeInsets.all(8),
+            child: SizedBox(
+              width: 160,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildFilterMenuItem('All', theme),
+                  _buildFilterMenuItem('MIS', theme),
+                  _buildFilterMenuItem('NRML', theme),
+                  _buildFilterMenuItem('CNC', theme),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Filter menu item helper matching Holdings
+  Widget _buildFilterMenuItem(String value, ThemesProvider theme) {
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedFilter,
+      builder: (context, currentFilter, child) {
+        final isSelected = currentFilter == value;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              _selectedFilter.value = value;
+              shadcn.closeOverlay(context);
+            },
+            splashColor: resolveThemeColor(
+              context,
+              dark: MyntColors.rippleDark,
+              light: MyntColors.rippleLight,
+            ),
+            highlightColor: resolveThemeColor(
+              context,
+              dark: MyntColors.highlightDark,
+              light: MyntColors.highlightLight,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: isSelected
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark.withOpacity(0.12),
+                        light:
+                            const Color(0xFFE8F0FE), // Light blue like in image
+                      )
+                    : Colors.transparent,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight:
+                            isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                        color: isSelected
+                            ? resolveThemeColor(
+                                context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary,
+                              )
+                            : resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -545,9 +752,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             builder: (context, ref, _) {
               // Watch exitPositionQty - this primitive value changes when selections change
               // (watching openPosition list doesn't work because list reference stays same)
-              final selectedCount = ref.watch(
-                  portfolioProvider.select((p) => p.exitPositionQty));
-              final openPositions = ref.read(portfolioProvider).openPosition ?? [];
+              final selectedCount =
+                  ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
+              final openPositions =
+                  ref.read(portfolioProvider).openPosition ?? [];
               final nonZeroPositions =
                   openPositions.where((p) => p.qty != "0").toList();
 
@@ -686,12 +894,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildPositionsTable(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    // Use ValueListenableBuilder to only rebuild table when search query changes
+    // Use ValueListenableBuilder to only rebuild table when search query or filter changes
     return ValueListenableBuilder<String>(
       valueListenable: _searchQuery,
       builder: (context, searchQuery, child) {
-        // Use new shadcn PositionTable
-        return PositionTable(searchQuery: searchQuery);
+        return ValueListenableBuilder<String>(
+          valueListenable: _selectedFilter,
+          builder: (context, filterType, child) {
+            return PositionTable(
+              searchQuery: searchQuery,
+              filterType: filterType,
+            );
+          },
+        );
       },
     );
   }
@@ -1744,6 +1959,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
       showDialog(
         context: context,
+        barrierColor: resolveThemeColor(context,
+            dark: MyntColors.modalBarrierDark,
+            light: MyntColors.modalBarrierLight),
         builder: (context) => ExitAllPositionsDialogWeb(
           selectedPositions: allPositions,
           selectedIndices: List.generate(allPositions.length, (index) => index),
@@ -1754,6 +1972,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       // Show only selected positions for exit
       showDialog(
         context: context,
+        barrierColor: resolveThemeColor(context,
+            dark: MyntColors.modalBarrierDark,
+            light: MyntColors.modalBarrierLight),
         builder: (context) => ExitAllPositionsDialogWeb(
           selectedPositions: selectedPositions,
           selectedIndices:

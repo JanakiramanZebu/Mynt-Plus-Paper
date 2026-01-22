@@ -154,7 +154,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                         await ref
                                             .read(apikeyprovider)
                                             .fetchapikey(context);
-                                        Navigator.pop(context);
+
                                         Clipboard.setData(ClipboardData(
                                             text:
                                                 "${apikeys.apikeyres!.apikey}"));
@@ -355,8 +355,6 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                           successMessage(
                                                   context,
                                                   "Auth key copied to clipboard");
-              
-                                          Navigator.pop(context);
                                         },
                                         child: Container(
                                           height: 32,
@@ -390,7 +388,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                     .read(apikeyprovider)
                                     .fetchapikey(context);
                                      await Future.delayed(Duration(milliseconds: 50));
-                                Navigator.pop(context);
+
                                 if (apikeys.apikeyres?.apikey != null){
                                 Clipboard.setData(ClipboardData(
                                     text: "${apikeys.apikeyres!.apikey}"));

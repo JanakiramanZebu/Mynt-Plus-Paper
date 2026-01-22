@@ -559,6 +559,7 @@ class MyntOutlinedButton extends MyntButton {
     super.isLoading = false,
     super.isFullWidth = false,
     super.borderColor,
+    super.textColor,
     super.iconAlignment,
     super.padding,
   }) : super(type: MyntButtonType.outlined);

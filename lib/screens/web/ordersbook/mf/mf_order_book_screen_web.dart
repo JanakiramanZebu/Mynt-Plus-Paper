@@ -37,7 +37,8 @@ import 'package:flutter/material.dart'
         Colors,
         RawScrollbar,
         MediaQuery,
-        Radius;
+        Radius,
+        BorderRadius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -101,6 +102,16 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
       color: color,
       fontWeight: fontWeight,
     ).copyWith(fontSize: fontSize);
+  }
+
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
   }
 
   // Builds a cell with hover detection (matches holdings pattern)
@@ -184,9 +195,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                 const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
               if (!alignRight && _sortColumnIndex == columnIndex)
                 const SizedBox(width: 4),
@@ -503,13 +512,29 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 6,
-              child: Text(
-                (order.status ?? order.orderstatus ?? '').toUpperCase(),
-                style: _geistTextStyle(
-                  color:
-                      _getStatusColor(order.status ?? order.orderstatus ?? ''),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color:
+                        _getStatusColor(order.status ?? order.orderstatus ?? '')
+                            .withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    (order.status ?? order.orderstatus ?? '').toUpperCase(),
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: _getStatusColor(
+                          order.status ?? order.orderstatus ?? ''),
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.visible,
+                    softWrap: false,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -600,7 +625,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
@@ -645,7 +670,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
                           5: shadcn.FixedTableSize(columnWidths[5]!),
                           6: shadcn.FixedTableSize(columnWidths[6]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: dataRows,
                       ),
                     ),

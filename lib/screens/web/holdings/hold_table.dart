@@ -1184,6 +1184,32 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }
 
   Widget _buildColoredText(String value) {
+    // Check if the value contains a percentage in brackets
+    if (value.contains('(') && value.contains(')')) {
+      final parts = value.split('(');
+      final mainValue = parts[0];
+      final percentPart = '(${parts[1]}';
+
+      final numValue =
+          double.tryParse(mainValue.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+      final color = _getValueColor(numValue);
+      final baseStyle = _getTextStyle(context, color: color);
+
+      return RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(text: mainValue, style: baseStyle),
+            TextSpan(
+              text: percentPart,
+              style: baseStyle.copyWith(
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0.0;
     final color = _getValueColor(numValue);
 
@@ -1614,14 +1640,24 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
   @override
   Widget build(BuildContext context) {
     final color = _getCellColor(overallPnL);
-    return Text(
-      '$overallPnL\u00A0($overallPercent%)',
-      style: MyntWebTextStyles.tableCell(
-        context,
-        color: color,
-        darkColor: color,
-        lightColor: color,
-        fontWeight: MyntFonts.medium,
+    final baseStyle = MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color,
+      lightColor: color,
+      fontWeight: MyntFonts.medium,
+    );
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(text: '$overallPnL\u00A0', style: baseStyle),
+          TextSpan(
+            text: '($overallPercent%)',
+            style: baseStyle.copyWith(
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1706,11 +1742,25 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '$dayPnL\u00A0($dayPercent%)',
-      style: MyntWebTextStyles.tableCell(
-        context,
-        fontWeight: MyntFonts.medium,
+    final color = _getCellColor(dayPnL);
+    final baseStyle = MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color,
+      lightColor: color,
+      fontWeight: MyntFonts.medium,
+    );
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(text: '$dayPnL\u00A0', style: baseStyle),
+          TextSpan(
+            text: '($dayPercent%)',
+            style: baseStyle.copyWith(
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -366,20 +366,15 @@ class _HoldingDetailScreenWebState
       ThemesProvider theme, MarketWatchProvider scripInfo) {
     return Row(
       children: [
-        // Exit button (left) - Styled as secondary/outlined
         Expanded(
           child: SizedBox(
             height: 44,
-            child: shadcn.OutlineButton(
+            child: MyntOutlinedButton(
+              label: "Exit",
               onPressed: _isProcessingSell ? () {} : _handleSell,
-              child: Text(
-                "Exit",
-                style: MyntWebTextStyles.buttonMd(
-                  context,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.primaryDark, light: MyntColors.primary),
-                ),
-              ),
+              isFullWidth: true,
+              textColor: resolveThemeColor(context,
+                  dark: MyntColors.primaryDark, light: MyntColors.primary),
             ),
           ),
         ),

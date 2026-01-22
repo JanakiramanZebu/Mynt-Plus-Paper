@@ -4,7 +4,6 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/screens/web/home/models/panel_config.dart';
 import 'navigation_items.dart';
-import 'swap_button.dart';
 import 'profile_dropdown.dart';
 
 class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -91,76 +90,19 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                       onIPOTap: onIPOTap,
                     ),
                     const SizedBox(width: 12),
-                    RepaintBoundary(
-                      child: SwapButton(
-                        isDarkMode: isDarkMode,
-                        onTap: onSwapPanels,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Theme toggle button
-                    if (onThemeToggle != null)
-                      RepaintBoundary(
-                        child: _ThemeToggleButton(
-                          isDarkMode: isDarkMode,
-                          onToggle: onThemeToggle!,
-                        ),
-                      ),
-                    const SizedBox(width: 12),
-                    // Profile section
+                    // Profile section with dropdown menu containing swap, theme toggle, switch account
                     RepaintBoundary(
                       child: ProfileDropdown(
                         isDarkMode: isDarkMode,
                         clientId: clientId,
+                        onSwapPanels: onSwapPanels,
+                        onThemeToggle: onThemeToggle,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  final bool isDarkMode;
-  final VoidCallback onToggle;
-
-  const _ThemeToggleButton({
-    required this.isDarkMode,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onToggle,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isDarkMode
-                ? WebDarkColors.surfaceVariant.withOpacity(0.5)
-                : WebColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isDarkMode
-                  ? WebDarkColors.border.withOpacity(0.3)
-                  : WebColors.border.withOpacity(0.2),
-              width: 1,
-            ),
-          ),
-          child: Icon(
-            isDarkMode ? Icons.light_mode : Icons.dark_mode,
-            size: 20,
-            color: isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
           ),
         ),
       ),

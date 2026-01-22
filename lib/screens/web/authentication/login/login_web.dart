@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
 // import 'package:remove_emoji_input_formatter/remove_emoji_input_formatter.dart';
 import '../../../../locator/preference.dart';
@@ -9,6 +10,7 @@ import '../../../../provider/auth_provider.dart';
 import '../../../../provider/change_password_provider.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/ledger_provider.dart';
+import '../../../../provider/web_auth_provider.dart';
 
 
 import '../../../../provider/thems.dart';
@@ -39,10 +41,23 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   late FocusNode focusNode1;
   bool _showForgotPassword = false;
   bool _showOtpScreen = false;
+  bool _showQrScreen = false;
   
   // OTP Timer Logic
   Timer? _timer;
   int _start = 89;
+  // --- Listen for QR Login Success ---
+  void _listenForQrLoginSuccess() {
+    ref.listen<WebAuthProvider>(webAuthProvider, (previous, next) {
+      if (_showQrScreen && next.mobileOtp?.stat == 'Ok' && next.mobileOtp?.apitoken != null) {
+        // Login Successful via QR
+         // ref.read(themeProvider).navigateToNewPage(context);
+         Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+         ref.read(authProvider).initialLoadMethods(context, "");
+      }
+    });
+  }
+
   String resendTime = "01.29";
 
   void startTimer() {
@@ -95,14 +110,17 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
       if (mounted) {
         ref.read(versionProvider).checkVersion(context);
         ref.read(authProvider).setChangetotp(true);
+        ref.read(webAuthProvider).init(); // Initialize web auth provider
+        
+        // Auto-login check
+        ref.read(webAuthProvider).checkAutoLogin(context);
       }
     });
   }
 
   void _onFocusChange() {
-    if (mounted) {
-      setState(() {}); // Rebuild when focus changes
-    }
+    // setState removed to prevent synchronous rebuilds during focus changes
+    // which was causing MouseTracker assertions.
   }
 
   @override
@@ -161,6 +179,203 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
       if (mounted) {
         setState(() => _isProcessing = false);
       }
+    }
+  }
+
+  /// New Web Login - Uses webAuthProvider with source="WEB" and separate OTP flow
+  Future<void> _handleWebLogin() async {
+    final webAuth = ref.read(webAuthProvider);
+    final ledgerprovider = ref.read(ledgerProvider);
+
+    // Copy values from existing auth controllers to web auth controllers
+    webAuth.loginController.text = ref.read(authProvider).loginMethCtrl.text;
+    webAuth.passwordController.text = ref.read(authProvider).passCtrl.text;
+
+    if (_isProcessing ||
+        webAuth.loginController.text.isEmpty ||
+        webAuth.passwordController.text.isEmpty) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      HapticFeedback.heavyImpact();
+      SystemSound.play(SystemSoundType.click);
+
+      // Submit web login with source="WEB"
+      final success = await webAuth.submitWebLogin(context);
+      
+      if (success && mounted) {
+        // Check if we need OTP verification
+        if (webAuth.mobileLogin?.stat == 'Ok' && 
+            webAuth.mobileLogin?.apitoken == null) {
+          // OTP/TOTP flow needed
+          setState(() {
+            _showOtpScreen = true;
+            _start = 89;
+            resendTime = "01.29";
+          });
+          
+          if (!webAuth.isTotp) {
+            startTimer();
+          }
+        } else if (webAuth.mobileLogin?.apitoken != null) {
+          // Direct login success - navigate to home
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+            ref.read(authProvider).initialLoadMethods(context, "");
+          }
+        }
+      }
+      
+      ledgerprovider.setterfornullallSwitch = null;
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Web OTP Verify - Uses webAuthProvider
+  Future<void> _handleWebOtpVerify(String otp) async {
+    // Delay to let gesture settle before altering focus/state
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+    final webAuth = ref.read(webAuthProvider);
+    webAuth.otpController.text = otp;
+
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final success = await webAuth.verifyOtp(context);
+      
+      if (success && mounted) {
+        // If in Generate TOTP flow (topflow) and showing setup, don't navigate
+        if (webAuth.topflow && webAuth.showTotpSetup) {
+           setState(() {}); // Updates UI to show QR code
+           return;
+        }
+        
+        // Navigate to dashboard after successful OTP verification
+        // ref.read(themeProvider).navigateToNewPage(context); // Old mobile flow
+        Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+        
+        ref.read(authProvider).initialLoadMethods(context, "");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  /// Toggle between OTP and TOTP mode using webAuthProvider
+  void _toggleWebTotpMode() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+    
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+    
+    // Clear OTP field before switching mode
+    auth.otpCtrl.clear();
+    
+    webAuth.toggleTotpMode();
+    
+    // If switching to OTP mode, send OTP
+    if (!webAuth.isTotp) {
+      final success = await webAuth.sendOtp(context);
+      if (success && mounted) {
+        setState(() {
+          _start = 89;
+          resendTime = "01.29";
+        });
+        startTimer();
+      }
+    }
+  }
+
+  /// Resend OTP using webAuthProvider
+  Future<void> _handleWebResendOtp() async {
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+    
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+    
+    final success = await webAuth.sendOtp(context);
+    if (success && mounted) {
+      setState(() {
+        _start = 89;
+        resendTime = "01.29";
+      });
+      startTimer();
+    }
+  }
+
+
+
+  /// Handle "Scan QR" Login - Switch to Inline QR Screen
+  void _handleQrLogin() {
+    final webAuth = ref.read(webAuthProvider);
+    
+    // Start QR polling
+    webAuth.startQrLogin(context);
+    
+    setState(() {
+      _showQrScreen = true;
+      _showOtpScreen = false;
+      _showForgotPassword = false; // Ensure other screens are hidden
+    });
+  }
+
+  /// Cancel QR Login - Back to Login Form
+  void _handleCancelQrLogin() {
+    final webAuth = ref.read(webAuthProvider);
+    webAuth.stopQrLogin();
+    
+    setState(() {
+      _showQrScreen = false;
+    });
+  }
+
+  /// Handle "Generate TOTP" button click
+  /// This initiates the flow where user needs to verify via OTP first to get their TOTP secret
+  Future<void> _handleGenerateTotpFlow() async {
+    // Delay to let gesture settle before altering focus/state
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (mounted) FocusScope.of(context).unfocus();
+    
+
+    final webAuth = ref.read(webAuthProvider);
+    final auth = ref.read(authProvider);
+    
+    // Ensure loginController has the client ID
+    if (webAuth.loginController.text.isEmpty) {
+      webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
+    }
+    
+    // Clear OTP field to prevent length mismatch errors
+    auth.otpCtrl.clear();
+    
+    // Enable the Generate TOTP flow (sets topflow = true and switches to OTP mode)
+    webAuth.enableGenerateTotpFlow();
+    
+    // Send OTP for verification
+    final success = await webAuth.sendOtp(context);
+    if (success && mounted) {
+      setState(() {
+        _start = 89;
+        resendTime = "01.29";
+      });
+      startTimer();
     }
   }
 
@@ -239,6 +454,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
 
   @override
   Widget build(BuildContext context) {
+    _listenForQrLoginSuccess(); 
     Preferences pref = Preferences();
     return Consumer(builder: ((context, WidgetRef ref, _) {
       final auth = ref.watch(authProvider);
@@ -263,13 +479,16 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
               theme.isDarkMode ? MyntColors.searchBgDark : Colors.white,
           body: Center(
             child: Container(
+              height: MediaQuery.of(context).size.height - 40,
               margin: const EdgeInsets.symmetric(vertical: 20),
               width: getResponsiveWidth(context),
               child: CustomScrollView(
                 slivers: [
-                  SliverFillRemaining(
-                    hasScrollBody: false,
+                  SliverToBoxAdapter(
                     child: Container(
+                      constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height - 40,
+                      ),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 20),
                       decoration: BoxDecoration(
@@ -290,9 +509,11 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                           ),
                         ],
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                      child: Stack(
                         children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
                           // Logo
                           Align(
                             alignment: Alignment.centerLeft,
@@ -315,6 +536,10 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                           ),
                           const SizedBox(height: 4),
                           // Main Heading
+
+                          if (!(pref.islogOut == true &&
+                              (pref.clientId?.isNotEmpty == true ||
+                                  pref.clientMob?.isNotEmpty == true)))
                           Text(
                             "Login to MYNT",
                             style: webText(
@@ -327,10 +552,183 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                           ),
                           const SizedBox(height: 32),
 
+                          // QR Login Screen
+                          if (_showQrScreen) 
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final wa = ref.watch(webAuthProvider);
+                                return Column(
+                                  children: [
+                                    Container(
+                                        height: 350, width: 350,
+                                        alignment: Alignment.center,
+                                        child: wa.qrLoginImageUrl != null 
+                                          ? Image.network(wa.qrLoginImageUrl!) 
+                                          : const CircularProgressIndicator()
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      "Scan QR code from profile tab top appbar of MYNT to login.",
+                                      textAlign: TextAlign.center,
+                                      style: MyntWebTextStyles.body(context, color: MyntColors.textSecondary),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: InkWell(
+                                        onTap: _handleCancelQrLogin,
+                                        child: Text("back to login", style: MyntWebTextStyles.title(context, fontWeight: FontWeight.bold, color: MyntColors.primary)),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                            ),
+
                           // Form Fields
-                          // Form Fields
-                          // Form Fields
-                          if (_showOtpScreen) ...[
+                          // Check for TOTP Setup screen first (shown after OTP verify in Generate TOTP flow)
+                          Consumer(
+                            builder: (context, ref, child) {
+                              if (_showQrScreen) return const SizedBox.shrink(); // Hide if showing QR Login
+                              final webAuth = ref.watch(webAuthProvider);
+                              
+                              if (webAuth.showTotpSetup && webAuth.totpData != null) {
+                                // TOTP Setup Screen - Show QR code and secret
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Scan QR Title
+                                    Text(
+                                      "Scan QR",
+                                      style: MyntWebTextStyles.title(
+                                        context,
+                                        fontWeight: MyntFonts.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "Scan the QR code on authenticator app",
+                                      style: MyntWebTextStyles.body(
+                                        context,
+                                        color: MyntColors.textSecondary,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    
+                                    // QR Code - Centered
+                                    if (webAuth.totpData?.isValid == true)
+                                      Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: QrImageView(
+                                            data: webAuth.totpData!.getQrUri(),
+                                            size: 200,
+                                            version: QrVersions.auto,
+                                            backgroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    
+                                    const SizedBox(height: 24),
+                                    
+                                    // Authenticator Key Section
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            "Authenticator Key",
+                                            style: MyntWebTextStyles.body(
+                                              context,
+                                              fontWeight: MyntFonts.medium,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                webAuth.totpData?.pwd ?? "**********************",
+                                                style: MyntWebTextStyles.body(
+                                                  context,
+                                                  fontWeight: MyntFonts.medium,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.copy, size: 20),
+                                                onPressed: () {
+                                                  Clipboard.setData(ClipboardData(text: webAuth.totpData?.pwd ?? ""));
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(content: Text("Auth key copied to clipboard!")),
+                                                  );
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    
+                                    const SizedBox(height: 32),
+                                    
+                                    // Back to Login Button
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 48,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          webAuth.backToLogin();
+                                          setState(() {
+                                            _showOtpScreen = false;
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: MyntColors.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          "Back to Login",
+                                          style: MyntWebTextStyles.title(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              
+                              // Return empty container, the actual form is rendered below
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          
+                          // Show OTP screen only if TOTP setup is not showing
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final webAuth = ref.watch(webAuthProvider);
+                              if (_showQrScreen) return const SizedBox.shrink(); // Hide
+                              if (webAuth.showTotpSetup) return const SizedBox.shrink();
+                              return child ?? const SizedBox.shrink();
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (_showOtpScreen) ...const [],
+                              ],
+                            ),
+                          ),
+                          
+                          if (!_showQrScreen && _showOtpScreen && !ref.watch(webAuthProvider).showTotpSetup) ...[
                             // OTP Screen UI
                             
                             // Mobile / Client ID Display (Read Only)
@@ -380,84 +778,99 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                             
                             const SizedBox(height: 20),
 
-                            // OTP Input Field
-                            TextFormField(
-                               controller: auth.otpCtrl,
-                               // focusNode: focusNode, 
-                               readOnly: _isProcessing || auth.loading,
-                               maxLength: auth.totp ? 6 : 4,
-                               keyboardType: TextInputType.number,
-                               textInputAction: TextInputAction.done,
-                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                               style: MyntWebTextStyles.title(
-                                 context,
-                                 fontWeight: MyntFonts.medium,
-                                 color: MyntColors.textPrimary,
-                                 darkColor: MyntColors.textPrimaryDark,
-                               ),
-                               decoration: InputDecoration(
-                                 filled: false,
-                                 labelText: "Enter ${auth.totp ? '6' : '4'} digit ${auth.totp ? 'TOTP' : 'OTP'}",
-                                 floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                 labelStyle: MyntWebTextStyles.head(
-                                   context,
-                                   fontWeight: MyntFonts.regular,
-                                   color: MyntColors.textSecondary,
-                                   darkColor: MyntColors.textSecondaryDark,
-                                 ),
-                                 enabledBorder: const UnderlineInputBorder(
-                                   borderSide: BorderSide(
-                                       color: MyntColors.divider, width: 1),
-                                 ),
-                                 focusedBorder: const UnderlineInputBorder(
-                                   borderSide: BorderSide(
-                                       color: MyntColors.primary, width: 1),
-                                 ),
-                                 counterText: "",
-                                 contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                                 // Timer / Resend Display inside decoration? Or separate? 
-                                 // Layout request shows "Resend in 117" on the right. 
-                                 
-                                 suffix: (!auth.totp && _start > 0) 
-                                     ? Column(
-                                         mainAxisAlignment: MainAxisAlignment.center,
-                                         crossAxisAlignment: CrossAxisAlignment.end,
-                                         mainAxisSize: MainAxisSize.min,
-                                         children: [
-                                            Text("Resend", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary)),
-                                            Text("in $_start", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary, fontWeight: FontWeight.bold)),
-                                         ],
-                                       )
-                                     : (!auth.totp && _start == 0)
-                                        ? InkWell(
-                                            onTap: () async {
-                                                if (!mounted) return;
-                                                setState(() {
-                                                  _start = 89;
-                                                  startTimer();
-                                                });
-                                                auth.submitResendOtp(context);
-                                            },
-                                            child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: MyntColors.primary, fontWeight: FontWeight.bold)),
-                                          )
-                                        : null
-                               ),
-                               onChanged: (v) {
-                                  auth.validateOtp(v);
-                                  auth.activeBtnOtp(v);
-                                  
-                                  // Auto-submit if length is sufficient
-                                  if (!_isProcessing && !auth.loading) {
-                                    if (auth.totp && v.length == 6) {
-                                      auth.submitOtp(context, v);
-                                    } else if (!auth.totp && v.length == 4) {
-                                      auth.submitOtp(context, v);
-                                    }
-                                  }
-                               },
-                               onFieldSubmitted: (v) {
-                                  auth.submitOtp(context, v);
-                               },
+                            // OTP Input Field - Using webAuthProvider for mode detection
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final webAuth = ref.watch(webAuthProvider);
+                                return TextFormField(
+                                   // Force recreation when mode changes to prevent layout/hit-test errors
+                                   key: ValueKey("otp_${webAuth.isTotp}_${webAuth.topflow}"),
+                                   controller: auth.otpCtrl,
+                                   autofocus: true,
+                                   // focusNode: focusNode, 
+                                   readOnly: _isProcessing || auth.loading,
+                                   maxLength: webAuth.isTotp ? 6 : 4,
+                                   keyboardType: TextInputType.number,
+                                   textInputAction: TextInputAction.done,
+                                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                   style: MyntWebTextStyles.title(
+                                     context,
+                                     fontWeight: MyntFonts.medium,
+                                     color: MyntColors.textPrimary,
+                                     darkColor: MyntColors.textPrimaryDark,
+                                   ),
+                                   decoration: InputDecoration(
+                                     filled: false,
+                                     labelText: webAuth.topflow 
+                                         ? "Enter 4 digit OTP sent to mobile/email to generate the TOTP"
+                                         : "Enter ${webAuth.isTotp ? '6' : '4'} digit ${webAuth.isTotp ? 'TOTP' : 'OTP'}",
+                                     floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                     labelStyle: MyntWebTextStyles.body(
+                                       context,
+                                       fontWeight: MyntFonts.regular,
+                                       color: MyntColors.textSecondary,
+                                       darkColor: MyntColors.textSecondaryDark,
+                                     ),
+                                     enabledBorder: const UnderlineInputBorder(
+                                       borderSide: BorderSide(
+                                           color: MyntColors.divider, width: 1),
+                                     ),
+                                     focusedBorder: const UnderlineInputBorder(
+                                       borderSide: BorderSide(
+                                           color: MyntColors.primary, width: 1),
+                                     ),
+                                     counterText: "",
+                                     contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                                     // Timer / Resend Display inside decoration? Or separate? 
+                                     // Layout request shows "Resend in 117" on the right. 
+                                     
+                                     suffix: (!webAuth.isTotp && _start > 0) 
+                                         ? Column(
+                                             mainAxisAlignment: MainAxisAlignment.center,
+                                             crossAxisAlignment: CrossAxisAlignment.end,
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                                Text("Resend", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary)),
+                                                Text("in $_start", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary, fontWeight: FontWeight.bold)),
+                                             ],
+                                           )
+                                         : (!webAuth.isTotp && _start == 0)
+                                            ? InkWell(
+                                                onTap: () async {
+                                                    if (!mounted) return;
+                                                    _handleWebResendOtp(); // Use new web resend OTP
+                                                },
+                                                child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: MyntColors.primary, fontWeight: FontWeight.bold)),
+                                              )
+                                            // Generate TOTP button when in TOTP mode
+                                            : webAuth.isTotp
+                                                ? InkWell(
+                                                    onTap: () async {
+                                                        if (!mounted) return;
+                                                        _handleGenerateTotpFlow(); // Start Generate TOTP flow
+                                                    },
+                                                    child: Text("Generate TOTP", style: MyntWebTextStyles.caption(context, color: MyntColors.primary, fontWeight: FontWeight.bold)),
+                                                  )
+                                                : null
+                                   ),
+                                   onChanged: (v) {
+                                      auth.validateOtp(v);
+                                      auth.activeBtnOtp(v);
+                                      
+                                      // Auto-submit if length is sufficient (using web auth)
+                                      if (!_isProcessing && !auth.loading) {
+                                        if (webAuth.isTotp && v.length == 6) {
+                                          _handleWebOtpVerify(v);
+                                        } else if (!webAuth.isTotp && v.length == 4) {
+                                          _handleWebOtpVerify(v);
+                                        }
+                                      }
+                                   },
+                                   onFieldSubmitted: (v) {
+                                      _handleWebOtpVerify(v);
+                                   },
+                                );
+                              },
                             ),
                             
                             const SizedBox(height: 5),
@@ -483,7 +896,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                child: ElevatedButton(
                                  onPressed: (_isProcessing || auth.loading)
                                      ? null
-                                     : () => auth.submitOtp(context, auth.otpCtrl.text),
+                                     : () => _handleWebOtpVerify(auth.otpCtrl.text), // Use new web OTP verify
                                  style: ElevatedButton.styleFrom(
                                    backgroundColor: MyntColors.primary,
                                    disabledBackgroundColor:
@@ -511,31 +924,58 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                             
                             const SizedBox(height: 24),
                             
-                            // Switch TOTP/OTP
-                            InkWell(
-                                onTap: () async {
-                                  if (!auth.loading) {
-                                    auth.otpCtrl.clear();
-                                    await auth.setChangetotp(!auth.totp);
-                                    // Make sure to call submitLogin again if switching modes requires re-triggering init logic, 
-                                    // but usually switching toggle just changes validation logic unless API requires specific flag for next step.
-                                    // Based on provider, we might re-trigger login to get correct OTP/TOTP flow if backend needs it.
-                                    if (mounted) {
-                                       await auth.submitLogin(context, false, preventNavigation: true);
-                                    }
-                                  }
-                                },
-                                child: Text(
-                                  auth.totp ? "Enter OTP" : "Enter TOTP", // Toggle text logic
-                                  style: MyntWebTextStyles.body(
-                                    context,
-                                    fontWeight: MyntFonts.bold,
-                                    color: MyntColors.primary,
-                                  ),
+                            // Bottom Toolbar (Toggle / Forgot / Scan QR)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Left Side: Toggle OTP/TOTP or Forgot Password
+                                InkWell(
+                                    onTap: () async {
+                                      if (!auth.loading) {
+                                        auth.otpCtrl.clear();
+                                        _toggleWebTotpMode(); // Use new web toggle
+                                      }
+                                    },
+                                    child: Consumer(
+                                      builder: (context, ref, _) {
+                                        final webAuth = ref.watch(webAuthProvider);
+                                        return Text(
+                                          webAuth.isTotp ? "Enter OTP" : "Enter TOTP",
+                                          style: MyntWebTextStyles.body(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: MyntColors.primary,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                 ),
+                                
+                                // Right Side: Scan QR
+                                InkWell(
+                                    onTap: () async {
+                                      _handleQrLogin(); 
+                                    },
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Scan QR",
+                                          style: MyntWebTextStyles.body(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: MyntColors.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(Icons.qr_code_scanner, size: 20, color: MyntColors.primary),
+                                      ],
+                                    ),
+                                ),
+                              ],
                             ),
 
-                          ] else if (_showForgotPassword) ...[
+                          ] else if (!_showQrScreen && _showForgotPassword) ...[
                              // Forgot Password Form (Inlined)
                              TextFormField(
                                controller: forpass.forGetloginMethCtrl,
@@ -654,7 +1094,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                ),
                              ),
 
-                          ] else if (pref.islogOut! &&
+                          ] else if (!_showQrScreen && !_showOtpScreen && pref.islogOut! &&
                               (pref.clientId!.isNotEmpty ||
                                   pref.clientMob!.isNotEmpty)) ...[
                             // Saved Account UI
@@ -719,7 +1159,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 );
                               }
                             )
-                          ] else ...[
+                          ] else if (!_showQrScreen && !_showOtpScreen) ...[
                             // Login Form - User ID Input
                             TextFormField(
                               controller: auth.loginMethCtrl,
@@ -743,7 +1183,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 filled: false,
                                 labelText: "Mobile / Client ID",
                                 floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                labelStyle: MyntWebTextStyles.head(
+                                labelStyle: MyntWebTextStyles.body(
                                   context,
                                   fontWeight: MyntFonts.regular,
                                   color: MyntColors.textSecondary,
@@ -786,7 +1226,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                           ],
                           
                           // Password and Actions (Only Show if NOT in Forgot Password Mode)
-                          if (!_showForgotPassword && !_showOtpScreen) ...[
+                          if (!_showQrScreen && !_showForgotPassword && !_showOtpScreen) ...[
                             const SizedBox(height: 20),
                             
                             // Password Input (Always Visible)
@@ -805,7 +1245,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               decoration: InputDecoration(
                                 labelText: "Password",
                                 filled: false,
-                                labelStyle: MyntWebTextStyles.head(
+                                labelStyle: MyntWebTextStyles.body(
                                   context,
                                   fontWeight: MyntFonts.regular,
                                   color: MyntColors.textSecondary,
@@ -849,7 +1289,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               },
                               onFieldSubmitted: (_) {
                                 if (!_isProcessing && !auth.loading) {
-                                  _handleContinue();
+                                  _handleWebLogin(); // Use new web login flow
                                 }
                               },
                             ),
@@ -866,13 +1306,14 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               ),
                             const SizedBox(height: 32),
 
+
                             // Login Button
                             SizedBox(
                               height: 48,
                               child: ElevatedButton(
                                 onPressed: (_isProcessing || auth.loading)
                                     ? null
-                                    : _handleContinue,
+                                    : _handleWebLogin, // Use new web login flow
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: MyntColors.primary,
                                   disabledBackgroundColor:
@@ -946,86 +1387,104 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                   ),
 
                                 // Right Logic: Forgot Password (if saved) OR Empty (if new)
-                                if (pref.islogOut! &&
-                                    (pref.clientId!.isNotEmpty ||
-                                        pref.clientMob!.isNotEmpty))
-                                  InkWell(
+                                // Right Logic: Scan QR
+                                InkWell(
                                     onTap: () {
-                                      setState(() {
-                                        _showForgotPassword = true;
-                                        forpass.clearError();
-                                        forpass.clearTextField();
-                                      });
+                                      _handleQrLogin(); 
                                     },
-                                    child: Text(
-                                      "Forgot password",
-                                      style: MyntWebTextStyles.para(
-                                        context,
-                                        fontWeight: MyntFonts.bold,
-                                        color: MyntColors.primary,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "Scan QR",
+                                          style: MyntWebTextStyles.para(
+                                            context,
+                                            fontWeight: MyntFonts.bold,
+                                            color: MyntColors.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(Icons.qr_code_scanner, size: 20, color: MyntColors.primary),
+                                      ],
                                     ),
-                                  ),
+                                ),
                               ],
                             ),
                           ],
 
                           const SizedBox(height: 32),
 
-                          // Sign Up Link
-                          Center(
-                            child: InkWell(
-                              onTap: () {
-                                launch('https://oa.mynt.in/?ref=zws');
-                              },
-                              child: RichText(
-                                text: TextSpan(
-                                  text: "Don't have an account yet? ",
-                                  style: MyntWebTextStyles.body(
-                                    context,
-                                    color: Colors.black,
-                                  ),
-                                  children: [
-                                    TextSpan(
-                                        text: "Sign Up",
-                                        style: MyntWebTextStyles.body(
-                                          context,
-                                          fontWeight: MyntFonts.bold,
-                                          color: MyntColors.primary,
-                                        ))
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
 
-                          const Spacer(),
 
-                          // Footer
-                          Text(
-                            "Zebu Share and Wealth Managements Pvt. Ltd.",
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: MyntFonts.bold,
-                              color: Colors.black,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              "SEBI Registration No: INZ000174634 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118 | Research Analyst : INH200006044",
-                              style: MyntWebTextStyles.para(
-                                context,
-                                color: MyntColors.textSecondary,
-                                darkColor: MyntColors.textSecondaryDark,
-                              ).copyWith(height: 1.5),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
+                          if (!_showQrScreen) ...[
+                             const SizedBox(height: 32),
+                             // Sign Up Link
+                             Center(
+                               child: InkWell(
+                                 onTap: () {
+                                   launch('https://oa.mynt.in/?ref=zws');
+                                 },
+                                 child: RichText(
+                                   text: TextSpan(
+                                     text: "Don't have an account yet? ",
+                                     style: MyntWebTextStyles.body(
+                                       context,
+                                       color: Colors.black,
+                                     ),
+                                     children: [
+                                       TextSpan(
+                                           text: "Sign Up",
+                                           style: MyntWebTextStyles.body(
+                                             context,
+                                             fontWeight: MyntFonts.bold,
+                                             color: MyntColors.primary,
+                                           ))
+                                     ],
+                                   ),
+                                 ),
+                               ),
+                             ),
+                          ],
+
+                          const SizedBox(height: 140),
                         ],
                       ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Column(
+                            children: [
+                              Text(
+                                "Zebu Share and Wealth Managements Pvt. Ltd.",
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.bold,
+                                  color: Colors.black,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  "SEBI Registration No: INZ000174634 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118 | Research Analyst : INH200006044",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    color: MyntColors.textSecondary,
+                                    darkColor: MyntColors.textSecondaryDark,
+                                  ).copyWith(height: 1.5),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                     ),
                   ),
                 ],

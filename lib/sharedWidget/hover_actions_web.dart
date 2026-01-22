@@ -361,7 +361,8 @@ class _HoverActionsWrapperState extends State<HoverActionsWrapper> {
             child: Align(
               alignment: widget.actionsAlignment,
               child: Padding(
-                padding: widget.actionsPadding ?? const EdgeInsets.only(right: 8),
+                padding:
+                    widget.actionsPadding ?? const EdgeInsets.only(right: 8),
                 child: HoverActionsContainer(
                   isVisible: _isHovered,
                   actions: widget.actionsBuilder(context),

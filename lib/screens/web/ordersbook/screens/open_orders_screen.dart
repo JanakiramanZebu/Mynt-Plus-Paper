@@ -9,7 +9,9 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 
 import '../refactored/services/order_action_handler.dart';
 import '../refactored/utils/cell_formatters.dart';
@@ -39,22 +41,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
 
-  // Scroll controllers - must be in state to persist across rebuilds
-  late ScrollController _verticalScrollController;
-  late ScrollController _horizontalScrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _verticalScrollController = ScrollController();
-    _horizontalScrollController = ScrollController();
-  }
-
   @override
   void dispose() {
     _hoveredRowIndex.dispose();
-    _verticalScrollController.dispose();
-    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -122,18 +111,35 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           ),
         ),
       ),
-      child: MouseRegion(
-        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null,
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            padding: cellPadding,
-            alignment: alignRight ? Alignment.topRight : null,
-            child: child,
-          ),
-        ),
+      child: ValueListenableBuilder<int?>(
+        valueListenable: _hoveredRowIndex,
+        builder: (context, hoveredIndex, _) {
+          final isHovered = hoveredIndex == rowIndex;
+          return MouseRegion(
+            onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+            onExit: (_) => _hoveredRowIndex.value = null,
+            child: GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: cellPadding,
+                alignment:
+                    alignRight ? Alignment.centerRight : Alignment.centerLeft,
+                // Watchlist-style hover background
+                color: isHovered
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ).withValues(alpha: 0.08)
+                    : Colors.transparent,
+                child: child,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -176,6 +182,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       child: InkWell(
         onTap: () => _onSort(columnIndex),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
@@ -218,21 +226,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         _sortAscending = true;
       }
     });
-  }
-
-  String _formatProductType(OrderBookModel order) {
-    final product = order.sPrdtAli ?? order.prd ?? '';
-    final priceType = order.prctyp ?? '';
-
-    if (product.isEmpty && priceType.isEmpty) {
-      return 'N/A';
-    } else if (product.isEmpty) {
-      return priceType;
-    } else if (priceType.isEmpty) {
-      return product;
-    } else {
-      return '$product / $priceType';
-    }
   }
 
   // Helper method to get status color using shadcn theme
@@ -303,12 +296,12 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
       'Instrument',
       'Product',
       'Type',
+      'Side',
       'Qty',
       'Avg price',
       'LTP',
       'Price',
       'Trigger price',
-      'Order value',
       'Status',
     ];
     final minWidths = <int, double>{};
@@ -355,32 +348,32 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             // Skip normal cellWidth calculation for Instrument - already handled above
             continue;
           case 2: // Product
-            cellText = _formatProductType(order);
+            cellText = order.sPrdtAli ?? order.prd ?? '';
             break;
-          case 3: // Type
+          case 3: // Type (Price type)
+            cellText = order.prctyp ?? '';
+            break;
+          case 4: // Side
             cellText = order.trantype == "S" ? "SELL" : "BUY";
             break;
-          case 4: // Qty
+          case 5: // Qty
             cellText = order.qty?.toString() ?? '0';
             break;
-          case 5: // Avg price
+          case 6: // Avg price
             cellText = order.avgprc ?? '0.00';
             break;
-          case 6: // LTP
+          case 7: // LTP
             cellText = CellFormatters.getValidLTP(order);
             break;
-          case 7: // Price
+          case 8: // Price
             cellText = CellFormatters.getValidPrice(order);
             break;
-          case 8: // Trigger price
+          case 9: // Trigger price
             cellText = (order.trgprc != null &&
                     order.trgprc != '0' &&
                     order.trgprc != '0.00')
                 ? order.trgprc!
                 : '0.00';
-            break;
-          case 9: // Order value
-            cellText = CellFormatters.calculateOrderValue(order);
             break;
           case 10: // Status
             cellText = CellFormatters.getStatusText(order);
@@ -436,40 +429,38 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           comparison = (a.tsym ?? '').compareTo(b.tsym ?? '');
           break;
         case 2: // Product
-          comparison = _formatProductType(a).compareTo(_formatProductType(b));
+          comparison =
+              (a.sPrdtAli ?? a.prd ?? '').compareTo(b.sPrdtAli ?? b.prd ?? '');
           break;
-        case 3: // Type
+        case 3: // Type (Price type)
+          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
+          break;
+        case 4: // Side
           comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
           break;
-        case 4: // Qty
+        case 5: // Qty
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 5: // Avg price
+        case 6: // Avg price
           comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
               .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
           break;
-        case 6: // LTP
+        case 7: // LTP
           comparison = (double.tryParse(a.ltp ?? '0') ?? 0)
               .compareTo(double.tryParse(b.ltp ?? '0') ?? 0);
           break;
-        case 7: // Price
+        case 8: // Price
           comparison = (double.tryParse(a.prc ?? '0') ?? 0)
               .compareTo(double.tryParse(b.prc ?? '0') ?? 0);
           break;
-        case 8: // Trigger price
+        case 9: // Trigger price
           comparison = (double.tryParse(a.trgprc ?? '0') ?? 0)
               .compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
           break;
-        case 9: // Order value
-          final aValue = (double.tryParse(a.prc ?? '0') ?? 0) *
-              (int.tryParse(a.qty ?? '0') ?? 0);
-          final bValue = (double.tryParse(b.prc ?? '0') ?? 0) *
-              (int.tryParse(b.qty ?? '0') ?? 0);
-          comparison = aValue.compareTo(bValue);
-          break;
         case 10: // Status
-          comparison = (a.status ?? '').compareTo(b.status ?? '');
+          comparison = (CellFormatters.getStatusText(a))
+              .compareTo(CellFormatters.getStatusText(b));
           break;
       }
 
@@ -536,7 +527,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     final dataRows = <shadcn.TableRow>[];
     for (var i = 0; i < sortedOrders.length; i++) {
       final order = sortedOrders[i];
-      final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+      final uniqueId =
+          order.norenordno?.toString() ?? order.token?.toString() ?? '';
       final colorScheme = shadcn.Theme.of(context).colorScheme;
 
       dataRows.add(
@@ -564,7 +556,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   return GestureDetector(
                     onTap: () => actionHandler.openOrderDetail(order),
                     behavior: HitTestBehavior.opaque,
-                    child: _buildInstrumentCell(order, theme, uniqueId, actionHandler, isHovered),
+                    child: _buildInstrumentCell(
+                        order, theme, uniqueId, actionHandler, isHovered),
                   );
                 },
               ),
@@ -574,7 +567,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               columnIndex: 2,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
-                _formatProductType(order),
+                order.sPrdtAli ?? order.prd ?? '',
                 style: _getTextStyle(context),
                 overflow: TextOverflow.visible,
                 softWrap: false,
@@ -583,6 +576,17 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 3,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                order.prctyp ?? '',
+                style: _getTextStyle(context),
+                overflow: TextOverflow.visible,
+                softWrap: false,
+              ),
+            ),
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 4,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 order.trantype == "S" ? "SELL" : "BUY",
@@ -599,7 +603,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 4,
+              columnIndex: 5,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
@@ -609,7 +613,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 5,
+              columnIndex: 6,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
@@ -619,7 +623,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 6,
+              columnIndex: 7,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: _OrderLTPCell(
@@ -629,17 +633,17 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 7,
+              columnIndex: 8,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 CellFormatters.getValidPrice(order),
-                style: _getTextStyle(context),
+                style: _getTextStyle(context, color: MyntColors.primary),
               ),
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 8,
+              columnIndex: 9,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
@@ -653,26 +657,23 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             ),
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 9,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                CellFormatters.calculateOrderValue(order),
-                style: _getTextStyle(context),
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
               columnIndex: 10,
               onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                CellFormatters.getStatusText(order),
-                style: _getTextStyle(
-                  context,
-                  color: _getStatusColor(CellFormatters.getStatusText(order)),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(CellFormatters.getStatusText(order))
+                      .withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                overflow: TextOverflow.visible,
-                softWrap: false,
+                child: Text(
+                  CellFormatters.getStatusText(order).toUpperCase(),
+                  style: MyntWebTextStyles.para(
+                    context,
+                    color: _getStatusColor(CellFormatters.getStatusText(order)),
+                    fontWeight: MyntFonts.medium,
+                  ),
+                ),
               ),
             ),
           ],
@@ -681,128 +682,95 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     }
 
     // Return shadcn Table with proper structure
-    return shadcn.OutlinedContainer(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate minimum widths dynamically based on actual content
-          final minWidths = _calculateMinWidths(sortedOrders, context);
+    return SizedBox.expand(
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        child: shadcn.OutlinedContainer(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate minimum widths dynamically based on actual content
+              final minWidths = _calculateMinWidths(sortedOrders, context);
 
-          // Available width
-          final availableWidth = constraints.maxWidth;
+              // Available width
+              final availableWidth = constraints.maxWidth;
 
-          // Step 1: Start with minimum widths (content-based, no wasted space)
-          final columnWidths = <int, double>{};
-          for (int i = 0; i < 11; i++) {
-            columnWidths[i] = minWidths[i] ?? 100.0;
-          }
-
-          // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values
-              .fold<double>(0.0, (sum, width) => sum + width);
-
-          // Step 3: If there's extra space, distribute it proportionally
-          // This prevents unnecessary horizontal scroll while using available space efficiently
-          if (totalMinWidth < availableWidth) {
-            final extraSpace = availableWidth - totalMinWidth;
-
-            // Define which columns can grow and their growth priorities
-            // Instrument gets more growth, text columns get medium, numeric get less
-            const instrumentGrowthFactor =
-                2.0; // Instrument can grow 2x more than numeric
-            const textGrowthFactor = 1.2;
-            const numericGrowthFactor = 1.0;
-
-            // Calculate growth factors for each column
-            final growthFactors = <int, double>{};
-            double totalGrowthFactor = 0.0;
-
-            for (int i = 0; i < 11; i++) {
-              // Column 0: Time (numeric)
-              // Column 1: Instrument
-              // Columns 2, 3, 10: Text columns (Product, Type, Status)
-              // Rest: Numeric columns
-              if (i == 1) {
-                growthFactors[i] = instrumentGrowthFactor;
-                totalGrowthFactor += instrumentGrowthFactor;
-              } else if (i == 2 || i == 3 || i == 10) {
-                growthFactors[i] = textGrowthFactor;
-                totalGrowthFactor += textGrowthFactor;
-              } else {
-                growthFactors[i] = numericGrowthFactor;
-                totalGrowthFactor += numericGrowthFactor;
-              }
-            }
-
-            // Distribute extra space proportionally
-            if (totalGrowthFactor > 0) {
+              // Step 1: Start with minimum widths (content-based, no wasted space)
+              final columnWidths = <int, double>{};
               for (int i = 0; i < 11; i++) {
-                if (growthFactors[i]! > 0) {
-                  final extraForThisColumn =
-                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                columnWidths[i] = minWidths[i] ?? 100.0;
+              }
+
+              // Step 2: Calculate total minimum width needed
+              final totalMinWidth = columnWidths.values
+                  .fold<double>(0.0, (sum, width) => sum + width);
+
+              // Step 3: If there's extra space, distribute it proportionally
+              // This prevents unnecessary horizontal scroll while using available space efficiently
+              if (totalMinWidth < availableWidth) {
+                final extraSpace = availableWidth - totalMinWidth;
+
+                // Define which columns can grow and their growth priorities
+                // Instrument gets more growth, text columns get medium, numeric get less
+                const instrumentGrowthFactor =
+                    2.0; // Instrument can grow 2x more than numeric
+                const textGrowthFactor = 1.2;
+                const numericGrowthFactor = 1.0;
+
+                // Calculate growth factors for each column
+                final growthFactors = <int, double>{};
+                double totalGrowthFactor = 0.0;
+
+                for (int i = 0; i < 11; i++) {
+                  // Column 0: Time (numeric)
+                  // Column 1: Instrument
+                  // Columns 2, 3, 10: Text columns (Product, Type, Status)
+                  // Rest: Numeric columns
+                  if (i == 1) {
+                    growthFactors[i] = instrumentGrowthFactor;
+                    totalGrowthFactor += instrumentGrowthFactor;
+                  } else if (i == 2 || i == 3 || i == 10) {
+                    growthFactors[i] = textGrowthFactor;
+                    totalGrowthFactor += textGrowthFactor;
+                  } else {
+                    growthFactors[i] = numericGrowthFactor;
+                    totalGrowthFactor += numericGrowthFactor;
+                  }
+                }
+
+                // Distribute extra space proportionally
+                if (totalGrowthFactor > 0) {
+                  for (int i = 0; i < 11; i++) {
+                    if (growthFactors[i]! > 0) {
+                      final extraForThisColumn =
+                          (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                      columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                    }
+                  }
                 }
               }
-            }
-          }
 
-          // Calculate total required width
-          final totalRequiredWidth = columnWidths.values
-              .fold<double>(0.0, (sum, width) => sum + width);
+              // Calculate total required width
+              final totalRequiredWidth = columnWidths.values
+                  .fold<double>(0.0, (sum, width) => sum + width);
 
-          // If total width exceeds available width, enable horizontal scrolling
-          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+              // If total width exceeds available width, enable horizontal scrolling
+              final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
-          // Build table content
-          Widget buildTableContent() {
-            return Column(
-              children: [
-                // Fixed Header (synced with horizontal scroll)
-                shadcn.Table(
-                  columnWidths: {
-                    0: shadcn.FixedTableSize(columnWidths[0]!),
-                    1: shadcn.FixedTableSize(columnWidths[1]!),
-                    2: shadcn.FixedTableSize(columnWidths[2]!),
-                    3: shadcn.FixedTableSize(columnWidths[3]!),
-                    4: shadcn.FixedTableSize(columnWidths[4]!),
-                    5: shadcn.FixedTableSize(columnWidths[5]!),
-                    6: shadcn.FixedTableSize(columnWidths[6]!),
-                    7: shadcn.FixedTableSize(columnWidths[7]!),
-                    8: shadcn.FixedTableSize(columnWidths[8]!),
-                    9: shadcn.FixedTableSize(columnWidths[9]!),
-                    10: shadcn.FixedTableSize(columnWidths[10]!),
-                  },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
-                  rows: [
-                    shadcn.TableHeader(
-                      cells: [
-                        buildHeaderCell('Time', 0),
-                        buildHeaderCell('Instrument', 1),
-                        buildHeaderCell('Product/Type', 2),
-                        buildHeaderCell('Type', 3),
-                        buildHeaderCell('Qty', 4, true),
-                        buildHeaderCell('Avg price', 5, true),
-                        buildHeaderCell('LTP', 6, true),
-                        buildHeaderCell('Price', 7, true),
-                        buildHeaderCell('Trigger price', 8, true),
-                        buildHeaderCell('Order value', 9, true),
-                        buildHeaderCell('Status', 10),
-                      ],
-                    ),
-                  ],
-                ),
-                // Scrollable Body (vertical scroll)
-                Expanded(
-                  child: Scrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    interactive: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey(
-                            'table_${_sortColumnIndex}_$_sortAscending'),
+              // Build table content
+              Widget buildTableContent() {
+                return ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: 0,
+                    maxHeight: constraints.maxHeight.isFinite &&
+                            constraints.maxHeight > 0
+                        ? constraints.maxHeight
+                        : double.infinity,
+                  ),
+                  child: Column(
+                    children: [
+                      // Fixed Header (synced with horizontal scroll)
+                      shadcn.Table(
                         columnWidths: {
                           0: shadcn.FixedTableSize(columnWidths[0]!),
                           1: shadcn.FixedTableSize(columnWidths[1]!),
@@ -816,36 +784,100 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                           9: shadcn.FixedTableSize(columnWidths[9]!),
                           10: shadcn.FixedTableSize(columnWidths[10]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
-                        rows: dataRows,
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        rows: [
+                          shadcn.TableHeader(
+                            cells: [
+                              buildHeaderCell('Time', 0),
+                              buildHeaderCell('Instrument', 1),
+                              buildHeaderCell('Product', 2),
+                              buildHeaderCell('Type', 3),
+                              buildHeaderCell('Side', 4),
+                              buildHeaderCell('Qty', 5, true),
+                              buildHeaderCell('Avg price', 6, true),
+                              buildHeaderCell('LTP', 7, true),
+                              buildHeaderCell('Price', 8, true),
+                              buildHeaderCell('Trigger price', 9, true),
+                              buildHeaderCell('Status', 10),
+                            ],
+                          ),
+                        ],
                       ),
+                      // Scrollable Body (vertical scroll)
+                      Expanded(
+                        child: RawScrollbar(
+                          controller: widget.verticalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          trackColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.1),
+                              light: Colors.grey.withOpacity(0.1)),
+                          thumbColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.3),
+                              light: Colors.grey.withOpacity(0.3)),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: widget.verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            child: shadcn.Table(
+                              key: ValueKey(
+                                  'table_${_sortColumnIndex}_$_sortAscending'),
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                                3: shadcn.FixedTableSize(columnWidths[3]!),
+                                4: shadcn.FixedTableSize(columnWidths[4]!),
+                                5: shadcn.FixedTableSize(columnWidths[5]!),
+                                6: shadcn.FixedTableSize(columnWidths[6]!),
+                                7: shadcn.FixedTableSize(columnWidths[7]!),
+                                8: shadcn.FixedTableSize(columnWidths[8]!),
+                                9: shadcn.FixedTableSize(columnWidths[9]!),
+                                10: shadcn.FixedTableSize(columnWidths[10]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                              rows: dataRows,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Horizontal scroll wrapper (if needed)
+              if (needsHorizontalScroll) {
+                return RawScrollbar(
+                  controller: widget.horizontalScrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  trackColor: resolveThemeColor(context,
+                      dark: Colors.grey.withOpacity(0.1),
+                      light: Colors.grey.withOpacity(0.1)),
+                  thumbColor: resolveThemeColor(context,
+                      dark: Colors.grey.withOpacity(0.3),
+                      light: Colors.grey.withOpacity(0.3)),
+                  thickness: 6,
+                  radius: const Radius.circular(3),
+                  interactive: true,
+                  child: SingleChildScrollView(
+                    controller: widget.horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: totalRequiredWidth,
+                      child: buildTableContent(),
                     ),
                   ),
-                ),
-              ],
-            );
-          }
+                );
+              }
 
-          // Horizontal scroll wrapper (if needed)
-          if (needsHorizontalScroll) {
-            return Scrollbar(
-              controller: _horizontalScrollController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              interactive: true,
-              child: SingleChildScrollView(
-                controller: _horizontalScrollController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: totalRequiredWidth,
-                  child: buildTableContent(),
-                ),
-              ),
-            );
-          }
-
-          return buildTableContent();
-        },
+              return buildTableContent();
+            },
+          ),
+        ),
       ),
     );
   }
@@ -865,7 +897,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     // Format instrument: remove "-EQ" and don't include exchange
     final symbol = order.tsym ?? '';
     final displayText = symbol.replaceAll("-EQ", "").trim();
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     return SizedBox(
       width: double.infinity,
@@ -874,7 +905,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         clipBehavior: Clip.none,
         children: [
           // Instrument name - full width, can be partially covered by buttons
-          // Only truncate when hovered (buttons visible), otherwise show full text
           Positioned.fill(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -914,173 +944,150 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               ),
             ),
           ),
-          // Action buttons - positioned at the right edge
-          if (isHovered)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: () {}, // Empty handler to stop propagation
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  decoration: BoxDecoration(
-                    // Subtle background gradient for better button visibility
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        colorScheme.background.withOpacity(0.0),
-                        colorScheme.background.withOpacity(0.95),
-                        colorScheme.background,
-                      ],
-                      stops: const [0.0, 0.3, 0.5],
-                    ),
-                  ),
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isPending) ...[
-                          _buildHoverButton(
-                            label: 'Modify',
-                            backgroundColor: resolveThemeColor(
-                              context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary,
-                            ),
-                            onPressed: isProcessing && _isProcessingModify
-                                ? null
-                                : () async {
+          // Action buttons using HoverActionsContainer
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onTap: () {}, // Empty handler to stop propagation
+              behavior: HitTestBehavior.opaque,
+              child: Center(
+                child: HoverActionsContainer(
+                  isVisible: isHovered,
+                  spacing: 6.0,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  actions: [
+                    if (isPending) ...[
+                      _buildActionButton(
+                        label: 'Modify',
+                        isPrimary: true,
+                        isProcessing: isProcessing && _isProcessingModify,
+                        onPressed: isProcessing && _isProcessingModify
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _processingOrderToken = uniqueId;
+                                });
+                                await actionHandler.modifyOrder(
+                                  order,
+                                  onProcessingStateChanged: (processing) {
                                     setState(() {
-                                      _processingOrderToken = uniqueId;
+                                      _isProcessingModify = processing;
+                                      if (!processing)
+                                        _processingOrderToken = null;
                                     });
-                                    await actionHandler.modifyOrder(
-                                      order,
-                                      onProcessingStateChanged: (processing) {
-                                        setState(() {
-                                          _isProcessingModify = processing;
-                                          if (!processing)
-                                            _processingOrderToken = null;
-                                        });
-                                      },
-                                      modifyDialogPosition:
-                                          _modifyDialogPosition,
-                                      onPositionChanged: (pos) {
-                                        _modifyDialogPosition = pos;
-                                      },
-                                    );
                                   },
-                            context: context,
-                          ),
-                          const SizedBox(width: 6),
-                          _buildHoverButton(
-                            label: 'Cancel',
-                            backgroundColor: MyntColors.tertiary,
-                            onPressed: isProcessing && _isProcessingCancel
-                                ? null
-                                : () async {
+                                  modifyDialogPosition: _modifyDialogPosition,
+                                  onPositionChanged: (pos) {
+                                    _modifyDialogPosition = pos;
+                                  },
+                                );
+                              },
+                      ),
+                      _buildActionButton(
+                        label: 'Cancel',
+                        isPrimary: false,
+                        isProcessing: isProcessing && _isProcessingCancel,
+                        onPressed: isProcessing && _isProcessingCancel
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _processingOrderToken = uniqueId;
+                                });
+                                await actionHandler.cancelOrder(
+                                  order,
+                                  onProcessingStateChanged: (processing) {
                                     setState(() {
-                                      _processingOrderToken = uniqueId;
+                                      _isProcessingCancel = processing;
+                                      if (!processing)
+                                        _processingOrderToken = null;
                                     });
-                                    await actionHandler.cancelOrder(
-                                      order,
-                                      onProcessingStateChanged: (processing) {
-                                        setState(() {
-                                          _isProcessingCancel = processing;
-                                          if (!processing)
-                                            _processingOrderToken = null;
-                                        });
-                                      },
-                                    );
                                   },
-                            context: context,
-                          ),
-                        ] else ...[
-                          _buildHoverButton(
-                            label: 'Repeat',
-                            backgroundColor: resolveThemeColor(
-                              context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary,
-                            ),
-                            onPressed: () => actionHandler.repeatOrder(order),
-                            context: context,
-                          ),
-                          if (order.status == "OPEN") ...[
-                            const SizedBox(width: 6),
-                            _buildHoverButton(
-                              label: 'Cancel',
-                              backgroundColor: MyntColors.tertiary,
-                              onPressed: isProcessing && _isProcessingCancel
-                                  ? null
-                                  : () async {
+                                );
+                              },
+                      ),
+                    ] else ...[
+                      _buildActionButton(
+                        label: 'Repeat',
+                        isPrimary: true,
+                        isProcessing: false,
+                        onPressed: () => actionHandler.repeatOrder(order),
+                      ),
+                      if (order.status == "OPEN")
+                        _buildActionButton(
+                          label: 'Cancel',
+                          isPrimary: false,
+                          isProcessing: isProcessing && _isProcessingCancel,
+                          onPressed: isProcessing && _isProcessingCancel
+                              ? null
+                              : () async {
+                                  setState(() {
+                                    _processingOrderToken = uniqueId;
+                                  });
+                                  await actionHandler.cancelOrder(
+                                    order,
+                                    onProcessingStateChanged: (processing) {
                                       setState(() {
-                                        _processingOrderToken = uniqueId;
+                                        _isProcessingCancel = processing;
+                                        if (!processing)
+                                          _processingOrderToken = null;
                                       });
-                                      await actionHandler.cancelOrder(
-                                        order,
-                                        onProcessingStateChanged: (processing) {
-                                          setState(() {
-                                            _isProcessingCancel = processing;
-                                            if (!processing)
-                                              _processingOrderToken = null;
-                                          });
-                                        },
-                                      );
                                     },
-                              context: context,
-                            ),
-                          ],
-                        ],
-                      ],
-                    ),
-                  ),
+                                  );
+                                },
+                        ),
+                    ],
+                  ],
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHoverButton({
+  Widget _buildActionButton({
     required String label,
-    required Color backgroundColor,
+    required bool isPrimary,
+    required bool isProcessing,
     required VoidCallback? onPressed,
-    required BuildContext context,
-    bool isPrimary = true,
   }) {
-    // Determine button type based on color
-    final isTertiary = backgroundColor == MyntColors.tertiary ||
-        backgroundColor == MyntColors.lossDark ||
-        backgroundColor == MyntColors.loss;
+    final backgroundColor = isPrimary
+        ? resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          )
+        : resolveThemeColor(
+            context,
+            dark: MyntColors.errorDark,
+            light: MyntColors.tertiary,
+          );
 
-    final bgColor = isTertiary ? MyntColors.tertiary : backgroundColor;
-    final textColor = Colors.white;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          height: 26,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Geist',
-                letterSpacing: 0.2,
+    return SizedBox(
+      height: 26,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: WebTextStyles.buttonXs(
+                  isDarkTheme: Theme.of(context).brightness == Brightness.dark,
+                  color: Colors.white,
+                  fontWeight: MyntFonts.medium,
+                ),
               ),
             ),
           ),

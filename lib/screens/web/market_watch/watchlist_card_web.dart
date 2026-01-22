@@ -408,12 +408,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                                 .toString(),
                                             tsym: widget.watchListData["tsym"]
                                                 .toString(),
-                                            instname: widget.watchListData[
-                                                        "instname"]
+                                            instname: widget
+                                                    .watchListData["instname"]
                                                     ?.toString() ??
                                                 widget.watchListData["symbol"]
                                                     .toString(),
-                                            symbol: widget.watchListData["symbol"]
+                                            symbol: widget
+                                                .watchListData["symbol"]
                                                 .toString(),
                                             expDate: widget
                                                     .watchListData["expDate"]

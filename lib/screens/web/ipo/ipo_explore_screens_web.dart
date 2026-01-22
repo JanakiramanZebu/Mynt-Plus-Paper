@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/iop_provider.dart';
@@ -10,10 +9,10 @@ import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
-import '../../../utils/no_emoji_inputformatter.dart';
 import 'ipo_orderbook_screen/ipo_order_book_main_screen_web.dart';
 import 'upcoming/ipo_upcoming_web.dart';
 import 'main_sme_list/main_sme_list_web.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
 
 class IpoExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
@@ -114,14 +113,14 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
 
   Widget _buildTabsAndSearchBar(ThemesProvider theme, IPOProvider ipo) {
     return Container(
-      padding: const EdgeInsets.only(bottom: 8, left: 0, right: 16 , top: 8),
+      padding: const EdgeInsets.only(bottom: 8, left: 0, right: 16, top: 8),
       decoration: const BoxDecoration(
-        // border: Border(
-        //   bottom: BorderSide(
-        //     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
-        //   ),
-        // ),
-      ),
+          // border: Border(
+          //   bottom: BorderSide(
+          //     color: theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
+          //   ),
+          // ),
+          ),
       child: Row(
         children: [
           // Segmented Control Tabs on the left
@@ -132,90 +131,17 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
           if (selectedTab == 0) ...[
             SizedBox(
               width: 400,
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.inputBackground
-                      : WebColors.inputBackground,
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.inputBorder
-                        : WebColors.inputBorder,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: ref.read(stocksProvide).searchController,
-                  onChanged: (value) {
-                    ipo.searchCommonIpo(value, context);
-                  },
-                  style: WebTextStyles.formInput(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                  ),
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [
-                    UpperCaseTextFormatter(),
-                    NoEmojiInputFormatter(),
-                    FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
-                  ],
-                  decoration: InputDecoration(
-                    hintText: 'Search IPO',
-                    hintStyle: WebTextStyles.formInput(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SvgPicture.asset(
-                        assets.searchIcon,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.iconSecondary
-                            : WebColors.iconSecondary,
-                        fit: BoxFit.scaleDown,
-                        width: 18,
-                      ),
-                    ),
-                    suffixIcon: ref.read(stocksProvide).searchController.text.isNotEmpty
-                        ? Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.15)
-                                  : Colors.black.withOpacity(.15),
-                              highlightColor: theme.isDarkMode
-                                  ? Colors.white.withOpacity(.08)
-                                  : Colors.black.withOpacity(.08),
-                              onTap: () {
-                                ref.read(stocksProvide).searchController.clear();
-                                ipo.clearCommonIpoSearch();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Icon(
-                                  Icons.close,
-                                  size: 18,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.iconSecondary
-                                      : WebColors.iconSecondary,
-                                ),
-                              ),
-                            ),
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  ),
-                ),
+              child: MyntSearchTextField.withSmartClear(
+                controller: ref.read(stocksProvide).searchController,
+                placeholder: 'Search IPO',
+                leadingIcon: assets.searchIcon,
+                onChanged: (value) {
+                  ipo.searchCommonIpo(value, context);
+                },
+                onClear: () {
+                  ref.read(stocksProvide).searchController.clear();
+                  ipo.clearCommonIpoSearch();
+                },
               ),
             ),
             const SizedBox(width: 16),
@@ -226,7 +152,9 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
   }
 
   Widget _buildSegmentedControl(ThemesProvider theme) {
-    final tabs = ref.read(ipoProvide).tablistitems
+    final tabs = ref
+        .read(ipoProvide)
+        .tablistitems
         .map((item) => item['title'].toString())
         .toList();
 
@@ -411,12 +339,14 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
         // Right swipe from first tab (Open) -> notify parent to go to previous tab (Mutual Fund)
         if (deltaX > minDistance && currentPage == 0) {
           if (widget.onBoundaryReached != null) {
-            widget.onBoundaryReached!(true); // true = previous tab (Mutual Fund)
+            widget
+                .onBoundaryReached!(true); // true = previous tab (Mutual Fund)
           }
         }
 
         // Left swipe from last tab (My Bids) -> notify parent to go to next tab (Bond)
-        if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
+        if (deltaX < -minDistance &&
+            currentPage == widget.children.length - 1) {
           if (widget.onBoundaryReached != null) {
             widget.onBoundaryReached!(false); // false = next tab (Bond)
           }
