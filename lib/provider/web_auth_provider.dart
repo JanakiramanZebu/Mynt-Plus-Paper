@@ -1,0 +1,610 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:uuid/uuid.dart';
+
+import '../api/web_auth_api.dart';
+import '../locator/preference.dart';
+import '../models/auth_model/mobile_login_model.dart';
+import '../models/auth_model/mobile_otp_model.dart';
+import '../utils/responsive_snackbar.dart';
+import '../utils/totp_utils.dart';
+import '../routes/route_names.dart';
+import 'auth_provider.dart';
+
+/// Provider for web-specific authentication
+final webAuthProvider = ChangeNotifierProvider((ref) => WebAuthProvider(ref));
+
+/// Web-specific authentication provider
+/// Handles login flow with source="WEB", separate OTP send, and TOTP generation
+class WebAuthProvider extends ChangeNotifier {
+  final Ref ref;
+  final Preferences pref = Preferences();
+  final Uuid uuid = const Uuid();
+
+  WebAuthProvider(this.ref);
+
+  // Controllers
+  final TextEditingController loginController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController otpController = TextEditingController();
+
+  // State
+  bool _loading = false;
+  bool get loading => _loading;
+
+  bool _isTotp = true; // Default to TOTP mode
+  bool get isTotp => _isTotp;
+
+  String? _loginError;
+  String? get loginError => _loginError;
+
+  String? _passwordError;
+  String? get passwordError => _passwordError;
+
+  String? _otpError;
+  String? get otpError => _otpError;
+
+  MobileLoginModel? _mobileLogin;
+  MobileLoginModel? get mobileLogin => _mobileLogin;
+
+  MobileOtpModel? _mobileOtp;
+  MobileOtpModel? get mobileOtp => _mobileOtp;
+
+  // TOTP State
+  TotpData? _totpData;
+  TotpData? get totpData => _totpData;
+
+  String _currentTotp = '';
+  String get currentTotp => _currentTotp;
+
+  int _totpTimer = 30;
+  int get totpTimer => _totpTimer;
+
+  Timer? _totpRefreshTimer;
+  
+  String? _apiSession;
+  String? get apiSession => _apiSession;
+
+  bool _showTotpSetup = false;
+  bool get showTotpSetup => _showTotpSetup;
+
+  // Flag for "Generate TOTP" flow - when user needs to create a new TOTP
+  bool _topflow = false;
+  bool get topflow => _topflow;
+
+  // Unique ID for device
+  String _deviceUuid = '';
+
+  // Source for web
+  static const String _source = 'WEB';
+
+  /// Initialize the provider
+  void init() {
+    _deviceUuid = uuid.v4();
+    _isTotp = true;
+    notifyListeners();
+  }
+
+  /// Toggle loading state
+  void _setLoading(bool value) {
+    _loading = value;
+    notifyListeners();
+  }
+
+  /// Toggle between OTP and TOTP mode
+  void toggleTotpMode() {
+    _isTotp = !_isTotp;
+    otpController.clear();
+    _otpError = null;
+    notifyListeners();
+  }
+
+  /// Set TOTP mode explicitly
+  void setTotpMode(bool value) {
+    _isTotp = value;
+    notifyListeners();
+  }
+
+  /// Validate login input
+  bool validateLogin() {
+    if (loginController.text.trim().isEmpty) {
+      _loginError = "Your mobile / client id is required";
+      notifyListeners();
+      return false;
+    }
+    _loginError = null;
+    notifyListeners();
+    return true;
+  }
+
+  /// Validate password input
+  bool validatePassword() {
+    if (passwordController.text.trim().isEmpty) {
+      _passwordError = "Please enter the password";
+      notifyListeners();
+      return false;
+    }
+    _passwordError = null;
+    notifyListeners();
+    return true;
+  }
+
+  /// Validate OTP input
+  bool validateOtp() {
+    final length = _isTotp ? 6 : 4;
+    if (otpController.text.length != length) {
+      _otpError = "Please enter $length digit ${_isTotp ? 'TOTP' : 'OTP'}";
+      notifyListeners();
+      return false;
+    }
+    _otpError = null;
+    notifyListeners();
+    return true;
+  }
+
+  /// Clear all errors
+  void clearErrors() {
+    _loginError = null;
+    _passwordError = null;
+    _otpError = null;
+    notifyListeners();
+  }
+
+  /// Clear all text fields
+  void clearFields() {
+    loginController.clear();
+    passwordController.clear();
+    otpController.clear();
+    notifyListeners();
+  }
+
+  /// Check for existing valid session and auto-login
+  Future<void> checkAutoLogin(BuildContext context) async {
+    // 1. Check if we have session data in preferences
+    final session = pref.clientSession;
+    final clientId = pref.clientId;
+
+    if (session == null || session.isEmpty || clientId == null || clientId.isEmpty) {
+      return; // No session, stay on login
+    }
+
+    _setLoading(true);
+
+    try {
+      // 2. Validate session with API
+      final result = await WebAuthApi.validateSession(
+        clientId: clientId,
+        apiSession: session,
+      );
+
+      // 3. Check if validation successful
+      if (result != null && result['stat'] == 'Ok') {
+        debugPrint('Auto-login successful for $clientId');
+        
+        // Ensure other preferences are set if needed (e.g. clientName from result['uname'])
+        if (result['uname'] != null) {
+          await pref.setClientName(result['uname']);
+        }
+        
+        // Navigate to Home
+        if (context.mounted) {
+           Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+           ref.read(authProvider).initialLoadMethods(context, "");
+        }
+      } else {
+        debugPrint('Auto-login failed: Invalid session');
+        // Optional: specific error handling or clearing session
+        // await pref.clearClientSession(); // Maybe too aggressive? Let user decide.
+      }
+    } catch (e) {
+      debugPrint('Auto-login error: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Web Login - Submit login credentials
+  Future<bool> submitWebLogin(BuildContext context) async {
+    if (!validateLogin() || !validatePassword()) {
+      return false;
+    }
+
+    _setLoading(true);
+    clearErrors();
+
+    try {
+      // Generate unique device ID
+      _deviceUuid = uuid.v4();
+      
+      _mobileLogin = await WebAuthApi.webMobileLogin(
+        uniqueId: _deviceUuid,
+        mobileOrClientId: loginController.text.trim().toUpperCase(),
+        password: passwordController.text,
+        imei: _deviceUuid,
+        totp: _isTotp,
+        context: context,
+      );
+
+      if (_mobileLogin?.stat == 'Ok') {
+        // Store the client ID for OTP verification
+        pref.setImei(_deviceUuid);
+        
+        // Check if login is complete (has token) or needs OTP
+        if (_mobileLogin?.apitoken != null && _mobileLogin?.token != null) {
+          // Direct login success - no OTP needed
+          await _handleLoginSuccess(context);
+          return true;
+        }
+        
+        // OTP/TOTP flow needed
+        otpController.clear();
+        _setLoading(false);
+        
+        if (!_isTotp) {
+          ResponsiveSnackBar.showSuccess(context, 'OTP sent to your registered mobile and email');
+        }
+        
+        return true;
+      } else if (_mobileLogin?.emsg != null) {
+        ResponsiveSnackBar.showWarning(context, _mobileLogin!.emsg!);
+      }
+    } catch (e) {
+      debugPrint('Web login error: $e');
+      ResponsiveSnackBar.showWarning(context, 'Login failed. Please try again.');
+    } finally {
+      _setLoading(false);
+    }
+
+    return false;
+  }
+
+  /// Send OTP - Separate API call for sending OTP
+  Future<bool> sendOtp(BuildContext context) async {
+    _setLoading(true);
+
+    try {
+      final result = await WebAuthApi.sendOtp(
+        mobileOrClientId: loginController.text.trim().toUpperCase(),
+        source: _source,
+        context: context,
+      );
+
+      if (result != null && (result['stat'] == 'Ok' || (result['msg'] != null && result['msg'].toString().toLowerCase().contains('otp')))) {
+        ResponsiveSnackBar.showSuccess(context, 'OTP sent successfully');
+        _setLoading(false);
+        return true;
+      } else if (result != null && result['emsg'] != null) {
+        ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
+      }
+    } catch (e) {
+      debugPrint('Send OTP error: $e');
+      ResponsiveSnackBar.showWarning(context, 'Failed to send OTP');
+    } finally {
+      _setLoading(false);
+    }
+
+    return false;
+  }
+
+  /// Verify OTP/TOTP
+  Future<bool> verifyOtp(BuildContext context) async {
+    if (!validateOtp()) {
+      return false;
+    }
+
+    _setLoading(true);
+
+    try {
+      // Build log data
+      final logData = {
+        'datetime': DateTime.now().toIso8601String(),
+        'login_type': _isTotp ? 'totp' : 'otp',
+        'src': 'flutter web app',
+        'IP_address': 'web',
+        'app': 'MYNT Web',
+        'platform': 'web',
+        'imei': _deviceUuid,
+      };
+
+      _mobileOtp = await WebAuthApi.webVerifyOtp(
+        uniqueId: _deviceUuid,
+        mobileOrClientId: loginController.text.trim().toUpperCase(),
+        otp: otpController.text.trim(),
+        imei: _deviceUuid,
+        source: _source,
+        logData: logData,
+        context: context,
+      );
+
+      if (_mobileOtp?.stat == 'Ok' && _mobileOtp?.apitoken != null) {
+        // Store session for TOTP generation if needed
+        _apiSession = _mobileOtp!.apitoken;
+        
+        // Check if this is "Generate TOTP" flow (Vue.js topfloww logic)
+        // If topflow is true, user clicked "Generate TOTP" - show TOTP setup screen
+        if (_topflow) {
+          _showTotpSetup = true;
+          await fetchTotpData(context);
+          notifyListeners();
+          return true; // Don't navigate, stay on TOTP setup screen
+        }
+        
+        await _handleOtpSuccess(context);
+        return true;
+      } else if (_mobileOtp?.emsg == 'otp not valid') {
+        _otpError = 'Invalid ${_isTotp ? 'TOTP' : 'OTP'}';
+        otpController.clear();
+        notifyListeners();
+      } else if (_mobileOtp?.emsg != null) {
+        ResponsiveSnackBar.showWarning(context, _mobileOtp!.emsg!);
+        otpController.clear();
+      }
+    } catch (e) {
+      debugPrint('Verify OTP error: $e');
+      ResponsiveSnackBar.showWarning(context, 'Verification failed');
+    } finally {
+      _setLoading(false);
+    }
+
+    return false;
+  }
+
+  /// Enable "Generate TOTP" flow - switches to OTP mode with topflow flag
+  void enableGenerateTotpFlow() {
+    _topflow = true;
+    _isTotp = false; // Switch to OTP mode for verification
+    otpController.clear();
+    notifyListeners();
+  }
+
+  /// Back to login from TOTP setup screen
+  void backToLogin() {
+    _showTotpSetup = false;
+    _topflow = false;
+    _isTotp = true;
+    _totpData = null;
+    _apiSession = null;
+    otpController.clear();
+    stopTotpTimer();
+    notifyListeners();
+  }
+
+  /// Fetch TOTP data (Get or Generate)
+  Future<void> fetchTotpData(BuildContext context) async {
+    if (_apiSession == null) return;
+
+    try {
+      _totpData = await WebAuthApi.getOrGenerateTotp(
+        clientId: loginController.text.trim().toUpperCase(),
+        apiSession: _apiSession!,
+        context: context,
+      );
+
+      if (_totpData?.isValid == true) {
+        _startTotpTimer();
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Fetch TOTP data error: $e');
+    }
+  }
+
+  /// Generate TOTP code from secret
+  void _generateTotpCode() {
+    if (_totpData?.pwd != null) {
+      _currentTotp = TotpUtils.generateTotp(_totpData!.pwd!);
+      _totpTimer = TotpUtils.getRemainingSeconds();
+      notifyListeners();
+    }
+  }
+
+  /// Start TOTP refresh timer
+  void _startTotpTimer() {
+    _totpRefreshTimer?.cancel();
+    _generateTotpCode();
+    
+    _totpRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _totpTimer = TotpUtils.getRemainingSeconds();
+      
+      // Regenerate TOTP when timer resets
+      if (_totpTimer == 30) {
+        _generateTotpCode();
+      }
+      
+      notifyListeners();
+    });
+  }
+
+  /// Stop TOTP refresh timer
+  void stopTotpTimer() {
+    _totpRefreshTimer?.cancel();
+    _totpRefreshTimer = null;
+  }
+
+  // --- QR Login Logic ---
+  
+  Timer? _qrPollTimer;
+  String? _qrLoginImageUrl;
+  String? get qrLoginImageUrl => _qrLoginImageUrl;
+  
+  /// Start QR Login Process
+  void startQrLogin(BuildContext context) {
+    // Stop any existing poll
+    stopQrLogin();
+    
+    // Construct QR Image URL
+    // URL: {BASE_URL}/get_login_qr?unique_id={UUID}&source=WEB
+    // Note: Assuming BASE_URL is https://ws.mynt.in/login based on WebAuthApi
+    _qrLoginImageUrl = "https://copy.mynt.in/get_login_qr?unique_id=$_deviceUuid&source=$_source";
+    notifyListeners();
+    
+    // Start polling after 2 seconds
+    _qrPollTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _pollQrStatus(context, onLoginSuccess: () {
+        // Navigate to Home screen on success
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.mainControlerScreenForWeb, (route) => false);
+      });
+    });
+  }
+  
+  /// Stop QR Login Process
+  void stopQrLogin() {
+    _qrPollTimer?.cancel();
+    _qrPollTimer = null;
+    _qrLoginImageUrl = null;
+    notifyListeners(); // Optionally notify to clear UI
+  }
+  
+  /// Poll QR Status
+  Future<void> _pollQrStatus(BuildContext context, {VoidCallback? onLoginSuccess}) async {
+    try {
+      final res = await WebAuthApi.qrLogin(
+        uniqueId: _deviceUuid,
+        source: _source,
+        imei: _deviceUuid,
+        context: context,
+      );
+      
+      if (res?.stat == 'Ok' && res?.apitoken != null) {
+        // Success! Stop polling
+        stopQrLogin();
+        
+        // Save session data (similar to _handleOtpSuccess)
+        _mobileOtp = res; // Reusing model as it has same structure
+        await _handleOtpSuccess(context);
+        
+        // Notify listener that login succeeded (UI should watch for this)
+        notifyListeners();
+        
+        // Trigger navigation callback if provided
+        if (onLoginSuccess != null) {
+          onLoginSuccess();
+        }
+      }
+    } catch (e) {
+      debugPrint("QR Poll Error: $e");
+    }
+  }
+
+  /// Handle successful login (direct login without OTP)
+  Future<void> _handleLoginSuccess(BuildContext context) async {
+    if (_mobileLogin == null) return;
+
+    await pref.setClientId(_mobileLogin!.clientid ?? '');
+    await pref.setClientMob(_mobileLogin!.mobile ?? '');
+    await pref.setClientSession(_mobileLogin!.apitoken ?? '');
+    await pref.setClientName(_mobileLogin!.name ?? '');
+    await pref.setApiToken(_mobileLogin!.token ?? '');
+    await pref.setLogout(false);
+    await pref.setMobileLogin(true);
+  }
+
+  /// Handle successful OTP verification
+  Future<void> _handleOtpSuccess(BuildContext context) async {
+    if (_mobileOtp == null) return;
+
+    await pref.setClientId(_mobileOtp!.clientid ?? '');
+    await pref.setClientMob(_mobileOtp!.mobile ?? '');
+    await pref.setClientSession(_mobileOtp!.apitoken ?? '');
+    await pref.setClientName(_mobileOtp!.name ?? '');
+    await pref.setApiToken(_mobileOtp!.token ?? '');
+    await pref.setLogout(false);
+    await pref.setMobileLogin(true);
+  }
+
+  /// QR Login
+  Future<MobileOtpModel?> qrLogin(BuildContext context) async {
+    _deviceUuid = uuid.v4();
+    
+    return await WebAuthApi.qrLogin(
+      uniqueId: _deviceUuid,
+      source: _source,
+      imei: _deviceUuid,
+      context: context,
+    );
+  }
+
+  /// Forgot Password
+  Future<bool> forgotPassword(BuildContext context) async {
+    if (loginController.text.trim().isEmpty) {
+      _loginError = "Please enter your mobile or client ID";
+      notifyListeners();
+      return false;
+    }
+
+    _setLoading(true);
+
+    try {
+      final result = await WebAuthApi.forgotPassword(
+        mobileOrClientId: loginController.text.trim().toUpperCase(),
+        context: context,
+      );
+
+      if (result != null && result['stat'] == 'Ok') {
+        ResponsiveSnackBar.showSuccess(context, 'New password sent to your registered email and mobile');
+        _setLoading(false);
+        return true;
+      } else if (result != null && result['emsg'] != null) {
+        ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
+      }
+    } catch (e) {
+      debugPrint('Forgot password error: $e');
+      ResponsiveSnackBar.showWarning(context, 'Failed to process request');
+    } finally {
+      _setLoading(false);
+    }
+
+    return false;
+  }
+
+  /// Get formatted TOTP for display
+  String get formattedTotp => TotpUtils.formatTotp(_currentTotp);
+
+  /// Get TOTP QR code URI
+  String get totpQrUri => _totpData?.getQrUri() ?? '';
+
+  /// Check if TOTP is set up
+  bool get hasTotpSetup => _totpData?.isValid == true;
+
+  /// Enable TOTP setup mode
+  void enableTotpSetup() {
+    _showTotpSetup = true;
+    notifyListeners();
+  }
+
+  /// Disable TOTP setup mode  
+  void disableTotpSetup() {
+    _showTotpSetup = false;
+    stopTotpTimer();
+    notifyListeners();
+  }
+
+  /// Reset provider state
+  void reset() {
+    stopTotpTimer();
+    clearFields();
+    clearErrors();
+    _mobileLogin = null;
+    _mobileOtp = null;
+    _totpData = null;
+    _currentTotp = '';
+    _totpTimer = 30;
+    _apiSession = null;
+    _showTotpSetup = false;
+    _loading = false;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    stopTotpTimer();
+    loginController.dispose();
+    passwordController.dispose();
+    otpController.dispose();
+    super.dispose();
+  }
+}

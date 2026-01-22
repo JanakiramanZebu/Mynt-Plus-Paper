@@ -14,7 +14,7 @@ mixin IndexApi on ApiCore {
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body: jsonEncode({
-            "token": "${ConstantName.msgToken}",
+            "token": ConstantName.msgToken,
             "clientid": prefs.clientId,
           }));
 
