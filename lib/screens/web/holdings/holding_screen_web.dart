@@ -978,7 +978,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   }
 
   String _formatValue(String? value) {
-    return (value == null || value.isEmpty) ? "0.00" : value;
+    if (value == null || value.isEmpty) return "0.00";
+    final numValue = double.tryParse(value);
+    if (numValue == null) return "0.00";
+    return numValue.toStringAsFixed(2);
   }
 
   Color _getStatValueColor(String value, ThemesProvider theme) {

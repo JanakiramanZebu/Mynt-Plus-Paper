@@ -16,7 +16,7 @@ import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 class MfHoldingsScreenWeb extends ConsumerStatefulWidget {
   final bool showSummaryCards;
   final String? searchQuery;
-  
+
   const MfHoldingsScreenWeb({
     super.key,
     this.showSummaryCards = true,
@@ -24,7 +24,8 @@ class MfHoldingsScreenWeb extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MfHoldingsScreenWeb> createState() => _MfHoldingsScreenWebState();
+  ConsumerState<MfHoldingsScreenWeb> createState() =>
+      _MfHoldingsScreenWebState();
 }
 
 class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
@@ -97,13 +98,13 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     );
   }
 
-
   Widget _buildSummaryCards(ThemesProvider theme, MFProvider mfData) {
     final summary = mfData.mfholdingnew?.summary;
     final investedValue = _formatValue(summary?.invested);
     final currentValue = _formatValue(summary?.currentValue);
     final absReturnValue = _formatValue(summary?.absReturnValue);
-    final absReturnPercent = _formatValue(summary?.absReturnPercent?.toString());
+    final absReturnPercent =
+        _formatValue(summary?.absReturnPercent?.toString());
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -230,7 +231,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       child: const Row(
         children: [
           // Spacer to push search and refresh to the right
-         
+
           SizedBox(width: 8),
         ],
       ),
@@ -258,7 +259,15 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     } else if (screenWidth < _tabletBreakpoint) {
       // Tablet: Show most columns
       return {
-        'headers': ['Fund Name', 'Units', 'Avg NAV', 'Current NAV', 'Current Value', 'P&L', 'P&L %'],
+        'headers': [
+          'Fund Name',
+          'Units',
+          'Avg NAV',
+          'Current NAV',
+          'Current Value',
+          'P&L',
+          'P&L %'
+        ],
         'columnMinWidth': {
           'Fund Name': 250,
           'Units': 95,
@@ -272,7 +281,16 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     } else {
       // Desktop: Full columns with optimal widths
       return {
-        'headers': ['Fund Name', 'Units', 'Avg NAV', 'Current NAV', 'Invested', 'Current Value', 'P&L', 'P&L %'],
+        'headers': [
+          'Fund Name',
+          'Units',
+          'Avg NAV',
+          'Current NAV',
+          'Invested',
+          'Current Value',
+          'P&L',
+          'P&L %'
+        ],
         'columnMinWidth': {
           'Fund Name': 300,
           'Units': 100,
@@ -301,13 +319,21 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       builder: (context, constraints) {
         // Calculate available height
         final screenHeight = MediaQuery.of(context).size.height;
-        final padding = widget.showSummaryCards ? 32.0 : 0.0; // Top and bottom padding
-        final headerHeight = widget.showSummaryCards ? 120.0 : 0.0; // Summary cards height
-        final actionBarHeight = widget.showSummaryCards ? 60.0 : 0.0; // Action bar height
-        final spacing = widget.showSummaryCards ? 24.0 : 0.0; // Spacing between sections
+        final padding =
+            widget.showSummaryCards ? 32.0 : 0.0; // Top and bottom padding
+        final headerHeight =
+            widget.showSummaryCards ? 120.0 : 0.0; // Summary cards height
+        final actionBarHeight =
+            widget.showSummaryCards ? 60.0 : 0.0; // Action bar height
+        final spacing =
+            widget.showSummaryCards ? 24.0 : 0.0; // Spacing between sections
         const bottomMargin = 20.0; // Bottom margin
-        final tableHeight =
-            screenHeight - padding - headerHeight - actionBarHeight - spacing - bottomMargin;
+        final tableHeight = screenHeight -
+            padding -
+            headerHeight -
+            actionBarHeight -
+            spacing -
+            bottomMargin;
 
         // Ensure we don't exceed 75% of screen height
         final maxHeight = screenHeight * 0.75;
@@ -317,12 +343,13 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
         // Get screen width for responsive design
         final screenWidth = MediaQuery.of(context).size.width;
-        
+
         // Get responsive column configuration
         final responsiveConfig = _getResponsiveMfHoldingColumns(screenWidth);
         final headers = List<String>.from(responsiveConfig['headers'] as List);
-        final columnMinWidth = Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
-        
+        final columnMinWidth =
+            Map<String, double>.from(responsiveConfig['columnMinWidth'] as Map);
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: Container(
@@ -335,9 +362,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                 width: 1,
               ),
               borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : Colors.white,
+              color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
             ),
             child: Theme(
               data: Theme.of(context).copyWith(
@@ -345,27 +370,27 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   // Make both scrollbars always visible
                   thumbVisibility: WidgetStateProperty.all(true),
                   trackVisibility: WidgetStateProperty.all(true),
-                  
+
                   // Consistent thickness for both horizontal and vertical
                   thickness: WidgetStateProperty.all(6.0),
                   crossAxisMargin: 0.0,
                   mainAxisMargin: 0.0,
-                  
+
                   // Consistent radius
                   radius: const Radius.circular(3),
-                  
+
                   // Consistent colors for both scrollbars
                   thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
+                    return theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.3)
                         : WebColors.textSecondary.withOpacity(0.3);
                   }),
                   trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
+                    return theme.isDarkMode
                         ? WebDarkColors.divider.withOpacity(0.1)
                         : WebColors.divider.withOpacity(0.1);
                   }),
-                  
+
                   trackBorderColor: WidgetStateProperty.all(Colors.transparent),
                   minThumbLength: 48.0,
                 ),
@@ -377,7 +402,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                 sortColumnIndex: null, // Disable DataTable2's sort indicators
                 sortAscending: true,
                 fixedLeftColumns: 1, // Fix the first column (Fund Name)
-                fixedColumnsColor: theme.isDarkMode 
+                fixedColumnsColor: theme.isDarkMode
                     ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
                     : WebColors.backgroundSecondary.withOpacity(0.8),
                 showBottomBorder: true,
@@ -424,7 +449,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                   ),
                   // Remove vertical lines
                 ),
-                columns: _buildDataTable2Columns(headers, columnMinWidth, theme),
+                columns:
+                    _buildDataTable2Columns(headers, columnMinWidth, theme),
                 rows: _buildDataTable2Rows(filteredHoldings, headers, theme),
               ),
             ),
@@ -436,20 +462,30 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
 
   // Helper method to determine column alignment based on content type
   bool _isNumericColumn(String header) {
-    return header != 'Fund Name'; // All columns except Fund Name contain numeric data
+    return header !=
+        'Fund Name'; // All columns except Fund Name contain numeric data
   }
 
   int _getColumnIndexForHeader(String header) {
     switch (header) {
-      case 'Fund Name': return 0;
-      case 'Units': return 1;
-      case 'Avg NAV': return 2;
-      case 'Current NAV': return 3;
-      case 'Invested': return 4;
-      case 'Current Value': return 5;
-      case 'P&L': return 6;
-      case 'P&L %': return 7;
-      default: return -1;
+      case 'Fund Name':
+        return 0;
+      case 'Units':
+        return 1;
+      case 'Avg NAV':
+        return 2;
+      case 'Current NAV':
+        return 3;
+      case 'Invested':
+        return 4;
+      case 'Current Value':
+        return 5;
+      case 'P&L':
+        return 6;
+      case 'P&L %':
+        return 7;
+      default:
+        return -1;
     }
   }
 
@@ -462,7 +498,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       final columnIndex = _getColumnIndexForHeader(header);
       final isFundName = header == 'Fund Name';
       final isNumeric = _isNumericColumn(header);
-      
+
       return DataColumn2(
         label: SizedBox.expand(
           child: MouseRegion(
@@ -487,9 +523,13 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                                 : WebColors.primary.withOpacity(0.05))
                             : Colors.transparent,
                       ),
-                      alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                      child: _buildSortableHeaderContent(header, isNumeric, theme, columnIndex),
+                      alignment: isNumeric
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0, vertical: 12.0),
+                      child: _buildSortableHeaderContent(
+                          header, isNumeric, theme, columnIndex),
                     );
                   },
                 ),
@@ -518,7 +558,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       return DataRow2(
         onTap: () => _showHoldingDetail(holding),
         color: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.hovered) || _hoveredRowToken.value == uniqueId) {
+          if (states.contains(MaterialState.hovered) ||
+              _hoveredRowToken.value == uniqueId) {
             return theme.isDarkMode
                 ? WebDarkColors.primary.withOpacity(0.06)
                 : WebColors.primary.withOpacity(0.10);
@@ -533,9 +574,12 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
               onExit: (_) => _hoveredRowToken.value = null,
               child: SizedBox.expand(
                 child: Container(
-                  alignment: isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: _buildDataTable2CellContent(header, holding, theme, uniqueId),
+                  alignment:
+                      isNumeric ? Alignment.centerRight : Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 12.0),
+                  child: _buildDataTable2CellContent(
+                      header, holding, theme, uniqueId),
                 ),
               ),
             ),
@@ -559,8 +603,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           uniqueId,
         );
       case 'Units':
+        final units = double.tryParse(holding.avgQty ?? '0') ?? 0.0;
         return Text(
-          holding.avgQty ?? '0',
+          units.toStringAsFixed(2),
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -572,8 +617,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           textAlign: TextAlign.right,
         );
       case 'Avg NAV':
+        final avgNav = double.tryParse(holding.avgNav ?? '0') ?? 0.0;
         return Text(
-          holding.avgNav ?? '0.00',
+          avgNav.toStringAsFixed(2),
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -585,8 +631,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           textAlign: TextAlign.right,
         );
       case 'Current NAV':
+        final curNav = double.tryParse(holding.curNav ?? '0') ?? 0.0;
         return Text(
-          holding.curNav ?? '0.00',
+          curNav.toStringAsFixed(2),
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -598,8 +645,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           textAlign: TextAlign.right,
         );
       case 'Invested':
+        final invested = double.tryParse(holding.investedValue ?? '0') ?? 0.0;
         return Text(
-          holding.investedValue ?? '0.00',
+          invested.toStringAsFixed(2),
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -611,8 +659,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           textAlign: TextAlign.right,
         );
       case 'Current Value':
+        final currentVal = double.tryParse(holding.currentValue ?? '0') ?? 0.0;
         return Text(
-          holding.currentValue ?? '0.00',
+          currentVal.toStringAsFixed(2),
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
@@ -624,25 +673,28 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           textAlign: TextAlign.right,
         );
       case 'P&L':
-        final pnl = holding.profitLoss ?? '0.00';
+        final pnl = double.tryParse(holding.profitLoss ?? '0') ?? 0.0;
+        final pnlStr = pnl.toStringAsFixed(2);
         return Text(
-          pnl,
+          pnlStr,
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
-            color: _getValueColor(pnl, theme),
+            color: _getValueColor(pnlStr, theme),
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
         );
       case 'P&L %':
-        final pnlPercent = holding.changeprofitLoss ?? '0.00';
+        final pnlPercent =
+            double.tryParse(holding.changeprofitLoss ?? '0') ?? 0.0;
+        final pnlPercentStr = pnlPercent.toStringAsFixed(2);
         return Text(
-          '$pnlPercent%',
+          '$pnlPercentStr%',
           style: WebTextStyles.custom(
             fontSize: 13,
             isDarkTheme: theme.isDarkMode,
-            color: _getValueColor(pnlPercent, theme),
+            color: _getValueColor(pnlPercentStr, theme),
             fontWeight: WebFonts.medium,
           ),
           textAlign: TextAlign.right,
@@ -729,9 +781,10 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     );
   }
 
-  Widget _buildSortableHeaderContent(String header, bool isNumeric, ThemesProvider theme, int columnIndex) {
+  Widget _buildSortableHeaderContent(
+      String header, bool isNumeric, ThemesProvider theme, int columnIndex) {
     final isCurrentlySorted = _sortColumnIndex == columnIndex;
-    
+
     // Determine which icon to show
     IconData sortIcon;
     if (isCurrentlySorted) {
@@ -739,15 +792,17 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     } else {
       sortIcon = Icons.unfold_more;
     }
-    
+
     return Row(
       mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+      mainAxisAlignment:
+          isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
         Flexible(
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                isNumeric ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               Flexible(
                 child: Text(
@@ -769,7 +824,9 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
                 sortIcon,
                 size: 16,
                 color: isCurrentlySorted
-                    ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
+                    ? (theme.isDarkMode
+                        ? WebDarkColors.primary
+                        : WebColors.primary)
                     : (theme.isDarkMode
                         ? WebDarkColors.textSecondary.withOpacity(0.6)
                         : WebColors.textSecondary.withOpacity(0.6)),
@@ -780,9 +837,6 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       ],
     );
   }
-
-
-
 
   List<dynamic> _getFilteredHoldings(MFProvider mfData) {
     List<dynamic> holdings = mfData.mfholdingnew?.data ?? [];
@@ -801,7 +855,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     if (_sortColumnIndex != null) {
       holdings.sort((a, b) {
         int comparison = 0;
-        
+
         switch (_sortColumnIndex) {
           case 0: // Fund Name
             comparison = (a.name ?? '').compareTo(b.name ?? '');
@@ -842,7 +896,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
             comparison = aPnLPercent.compareTo(bPnLPercent);
             break;
         }
-        
+
         return _sortAscending ? comparison : -comparison;
       });
     }
@@ -853,11 +907,15 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
+      return theme.isDarkMode
+          ? WebDarkColors.success
+          : WebColors.success; // Green
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary; // Grey
+      return theme.isDarkMode
+          ? WebDarkColors.textSecondary
+          : WebColors.textSecondary; // Grey
     }
   }
 
@@ -867,20 +925,27 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     final numValue = double.tryParse(cleanValue) ?? 0.0;
 
     if (numValue > 0) {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success; // Green
+      return theme.isDarkMode
+          ? WebDarkColors.success
+          : WebColors.success; // Green
     } else if (numValue < 0) {
       return theme.isDarkMode ? WebDarkColors.error : WebColors.error; // Red
     } else {
-      return theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary; // Grey
+      return theme.isDarkMode
+          ? WebDarkColors.textPrimary
+          : WebColors.textPrimary; // Grey
     }
   }
 
   String _formatValue(String? value) {
-    return (value == null || value.isEmpty) ? "0.00" : value;
+    if (value == null || value.isEmpty) return "0.00";
+    final numValue = double.tryParse(value);
+    if (numValue == null) return "0.00";
+    return numValue.toStringAsFixed(2);
   }
 
   void _showHoldingDetail(dynamic holding) {
-     showDialog(
+    showDialog(
       context: context,
       builder: (context) => MfHoldingDetailScreenWeb(
         holding: holding,
@@ -925,7 +990,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           highlightColor: color.withOpacity(0.08),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(borderRadiusValue),
