@@ -53,7 +53,14 @@ import 'package:flutter/material.dart'
         BoxShadow,
         RawScrollbar,
         Radius,
-        Offset;
+        Offset,
+        TextButton,
+        RoundedRectangleBorder,
+        Dialog,
+        Navigator,
+        showDialog,
+        RichText,
+        TextAlign;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -1332,8 +1339,107 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return result;
   }
 
+  Future<bool?> _showCancelAlertDialog(AlertPendingModel alert) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: styles.MyntColors.backgroundColorDark,
+                  light: styles.MyntColors.backgroundColor),
+              borderRadius: BorderRadius.circular(10), // Rounded corners
+            ),
+            padding: const EdgeInsets.all(24), // Consistent padding
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Close button (Top Right)
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.of(dialogContext).pop(false),
+                      child: Icon(
+                        Icons.close,
+                        size: 24,
+                        color: resolveThemeColor(context,
+                            dark: styles.MyntColors.textSecondaryDark,
+                            light: styles.MyntColors.textSecondary),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Text Content
+                const SizedBox(height: 12),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: 'Are you sure you want to \ncancel this ',
+                    style: MyntWebTextStyles.title(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: styles.MyntColors.textPrimaryDark,
+                          light: styles.MyntColors.textPrimary),
+                    ).copyWith(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Alert?',
+                        style: MyntWebTextStyles.title(
+                          context,
+                        ).copyWith(
+                          fontWeight: FontWeight.w700, // Bold
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Button
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48, // Slightly taller button
+                  child: TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(true),
+                    style: TextButton.styleFrom(
+                      backgroundColor: const Color(0xFF0037B7), // Primary Blue
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text(
+                      'Delete',
+                      style: MyntWebTextStyles.buttonMd(
+                        context,
+                        color: Colors.white,
+                      ).copyWith(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // Action handlers
   Future<void> _handleCancelAlert(AlertPendingModel alert) async {
+    // Show confirmation dialog first
+    final bool? confirm = await _showCancelAlertDialog(alert);
+    if (confirm != true) return;
+
     final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
     if (_isProcessingCancel && _processingAlertToken == uniqueId) return;
 
