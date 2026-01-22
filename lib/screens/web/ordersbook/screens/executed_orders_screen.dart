@@ -992,21 +992,33 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       ];
     } else {
       return [
-        HoverActionButton(
-          label: 'Repeat',
-          color: Colors.white,
-          backgroundColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
+        // Custom Repeat button with pill-shaped design
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => actionHandler.repeatOrder(order),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Repeat',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Geist',
+                ),
+              ),
+            ),
           ),
-          borderColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ),
-          borderRadius: 4,
-          onPressed: () => actionHandler.repeatOrder(order),
         ),
         if (order.status == "OPEN") ...[
           SizedBox(width: buttonSpacing),
