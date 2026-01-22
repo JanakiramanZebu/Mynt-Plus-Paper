@@ -3,8 +3,6 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
-        VoidCallback,
-        BorderRadius,
         Icon,
         BoxDecoration,
         TextPainter,
@@ -23,6 +21,8 @@ import 'package:flutter/material.dart'
         EdgeInsets,
         Alignment,
         MainAxisAlignment,
+        CrossAxisAlignment,
+        TextAlign,
         TextOverflow,
         Axis,
         Container,
@@ -31,32 +31,33 @@ import 'package:flutter/material.dart'
         Flexible,
         Align,
         Text,
-        AnimatedOpacity,
         ScrollController,
         SingleChildScrollView,
-        Scrollbar,
         Column,
         LayoutBuilder,
         ValueKey,
-        IconData,
         Padding,
         Tooltip,
         RichText,
         Stack,
         LinearGradient,
-        BoxConstraints,
         Clip,
+        ValueNotifier,
+        ValueListenableBuilder,
+        Positioned,
         MediaQuery,
         Builder,
-        ValueNotifier,
-        Visibility;
+        BoxShadow,
+        Border,
+        Offset,
+        RawScrollbar,
+        Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
-import '../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -65,6 +66,7 @@ import '../../../utils/responsive_navigation.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import 'holding_detail_screen_web.dart';
+import '../../../sharedWidget/hover_actions_web.dart';
 
 // Table Example 1 with real Holdings data and WebSocket LTP updates
 // This demonstrates the simplest Shadcn table implementation with live data
@@ -186,10 +188,22 @@ class _TableExample1State extends ConsumerState<TableExample1> {
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
         onExit: (_) => _hoveredRowIndex.value = null,
-        child: Container(
-          padding: cellPadding,
-          alignment: alignRight ? Alignment.topRight : null,
-          child: child,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+
+            return Container(
+              padding: cellPadding,
+              color: isRowHovered
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  : null,
+              alignment: alignRight ? Alignment.topRight : null,
+              child: child,
+            );
+          },
         ),
       ),
     );
@@ -358,16 +372,21 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             cellText = qty > 0 ? '+$qty' : '$qty';
             break;
           case 2: // Avg Price
-            cellText = holding.avgPrc ?? '0.00';
+            final avgPrice = double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
+            cellText = avgPrice.toStringAsFixed(2);
             break;
           case 3: // LTP
-            cellText = exchTsym?.lp ?? '0.00';
+            final ltpValue = double.tryParse(exchTsym?.lp ?? '0') ?? 0.0;
+            cellText = ltpValue.toStringAsFixed(2);
             break;
           case 4: // Invested
-            cellText = holding.invested ?? '0.00';
+            final invested = double.tryParse(holding.invested ?? '0') ?? 0.0;
+            cellText = invested.toStringAsFixed(2);
             break;
           case 5: // Current Value
-            cellText = holding.currentValue ?? '0.00';
+            final currentValue =
+                double.tryParse(holding.currentValue ?? '0') ?? 0.0;
+            cellText = currentValue.toStringAsFixed(2);
             break;
           case 6: // Day P&L (with percentage)
             final dayPnl = exchTsym?.oneDayChg ?? '0.00';
@@ -522,8 +541,6 @@ class _TableExample1State extends ConsumerState<TableExample1> {
       );
     }
 
-    final theme = ref.watch(themeProvider);
-
     return shadcn.OutlinedContainer(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -636,10 +653,18 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 ),
                 // Scrollable Body (vertical scroll)
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
                     trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
                     interactive: true,
                     child: SingleChildScrollView(
                       controller: _verticalScrollController,
@@ -657,7 +682,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                           6: shadcn.FixedTableSize(columnWidths[6]!),
                           7: shadcn.FixedTableSize(columnWidths[7]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
                           // Data Rows
                           ...displayHoldings.asMap().entries.map((entry) {
@@ -707,7 +732,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                               ? 8.0
                                                               : 0.0),
                                                       child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
                                                         children: [
                                                           Flexible(
                                                             child: RichText(
@@ -722,38 +748,36 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                                 children: [
                                                                   // Symbol (normal color, without -EQ, fixed 14px)
                                                                   TextSpan(
-                                                                    text: (exchTsym
-                                                                                ?.tsym ??
+                                                                    text: (exchTsym?.tsym ??
                                                                             'N/A')
                                                                         .replaceAll(
-                                                                            "-EQ", "")
+                                                                            "-EQ",
+                                                                            "")
                                                                         .trim(),
-                                                                    style:
-                                                                        _getTextStyle(
-                                                                            context),
+                                                                    style: _getTextStyle(
+                                                                        context),
                                                                   ),
-                                                                  // Exchange (mutedForeground color, smaller font, fixed 12px)
+                                                                  // Exchange (mutedForeground color, smaller font, fixed 10px)
                                                                   if (exchTsym?.exch !=
                                                                           null &&
-                                                                      exchTsym!.exch!
+                                                                      exchTsym!
+                                                                          .exch!
                                                                           .isNotEmpty)
                                                                     TextSpan(
                                                                       text:
                                                                           ' ${exchTsym.exch}',
-                                                                      style:
-                                                                          MyntWebTextStyles
-                                                                              .para(
+                                                                      style: MyntWebTextStyles
+                                                                          .para(
                                                                         context,
                                                                         darkColor:
-                                                                            MyntColors
-                                                                                .textSecondaryDark,
+                                                                            MyntColors.textSecondaryDark,
                                                                         lightColor:
-                                                                            MyntColors
-                                                                                .textSecondary,
+                                                                            MyntColors.textSecondary,
                                                                         fontWeight:
-                                                                            MyntFonts
-                                                                                .medium,
-                                                                      ),
+                                                                            MyntFonts.medium,
+                                                                      ).copyWith(
+                                                                          fontSize:
+                                                                              10),
                                                                     ),
                                                                 ],
                                                               ),
@@ -762,29 +786,52 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                           // Show lock icon with pledged qty if brkcolqty > 0
                                                           Builder(
                                                             builder: (ctx) {
-                                                              final pledgedQty = int.tryParse(holding.brkcolqty ?? '0') ?? 0;
-                                                              if (pledgedQty > 0) {
+                                                              final pledgedQty =
+                                                                  int.tryParse(holding
+                                                                              .brkcolqty ??
+                                                                          '0') ??
+                                                                      0;
+                                                              if (pledgedQty >
+                                                                  0) {
                                                                 return Padding(
-                                                                  padding: const EdgeInsets.only(left: 6),
-                                                                  child: Tooltip(
-                                                                    message: 'Pledged Qty: $pledgedQty',
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          left:
+                                                                              6),
+                                                                  child:
+                                                                      Tooltip(
+                                                                    message:
+                                                                        'Pledged Qty: $pledgedQty',
                                                                     child: Row(
-                                                                      mainAxisSize: MainAxisSize.min,
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .min,
                                                                       children: [
                                                                         const Icon(
-                                                                          Icons.lock,
-                                                                          size: 12,
-                                                                          color: Color(0xFFFF6161),
+                                                                          Icons
+                                                                              .lock,
+                                                                          size:
+                                                                              12,
+                                                                          color:
+                                                                              Color(0xFFFF6161),
                                                                         ),
-                                                                        const SizedBox(width: 2),
+                                                                        const SizedBox(
+                                                                            width:
+                                                                                2),
                                                                         Text(
                                                                           '$pledgedQty',
-                                                                          style: MyntWebTextStyles.para(
+                                                                          style:
+                                                                              MyntWebTextStyles.para(
                                                                             ctx,
-                                                                            color: const Color(0xFFFF6161),
-                                                                            darkColor: const Color(0xFFFF6161),
-                                                                            lightColor: const Color(0xFFFF6161),
-                                                                            fontWeight: MyntFonts.medium,
+                                                                            color:
+                                                                                const Color(0xFFFF6161),
+                                                                            darkColor:
+                                                                                const Color(0xFFFF6161),
+                                                                            lightColor:
+                                                                                const Color(0xFFFF6161),
+                                                                            fontWeight:
+                                                                                MyntFonts.medium,
                                                                           ),
                                                                         ),
                                                                       ],
@@ -792,7 +839,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                                   ),
                                                                 );
                                                               }
-                                                              return const SizedBox.shrink();
+                                                              return const SizedBox
+                                                                  .shrink();
                                                             },
                                                           ),
                                                         ],
@@ -800,189 +848,144 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                     ),
                                                   ),
                                                 ),
-                                                // Action buttons - overlay on the right side, covering only half the text
-                                                // Use Visibility to ensure buttons don't take space when not hovered
-                                                Visibility(
-                                                  visible: isRowHovered,
-                                                  maintainSize: false,
-                                                  maintainAnimation: false,
-                                                  maintainState: false,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: LayoutBuilder(
-                                                      builder: (context,
-                                                          constraints) {
-                                                        // Responsive max width based on screen size
-                                                        final screenWidth =
-                                                            MediaQuery.of(
+                                                Positioned(
+                                                  right: 0,
+                                                  top: 0,
+                                                  bottom: 0,
+                                                  child: GestureDetector(
+                                                    onTap: () {},
+                                                    behavior:
+                                                        HitTestBehavior.opaque,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 12),
+                                                      alignment:
+                                                          Alignment.centerRight,
+                                                      decoration: BoxDecoration(
+                                                        gradient:
+                                                            LinearGradient(
+                                                          begin: Alignment
+                                                              .centerLeft,
+                                                          end: Alignment
+                                                              .centerRight,
+                                                          colors: [
+                                                            shadcn.Theme.of(
                                                                     context)
-                                                                .size
-                                                                .width;
-                                                        final isSmallScreen =
-                                                            screenWidth < 768;
-                                                        final isVerySmallScreen =
-                                                            screenWidth < 480;
-                                                        final responsiveMaxWidth =
-                                                            isVerySmallScreen
-                                                                ? 120.0
-                                                                : (isSmallScreen
-                                                                    ? 160.0
-                                                                    : 200.0);
-
-                                                        // Use available width, but cap at responsive max to prevent overflow
-                                                        final maxButtonWidth =
-                                                            constraints.maxWidth
-                                                                .clamp(0.0,
-                                                                    responsiveMaxWidth);
-                                                        return GestureDetector(
-                                                          onTap:
-                                                              () {}, // Empty handler to stop propagation
-                                                          behavior:
-                                                              HitTestBehavior
-                                                                  .opaque,
-                                                          child:
-                                                              AnimatedOpacity(
-                                                            opacity:
-                                                                isRowHovered
-                                                                    ? 1
-                                                                    : 0,
-                                                            duration:
-                                                                const Duration(
-                                                                    milliseconds:
-                                                                        140),
-                                                            child: Container(
-                                                              constraints:
-                                                                  BoxConstraints(
-                                                                      maxWidth:
-                                                                          maxButtonWidth),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                // Subtle background gradient for better button visibility
-                                                                gradient:
-                                                                    LinearGradient(
-                                                                  begin: Alignment
-                                                                      .centerLeft,
-                                                                  end: Alignment
-                                                                      .centerRight,
-                                                                  colors: [
-                                                                    shadcn.Theme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .background
-                                                                        .withOpacity(
-                                                                            0.0),
-                                                                    shadcn.Theme.of(
-                                                                            context)
-                                                                        .colorScheme
-                                                                        .background
-                                                                        .withOpacity(
-                                                                            0.95),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                      left: 8),
-                                                              child: Builder(
-                                                                builder:
-                                                                    (buttonContext) {
-                                                                  final screenWidth =
-                                                                      MediaQuery.of(
-                                                                              buttonContext)
-                                                                          .size
-                                                                          .width;
-                                                                  final isSmallScreen =
-                                                                      screenWidth <
-                                                                          768;
-                                                                  final buttonSpacing =
-                                                                      isSmallScreen
-                                                                          ? 4.0
-                                                                          : 6.0;
-
-                                                                  return Row(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .min,
-                                                                    children: [
-                                                                      if (qty >
-                                                                          0) ...{
-                                                                        _buildHoverButton(
-                                                                          theme:
-                                                                              theme,
-                                                                          label:
-                                                                              'Add',
-                                                                          onPressed: () => _handleAddHolding(
-                                                                              holding,
-                                                                              exchTsym),
-                                                                          backgroundColor:
-                                                                              resolveThemeColor(
-                                                                            buttonContext,
-                                                                            dark:
-                                                                                MyntColors.primaryDark,
-                                                                            light:
-                                                                                MyntColors.primary,
-                                                                          ),
-                                                                          textColor:
-                                                                              Colors.white,
-                                                                          context:
-                                                                              buttonContext,
-                                                                        ),
-                                                                        SizedBox(
-                                                                            width:
-                                                                                buttonSpacing),
-                                                                      },
-                                                                      if (qty >
-                                                                          0) ...{
-                                                                        _buildHoverButton(
-                                                                          theme:
-                                                                              theme,
-                                                                          label:
-                                                                              'Exit',
-                                                                          onPressed: () => _handleExitHolding(
-                                                                              holding,
-                                                                              exchTsym),
-                                                                          backgroundColor:
-                                                                              resolveThemeColor(
-                                                                            buttonContext,
-                                                                            dark:
-                                                                                MyntColors.tertiary,
-                                                                            light:
-                                                                                MyntColors.tertiary,
-                                                                          ),
-                                                                          textColor:
-                                                                              Colors.white,
-                                                                          context:
-                                                                              buttonContext,
-                                                                        ),
-                                                                        SizedBox(
-                                                                            width:
-                                                                                buttonSpacing),
-                                                                      },
-                                                                      _buildHoverButton(
-                                                                        theme:
-                                                                            theme,
-                                                                        icon: Icons
-                                                                            .bar_chart,
-                                                                        onPressed: () => _handleChartTap(
-                                                                            holding,
-                                                                            exchTsym),
-                                                                        backgroundColor:
-                                                                            Colors.white,
-                                                                        iconColor:
-                                                                            Colors.black,
-                                                                        context:
-                                                                            buttonContext,
-                                                                      ),
-                                                                    ],
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
+                                                                .colorScheme
+                                                                .background
+                                                                .withOpacity(
+                                                                    0.0),
+                                                            shadcn.Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .background
+                                                                .withOpacity(
+                                                                    0.95),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      child:
+                                                          HoverActionsContainer(
+                                                        isVisible: isRowHovered,
+                                                        spacing: 8.0,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 10,
+                                                                vertical: 5),
+                                                        borderRadius: 6.0,
+                                                        backgroundColor:
+                                                            resolveThemeColor(
+                                                          context,
+                                                          dark: MyntColors
+                                                              .listItemBgDark,
+                                                          light: Colors.white,
+                                                        ),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black
+                                                                .withOpacity(
+                                                                    0.08),
+                                                            blurRadius: 20,
+                                                            spreadRadius: 0,
+                                                            offset:
+                                                                const Offset(
+                                                                    0, 6),
                                                           ),
-                                                        );
-                                                      },
+                                                        ],
+                                                        actions: [
+                                                          if (qty > 0) ...[
+                                                            HoverActionButton(
+                                                              label: 'Add',
+                                                              size: 44,
+                                                              borderRadius: 5,
+                                                              color:
+                                                                  Colors.white,
+                                                              backgroundColor:
+                                                                  resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .primaryDark,
+                                                                light: MyntColors
+                                                                    .primary,
+                                                              ),
+                                                              borderColor:
+                                                                  resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .primaryDark,
+                                                                light: MyntColors
+                                                                    .primary,
+                                                              ),
+                                                              onPressed: () =>
+                                                                  _handleAddHolding(
+                                                                      holding,
+                                                                      exchTsym),
+                                                            ),
+                                                            HoverActionButton(
+                                                              label: 'Exit',
+                                                              size: 44,
+                                                              borderRadius: 5,
+                                                              color:
+                                                                  Colors.white,
+                                                              backgroundColor:
+                                                                  resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .tertiary,
+                                                                light: MyntColors
+                                                                    .tertiary,
+                                                              ),
+                                                              borderColor:
+                                                                  resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .tertiary,
+                                                                light: MyntColors
+                                                                    .tertiary,
+                                                              ),
+                                                              onPressed: () =>
+                                                                  _handleExitHolding(
+                                                                      holding,
+                                                                      exchTsym),
+                                                            ),
+                                                          ],
+                                                          HoverActionButton
+                                                              .icon(
+                                                            context: context,
+                                                            icon:
+                                                                Icons.bar_chart,
+                                                            size: 30,
+                                                            iconColor:
+                                                                Colors.black,
+                                                            onPressed: () =>
+                                                                _handleChartTap(
+                                                                    holding,
+                                                                    exchTsym),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
@@ -1022,7 +1025,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: Text(
-                                        holding.avgPrc ?? '0.00',
+                                        (double.tryParse(
+                                                    holding.avgPrc ?? '0') ??
+                                                0.0)
+                                            .toStringAsFixed(2),
                                         style: _getTextStyle(context),
                                       ),
                                     ),
@@ -1161,10 +1167,18 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
           // Wrap in horizontal scroll if needed
           if (needsHorizontalScroll) {
-            return Scrollbar(
+            return RawScrollbar(
               controller: _horizontalScrollController,
               thumbVisibility: true,
               trackVisibility: true,
+              trackColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.1),
+                  light: Colors.grey.withOpacity(0.1)),
+              thumbColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.3),
+                  light: Colors.grey.withOpacity(0.3)),
+              thickness: 6,
+              radius: const Radius.circular(3),
               interactive: true,
               child: SingleChildScrollView(
                 controller: _horizontalScrollController,
@@ -1216,75 +1230,6 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     return Text(
       value,
       style: _getTextStyle(context, color: color),
-    );
-  }
-
-  Widget _buildHoverButton({
-    required ThemesProvider theme,
-    String? label,
-    IconData? icon,
-    required VoidCallback onPressed,
-    Color? backgroundColor,
-    Color? textColor,
-    Color? iconColor,
-    required BuildContext context,
-  }) {
-    final borderRadiusValue = 5.0;
-
-    // Detect screen size for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-
-    // Responsive sizes
-    final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-    final buttonPadding = isVerySmallScreen
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-
-    // Use Container only for background color, shadcn handles size/shape
-    return Container(
-      decoration: backgroundColor != null
-          ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-            )
-          : null,
-      child: icon != null
-          ? shadcn.IconButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              variance: shadcn.ButtonVariance.ghost,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              icon: Icon(
-                icon,
-                size: iconSize,
-                color: iconColor ?? Colors.white,
-              ),
-            )
-          : shadcn.TextButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              child: Padding(
-                padding: buttonPadding,
-                child: Text(
-                  label ?? "",
-                  style: MyntWebTextStyles.buttonSm(
-                    context,
-                    color: textColor ?? Colors.white,
-                  ).copyWith(
-                    fontSize: fontSize,
-                    fontWeight: MyntFonts.bold,
-                  ),
-                ),
-              ),
-            ),
     );
   }
 
@@ -1404,17 +1349,32 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     shadcn.openSheet(
       context: context,
       barrierColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: MyntColors.textWhite,
-          boxShadow: MyntShadows.panelRight,
-        ),
-        child: HoldingDetailScreenWeb(
-          holding: holding,
-          exchTsym: exchTsym,
-          parentContext: parentCtx, // Pass parent context for navigation
-        ),
-      ),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: HoldingDetailScreenWeb(
+            holding: holding,
+            exchTsym: exchTsym,
+            parentContext: parentCtx, // Pass parent context for navigation
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
     );
   }
@@ -1647,18 +1607,25 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
       lightColor: color,
       fontWeight: MyntFonts.medium,
     );
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: '$overallPnL\u00A0', style: baseStyle),
-          TextSpan(
-            text: '($overallPercent%)',
-            style: baseStyle.copyWith(
-              fontSize: 10,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(overallPnL, textAlign: TextAlign.end, style: baseStyle),
+        Text(
+          '$overallPercent%',
+          textAlign: TextAlign.end,
+          style: baseStyle.copyWith(
+            fontSize: 10,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
             ),
+            fontWeight: MyntFonts.medium,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1750,18 +1717,25 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
       lightColor: color,
       fontWeight: MyntFonts.medium,
     );
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(text: '$dayPnL\u00A0', style: baseStyle),
-          TextSpan(
-            text: '($dayPercent%)',
-            style: baseStyle.copyWith(
-              fontSize: 10,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(dayPnL, textAlign: TextAlign.end, style: baseStyle),
+        Text(
+          '$dayPercent%',
+          textAlign: TextAlign.end,
+          style: baseStyle.copyWith(
+            fontSize: 10,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
             ),
+            fontWeight: MyntFonts.medium,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

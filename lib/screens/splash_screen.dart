@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,6 @@ import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/thems.dart';
-import '../res/res.dart';
 import '../res/web_resources.dart';
 import '../routes/route_names.dart';
 import '../sharedWidget/internet_widget.dart';
@@ -83,8 +83,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 context, Routes.loginScreenBanner, (route) => false);
       } else {
         pref.setMobileLogin(true);
-        await ref.read(authProvider).fetchMobileLogin(
-            context, "", pref.clientId!, "", pref.imei!, true);
+        if (kIsWeb) {
+          pref.clientId!.isNotEmpty
+              ? Navigator.pushNamedAndRemoveUntil(
+                  context, Routes.loginScreen, (route) => false)
+              : Navigator.pushNamedAndRemoveUntil(
+                  context, Routes.loginScreenBanner, (route) => false);
+        } else {
+          await ref.read(authProvider).fetchMobileLogin(
+              context, "", pref.clientId!, "", pref.imei!, true);
+        }
       }
     } catch (e) {
       error(context, "Something Wrong !!!");

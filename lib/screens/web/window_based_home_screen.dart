@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
-import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
+// import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import '../../../locator/constant.dart';
@@ -823,7 +823,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         body: Stack(
           children: [
             _buildMainScaffold(),
-            const WebChartOverlay(), // New simplified chart overlay
+            // const WebChartOverlay(), // Commented out - using panel chart only
           ],
         ),
       ),

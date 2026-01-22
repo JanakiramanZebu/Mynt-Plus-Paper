@@ -108,6 +108,8 @@ class WebChartManager {
   }
 
   /// Change symbol - uses URL reload for first change, postMessage for subsequent
+  /// IMPORTANT: In production, multiple HtmlElementView widgets may create separate
+  /// iframe instances. We must send postMessage to ALL chart iframes, not just one.
   void changeSymbol({
     required String exch,
     required String token,
@@ -132,9 +134,12 @@ class WebChartManager {
       'isDarkMode': isDarkMode,
     };
 
-    // If iframe not ready yet, we're done - pending symbol will be used when created
-    if (_iframe == null) {
-      debugPrint('WebChartManager: Iframe not ready, stored pending symbol: $tsym');
+    // Find ALL chart iframes in the document (not just the stored reference)
+    // This fixes production issue where multiple HtmlElementView widgets exist
+    final allChartIframes = _findAllChartIframes();
+
+    if (allChartIframes.isEmpty) {
+      debugPrint('WebChartManager: No iframes found, stored pending symbol: $tsym');
       return;
     }
 
@@ -142,27 +147,88 @@ class WebChartManager {
     // widget might not be ready to receive postMessage yet
     if (!_hasUserChangedSymbol) {
       _hasUserChangedSymbol = true;
-      debugPrint('WebChartManager: First symbol change, reloading iframe URL');
-      _reloadWithUrl(exch, token, tsym, isDarkMode);
+      debugPrint('WebChartManager: First symbol change, reloading ${allChartIframes.length} iframe(s)');
+      _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
       return;
     }
 
     // For subsequent changes, use postMessage (faster, no reload)
-    final message = {
-      'action': 'changeScript',
-      'exch': exch,
-      'token': token,
-      'tsym': tsym,
-      'dark': isDarkMode.toString(),
-    };
+    // dart:html's postMessage handles cross-origin correctly - don't use dart:js
+    // which triggers security errors when accessing contentWindow properties
+    int successCount = 0;
+    for (final iframe in allChartIframes) {
+      try {
+        debugPrint('WebChartManager: iframe ${iframe.id} src: ${iframe.src}');
 
+        final contentWindow = iframe.contentWindow;
+        if (contentWindow != null) {
+          // Send as JSON string - dart:html Map serialization may not work cross-origin
+          // The TradingView page needs to JSON.parse this
+          final jsonMessage =
+              '{"action":"changeScript","exch":"$exch","token":"$token","tsym":"$tsym","dark":"${isDarkMode.toString()}"}';
+          contentWindow.postMessage(jsonMessage, '*');
+          successCount++;
+          debugPrint('WebChartManager: Posted JSON to iframe ${iframe.id}: $jsonMessage');
+        } else {
+          debugPrint('WebChartManager: contentWindow is null for iframe ${iframe.id}');
+        }
+      } catch (e) {
+        debugPrint('WebChartManager: postMessage failed for iframe ${iframe.id}: $e');
+      }
+    }
+
+    debugPrint('WebChartManager: Posted changeSymbol to $successCount/${allChartIframes.length} iframes');
+
+    // If postMessage failed for all iframes, fallback to URL reload
+    if (successCount == 0 && allChartIframes.isNotEmpty) {
+      debugPrint('WebChartManager: All postMessage failed, falling back to URL reload');
+      _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
+    }
+  }
+
+  /// Find all chart iframes in the document
+  List<html.IFrameElement> _findAllChartIframes() {
+    final iframes = <html.IFrameElement>[];
     try {
-      _iframe!.contentWindow?.postMessage(message, '*');
-      debugPrint('WebChartManager: Posted changeSymbol: $message');
+      final elements = html.document.querySelectorAll('iframe');
+      for (final element in elements) {
+        if (element is html.IFrameElement) {
+          // Match iframes created by this manager (id starts with 'web-chart-iframe-')
+          if (element.id.startsWith('web-chart-iframe-')) {
+            iframes.add(element);
+          }
+        }
+      }
     } catch (e) {
-      debugPrint('WebChartManager: postMessage failed: $e');
-      // Fallback: reload iframe with new URL
-      _reloadWithUrl(exch, token, tsym, isDarkMode);
+      debugPrint('WebChartManager: Error finding iframes: $e');
+    }
+    return iframes;
+  }
+
+  /// Reload all chart iframes with new URL
+  void _reloadAllIframesWithUrl(
+    List<html.IFrameElement> iframes,
+    String exch,
+    String token,
+    String tsym,
+    bool isDarkMode,
+  ) {
+    final prefs = locator<Preferences>();
+    final newUrl = _buildUrl(
+      exch: exch,
+      token: token,
+      tsym: tsym,
+      isDarkMode: isDarkMode,
+      prefs: prefs,
+    );
+
+    for (final iframe in iframes) {
+      try {
+        iframe.src = newUrl;
+        debugPrint('WebChartManager: Reloaded iframe ${iframe.id}');
+      } catch (e) {
+        debugPrint('WebChartManager: Failed to reload iframe ${iframe.id}: $e');
+      }
     }
   }
 
@@ -177,18 +243,6 @@ class WebChartManager {
     show();
   }
 
-  /// Fallback: reload iframe with new URL
-  void _reloadWithUrl(String exch, String token, String tsym, bool isDarkMode) {
-    if (_iframe == null) return;
-    final prefs = locator<Preferences>();
-    _iframe!.src = _buildUrl(
-      exch: exch,
-      token: token,
-      tsym: tsym,
-      isDarkMode: isDarkMode,
-      prefs: prefs,
-    );
-  }
 
   String _buildUrl({
     required String exch,

@@ -13,7 +13,10 @@ import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 
 class CreateBasket extends ConsumerStatefulWidget {
-  const CreateBasket({super.key});
+  final String? initialName;
+  final bool isEdit;
+
+  const CreateBasket({super.key, this.initialName, this.isEdit = false});
 
   @override
   ConsumerState<CreateBasket> createState() => _CreateBasketState();
@@ -24,6 +27,14 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
 
   TextEditingController textCtrl = TextEditingController();
   String? errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialName != null) {
+      textCtrl.text = widget.initialName!;
+    }
+  }
 
   bool _isProcessing = false;
 
@@ -48,21 +59,23 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
       }
 
       if (trimmedText.length > 20) {
-        setState(() => errorText = "Basket name must be less than 20 characters");
+        setState(
+            () => errorText = "Basket name must be less than 20 characters");
         return;
       }
 
       // Validate basket name contains only alphanumeric characters, spaces, and basic symbols
       final RegExp validNamePattern = RegExp(r'^[a-zA-Z0-9\s\-_]+$');
       if (!validNamePattern.hasMatch(trimmedText)) {
-        setState(() => errorText = "Basket name can only contain letters, numbers, spaces, hyphens and underscores");
+        setState(() => errorText =
+            "Basket name can only contain letters, numbers, spaces, hyphens and underscores");
         return;
       }
 
       // Check both user-specific and general basket lists for duplicates
       final userId = pref.clientId;
       List listofBasket = [];
-      
+
       if (userId != null && userId.isNotEmpty) {
         // Check user-specific baskets
         final userBaskets = pref.getBasketListForUser(userId) ?? "";
@@ -83,14 +96,26 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
         }
 
         if (bskt.contains(trimmedText.toLowerCase())) {
-          setState(() => errorText = "Basket name already exists");
-          return;
+          // If editing and name is same as before, it's not a duplicate error
+          if (widget.isEdit &&
+              widget.initialName?.toLowerCase() == trimmedText.toLowerCase()) {
+            // Proceed
+          } else {
+            setState(() => errorText = "Basket name already exists");
+            return;
+          }
         }
       }
 
       setState(() => errorText = "");
 
-      await ref.read(orderProvider).createBasketOrder(trimmedText, context);
+      if (widget.isEdit && widget.initialName != null) {
+        await ref
+            .read(orderProvider)
+            .renameBasketOrder(widget.initialName!, trimmedText, context);
+      } else {
+        await ref.read(orderProvider).createBasketOrder(trimmedText, context);
+      }
     } catch (e) {
       setState(() => errorText = "An error occurred. Please try again.");
     } finally {
@@ -124,7 +149,7 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'New Basket',
+                widget.isEdit ? 'Edit Basket' : 'New Basket',
                 style: WebTextStyles.dialogTitle(
                   isDarkTheme: theme.isDarkMode,
                   color: theme.isDarkMode
@@ -263,7 +288,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                                     ),
                                   )
                                 : Text(
-                                    'Create Basket',
+                                    widget.isEdit
+                                        ? 'Update Basket'
+                                        : 'Create Basket',
                                     style: WebTextStyles.buttonMd(
                                       isDarkTheme: theme.isDarkMode,
                                       color: Colors.white,

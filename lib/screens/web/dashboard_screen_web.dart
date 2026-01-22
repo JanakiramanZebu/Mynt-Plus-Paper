@@ -28,6 +28,10 @@ class DashboardScreenWeb extends ConsumerStatefulWidget {
 class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   final ScrollController _indexScrollController = ScrollController();
   final ScrollController _tradeActionScrollController = ScrollController();
+  // WebSocket subscription for live position updates
+  StreamSubscription? _positionSocketSubscription;
+  // Flag to prevent accessing ref after disposal (race condition with stream callbacks)
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -48,12 +52,57 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
         // Trade action data is fetched by _handleDashboardTap() before this screen is shown
         // No need to fetch here to avoid duplicate TopList API calls
+
+        // Set up WebSocket subscription for live position updates
+        _setupPositionSocketSubscription();
+      }
+    });
+  }
+
+  void _setupPositionSocketSubscription() {
+    final websocket = ref.read(websocketProvider);
+    // Store provider reference at setup time - the provider itself doesn't get
+    // disposed when widget disposes, only the widget's ref access becomes invalid
+    final portfolio = ref.read(portfolioProvider);
+
+    _positionSocketSubscription = websocket.socketDataStream.listen((socketDatas) {
+      // Check if widget is disposed before processing
+      if (_isDisposed) return;
+
+      // Get positions fresh from stored provider reference (not from ref)
+      final positions = portfolio.postionBookModel ?? [];
+
+      if (positions.isEmpty) return;
+
+      bool needsUpdate = false;
+
+      for (var position in positions) {
+        if (socketDatas.containsKey(position.token)) {
+          final socketData = socketDatas[position.token];
+
+          // Update LTP if valid
+          final lp = socketData['lp']?.toString();
+          if (lp != null && lp != "null" && lp != position.lp) {
+            position.lp = lp;
+            needsUpdate = true;
+          }
+        }
+      }
+
+      // Recalculate totals when price data changes
+      if (needsUpdate) {
+        portfolio.positionCal(portfolio.isDay);
       }
     });
   }
 
   @override
   void dispose() {
+    // Set disposed flag FIRST to prevent stream callbacks from accessing ref
+    _isDisposed = true;
+    // Cancel WebSocket subscription for position updates
+    _positionSocketSubscription?.cancel();
+
     // Note: WebbodyscriptionManager handles unbodyscription automatically
     // when screen is replaced or removed via updateActiveScreen()
     // No need to unbodyscribe here to avoid double calls
@@ -231,22 +280,22 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final positionsCount = positions.length;
     final openPositionsCount = positions.where((p) => p.netqty != "0").length;
 
-    // Calculate stats locally from positions data (like mobile does)
+    // Use provider's calculated totals (updated by positionCal() on WebSocket updates)
+    // These are the same values shown in position screen stats
+    final mtm = portfolio.totMtM;
+    final totalPnL = portfolio.totPnL;
+    final openPnL = portfolio.totUnRealMtm;
+
+    // Calculate trade value and counts locally
     double totBuyAmts = 0.0;
-    double totMtm = 0.0;
-    double totPnl = 0.0;
-    double unRealMtm = 0.0;
     int positiveCount = 0;
     int negativeCount = 0;
 
     for (var position in positions) {
       final buyAmt = double.tryParse(position.totbuyamt ?? '0') ?? 0.0;
-      final mtmVal = double.tryParse(position.mTm ?? '0') ?? 0.0;
       final pnlVal = double.tryParse(position.profitNloss ?? '0') ?? 0.0;
 
       totBuyAmts += buyAmt;
-      totMtm += mtmVal;
-      totPnl += pnlVal;
 
       // Count positive/negative based on P&L for ALL positions
       if (pnlVal > 0) {
@@ -254,17 +303,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       } else if (pnlVal < 0) {
         negativeCount++;
       }
-
-      // For unrealized P&L, only count open positions
-      if (position.netqty != "0") {
-        unRealMtm += pnlVal;
-      }
     }
 
     final tradeValue = totBuyAmts.toStringAsFixed(2);
-    final mtm = totMtm.toStringAsFixed(2);
-    final totalPnL = totPnl.toStringAsFixed(2);
-    final openPnL = unRealMtm.toStringAsFixed(2);
 
     return _buildCard(
       context: context,

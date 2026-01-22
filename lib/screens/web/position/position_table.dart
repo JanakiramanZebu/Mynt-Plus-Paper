@@ -3,7 +3,6 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
-        VoidCallback,
         BorderRadius,
         Icon,
         BoxDecoration,
@@ -14,7 +13,6 @@ import 'package:flutter/material.dart'
         GestureDetector,
         HitTestBehavior,
         Row,
-        MainAxisSize,
         SizedBox,
         Colors,
         Widget,
@@ -30,27 +28,27 @@ import 'package:flutter/material.dart'
         Expanded,
         Align,
         Text,
-        AnimatedOpacity,
         ScrollController,
         SingleChildScrollView,
-        Scrollbar,
         Column,
         ValueKey,
-        IconData,
         Padding,
         LayoutBuilder,
         showDialog,
         RichText,
         Stack,
         LinearGradient,
-        BoxConstraints,
         Clip,
-        MediaQuery,
-        Builder,
         Tooltip,
         ValueNotifier,
         ValueListenableBuilder,
-        Visibility;
+        Positioned,
+        MediaQuery,
+        BoxShadow,
+        Border,
+        Offset,
+        RawScrollbar,
+        Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -68,6 +66,7 @@ import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import 'position_detail_screen_web.dart';
 import 'convert_position_dialogue_web.dart';
+import '../../../sharedWidget/hover_actions_web.dart';
 
 // Shadcn Table for Positions with WebSocket updates
 class PositionTable extends ConsumerStatefulWidget {
@@ -181,13 +180,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
 
-    // Grey background for closed positions
-    final closedBgColor = isClosed
-        ? resolveThemeColor(context,
-            dark: MyntColors.primaryDark.withValues(alpha: 0.01),
-            light: MyntColors.primary.withValues(alpha: 0.04))
-        : null;
-
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -202,11 +194,30 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
         onExit: (_) => _hoveredRowIndex.value = null,
-        child: Container(
-          padding: cellPadding,
-          color: closedBgColor,
-          alignment: alignRight ? Alignment.topRight : null,
-          child: child,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+
+            // Background color logic: Hover color takes precedence over closed background
+            Color? backgroundColor;
+            if (isRowHovered) {
+              backgroundColor = resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.08),
+                  light: MyntColors.primary.withValues(alpha: 0.08));
+            } else if (isClosed) {
+              backgroundColor = resolveThemeColor(context,
+                  dark: MyntColors.primaryDark.withValues(alpha: 0.01),
+                  light: MyntColors.primary.withValues(alpha: 0.04));
+            }
+
+            return Container(
+              padding: cellPadding,
+              color: backgroundColor,
+              alignment: alignRight ? Alignment.topRight : null,
+              child: child,
+            );
+          },
         ),
       ),
     );
@@ -356,7 +367,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // Format quantity
   String _formatQty(String qty) {
     final numQty = int.tryParse(qty) ?? 0;
-    return numQty > 0 ? '$qty' : qty;
+    return numQty > 0 ? '+$qty' : qty;
   }
 
   // Check if position is closed
@@ -748,10 +759,18 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ),
                 // Scrollable Body (vertical scroll)
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
                     trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
                     interactive: true,
                     child: SingleChildScrollView(
                       controller: _verticalScrollController,
@@ -762,7 +781,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                         columnWidths: columnWidths.map((index, width) {
                           return MapEntry(index, shadcn.FixedTableSize(width));
                         }),
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: filteredPositions.asMap().entries.map((entry) {
                           final index = entry.key;
                           final position = entry.value;
@@ -831,10 +850,18 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
           // Wrap in horizontal scroll if needed
           if (needsHorizontalScroll) {
-            return Scrollbar(
+            return RawScrollbar(
               controller: _horizontalScrollController,
               thumbVisibility: true,
               trackVisibility: true,
+              trackColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.1),
+                  light: Colors.grey.withOpacity(0.1)),
+              thumbColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.3),
+                  light: Colors.grey.withOpacity(0.3)),
+              thickness: 6,
+              radius: const Radius.circular(3),
               interactive: true,
               child: SingleChildScrollView(
                 controller: _horizontalScrollController,
@@ -977,11 +1004,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           );
         }
       case 'P&L':
-        // For closed positions, use rpnl (realized P&L)
-        // For open positions, use profitNloss (unrealized P&L)
-        final pnlValue = isClosed
-            ? (position.rpnl ?? position.profitNloss ?? '0.00')
-            : (position.profitNloss ?? '0.00');
+        // Use profitNloss for both open and closed positions
+        // positionCal() already calculates this correctly:
+        // - Open: actualBookedPnl + actualUnrealizedPnl
+        // - Closed: actualBookedPnl (unrealized = 0 when qty = 0)
+        final pnlValue = position.profitNloss ?? '0.00';
 
         if (position.token == null || position.token!.isEmpty) {
           return Align(
@@ -1016,8 +1043,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               style: _getTextStyle(context,
                   // Show profit/loss colors for both open and closed positions
                   color: _getCellColor(
-                      double.tryParse(position.mTm ?? '0') ?? 0.0,
-                      context)),
+                      double.tryParse(position.mTm ?? '0') ?? 0.0, context)),
             ),
           );
         } else {
@@ -1166,7 +1192,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                           text: _formatInstrumentText(position),
                           style: _getTextStyle(context, color: textColor),
                         ),
-                        // Exchange (mutedForeground color, smaller font, fixed 12px) - show for equity stocks
+                        // Exchange (mutedForeground color, smaller font, fixed 10px) - show for equity stocks
                         if (position.exch != null &&
                             position.exch!.isNotEmpty &&
                             (position.expDate == null ||
@@ -1178,7 +1204,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                               darkColor: MyntColors.textSecondaryDark,
                               lightColor: MyntColors.textSecondary,
                               fontWeight: MyntFonts.medium,
-                            ),
+                            ).copyWith(fontSize: 10),
                           ),
                       ],
                     ),
@@ -1186,206 +1212,115 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ),
               ),
             ),
-            // Action buttons - overlay on the right side, covering only half the text
-            // Use Visibility to ensure buttons don't take space when not hovered
-            Visibility(
-              visible: isRowHovered,
-              maintainSize: false,
-              maintainAnimation: false,
-              maintainState: false,
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Responsive max width based on screen size
-                    final screenWidth = MediaQuery.of(context).size.width;
-                    final isSmallScreen = screenWidth < 768;
-                    final isVerySmallScreen = screenWidth < 480;
-                    final responsiveMaxWidth = isVerySmallScreen
-                        ? 120.0
-                        : (isSmallScreen ? 160.0 : 200.0);
-
-                    // Use available width, but cap at responsive max to prevent overflow
-                    final maxButtonWidth =
-                        constraints.maxWidth.clamp(0.0, responsiveMaxWidth);
-                    return GestureDetector(
-                      onTap: () {}, // Empty handler to stop propagation
-                      behavior: HitTestBehavior.opaque,
-                      child: AnimatedOpacity(
-                        opacity: isRowHovered ? 1 : 0,
-                        duration: const Duration(milliseconds: 140),
-                        child: Container(
-                          constraints: BoxConstraints(maxWidth: maxButtonWidth),
-                          decoration: BoxDecoration(
-                            // Subtle background gradient for better button visibility
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .background
-                                    .withOpacity(0.0),
-                                shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .background
-                                    .withOpacity(0.95),
-                              ],
-                            ),
-                          ),
-                          padding: const EdgeInsets.only(left: 8),
-                          child: Builder(
-                            builder: (buttonContext) {
-                              final screenWidth =
-                                  MediaQuery.of(buttonContext).size.width;
-                              final isSmallScreen = screenWidth < 768;
-                              final buttonSpacing = isSmallScreen ? 4.0 : 6.0;
-
-                              return Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (!isClosed &&
-                                      position.qty != "0" &&
-                                      position.sPrdtAli != "BO" &&
-                                      position.sPrdtAli != "CO" &&
-                                      !positionBook.isDay) ...[
-                                    _buildHoverButton(
-                                      context: buttonContext,
-                                      theme: theme,
-                                      label: 'Add',
-                                      onPressed: () =>
-                                          _handleAddPosition(position),
-                                      backgroundColor: resolveThemeColor(
-                                        buttonContext,
-                                        dark: MyntColors.primaryDark,
-                                        light: MyntColors.primary,
-                                      ),
-                                      textColor: Colors.white,
-                                    ),
-                                    SizedBox(width: buttonSpacing),
-                                    _buildHoverButton(
-                                      context: buttonContext,
-                                      theme: theme,
-                                      label: 'Exit',
-                                      onPressed: () =>
-                                          _handleExitPosition(position),
-                                      backgroundColor: resolveThemeColor(
-                                        buttonContext,
-                                        dark: MyntColors.tertiary,
-                                        light: MyntColors.tertiary,
-                                      ),
-                                      textColor: Colors.white,
-                                    ),
-                                    SizedBox(width: buttonSpacing),
-                                  ],
-                                  _buildHoverButton(
-                                    context: buttonContext,
-                                    theme: theme,
-                                    icon: Icons.bar_chart,
-                                    onPressed: () => _handleChartTap(position),
-                                    backgroundColor: Colors.white,
-                                    iconColor: Colors.black,
-                                  ),
-                                  if (!isClosed && position.qty != "0") ...[
-                                    SizedBox(width: buttonSpacing),
-                                    _buildHoverButton(
-                                      context: buttonContext,
-                                      theme: theme,
-                                      icon: Icons.swap_horiz,
-                                      onPressed: () =>
-                                          _handleConvertPosition(position),
-                                      backgroundColor: Colors.white,
-                                      iconColor: Colors.black,
-                                    ),
-                                  ],
-                                ],
-                              );
-                            },
-                          ),
-                        ),
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: () {},
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding: const EdgeInsets.only(left: 12),
+                  alignment: Alignment.centerRight,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        shadcn.Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.0),
+                        shadcn.Theme.of(context)
+                            .colorScheme
+                            .background
+                            .withOpacity(0.95),
+                      ],
+                    ),
+                  ),
+                  child: HoverActionsContainer(
+                    isVisible: isRowHovered,
+                    spacing: 8.0,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    borderRadius: 6.0,
+                    backgroundColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.listItemBgDark,
+                      light: Colors.white,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 20,
+                        spreadRadius: 0,
+                        offset: const Offset(0, 6),
                       ),
-                    );
-                  },
+                    ],
+                    actions: [
+                      if (!isClosed &&
+                          position.qty != "0" &&
+                          position.sPrdtAli != "BO" &&
+                          position.sPrdtAli != "CO" &&
+                          !positionBook.isDay) ...[
+                        HoverActionButton(
+                          label: 'Add',
+                          size: 44,
+                          borderRadius: 5,
+                          color: Colors.white,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
+                          borderColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
+                          onPressed: () => _handleAddPosition(position),
+                        ),
+                        HoverActionButton(
+                          label: 'Exit',
+                          size: 44,
+                          borderRadius: 5,
+                          color: Colors.white,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          borderColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          onPressed: () => _handleExitPosition(position),
+                        ),
+                      ],
+                      HoverActionButton.icon(
+                        context: context,
+                        icon: Icons.bar_chart,
+                        size: 30,
+                        iconColor: Colors.black,
+                        onPressed: () => _handleChartTap(position),
+                      ),
+                      if (!isClosed && position.qty != "0")
+                        HoverActionButton.icon(
+                          context: context,
+                          icon: Icons.swap_horiz,
+                          size: 30,
+                          iconColor: Colors.black,
+                          onPressed: () => _handleConvertPosition(position),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  // Build hover button
-  Widget _buildHoverButton({
-    required BuildContext context,
-    required ThemesProvider theme,
-    String? label,
-    IconData? icon,
-    required VoidCallback onPressed,
-    Color? backgroundColor,
-    Color? textColor,
-    Color? iconColor,
-  }) {
-    final borderRadiusValue = 5.0;
-    final isDark = theme.isDarkMode;
-
-    // Detect screen size for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 768; // Tablet breakpoint
-    final isVerySmallScreen = screenWidth < 480; // Mobile breakpoint
-
-    // Responsive sizes
-    final iconSize = isVerySmallScreen ? 14.0 : (isSmallScreen ? 16.0 : 18.0);
-    final buttonPadding = isVerySmallScreen
-        ? const EdgeInsets.symmetric(horizontal: 4, vertical: 4)
-        : (isSmallScreen
-            ? const EdgeInsets.symmetric(horizontal: 6, vertical: 4)
-            : const EdgeInsets.symmetric(horizontal: 8));
-    final fontSize = isVerySmallScreen ? 10.0 : (isSmallScreen ? 11.0 : 12.0);
-
-    // Use Container only for background color, shadcn handles size/shape
-    return Container(
-      decoration: backgroundColor != null
-          ? BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-            )
-          : null,
-      child: icon != null
-          ? shadcn.IconButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              variance: shadcn.ButtonVariance.ghost,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              icon: Icon(
-                icon,
-                size: iconSize,
-                color: iconColor ??
-                    (isDark
-                        ? shadcn.Theme.of(context).colorScheme.foreground
-                        : shadcn.Theme.of(context).colorScheme.foreground),
-              ),
-            )
-          : shadcn.TextButton(
-              size: shadcn.ButtonSize.small,
-              density: shadcn.ButtonDensity.dense,
-              onPressed: onPressed,
-              shape: shadcn.ButtonShape.rectangle,
-              child: Padding(
-                padding: buttonPadding,
-                child: Text(
-                  label ?? "",
-                  style: MyntWebTextStyles.buttonSm(
-                    context,
-                    color: textColor ?? Colors.white,
-                  ).copyWith(
-                    fontSize: fontSize,
-                    fontWeight: MyntFonts.bold,
-                  ),
-                ),
-              ),
-            ),
     );
   }
 
@@ -1397,16 +1332,31 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     shadcn.openSheet(
       context: context,
       barrierColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: MyntColors.textWhite,
-          boxShadow: MyntShadows.panelRight,
-        ),
-        child: PositionDetailScreenWeb(
-          positionList: position,
-          parentContext: parentCtx, // Pass parent context for navigation
-        ),
-      ),
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: PositionDetailScreenWeb(
+            positionList: position,
+            parentContext: parentCtx, // Pass parent context for navigation
+          ),
+        );
+      },
       position: shadcn.OverlayPosition.end,
     );
   }

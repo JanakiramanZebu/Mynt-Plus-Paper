@@ -227,9 +227,7 @@ class _HoldingDetailScreenWebState
         option: scripInfo.getQuotes?.option ?? '');
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      color: resolveThemeColor(context,
-          dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
+      color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

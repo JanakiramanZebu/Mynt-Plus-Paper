@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
 import '../../../provider/auth_provider.dart';
@@ -15,13 +17,66 @@ import '../../../res/web_colors.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../utils/overlay_manager.dart';
 import '../../Mobile/authentication/login/login_screen.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 
-class LoggedUserListWeb extends ConsumerWidget {
+class LoggedUserListWeb extends ConsumerStatefulWidget {
   final String initRoute;
   const LoggedUserListWeb({super.key, required this.initRoute});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LoggedUserListWeb> createState() => _LoggedUserListWebState();
+}
+
+class _LoggedUserListWebState extends ConsumerState<LoggedUserListWeb> {
+  @override
+  void initState() {
+    super.initState();
+    // Acquire chart iframe guard on init to prevent cursor bleed
+    ChartIframeGuard.acquire();
+    _disableAllChartIframes();
+  }
+
+  // Directly disable all chart iframes and reset cursor
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    // Release chart iframe guard and re-enable iframes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final loggedUser = ref.watch(authProvider);
     final theme = ref.watch(themeProvider);
     final userProfile = ref.watch(userProfileProvider);
@@ -37,7 +92,27 @@ class LoggedUserListWeb extends ConsumerWidget {
         .where((acc) => acc.clientId != pref.clientId)
         .toList();
 
-    return Dialog(
+    return PointerInterceptor(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.basic,
+        onEnter: (_) {
+          ChartIframeGuard.acquire();
+          _disableAllChartIframes();
+        },
+        onHover: (_) {
+          _disableAllChartIframes();
+        },
+        onExit: (_) {
+          ChartIframeGuard.release();
+          _enableAllChartIframes();
+        },
+        child: Listener(
+          onPointerMove: (_) {
+            _disableAllChartIframes();
+          },
+          child: GestureDetector(
+            onTap: () {},
+            child: Dialog(
       backgroundColor: theme.isDarkMode
           ? WebDarkColors.surface
           : WebColors.surface,
@@ -479,6 +554,10 @@ class LoggedUserListWeb extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+            ),
+          ),
         ),
       ),
     );

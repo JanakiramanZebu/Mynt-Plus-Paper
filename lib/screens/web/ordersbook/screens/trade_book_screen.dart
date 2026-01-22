@@ -139,7 +139,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 9; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -162,15 +162,15 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
 
-            for (int i = 0; i < 8; i++) {
-              // Column 0: Time (numeric)
+            for (int i = 0; i < 9; i++) {
+              // Column 0: Time
               // Column 1: Instrument
-              // Columns 2, 3, 7: Text columns (Product, Type, Order no)
+              // Columns 2, 3, 4, 8: Text columns (Product, Type, Side, Order no)
               // Rest: Numeric columns
               if (i == 1) {
                 growthFactors[i] = instrumentGrowthFactor;
                 totalGrowthFactor += instrumentGrowthFactor;
-              } else if (i == 2 || i == 3 || i == 7) {
+              } else if (i == 2 || i == 3 || i == 4 || i == 8) {
                 growthFactors[i] = textGrowthFactor;
                 totalGrowthFactor += textGrowthFactor;
               } else {
@@ -181,7 +181,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
 
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 8; i++) {
+              for (int i = 0; i < 9; i++) {
                 if (growthFactors[i]! > 0) {
                   final extraForThisColumn =
                       (extraSpace * growthFactors[i]!) / totalGrowthFactor;
@@ -213,29 +213,39 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                     7: shadcn.FixedTableSize(columnWidths[7]!),
+                    8: shadcn.FixedTableSize(columnWidths[8]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
                         buildHeaderCell('Time', 0),
                         buildHeaderCell('Instrument', 1),
-                        buildHeaderCell('Product/Type', 2),
+                        buildHeaderCell('Product', 2),
                         buildHeaderCell('Type', 3),
-                        buildHeaderCell('Qty', 4, true),
-                        buildHeaderCell('Price', 5, true),
-                        buildHeaderCell('Trade value', 6, true),
-                        buildHeaderCell('Order no', 7, true),
+                        buildHeaderCell('Side', 4),
+                        buildHeaderCell('Qty', 5, true),
+                        buildHeaderCell('Price', 6, true),
+                        buildHeaderCell('Value', 7, true),
+                        buildHeaderCell('Order No', 8, true),
                       ],
                     ),
                   ],
                 ),
                 // Scrollable Body
                 Expanded(
-                  child: Scrollbar(
+                  child: RawScrollbar(
                     controller: _verticalScrollController,
                     thumbVisibility: true,
                     trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
                     interactive: true,
                     child: SingleChildScrollView(
                       controller: _verticalScrollController,
@@ -252,8 +262,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                           5: shadcn.FixedTableSize(columnWidths[5]!),
                           6: shadcn.FixedTableSize(columnWidths[6]!),
                           7: shadcn.FixedTableSize(columnWidths[7]!),
+                          8: shadcn.FixedTableSize(columnWidths[8]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: sortedTrades.asMap().entries.map((entry) {
                           final index = entry.key;
                           final trade = entry.value;
@@ -264,12 +275,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                 rowIndex: index,
                                 columnIndex: 0,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
+                                child: Text(
                                   _formatTime(trade.norentm ?? 'N/A'),
-                                  theme,
-                                  Alignment.centerLeft,
-                                  allowOverflow:
-                                      true, // Show full time without truncation
+                                  style: _getTextStyle(context),
                                 ),
                               ),
                               buildCellWithHover(
@@ -278,77 +286,87 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                 onTap: () => _showTradeDetail(trade),
                                 child: _buildInstrumentCell(trade, theme),
                               ),
+                              // Product
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 2,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
-                                  _formatProductType(trade),
-                                  theme,
-                                  Alignment.centerLeft,
+                                child: Text(
+                                  trade.sPrdtAli ?? trade.prd ?? '',
+                                  style: _getTextStyle(context),
                                 ),
                               ),
+                              // Type
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 3,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
-                                  trade.trantype == "S" ? "SELL" : "BUY",
-                                  theme,
-                                  Alignment.centerLeft,
-                                  color: trade.trantype == "S"
-                                      ? resolveThemeColor(context,
-                                          dark: MyntColors.lossDark,
-                                          light: MyntColors.loss)
-                                      : resolveThemeColor(context,
-                                          dark: MyntColors.profitDark,
-                                          light: MyntColors.profit),
+                                child: Text(
+                                  trade.prctyp ?? '',
+                                  style: _getTextStyle(context),
                                 ),
                               ),
+                              // Side
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 4,
-                                alignRight: true,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
-                                  trade.qty?.toString() ?? 'N/A',
-                                  theme,
-                                  Alignment.centerRight,
+                                child: Text(
+                                  trade.trantype == "S" ? "SELL" : "BUY",
+                                  style: _getTextStyle(
+                                    context,
+                                    color: trade.trantype == "S"
+                                        ? resolveThemeColor(context,
+                                            dark: MyntColors.lossDark,
+                                            light: MyntColors.loss)
+                                        : resolveThemeColor(context,
+                                            dark: MyntColors.profitDark,
+                                            light: MyntColors.profit),
+                                  ),
                                 ),
                               ),
+                              // Qty
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 5,
                                 alignRight: true,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
-                                  trade.avgprc?.toString() ?? 'N/A',
-                                  theme,
-                                  Alignment.centerRight,
+                                child: Text(
+                                  trade.qty?.toString() ?? 'N/A',
+                                  style: _getTextStyle(context),
                                 ),
                               ),
+                              // Price
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 6,
                                 alignRight: true,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
-                                  CellFormatters.calculateTradeValue(trade),
-                                  theme,
-                                  Alignment.centerRight,
+                                child: Text(
+                                  trade.avgprc?.toString() ?? 'N/A',
+                                  style: _getTextStyle(context),
                                 ),
                               ),
+                              // Value
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 7,
                                 alignRight: true,
                                 onTap: () => _showTradeDetail(trade),
-                                child: _buildTextCell(
+                                child: Text(
+                                  CellFormatters.calculateTradeValue(trade),
+                                  style: _getTextStyle(context),
+                                ),
+                              ),
+                              // Order No
+                              buildCellWithHover(
+                                rowIndex: index,
+                                columnIndex: 8,
+                                alignRight: true,
+                                onTap: () => _showTradeDetail(trade),
+                                child: Text(
                                   trade.norenordno?.toString() ?? 'N/A',
-                                  theme,
-                                  Alignment.centerRight,
-                                  allowOverflow:
-                                      true, // Show full order number without truncation
+                                  style: _getTextStyle(context),
                                 ),
                               ),
                             ],
@@ -396,22 +414,18 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   }) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 7; // Order no column
+    final isLastColumn =
+        columnIndex == 8; // Order no column (updated for 9 columns)
 
-    // Match the cell padding logic - Instrument column has more left, minimal right
-    // Last column mirrors this - minimal left, more right
+    // Match the cell padding logic
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      // First column - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
     } else if (isInstrumentColumn) {
-      // Instrument column - more left, minimal right
       cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
     } else if (isLastColumn) {
-      // Last column - minimal left, more right
       cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
     } else {
-      // Other columns - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
 
@@ -434,7 +448,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           behavior: HitTestBehavior.opaque,
           child: Container(
             padding: cellPadding,
-            alignment: alignRight ? Alignment.topRight : null,
+            alignment:
+                alignRight ? Alignment.centerRight : Alignment.centerLeft,
             child: child,
           ),
         ),
@@ -447,22 +462,18 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 7; // Order no column
+    final isLastColumn =
+        columnIndex == 8; // Order no column (updated for 9 columns)
 
-    // Match the cell padding logic - Instrument column has more left, minimal right
-    // Last column mirrors this - minimal left, more right
+    // Match the cell padding logic
     EdgeInsets headerPadding;
     if (isFirstColumn) {
-      // First column - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6);
     } else if (isInstrumentColumn) {
-      // Instrument column - more left, minimal right
       headerPadding = const EdgeInsets.fromLTRB(16, 6, 4, 6);
     } else if (isLastColumn) {
-      // Last column - minimal left, more right
       headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
     } else {
-      // Other columns - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
     }
 
@@ -570,12 +581,13 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     final headers = [
       'Time',
       'Instrument',
-      'Product/Type',
+      'Product',
       'Type',
+      'Side',
       'Qty',
       'Price',
-      'Trade value',
-      'Order no',
+      'Value',
+      'Order No',
     ];
     final minWidths = <int, double>{};
 
@@ -592,7 +604,6 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             break;
           case 1:
             // For Instrument column, measure symbol + exchange separately
-            // since exchange uses smaller font
             final displayText = CellFormatters.formatTradeInstrumentText(trade);
             final exchange = trade.exch ?? '';
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
@@ -600,38 +611,37 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(displayText, textStyle);
 
-            // Measure exchange with smaller font (fixed 12px, matches rendering)
+            // Measure exchange with smaller font
             final exchangeStyle =
                 const TextStyle(fontSize: 12, fontFamily: 'Geist');
             final exchangeWidth = exchangeText.isNotEmpty
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
 
-            // Total width = symbol + exchange + 4px gap
             final totalWidth = symbolWidth +
                 exchangeWidth +
                 (exchangeText.isNotEmpty ? 4.0 : 0.0);
-            if (totalWidth > maxWidth) {
-              maxWidth = totalWidth;
-            }
-            // Skip normal cellWidth calculation for Instrument - already handled above
+            if (totalWidth > maxWidth) maxWidth = totalWidth;
             continue;
           case 2:
-            cellText = _formatProductType(trade);
+            cellText = trade.sPrdtAli ?? trade.prd ?? '';
             break;
           case 3:
-            cellText = trade.trantype == "S" ? "SELL" : "BUY";
+            cellText = trade.prctyp ?? '';
             break;
           case 4:
-            cellText = trade.qty?.toString() ?? 'N/A';
+            cellText = trade.trantype == "S" ? "SELL" : "BUY";
             break;
           case 5:
-            cellText = trade.avgprc?.toString() ?? 'N/A';
+            cellText = trade.qty?.toString() ?? 'N/A';
             break;
           case 6:
-            cellText = CellFormatters.calculateTradeValue(trade);
+            cellText = trade.avgprc?.toString() ?? 'N/A';
             break;
           case 7:
+            cellText = CellFormatters.calculateTradeValue(trade);
+            break;
+          case 8:
             cellText = trade.norenordno?.toString() ?? 'N/A';
             break;
         }
@@ -689,27 +699,31 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
               .compareTo(CellFormatters.formatTradeInstrumentText(b));
           break;
         case 2: // Product
-          comparison = _formatProductType(a).compareTo(_formatProductType(b));
+          comparison =
+              (a.sPrdtAli ?? a.prd ?? '').compareTo(b.sPrdtAli ?? b.prd ?? '');
           break;
         case 3: // Type
+          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
+          break;
+        case 4: // Side
           comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
           break;
-        case 4: // Qty
+        case 5: // Qty
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 5: // Price
+        case 6: // Price
           comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
               .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
           break;
-        case 6: // Trade value
+        case 7: // Trade value
           final aValue = (double.tryParse(a.avgprc ?? '0') ?? 0) *
               (int.tryParse(a.qty ?? '0') ?? 0);
           final bValue = (double.tryParse(b.avgprc ?? '0') ?? 0) *
               (int.tryParse(b.qty ?? '0') ?? 0);
           comparison = aValue.compareTo(bValue);
           break;
-        case 7: // Order no
+        case 8: // Order no
           comparison = (a.norenordno ?? '').compareTo(b.norenordno ?? '');
           break;
       }
@@ -725,65 +739,28 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     final displayText = CellFormatters.formatTradeInstrumentText(trade);
     final exchange = trade.exch ?? '';
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: RichText(
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        text: TextSpan(
-          children: [
-            // Symbol with strike price (normal color, fixed 14px)
+    return RichText(
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+      text: TextSpan(
+        children: [
+          // Symbol with strike price (normal color, fixed 14px)
+          TextSpan(
+            text: displayText.isNotEmpty ? displayText : 'N/A',
+            style: _getTextStyle(context),
+          ),
+          // Exchange (mutedForeground color, smaller font, fixed 12px)
+          if (exchange.isNotEmpty)
             TextSpan(
-              text: displayText.isNotEmpty ? displayText : 'N/A',
-              style: _getTextStyle(context),
-            ),
-            // Exchange (mutedForeground color, smaller font, fixed 12px)
-            if (exchange.isNotEmpty)
-              TextSpan(
-                text: ' $exchange',
-                style: MyntWebTextStyles.para(
-                  context,
-                  darkColor: MyntColors.textSecondaryDark,
-                  lightColor: MyntColors.textSecondary,
-                  fontWeight: MyntFonts.medium,
-                ),
+              text: ' $exchange',
+              style: MyntWebTextStyles.para(
+                context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary,
+                fontWeight: MyntFonts.medium,
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatProductType(TradeBookModel trade) {
-    final product = trade.sPrdtAli ?? trade.prd ?? '';
-    final priceType = trade.prctyp ?? '';
-
-    if (product.isEmpty && priceType.isEmpty) {
-      return 'N/A';
-    } else if (product.isEmpty) {
-      return priceType;
-    } else if (priceType.isEmpty) {
-      return product;
-    } else {
-      return '$product / $priceType';
-    }
-  }
-
-  Widget _buildTextCell(
-    String text,
-    ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
-    bool allowOverflow = false, // If true, show full text without truncation
-  }) {
-    return Align(
-      alignment: alignment,
-      child: Text(
-        text,
-        style: _getTextStyle(context, color: color),
-        maxLines: 1,
-        overflow: allowOverflow ? TextOverflow.visible : TextOverflow.ellipsis,
-        softWrap: false,
+            ),
+        ],
       ),
     );
   }

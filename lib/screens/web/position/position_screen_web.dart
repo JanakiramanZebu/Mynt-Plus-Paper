@@ -47,6 +47,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  // WebSocket subscription for live updates (like mobile)
+  StreamSubscription? _socketSubscription;
 
   @override
   void initState() {
@@ -57,10 +59,49 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         _searchQuery.value = _searchController.text;
       }
     });
+    // Set up WebSocket subscription for live position updates (like mobile)
+    _setupSocketSubscription();
+  }
+
+  void _setupSocketSubscription() {
+    Future.microtask(() {
+      final websocket = ref.read(websocketProvider);
+      final positionBook = ref.read(portfolioProvider);
+
+      _socketSubscription = websocket.socketDataStream.listen((socketDatas) {
+        bool needsUpdate = false;
+
+        for (var position in widget.listofPosition) {
+          if (socketDatas.containsKey(position.token)) {
+            final socketData = socketDatas[position.token];
+
+            // Update LTP if valid
+            final lp = socketData['lp']?.toString();
+            if (lp != null && lp != "null" && lp != position.lp) {
+              position.lp = lp;
+              needsUpdate = true;
+            }
+
+            // Update percent change if available
+            final pc = socketData['pc']?.toString();
+            if (pc != null && pc != "null" && pc != position.perChange) {
+              position.perChange = pc;
+              needsUpdate = true;
+            }
+          }
+        }
+
+        // Recalculate totals when price data changes (like mobile)
+        if (needsUpdate) {
+          positionBook.positionCal(positionBook.isDay);
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
+    _socketSubscription?.cancel(); // Cancel WebSocket subscription
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _hoveredRowToken.dispose();
@@ -1761,10 +1802,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   String _calculateTradeValue(PortfolioProvider positionBook) {
     double totalValue = 0.0;
     for (var position in widget.listofPosition) {
-      final qty = double.tryParse(position.qty ?? '0') ?? 0;
-      final prc = double.tryParse(position.avgPrc ?? '0') ?? 0;
-      // Use absolute value of quantity for trade value calculation
-      totalValue += qty.abs() * prc;
+      // Trade value = today's buy amount + today's sell amount
+      final dayBuyAmt = double.tryParse(position.daybuyamt ?? '0') ?? 0;
+      final daySellAmt = double.tryParse(position.daysellamt ?? '0') ?? 0;
+      totalValue += dayBuyAmt + daySellAmt;
     }
     return totalValue.toStringAsFixed(2);
   }
@@ -2281,8 +2322,8 @@ class _LTPCellState extends ConsumerState<_LTPCell> {
   }
 }
 
-// Isolated widget for P&L
-class _PnLCell extends ConsumerStatefulWidget {
+// Isolated widget for P&L - watches provider's calculated profitNloss
+class _PnLCell extends ConsumerWidget {
   final String token;
   final int qty;
   final double avgPrice;
@@ -2299,42 +2340,7 @@ class _PnLCell extends ConsumerStatefulWidget {
     required this.isClosed,
   });
 
-  @override
-  ConsumerState<_PnLCell> createState() => _PnLCellState();
-}
-
-class _PnLCellState extends ConsumerState<_PnLCell> {
-  late String pnl;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    pnl = widget.initialValue;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        // Simplified P&L calculation: (LTP - avgPrice) * qty
-        final newPnL =
-            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
-        if (newPnL != pnl) {
-          setState(() => pnl = newPnL);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getValueColor(String value, ThemesProvider theme) {
+  Color _getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
       return resolveThemeColor(
@@ -2358,13 +2364,22 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the position's profitNloss from the provider
+    // positionCal() calculates this correctly: actualBookedPnl + actualUnrealizedPnl
+    final positions = ref.watch(portfolioProvider.select((p) => p.allPostionList));
+    final position = positions.firstWhere(
+      (p) => p.token == token,
+      orElse: () => positions.isNotEmpty ? positions.first : throw Exception('Position not found'),
+    );
+
+    final pnl = position.token == token ? (position.profitNloss ?? initialValue) : initialValue;
+
     return Text(
       pnl,
       style: MyntWebTextStyles.bodySmall(
         context,
-        color:
-            widget.isClosed ? Colors.grey : _getValueColor(pnl, widget.theme),
+        color: isClosed ? Colors.grey : _getValueColor(context, pnl),
         fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
@@ -2372,8 +2387,8 @@ class _PnLCellState extends ConsumerState<_PnLCell> {
   }
 }
 
-// Isolated widget for MTM
-class _MTMCell extends ConsumerStatefulWidget {
+// Isolated widget for MTM - watches provider's calculated mTm
+class _MTMCell extends ConsumerWidget {
   final String token;
   final int qty;
   final double avgPrice;
@@ -2390,42 +2405,7 @@ class _MTMCell extends ConsumerStatefulWidget {
     required this.isClosed,
   });
 
-  @override
-  ConsumerState<_MTMCell> createState() => _MTMCellState();
-}
-
-class _MTMCellState extends ConsumerState<_MTMCell> {
-  late String mtm;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    mtm = widget.initialValue;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        // Simplified MTM calculation: (LTP - avgPrice) * qty
-        final newMtm =
-            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
-        if (newMtm != mtm) {
-          setState(() => mtm = newMtm);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getValueColor(String value, ThemesProvider theme) {
+  Color _getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
       return resolveThemeColor(
@@ -2449,13 +2429,22 @@ class _MTMCellState extends ConsumerState<_MTMCell> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the position's mTm from the provider
+    // positionCal() calculates this correctly: rpnl + actualUnrealizedMtm
+    final positions = ref.watch(portfolioProvider.select((p) => p.allPostionList));
+    final position = positions.firstWhere(
+      (p) => p.token == token,
+      orElse: () => positions.isNotEmpty ? positions.first : throw Exception('Position not found'),
+    );
+
+    final mtm = position.token == token ? (position.mTm ?? initialValue) : initialValue;
+
     return Text(
       mtm,
       style: MyntWebTextStyles.bodySmall(
         context,
-        color:
-            widget.isClosed ? Colors.grey : _getValueColor(mtm, widget.theme),
+        color: isClosed ? Colors.grey : _getValueColor(context, mtm),
         fontWeight: MyntFonts.medium,
       ),
       textAlign: TextAlign.right,
