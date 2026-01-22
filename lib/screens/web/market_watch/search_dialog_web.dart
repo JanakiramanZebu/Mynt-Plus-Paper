@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../models/order_book_model/order_book_model.dart';
@@ -19,6 +21,7 @@ import '../../../sharedWidget/common_search_fields_web.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
+import 'tv_chart/chart_iframe_guard.dart';
 import 'tv_chart/chart_iframe_guard.dart';
 
 class SearchDialogWeb extends ConsumerStatefulWidget {
@@ -101,6 +104,43 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         }
       }
     });
+
+    // Acquire chart iframe guard on init to prevent cursor bleed
+    ChartIframeGuard.acquire();
+    _disableAllChartIframes();
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
   }
 
   @override
@@ -121,36 +161,36 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   }
 
   // Disable all chart iframes to allow dialog interaction
-  void _disableAllChartIframes() {
-    try {
-      final iframes = html.document.querySelectorAll('iframe');
-      for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
-          iframe.style.pointerEvents = 'none';
-          iframe.style.cursor = 'default';
-        }
-      }
-      html.document.body?.style.cursor = 'default';
-    } catch (e) {
-      debugPrint('Error disabling iframes: $e');
-    }
-  }
+  // void _disableAllChartIframes() {
+  //   try {
+  //     final iframes = html.document.querySelectorAll('iframe');
+  //     for (var iframe in iframes) {
+  //       if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+  //         iframe.style.pointerEvents = 'none';
+  //         iframe.style.cursor = 'default';
+  //       }
+  //     }
+  //     html.document.body?.style.cursor = 'default';
+  //   } catch (e) {
+  //     debugPrint('Error disabling iframes: $e');
+  //   }
+  // }
 
-  // Re-enable all chart iframes
-  void _enableAllChartIframes() {
-    try {
-      final iframes = html.document.querySelectorAll('iframe');
-      for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
-          iframe.style.pointerEvents = 'auto';
-          iframe.style.cursor = '';
-        }
-      }
-      html.document.body?.style.cursor = '';
-    } catch (e) {
-      debugPrint('Error enabling iframes: $e');
-    }
-  }
+  // // Re-enable all chart iframes
+  // void _enableAllChartIframes() {
+  //   try {
+  //     final iframes = html.document.querySelectorAll('iframe');
+  //     for (var iframe in iframes) {
+  //       if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+  //         iframe.style.pointerEvents = 'auto';
+  //         iframe.style.cursor = '';
+  //       }
+  //     }
+  //     html.document.body?.style.cursor = '';
+  //   } catch (e) {
+  //     debugPrint('Error enabling iframes: $e');
+  //   }
+  // }
 
   void _scrollToSelectedTab(int index) {
     if (!_tabScrollController.hasClients) return;
@@ -192,71 +232,95 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     // }
 
     return Center(
-      child: shadcn.Card(
-        borderRadius: BorderRadius.circular(8),
-        padding: EdgeInsets.zero,
-        child: Container(
-          width: 560,
-          constraints: const BoxConstraints(maxHeight: 600),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search Bar Section
-              Container(
-                padding: const EdgeInsets.only(
-                    left: 16, right: 8, top: 16, bottom: 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: MyntSearchTextField.withSmartClear(
-                        controller: _textController,
-                        placeholder: 'Search stocks, indices, options',
-                        leadingIcon: assets.searchIcon,
-                        leadingIconHoverEffect: true,
-                        autofocus: true,
-                        inputFormatters: [
-                          UpperCaseTextFormatter(),
-                          FilteringTextInputFormatter.deny(
-                              RegExp('[π£•₹€℅™∆√¶/.,]'))
-                        ],
-                        onChanged: (value) async {
-                          final searchScrip = ref.read(marketWatchProvider);
-                          setState(() {
-                            _searchValue = value;
-                          });
-                          if (value.isEmpty) {
-                            await searchScrip.searchClear();
-                          } else {
-                            searchScrip.scripSearch(value, context,
-                                _tabController.index, widget.isBasket);
-                          }
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    // Close dialog icon (always visible, outside search bar)
+      child: PointerInterceptor(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.basic,
+          onEnter: (_) {
+            ChartIframeGuard.acquire();
+            _disableAllChartIframes();
+          },
+          onHover: (_) {
+            _disableAllChartIframes();
+          },
+          onExit: (_) {
+            ChartIframeGuard.release();
+            _enableAllChartIframes();
+          },
+          child: Listener(
+            onPointerMove: (_) {
+              _disableAllChartIframes();
+            },
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap from propagating to background
+              child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 560,
+                  constraints: const BoxConstraints(maxHeight: 600),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Search Bar Section
+                      Container(
+                        padding: const EdgeInsets.only(
+                            left: 16, right: 8, top: 16, bottom: 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: MyntSearchTextField.withSmartClear(
+                                controller: _textController,
+                                placeholder: 'Search stocks, indices, options',
+                                leadingIcon: assets.searchIcon,
+                                leadingIconHoverEffect: true,
+                                autofocus: true,
+                                inputFormatters: [
+                                  UpperCaseTextFormatter(),
+                                  FilteringTextInputFormatter.deny(
+                                      RegExp('[π£•₹€℅™∆√¶/.,]'))
+                                ],
+                                onChanged: (value) async {
+                                  final searchScrip = ref.read(marketWatchProvider);
+                                  setState(() {
+                                    _searchValue = value;
+                                  });
+                                  if (value.isEmpty) {
+                                    await searchScrip.searchClear();
+                                  } else {
+                                    searchScrip.scripSearch(value, context,
+                                        _tabController.index, widget.isBasket);
+                                  }
+                                },
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            // Close dialog icon (always visible, outside search bar)
 
-                    MyntCloseButton(
-                      onPressed: () {
-                        ref.read(marketWatchProvider).searchClear();
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
+                            MyntCloseButton(
+                              onPressed: () {
+                                ref.read(marketWatchProvider).searchClear();
+                                Navigator.of(context).pop();
+                              },
+                            )
+                          ],
+                        ),
+                      ),
+                      // Close dialog icon (always visible, outside search bar)
+
+                      // const SizedBox(height: 10),
+                      // Always show tabs and content area
+                      _buildSearchTabs(ref, theme),
+
+                      // Search Results or No Data
+                      Expanded(
+                        child: _buildSearchResults(searchScrip, theme),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              // Close dialog icon (always visible, outside search bar)
-
-              // const SizedBox(height: 10),
-              // Always show tabs and content area
-              _buildSearchTabs(ref, theme),
-
-              // Search Results or No Data
-              Expanded(
-                child: _buildSearchResults(searchScrip, theme),
-              ),
-            ],
+            ),
           ),
         ),
       ),

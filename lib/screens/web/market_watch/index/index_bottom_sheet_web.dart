@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../provider/index_list_provider.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -13,6 +15,7 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../utils/responsive_snackbar.dart';
+import '../tv_chart/chart_iframe_guard.dart';
 
 class IndexBottomSheetWeb extends ConsumerStatefulWidget {
   final dynamic defaultIndex;
@@ -46,6 +49,43 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     for (int i = 0; i < _exchanges.length; i++) {
       _scrollControllers[i] = ScrollController();
     }
+
+    // Acquire chart iframe guard on init to prevent cursor bleed
+    ChartIframeGuard.acquire();
+    _disableAllChartIframes();
+  }
+
+  // Directly disable all chart iframes and reset cursor (like chart's onExit)
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          // Reset cursor style to prevent cursor bleeding
+          iframe.style.cursor = 'default';
+        }
+      }
+      // Also reset cursor on document body to ensure it's reset globally
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
   }
 
   @override
@@ -56,6 +96,9 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
       controller.dispose();
     }
     _scrollControllers.clear();
+    // Release chart iframe guard and re-enable iframes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
     super.dispose();
   }
 
@@ -142,13 +185,33 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
     final marketWatch = ref.watch(marketWatchProvider);
 
     return Center(
-      child: shadcn.Card(
-        borderRadius: BorderRadius.circular(8),
-        padding: EdgeInsets.zero,
-        child: Container(
-          width: 500,
-          constraints: const BoxConstraints(maxHeight: 600),
-          child: Column(
+      child: PointerInterceptor(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.basic,
+          onEnter: (_) {
+            ChartIframeGuard.acquire();
+            _disableAllChartIframes();
+          },
+          onHover: (_) {
+            _disableAllChartIframes();
+          },
+          onExit: (_) {
+            ChartIframeGuard.release();
+            _enableAllChartIframes();
+          },
+          child: Listener(
+            onPointerMove: (_) {
+              _disableAllChartIframes();
+            },
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap from propagating to background
+              child: shadcn.Card(
+                borderRadius: BorderRadius.circular(8),
+                padding: EdgeInsets.zero,
+                child: Container(
+                  width: 500,
+                  constraints: const BoxConstraints(maxHeight: 600),
+                  child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -317,6 +380,10 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                 ),
               )
             ],
+          ),
+        ),
+      ),
+            ),
           ),
         ),
       ),

@@ -98,25 +98,21 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
 
     return RepaintBoundary(
       key: widget.atmKey,
-      child: Container(
-        height: 40,
-        color: atmColor,
-        child: Row(
-          children: [
-            // CALL cell (flex: 6)
-            Expanded(
-              flex: 6,
-              child: _buildCallCell(callSocketData),
-            ),
-            // STRIKE price cell (fixed width: 150)
-            _buildStrikeCell(),
-            // PUT cell (flex: 6)
-            Expanded(
-              flex: 6,
-              child: _buildPutCell(putSocketData),
-            ),
-          ],
-        ),
+      child: Row(
+        children: [
+          // CALL cell (flex: 6)
+          Expanded(
+            flex: 6,
+            child: _buildCallCell(callSocketData),
+          ),
+          // STRIKE price cell (fixed width: 150)
+          _buildStrikeCell(),
+          // PUT cell (flex: 6)
+          Expanded(
+            flex: 6,
+            child: _buildPutCell(putSocketData),
+          ),
+        ],
       ),
     );
   }
@@ -181,78 +177,83 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Data row - CALLS: OI% | OI | CH% | LTP
+                  // Data row - CALLS: OI/(OI ch) | LTP/(CH)
                   // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
-                      // OI% column
+                      // OI column with OI% below
                       Expanded(
-                        child: Text(
-                          "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (oiPerChng == "0.00" || oiPerChng == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : (oiPerChng.startsWith("-"))
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              oiLack,
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: (oiLack == "0.00" || oiLack == "0.0")
                                     ? resolveThemeColor(context,
-                                        dark: MyntColors.lossDark,
-                                        light: MyntColors.loss)
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
                                     : resolveThemeColor(context,
-                                        dark: MyntColors.profitDark,
-                                        light: MyntColors.profit),
-                          ),
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              "(${oiPerChng == "NaN" ? "0.00" : oiPerChng}%)",
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.para(
+                                context,
+                                fontWeight: FontWeight.w400,
+                                color: (oiPerChng == "0.00" || oiPerChng == "0.0")
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
+                                    : (oiPerChng.startsWith("-"))
+                                        ? resolveThemeColor(context,
+                                            dark: MyntColors.lossDark,
+                                            light: MyntColors.loss)
+                                        : resolveThemeColor(context,
+                                            dark: MyntColors.profitDark,
+                                            light: MyntColors.profit),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      // OI column
+                      // LTP column with CH% below
                       Expanded(
-                        child: Text(
-                          oiLack,
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (oiLack == "0.00" || oiLack == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                      // CH% column
-                      Expanded(
-                        child: Text(
-                          "$perChange%",
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: changeColor,
-                          ),
-                        ),
-                      ),
-                      // LTP column
-                      Expanded(
-                        child: Text(
-                          lp,
-                          textAlign: TextAlign.center,
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight: FontWeight.w500,
-                            color: (lp == "0.00" || lp == "0.0")
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.textSecondaryDark,
-                                    light: MyntColors.textSecondary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              lp,
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: (lp == "0.00" || lp == "0.0")
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
+                                    : resolveThemeColor(context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                              ),
+                            ),
+                            Text(
+                              "($perChange%)",
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.para(
+                                context,
+                                fontWeight: FontWeight.w400,
+                                color: changeColor,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -390,82 +391,86 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Data row - PUTS: LTP | CH% | OI | OI%
+                  // Data row - PUTS: LTP/(CH) | OI/(OI ch)
                   // PERFORMANCE: Keep data visible while showing actions
                   Row(
                     children: [
-                        // LTP column
-                        Expanded(
-                          child: Text(
-                            lp,
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: FontWeight.w500,
-                              color: (lp == "0.00" || lp == "0.0")
-                                  ? resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary)
-                                  : resolveThemeColor(context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary),
+                      // LTP column with CH% below
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              lp,
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: (lp == "0.00" || lp == "0.0")
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
+                                    : resolveThemeColor(context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                              ),
                             ),
-                          ),
-                        ),
-                        // CH% column
-                        Expanded(
-                          child: Text(
-                            "$perChange%",
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: FontWeight.w500,
-                              color: changeColor,
+                            Text(
+                              "($perChange%)",
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: FontWeight.w400,
+                                color: changeColor,
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                        // OI column
-                        Expanded(
-                          child: Text(
-                            oiLack,
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: FontWeight.w500,
-                              color: (oiLack == "0.00" || oiLack == "0.0")
-                                  ? resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary)
-                                  : resolveThemeColor(context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary),
+                      ),
+                      // OI column with OI% below
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              oiLack,
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: (oiLack == "0.00" || oiLack == "0.0")
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
+                                    : resolveThemeColor(context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                              ),
                             ),
-                          ),
-                        ),
-                        // OI% column
-                        Expanded(
-                          child: Text(
-                            "${oiPerChng == "NaN" ? "0.00" : oiPerChng}%",
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: FontWeight.w500,
-                              color: (oiPerChng == "0.00" || oiPerChng == "0.0")
-                                  ? resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary)
-                                  : (oiPerChng.startsWith("-"))
-                                      ? resolveThemeColor(context,
-                                          dark: MyntColors.lossDark,
-                                          light: MyntColors.loss)
-                                      : resolveThemeColor(context,
-                                          dark: MyntColors.profitDark,
-                                          light: MyntColors.profit),
+                            Text(
+                              "(${oiPerChng == "NaN" ? "0.00" : oiPerChng}%)",
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: FontWeight.w400,
+                                color: (oiPerChng == "0.00" || oiPerChng == "0.0")
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary)
+                                    : (oiPerChng.startsWith("-"))
+                                        ? resolveThemeColor(context,
+                                            dark: MyntColors.lossDark,
+                                            light: MyntColors.loss)
+                                        : resolveThemeColor(context,
+                                            dark: MyntColors.profitDark,
+                                            light: MyntColors.profit),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                   // Hover buttons
                   HoverActionsContainer(
                     isVisible: isHovered,

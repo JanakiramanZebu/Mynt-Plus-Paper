@@ -12,12 +12,13 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 
-import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
+// import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'dart:html' as html;
 import 'tv_chart/chart_iframe_guard.dart';
 import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
+import 'package:mynt_plus/screens/web/market_watch/scrip_detail_web.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import '../../../../provider/websocket_provider.dart';
@@ -37,7 +38,7 @@ import '../../../utils/responsive_navigation.dart';
 import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
-import 'set_alert_web.dart';
+// import 'set_alert_web.dart';
 
 class ScripDepthInfoWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -550,104 +551,104 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           children: [
                             // Sticky header (outside the scrollable area)
                             if (scripInfo.actDeptBtn == "Overview")
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 10),
-                                decoration: const BoxDecoration(
-                                    // color:
-                                    //     const Color(0xffa3a3a3).withOpacity(0.2),
-                                    // border: Border.all(
-                                    //     color: theme.isDarkMode
-                                    //         ? WebDarkColors.divider
-                                    //         : WebColors.divider),
-                                    ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Scrip info",
-                                      style: MyntWebTextStyles.body(context,
-                                          fontWeight: MyntFonts.bold),
-                                    ),
-                                    const Spacer(),
-                                    Tooltip(
-                                      message: "Set Alert",
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        shape: const CircleBorder(),
-                                        child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          splashColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.15)
-                                              : Colors.black.withOpacity(0.15),
-                                          highlightColor: theme.isDarkMode
-                                              ? Colors.white.withOpacity(0.08)
-                                              : Colors.black.withOpacity(0.08),
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              barrierDismissible: true,
-                                              builder: (BuildContext dialogContext) {
-                                                return SetAlertWeb(
-                                                  depthdata: depthData,
-                                                  wlvalue: widget.wlValue,
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: const Padding(
-                                            padding: EdgeInsets.all(6),
-                                            child: Icon(
-                                              Icons.notifications_none_outlined,
-                                              size: 20,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (scripInfo.actDeptBtn == "Overview" &&
-                                !scripInfo.scripDepthloader &&
-                                widget.wlValue.instname != "UNDIND" &&
-                                widget.wlValue.instname != "COM")
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 10),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: MyntButton(
-                                        label: "Buy",
-                                        backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primary,
-                                            light: MyntColors.primary),
-                                        onPressed: () async {
-                                          await placeOrderInput(scripInfo,
-                                              context, depthData, true);
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: MyntButton(
-                                        label: "Sell",
-                                        backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.tertiary,
-                                            light: MyntColors.tertiary),
-                                        onPressed: () async {
-                                          await placeOrderInput(scripInfo,
-                                              context, depthData, false);
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                              // Container(
+                              //   width: double.infinity,
+                              //   padding: const EdgeInsets.symmetric(
+                              //       horizontal: 10, vertical: 10),
+                              //   decoration: const BoxDecoration(
+                              //       // color:
+                              //       //     const Color(0xffa3a3a3).withOpacity(0.2),
+                              //       // border: Border.all(
+                              //       //     color: theme.isDarkMode
+                              //       //         ? WebDarkColors.divider
+                              //       //         : WebColors.divider),
+                              //       ),
+                              //   child: Row(
+                              //     mainAxisAlignment: MainAxisAlignment.start,
+                              //     children: [
+                              //       // Text(
+                              //       //   "Scrip info",
+                              //       //   style: MyntWebTextStyles.body(context,
+                              //       //       fontWeight: MyntFonts.bold),
+                              //       // ),
+                              //       // const Spacer(),
+                              //       // Tooltip(
+                              //       //   message: "Set Alert",
+                              //       //   child: Material(
+                              //       //     color: Colors.transparent,
+                              //       //     shape: const CircleBorder(),
+                              //       //     child: InkWell(
+                              //       //       customBorder: const CircleBorder(),
+                              //       //       splashColor: theme.isDarkMode
+                              //       //           ? Colors.white.withOpacity(0.15)
+                              //       //           : Colors.black.withOpacity(0.15),
+                              //       //       highlightColor: theme.isDarkMode
+                              //       //           ? Colors.white.withOpacity(0.08)
+                              //       //           : Colors.black.withOpacity(0.08),
+                              //       //       onTap: () {
+                              //       //         showDialog(
+                              //       //           context: context,
+                              //       //           barrierDismissible: true,
+                              //       //           builder: (BuildContext dialogContext) {
+                              //       //             return SetAlertWeb(
+                              //       //               depthdata: depthData,
+                              //       //               wlvalue: widget.wlValue,
+                              //       //             );
+                              //       //           },
+                              //       //         );
+                              //       //       },
+                              //       //       child: const Padding(
+                              //       //         padding: EdgeInsets.all(6),
+                              //       //         child: Icon(
+                              //       //           Icons.notifications_none_outlined,
+                              //       //           size: 20,
+                              //       //         ),
+                              //       //       ),
+                              //       //     ),
+                              //       //   ),
+                              //       // ),
+                              //     ],
+                              //   ),
+                              // ),
+                            // if (scripInfo.actDeptBtn == "Overview" &&
+                            //     !scripInfo.scripDepthloader &&
+                            //     widget.wlValue.instname != "UNDIND" &&
+                            //     widget.wlValue.instname != "COM")
+                            //   Padding(
+                            //     padding: const EdgeInsets.symmetric(
+                            //         horizontal: 10, vertical: 10),
+                            //     child: Row(
+                            //       children: [
+                            //         Expanded(
+                            //           child: MyntButton(
+                            //             label: "Buy",
+                            //             backgroundColor: resolveThemeColor(
+                            //                 context,
+                            //                 dark: MyntColors.primary,
+                            //                 light: MyntColors.primary),
+                            //             onPressed: () async {
+                            //               await placeOrderInput(scripInfo,
+                            //                   context, depthData, true);
+                            //             },
+                            //           ),
+                            //         ),
+                            //         const SizedBox(width: 12),
+                            //         Expanded(
+                            //           child: MyntButton(
+                            //             label: "Sell",
+                            //             backgroundColor: resolveThemeColor(
+                            //                 context,
+                            //                 dark: MyntColors.tertiary,
+                            //                 light: MyntColors.tertiary),
+                            //             onPressed: () async {
+                            //               await placeOrderInput(scripInfo,
+                            //                   context, depthData, false);
+                            //             },
+                            //           ),
+                            //         ),
+                            //       ],
+                            //     ),
+                            //   ),
                             Expanded(
                               child: ScrollConfiguration(
                                 behavior: const MaterialScrollBehavior()
@@ -2113,6 +2114,61 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                 } finally {}
                                                               },
                                                             ),
+                                                          // Scrip Info accordion item
+                                                          _buildAccordionItem(
+                                                            context: context,
+                                                            label: "Scrip info",
+                                                            onTap: () async {
+                                                              try {
+                                                                // Fetch scrip info before showing dialog
+                                                                await scripInfo.fetchScripInfo(
+                                                                  widget.wlValue.token,
+                                                                  widget.wlValue.exch,
+                                                                  context,
+                                                                );
+
+                                                                if (!mounted) return;
+
+                                                                if (scripInfo.scripInfoModel != null) {
+                                                                  showGeneralDialog(
+                                                                    context: context,
+                                                                    barrierDismissible: true,
+                                                                    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                                                                    barrierColor: resolveThemeColor(
+                                                                      context,
+                                                                      dark: MyntColors.modalBarrierDark,
+                                                                      light: MyntColors.modalBarrierLight,
+                                                                    ),
+                                                                    transitionDuration: const Duration(milliseconds: 200),
+                                                                    pageBuilder: (context, animation, secondaryAnimation) {
+                                                                      return PointerInterceptor(
+                                                                        child: Center(
+                                                                          child: const ScripDetailWeb(),
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                    transitionBuilder: (context, animation, secondaryAnimation, child) {
+                                                                      final curvedAnimation = CurvedAnimation(
+                                                                        parent: animation,
+                                                                        curve: Curves.easeOut,
+                                                                        reverseCurve: Curves.easeIn,
+                                                                      );
+
+                                                                      return FadeTransition(
+                                                                        opacity: curvedAnimation,
+                                                                        child: ScaleTransition(
+                                                                          scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+                                                                          child: child,
+                                                                        ),
+                                                                      );
+                                                                    },
+                                                                  );
+                                                                }
+                                                              } catch (e) {
+                                                                debugPrint('Error showing scrip info: $e');
+                                                              }
+                                                            },
+                                                          ),
                                                         ],
                                                       ),
                                                     ]),
