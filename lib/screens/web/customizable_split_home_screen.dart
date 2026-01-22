@@ -1225,7 +1225,7 @@ class _CustomizableSplitHomeScreenState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildNavItem('Dashboard', isDarkMode, ScreenType.dashboard,
+        _buildNavItem('Home', isDarkMode, ScreenType.dashboard,
             () => _handleDashboardTap()),
         const SizedBox(width: 8),
         _buildNavItem('Positions', isDarkMode, ScreenType.positions,
@@ -3853,18 +3853,29 @@ class _AppBarLivePriceWidgetState
   }
 
   Color _getChangeColor(String change, String perChange) {
-    if (change.startsWith("-") || perChange.startsWith('-')) {
+    if (change == "null" || perChange == "null") {
       return resolveThemeColor(
         context,
-        dark: MyntColors.lossDark,
-        light: MyntColors.loss,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
-    } else if ((change == "null" || perChange == "null") ||
-        (change == "0.00" || perChange == "0.00")) {
+    }
+
+    final double changeVal = double.tryParse(change.replaceAll(',', '')) ?? 0.0;
+    final double perChangeVal =
+        double.tryParse(perChange.replaceAll(',', '')) ?? 0.0;
+
+    if (changeVal > 0 || perChangeVal > 0) {
       return resolveThemeColor(
         context,
         dark: MyntColors.profitDark,
         light: MyntColors.profit,
+      );
+    } else if (changeVal < 0 || perChangeVal < 0) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else {
       return resolveThemeColor(
@@ -3880,12 +3891,15 @@ class _AppBarLivePriceWidgetState
     final changeColor = _getChangeColor(_change, _perChange);
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         Text(
           "$_ltp  ",
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,
+            fontWeight: MyntFonts.medium,
           ),
         ),
         Text(
