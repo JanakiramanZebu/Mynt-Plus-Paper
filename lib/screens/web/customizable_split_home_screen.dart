@@ -2381,6 +2381,13 @@ class _CustomizableSplitHomeScreenState
   // Set forceRefresh=true to refresh subscriptions even if screen hasn't changed
   // (useful when data becomes available after initial load)
   void _updateSubscriptionManagerForPanels({bool forceRefresh = false}) {
+    // For forceRefresh calls, execute immediately to avoid race conditions
+    // where multiple handlers might cancel each other's debounced timers
+    if (forceRefresh) {
+      _performSubscriptionManagerUpdate(forceRefresh: true);
+      return;
+    }
+
     // Cancel any pending debounce timer
     _subscriptionUpdateDebounceTimer?.cancel();
 
@@ -2476,14 +2483,40 @@ class _CustomizableSplitHomeScreenState
   }
 
   void _handleWatchlistTap() async {
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
-
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
 
     // Unsubscribe positions when leaving dashboard/positions (non-blocking)
     portfolio.requestWSPosition(context: context, isSubscribe: false);
+
+    // Ensure watchlist data is loaded before subscribing
+    // This prevents the timing issue where subscription happens before data is ready
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      final marketWatch = ref.read(marketWatchProvider);
+
+      // Fetch watchlist list if not available
+      if (marketWatch.marketWatchlist == null ||
+          (marketWatch.marketWatchlist?.values?.isEmpty ?? true)) {
+        await marketWatch.fetchMWList(context, true);
+      }
+
+      // Fetch current watchlist scrips if not available
+      final scrips = marketWatch.marketWatchScrip?.values;
+      if (scrips == null || scrips.isEmpty) {
+        final currentWL = marketWatch.wlName;
+        if (currentWL.isNotEmpty) {
+          await marketWatch.fetchMWScrip(currentWL, context);
+        }
+      }
+
+      // Update subscription manager AFTER data is fetched
+      // Use forceRefresh=true to ensure subscriptions are updated
+      if (mounted) {
+        _updateSubscriptionManagerForPanels(forceRefresh: true);
+      }
+    });
   }
 
   void _handleMutualFundTap() {
@@ -2726,8 +2759,9 @@ class _CustomizableSplitHomeScreenState
 
         // Update subscription manager AFTER data is fetched
         // This ensures tokens are available for subscription
+        // Use forceRefresh=true to ensure subscriptions update even on initial load
         if (mounted) {
-          _updateSubscriptionManagerForPanels();
+          _updateSubscriptionManagerForPanels(forceRefresh: true);
 
           // Clear loading state after data is fetched
           setState(() {
@@ -2783,7 +2817,8 @@ class _CustomizableSplitHomeScreenState
 
           // Update subscription manager AFTER data is fetched
           // This ensures tokens are available for subscription
-          _updateSubscriptionManagerForPanels();
+          // Use forceRefresh=true to ensure subscriptions update even on initial load
+          _updateSubscriptionManagerForPanels(forceRefresh: true);
 
           // Clear loading state after data is fetched
           setState(() {

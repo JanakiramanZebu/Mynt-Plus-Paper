@@ -54,9 +54,21 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
         } catch (e) {
           // Container might not be available yet
         }
-        ref
-            .read(marketWatchProvider)
-            .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+        // Subscribe to depth data for Overview tab (default tab)
+        // Pass context and scrip info to trigger WebSocket depth subscription (task "d")
+        final mw = ref.read(marketWatchProvider);
+        // Only subscribe if depth should be visible (Overview tab is default)
+        // The initial tab is 0 (Overview) unless it's an option
+        final initialTabIsOverview = !widget.wlValue.isOption;
+        if (initialTabIsOverview || mw.isDepthVisible) {
+          mw.setIsDepthVisibleWeb(
+            true,
+            context: context,
+            exch: widget.wlValue.exch,
+            token: widget.wlValue.token,
+            tsym: widget.wlValue.tsym,
+          );
+        }
       }
     });
   }
@@ -78,12 +90,23 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
 
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
-      // Reset depth visibility based on incoming args when scrip changes
+      // Reset depth subscription for new scrip when scrip changes
       // Delay provider modification until after build phase completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref
-            .read(marketWatchProvider)
-            .setIsDepthVisibleWeb(ref.read(marketWatchProvider).isDepthVisible);
+        if (mounted) {
+          final mw = ref.read(marketWatchProvider);
+          // If on Overview tab, re-subscribe to depth for the new scrip
+          final isOverviewTab = (_tabController?.index ?? 0) == 0;
+          if (isOverviewTab || mw.isDepthVisible) {
+            mw.setIsDepthVisibleWeb(
+              true,
+              context: context,
+              exch: widget.wlValue.exch,
+              token: widget.wlValue.token,
+              tsym: widget.wlValue.tsym,
+            );
+          }
+        }
       });
 
       Future.microtask(() async {
@@ -176,8 +199,14 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
           // Handle depth visibility based on tab
           final mw = ref.read(marketWatchProvider);
           if (_tabController!.index == 0) {
-            // Overview tab: show depth
-            mw.setIsDepthVisibleWeb(true, context: context);
+            // Overview tab: show depth and subscribe to depth WebSocket (task "d")
+            mw.setIsDepthVisibleWeb(
+              true,
+              context: context,
+              exch: widget.wlValue.exch,
+              token: widget.wlValue.token,
+              tsym: widget.wlValue.tsym,
+            );
           } else if (_tabController!.index == 1) {
             // Chart tab: hide depth
             mw.setIsDepthVisibleWeb(false, context: context);
