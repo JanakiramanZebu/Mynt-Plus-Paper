@@ -415,49 +415,49 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
             ),
 
           // Switch Account
-          _buildSimpleMenuItem(
-            context,
-            icon: Icons.switch_account_outlined,
-            title: 'Switch Account',
-            iconColor: iconColor,
-            textColor: textColor,
-            onPressed: (ctx) {
-              material.showDialog(
-                context: widget.parentContext,
-                builder: (context) => const LoggedUserListWeb(initRoute: ''),
-              );
-            },
-          ),
+          // _buildSimpleMenuItem(
+          //   context,
+          //   icon: Icons.switch_account_outlined,
+          //   title: 'Switch Account',
+          //   iconColor: iconColor,
+          //   textColor: textColor,
+          //   onPressed: (ctx) {
+          //     material.showDialog(
+          //       context: widget.parentContext,
+          //       builder: (context) => const LoggedUserListWeb(initRoute: ''),
+          //     );
+          //   },
+          // ),
 
-          const MenuDivider(),
+          // const MenuDivider(),
 
           // Logout
-          MenuButton(
-            onPressed: (ctx) {
-              _showLogoutDialog(widget.parentContext, ref, theme);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.logout,
-                    size: 22,
-                    color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
-                  ),
-                  const SizedBox(width: 14),
-                  Text(
-                    'Logout',
-                    style: MyntWebTextStyles.body(
-                      context,
-                      fontWeight: MyntFonts.medium,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // MenuButton(
+          //   onPressed: (ctx) {
+          //     _showLogoutDialog(widget.parentContext, ref, theme);
+          //   },
+          //   child: Padding(
+          //     padding: const EdgeInsets.symmetric(vertical: 4),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.logout,
+          //           size: 22,
+          //           color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
+          //         ),
+          //         const SizedBox(width: 14),
+          //         Text(
+          //           'Logout',
+          //           style: MyntWebTextStyles.body(
+          //             context,
+          //             fontWeight: MyntFonts.medium,
+          //             color: textColor,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
         ],
       ),
           ),
