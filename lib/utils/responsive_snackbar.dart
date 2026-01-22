@@ -69,7 +69,7 @@ class ResponsiveSnackBar {
     );
 
     // 2. Ensure Overlay is present
-    if (_overlayEntry == null) {
+    if (_overlayEntry == null || !_overlayEntry!.mounted) {
       _overlayEntry = OverlayEntry(
         builder: (context) => const ProviderScope(
           child: _ToastStackWidget(),
@@ -327,9 +327,9 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
     // Collapsed: Stacked with larger offset for better visibility
     
     // Base spacing for expanded items (Height + Margin)
-    const double expandedSpacing = 130.0;
+    const double expandedSpacing = 110.0;
     // Spacing for collapsed stack effect
-    const double collapsedSpacing = 20.0;
+    const double collapsedSpacing = 10.0;
     
     final double bottomOffset = widget.isHovering 
         ? widget.index * expandedSpacing 
@@ -345,29 +345,33 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
     
     // Use Global Colors
     // Filled Style: Text is always white on colored background
-    Color subTextColor = Colors.white.withOpacity(0.9);
+    // Style based on the uploaded image (Clean White Card)
+    // Background: White
+    // Border: Subtle Light Grey
+    // Text/Icon: Colored based on type (as per previous request)
     
-    Color bgColor;
-    Color contentColor = Colors.white; // Text and Icon always white for filled style
+    Color borderColor = const Color(0xFFE4E4E7); // Subtle grey border
+    Color bgColor = Colors.white;
+    Color contentColor = Colors.black;
+    Color subTextColor = Colors.grey[600]!;
+    Color statusColor;
     IconData statusIcon;
     
     switch (widget.toast.type) {
       case SnackBarType.success:
-        bgColor = ToastGlobals.success;
+        statusColor = ToastGlobals.success;
         statusIcon = Icons.check_circle_rounded;
         break;
       case SnackBarType.error:
-        bgColor = ToastGlobals.error;
+        statusColor = ToastGlobals.error;
         statusIcon = Icons.error_rounded;
         break;
       case SnackBarType.warning:
-        bgColor = ToastGlobals.warning;
+        statusColor = ToastGlobals.warning;
         statusIcon = Icons.warning_rounded;
         break;
       case SnackBarType.info:
-        bgColor = ToastGlobals.info; // This is white in globals, might need check
-        contentColor = Colors.black87; // Dark text for white background
-        subTextColor = Colors.black54;
+        statusColor = Colors.black; // Info is typically neutral
         statusIcon = Icons.info_rounded;
         break;
     }
@@ -392,12 +396,12 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
             direction: DismissDirection.horizontal,
             onDismissed: (_) => widget.onDismiss(),
             child: Material(
-              elevation: 4,
-              shadowColor: Colors.black.withOpacity(0.3),
+              elevation: 2, // Reduced elevation for cleaner look
+              shadowColor: Colors.black.withOpacity(0.1),
               color: bgColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                // Removed border for clean filled look
+                side: BorderSide(color: borderColor, width: 1),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -409,7 +413,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                       padding: const EdgeInsets.only(top: 2),
                       child: Icon(
                         statusIcon,
-                        color: contentColor,
+                        color: statusColor, // Icon uses the status color
                         size: 20,
                       ),
                     ),
@@ -425,8 +429,8 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                             _getTypeLabel(widget.toast.type),
                             style: WebTextStyles.custom(
                               fontSize: 14,
-                              isDarkTheme: widget.toast.type != SnackBarType.info,
-                              color: contentColor, 
+                              isDarkTheme: false,
+                              color: statusColor, // Title uses status color
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -455,8 +459,8 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                         child: ElevatedButton(
                           onPressed: widget.toast.onActionPressed ?? widget.onDismiss,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
+                            backgroundColor: Colors.black, // Dark button for contrast
+                            foregroundColor: Colors.white,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             shape: RoundedRectangleBorder(
@@ -468,7 +472,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 13,
-                              color: Colors.black,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -478,7 +482,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                         padding: const EdgeInsets.only(top: 2),
                         child: InkWell(
                           onTap: widget.onDismiss,
-                          child: Icon(Icons.close, size: 18, color: contentColor.withOpacity(0.7)),
+                          child: Icon(Icons.close, size: 18, color: contentColor.withOpacity(0.5)),
                         ),
                       ),
                   ],
@@ -532,7 +536,7 @@ class ToastGlobals {
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Color(0xFFEF5350);
   static const Color warning = Color(0xFFFF9800);
-  static const Color info = Colors.white;
+  static const Color info = Colors.black;
 
 // Base Background (Unused in Filled style, but kept for reference)
   static const Color baseBackground = Color(0xFF161616);

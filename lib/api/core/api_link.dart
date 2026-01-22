@@ -13,8 +13,8 @@ class ApiLinks {
 
 // GO MYNT-----
 
-  String get goMyntURL => "https://go.mynt.in/NorenWClient";
-  static String wsURL = 'wss://go.mynt.in/NorenWS/';
+  String get goMyntURL => "https://go.mynt.in/NorenWClientWeb";
+  static String wsURL = 'wss://go.mynt.in/NorenWSWeb/';
   String get bemynt => "https://be.mynt.in/";
 
   String get newsurl => "$bemynt/news";
@@ -60,7 +60,7 @@ class ApiLinks {
   String get searchScripNew => '${bemynt}global/SearchScrip';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
-  String get spanCalc => 'https://go.mynt.in/NorenWClient/SpanCalc';
+  String get spanCalc => 'https://go.mynt.in/NorenWClientWeb/SpanCalc';
   String get eodchartdata => '$goMyntURL/EODChartData';
 
   // Cams
