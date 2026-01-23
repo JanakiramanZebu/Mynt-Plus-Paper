@@ -1821,7 +1821,10 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer!.cancel();
       ref.read(indexListProvider).bottomMenu(s.isEmpty ? 0 : 4, context);
 
-      if (s.isNotEmpty || pref.clientSession!.isNotEmpty) {
+      // Only close socket when explicitly switching accounts
+      // DO NOT close on regular page load/refresh - this causes race condition
+      // where home screen is establishing connection and we close it here
+      if (s.isNotEmpty && s == "switchAc") {
         ref.read(websocketProvider).closeSocket(true);
       }
 

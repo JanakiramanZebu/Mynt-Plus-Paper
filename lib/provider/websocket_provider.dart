@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -103,6 +104,22 @@ class WebSocketProvider extends ChangeNotifier {
 
   // Preferences
   final Preferences _pref = locator<Preferences>();
+
+  /// Check if user is logged in with valid session
+  bool _isUserLoggedIn() {
+    try {
+      final clientSession = _pref.clientSession;
+      final clientId = _pref.clientId;
+      final sessCheckValid = ConstantName.sessCheck;
+
+      return (clientSession?.isNotEmpty ?? false) &&
+             (clientId?.isNotEmpty ?? false) &&
+             sessCheckValid;
+    } catch (e) {
+      log('WebSocket: Error checking user session: $e');
+      return false;
+    }
+  }
 
   int get connectioncount => _connectionCount;
 
@@ -449,27 +466,36 @@ class WebSocketProvider extends ChangeNotifier {
         "susertoken": clientSession,
       };
       
-      print('📤 [WEBSOCKET] Sending connection request with:');
-      print('   Client ID: ${clientId.substring(0, clientId.length > 4 ? 4 : clientId.length)}...');
-      print('   Session: ${clientSession.substring(0, clientSession.length > 8 ? 8 : clientSession.length)}...');
-      log('📤 WebSocket: Sending connection request');
-      
-      _channel!.sink.add(jsonEncode(connectionRequest));
+      // CRITICAL FIX: Set up stream listener BEFORE sending connection request
+      // This prevents race condition where server responds before listener is ready
+      // Previously, the listener was set up AFTER sink.add(), which could cause
+      // the connection to close before we could receive the server's response
 
-      print('👂 [WEBSOCKET] Listening for server response...');
-      log('👂 WebSocket: Listening for response');
-
-      // CRITICAL: Cancel previous stream subscription to prevent memory leaks
+      // Cancel previous stream subscription first to prevent memory leaks
       await _channelSubscription?.cancel();
       _channelSubscription = null;
 
-      // Create new stream subscription and store it
+      print('👂 [WEBSOCKET] Setting up stream listener...');
+      log('👂 WebSocket: Setting up stream listener');
+
+      // Create new stream subscription BEFORE sending request
       _channelSubscription = _channel!.stream.listen(
         _handleWebSocketMessage,
         onDone: () => _handleConnectionClosed(context),
         onError: (error) => _handleConnectionError(error, context),
         cancelOnError: false, // Keep listening even if there's an error
       );
+
+      // Now send the connection request
+      print('📤 [WEBSOCKET] Sending connection request with:');
+      print('   Client ID: ${clientId.substring(0, clientId.length > 4 ? 4 : clientId.length)}...');
+      print('   Session: ${clientSession.substring(0, clientSession.length > 8 ? 8 : clientSession.length)}...');
+      log('📤 WebSocket: Sending connection request');
+
+      _channel!.sink.add(jsonEncode(connectionRequest));
+
+      print('👂 [WEBSOCKET] Waiting for server response...');
+      log('👂 WebSocket: Waiting for response');
 
       // Cancel timeout timer as we've successfully set up the connection
       timeoutTimer.cancel();
@@ -588,7 +614,7 @@ class WebSocketProvider extends ChangeNotifier {
     print('🟢 [WEBSOCKET] Connection established and ready');
     print('   Starting ping timer for connection monitoring');
     log('🟢 WebSocket: Connection established and ready');
-    
+
     _wsConnected = true;
     _connecting = false;
     resetConnectionCount(); // Reset connection count properly
@@ -597,7 +623,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Reset low bandwidth mode on successful connection
     _isLowBandwidth = false;
-    
+
     // Reset consecutive server closures counter on successful connection
     _consecutiveServerClosures = 0;
     _lastServerClosure = null;
@@ -612,9 +638,76 @@ class WebSocketProvider extends ChangeNotifier {
     if (!_connectionCompleter!.isCompleted) {
       _connectionCompleter?.complete();
     }
-    
+
+    // Send any pending subscriptions that were queued while connecting
+    _sendPendingSubscriptionsAfterConnect();
+
     print('✅ [WEBSOCKET] All connection setup completed\n');
     log('✅ WebSocket: All connection setup completed');
+
+    // Notify listeners so WebSubscriptionManager can restore subscriptions
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
+  /// Send any pending subscriptions after connection is established
+  void _sendPendingSubscriptionsAfterConnect() {
+    final pendingTouchline = _pendingSubscriptions['t'] ?? [];
+    final pendingDepth = _pendingSubscriptions['d'] ?? [];
+
+    print('📋 [WEBSOCKET] Checking pending subscriptions after connect:');
+    print('   Pending touchline: ${pendingTouchline.length}');
+    print('   Pending depth: ${pendingDepth.length}');
+    log('📋 WebSocket: Pending - touchline: ${pendingTouchline.length}, depth: ${pendingDepth.length}');
+
+    // Check for pending touchline subscriptions
+    if (pendingTouchline.isNotEmpty) {
+      print('📤 [WEBSOCKET] Sending ${pendingTouchline.length} pending touchline subscriptions after connect');
+      log('📤 WebSocket: Sending pending touchline subscriptions');
+      final symbols = pendingTouchline.toSet().toList();
+      final batchInput = symbols.join('#');
+
+      if (symbols.length <= 10) {
+        print('   Symbols: ${symbols.join(", ")}');
+      } else {
+        print('   First 10 symbols: ${symbols.take(10).join(", ")}...');
+      }
+
+      // Track as sent
+      final subscriptionKeys = symbols.map((s) => "t:$s").toList();
+      _sentSubscriptions.addAll(subscriptionKeys);
+
+      // Clear pending
+      _pendingSubscriptions['t'] = [];
+
+      // Send to websocket
+      _channel?.sink.add(jsonEncode({"t": "t", "k": batchInput}));
+      print('✅ [WEBSOCKET] Sent ${symbols.length} touchline subscriptions');
+    }
+
+    // Check for pending depth subscriptions
+    if (pendingDepth.isNotEmpty) {
+      print('📤 [WEBSOCKET] Sending ${pendingDepth.length} pending depth subscriptions after connect');
+      log('📤 WebSocket: Sending pending depth subscriptions');
+      final symbols = pendingDepth.toSet().toList();
+      final batchInput = symbols.join('#');
+
+      // Track as sent
+      final subscriptionKeys = symbols.map((s) => "d:$s").toList();
+      _sentSubscriptions.addAll(subscriptionKeys);
+
+      // Clear pending
+      _pendingSubscriptions['d'] = [];
+
+      // Send to websocket
+      _channel?.sink.add(jsonEncode({"t": "d", "k": batchInput}));
+      print('✅ [WEBSOCKET] Sent ${symbols.length} depth subscriptions');
+    }
+
+    if (pendingTouchline.isEmpty && pendingDepth.isEmpty) {
+      print('ℹ️  [WEBSOCKET] No pending subscriptions to send');
+    }
   }
 
   void _handleAlertMessage(Map<String, dynamic> res) {
@@ -893,6 +986,9 @@ class WebSocketProvider extends ChangeNotifier {
       // Add to pending batch
       _pendingSubscriptions[taskKey] = (_pendingSubscriptions[taskKey] ?? [])..addAll(newSymbols);
 
+      // Store context for reconnection attempts
+      _context = context;
+
       // Debounce the subscription to batch multiple rapid calls
       _subscriptionDebounce?.cancel();
       _subscriptionDebounce = Timer(const Duration(milliseconds: 200), () {
@@ -929,26 +1025,44 @@ class WebSocketProvider extends ChangeNotifier {
     final pending = _pendingSubscriptions[task];
     if (pending == null || pending.isEmpty) return;
 
+    // Store context for reconnection attempts
+    _context = context;
+
     // Remove duplicates and create batch string
     final uniqueSymbols = pending.toSet().toList();
     final batchInput = uniqueSymbols.join('#');
 
-    log("WebSocket: 📦 Sending batched $task request for ${uniqueSymbols.length} symbols");
+    log("WebSocket: 📦 Batched $task request for ${uniqueSymbols.length} symbols");
     if (uniqueSymbols.length <= 10) {
       log("  Symbols: ${uniqueSymbols.join(', ')}");
     }
 
-    // Track these as sent with task-specific keys (e.g., "t:NSE|1234")
-    final subscriptionKeys = uniqueSymbols.map((s) => "$task:$s").toList();
-    _sentSubscriptions.addAll(subscriptionKeys);
-    
-    log("WebSocket: 📝 Tracked ${subscriptionKeys.length} $task subscriptions");
+    // CRITICAL: Only mark as "sent" and clear pending if WebSocket is actually connected
+    // Otherwise, keep in pending for _sendPendingSubscriptionsAfterConnect to handle
+    if (_wsConnected && _channel != null) {
+      // Track these as sent with task-specific keys (e.g., "t:NSE|1234")
+      final subscriptionKeys = uniqueSymbols.map((s) => "$task:$s").toList();
+      _sentSubscriptions.addAll(subscriptionKeys);
 
-    // Clear pending for this task
-    _pendingSubscriptions[task] = [];
+      log("WebSocket: 📝 Tracked ${subscriptionKeys.length} $task subscriptions");
 
-    // Send to websocket
-    _sendToWebSocket(task, batchInput);
+      // Clear pending for this task ONLY after marking as sent
+      _pendingSubscriptions[task] = [];
+
+      // Send to websocket
+      print('📤 [WEBSOCKET] Sending ${task.toUpperCase()} request for ${uniqueSymbols.length} symbol(s)');
+      if (uniqueSymbols.length <= 5) {
+        print('   Symbols: ${batchInput.split('#').where((s) => s.isNotEmpty).join(", ")}');
+      }
+      log('📤 WebSocket: Sending $task request for ${uniqueSymbols.length} symbols');
+      _channel?.sink.add(jsonEncode({"t": task, "k": batchInput}));
+    } else {
+      // WebSocket not ready - keep subscriptions in pending list
+      // They will be sent by _sendPendingSubscriptionsAfterConnect when connection succeeds
+      print('⏸️  [WEBSOCKET] WebSocket not ready, keeping ${uniqueSymbols.length} $task subscriptions in pending');
+      print('   Current State: Connected=$_wsConnected, Channel=${_channel != null}');
+      log('⏸️  WebSocket: Keeping $task subscriptions in pending until connected');
+    }
   }
 
   void _sendToWebSocket(String task, String input) {
@@ -1052,17 +1166,37 @@ class WebSocketProvider extends ChangeNotifier {
     }
     
     // Check if there are active subscriptions before reconnecting
+    // On web, skip this check because after page refresh, subscriptions haven't been added yet
+    // but screens will subscribe once they mount - we just need to ensure socket is connected
     try {
       final subscriptionManager = ref.read(subscriptionManagerProvider);
       if (!subscriptionManager.hasActiveSubscriptions) {
-        print('ℹ️  [WEBSOCKET] No active subscriptions, skipping reconnection');
-        log('ℹ️  WebSocket: No active subscriptions, skipping reconnection');
-        
-        // Only close if not already closed
-        if (_wsConnected || _channel != null) {
-          closeSocket(true);
+        // On web, check if user is logged in - if so, still reconnect
+        // because screens will add subscriptions after they mount
+        if (kIsWeb) {
+          final isLoggedIn = _isUserLoggedIn();
+          if (isLoggedIn) {
+            print('ℹ️  [WEBSOCKET] Web: No active subscriptions but user is logged in, proceeding with reconnection');
+            log('ℹ️  WebSocket: Web - No subscriptions but user logged in, reconnecting');
+          } else {
+            print('ℹ️  [WEBSOCKET] Web: No active subscriptions and user not logged in, skipping reconnection');
+            log('ℹ️  WebSocket: Web - No subscriptions, user not logged in, skipping');
+            if (_wsConnected || _channel != null) {
+              closeSocket(true);
+            }
+            return;
+          }
+        } else {
+          // Mobile: keep existing behavior
+          print('ℹ️  [WEBSOCKET] No active subscriptions, skipping reconnection');
+          log('ℹ️  WebSocket: No active subscriptions, skipping reconnection');
+
+          // Only close if not already closed
+          if (_wsConnected || _channel != null) {
+            closeSocket(true);
+          }
+          return;
         }
-        return;
       }
     } catch (e) {
       // Subscription manager might not be available, continue with reconnection
@@ -1094,10 +1228,37 @@ class WebSocketProvider extends ChangeNotifier {
       final delaySeconds = _consecutiveServerClosures > 1 ? 5 : 2;
       print('🔄 [WEBSOCKET] Scheduling reconnection attempt in $delaySeconds seconds...');
       log('🔄 WebSocket: Scheduling reconnection in $delaySeconds seconds');
-      
+
       Future.delayed(Duration(seconds: delaySeconds), () {
-        if (!_wsConnected && !_reconnecting && context.mounted) {
-          reconnect(context);
+        if (!_wsConnected && !_reconnecting) {
+          // Use passed context if mounted, otherwise fall back to stored _context
+          // This handles page refresh scenario where original context is no longer valid
+          BuildContext? validContext;
+          try {
+            if (context.mounted) {
+              validContext = context;
+            }
+          } catch (e) {
+            // Context may throw if widget is disposed
+          }
+
+          // Fall back to stored context if passed context is not valid
+          if (validContext == null && _context != null) {
+            try {
+              if (_context!.mounted) {
+                validContext = _context;
+              }
+            } catch (e) {
+              // Stored context may also be invalid
+            }
+          }
+
+          if (validContext != null) {
+            reconnect(validContext);
+          } else {
+            print('⚠️  [WEBSOCKET] No valid context for reconnection');
+            log('⚠️  WebSocket: No valid context for reconnection');
+          }
         }
       });
     } else {
@@ -1137,7 +1298,33 @@ class WebSocketProvider extends ChangeNotifier {
       log('🔄 WebSocket: Scheduling reconnection after error');
       // Use post-frame callback to avoid provider modification during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        reconnect(context);
+        // Use passed context if mounted, otherwise fall back to stored _context
+        BuildContext? validContext;
+        try {
+          if (context.mounted) {
+            validContext = context;
+          }
+        } catch (e) {
+          // Context may throw if widget is disposed
+        }
+
+        // Fall back to stored context if passed context is not valid
+        if (validContext == null && _context != null) {
+          try {
+            if (_context!.mounted) {
+              validContext = _context;
+            }
+          } catch (e) {
+            // Stored context may also be invalid
+          }
+        }
+
+        if (validContext != null) {
+          reconnect(validContext);
+        } else {
+          print('⚠️  [WEBSOCKET] No valid context for reconnection after error');
+          log('⚠️  WebSocket: No valid context for reconnection after error');
+        }
       });
     } else {
       print('❌ [WEBSOCKET] Max reconnection attempts reached. Stopping reconnection.');
