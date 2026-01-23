@@ -599,7 +599,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                             final uniqueId = alert is BrokerMessage
                                 ? 'triggered_${alert.norentm ?? index}'
                                 : '${alert.alId ?? alert.token ?? index}';
-                            final isRowHovered = _hoveredRowToken == uniqueId;
+                            final isRowHovered = _hoveredRowToken == '$index';
 
                             return shadcn.TableRow(
                               cells: [
@@ -729,21 +729,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() {
-          final alert = _getSortedAlerts(_getAllAlerts())[rowIndex];
-          final uniqueId = alert is BrokerMessage
-              ? 'triggered_${alert.norentm ?? rowIndex}'
-              : '${alert.alId ?? alert.token ?? rowIndex}';
-          _hoveredRowToken = uniqueId;
-        }),
+        onEnter: (_) => setState(() => _hoveredRowToken = '$rowIndex'),
         onExit: (_) => setState(() => _hoveredRowToken = null),
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: Container(
+            width: double.infinity,
+            height: double.infinity,
             padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding, vertical: 8),
             alignment: alignRight ? Alignment.topRight : null,
+            decoration: BoxDecoration(
+              color: _hoveredRowToken == '$rowIndex'
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
+                  : Colors.transparent,
+            ),
             child: child,
           ),
         ),
@@ -923,32 +928,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     );
     textPainter.layout();
     return textPainter.width;
-  }
-
-  // Helper to get all alerts for hover detection
-  List<dynamic> _getAllAlerts() {
-    final manage = ref.read(marketWatchProvider);
-    final notification = ref.read(notificationprovider);
-    final order = ref.read(orderProvider);
-
-    final isSearching = order.orderSearchCtrl.text.isNotEmpty;
-    final pendingAlerts = isSearching
-        ? manage.alertPendingSearch ?? []
-        : manage.alertPendingModel ?? [];
-
-    List<BrokerMessage>? triggered;
-    if (isSearching) {
-      triggered = notification.triggeredAlertSearch ?? [];
-    } else {
-      triggered = notification.brokermsg
-          ?.where((msg) =>
-              msg.dmsg != null &&
-              msg.dmsg!.contains("Ltp") &&
-              (msg.dmsg!.contains("above") || msg.dmsg!.contains("below")))
-          .toList();
-    }
-
-    return [...pendingAlerts, ...(triggered ?? [])];
   }
 
   void _showAlertDetail(dynamic alert) {

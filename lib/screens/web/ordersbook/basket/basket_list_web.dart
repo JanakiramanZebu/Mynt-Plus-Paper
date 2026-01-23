@@ -98,8 +98,19 @@ class _BasketListState extends ConsumerState<BasketList> {
     final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 8.0;
 
     Widget cellContent = Container(
+      width: double.infinity,
+      height: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
       alignment: alignRight ? Alignment.topRight : null,
+      decoration: BoxDecoration(
+        color: _hoveredRowIndex.value == '$rowIndex'
+            ? resolveThemeColor(
+                context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary,
+              ).withValues(alpha: 0.08)
+            : Colors.transparent,
+      ),
       child: child,
     );
 
@@ -895,7 +906,7 @@ class _BasketListState extends ConsumerState<BasketList> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 decoration: BoxDecoration(

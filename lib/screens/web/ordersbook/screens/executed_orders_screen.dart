@@ -699,9 +699,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
               color: isRowHovered
                   ? resolveThemeColor(
                       context,
-                      dark: MyntColors.listItemBgDark.withValues(alpha: 0.5),
-                      light: MyntColors.listItemBg.withValues(alpha: 0.5),
-                    )
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
                   : Colors.transparent,
             ),
             child: child,

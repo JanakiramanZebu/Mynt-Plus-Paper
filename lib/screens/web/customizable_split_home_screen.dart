@@ -1248,7 +1248,7 @@ class _CustomizableSplitHomeScreenState
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
         const SizedBox(width: 8),
-        // _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
+        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -1298,8 +1298,8 @@ class _CustomizableSplitHomeScreenState
           },
           onThemeToggle: () {
             ref.read(themeProvider.notifier).toggleTheme(
-              themeMod: isDark ? 'Light' : 'Dark',
-            );
+                  themeMod: isDark ? 'Light' : 'Dark',
+                );
           },
           onSwapPanels: () {
             _handleSwapPanels();
@@ -3166,7 +3166,6 @@ class _CustomizableSplitHomeScreenState
     // Hide if already exists in current panel or other panels
     return !alreadyExistsInPanel && !alreadyExistsInOtherPanel;
   }
-
 
   void _handleReconnectionSuccess() {
     if (!mounted) return;

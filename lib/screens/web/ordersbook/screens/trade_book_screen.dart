@@ -447,9 +447,20 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: Container(
+            width: double.infinity,
+            height: double.infinity,
             padding: cellPadding,
             alignment:
                 alignRight ? Alignment.centerRight : Alignment.centerLeft,
+            decoration: BoxDecoration(
+              color: _hoveredRowIndex == rowIndex
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
+                  : Colors.transparent,
+            ),
             child: child,
           ),
         ),
