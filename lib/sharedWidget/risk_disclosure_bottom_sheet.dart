@@ -5,10 +5,11 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 import '../locator/locator.dart';
 import '../res/global_state_text.dart';
-import '../res/web_colors.dart';
-import '../res/global_font_web.dart';
+import '../res/mynt_web_text_styles.dart';
+import '../res/mynt_web_color_styles.dart';
 import 'functions.dart';
 import 'custom_drag_handler.dart';
+import 'common_buttons_web.dart';
 
 class RiskDisclousreBottomSheet extends ConsumerWidget {
   const RiskDisclousreBottomSheet({super.key});
@@ -32,37 +33,36 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
 
   Widget _buildWebDialog(
       BuildContext context, ThemesProvider theme, Preferences pref) {
+    // Returns content only - Dialog wrapper is handled by the caller (showDialog)
     return Container(
       width: 500,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
       ),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header without close button
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: theme.isDarkMode
-                      ? WebDarkColors.divider
-                      : WebColors.divider,
-                ),
-              ),
-            ),
+          // Header - centered
+          Padding(
+            padding: const EdgeInsets.only(
+                left: 16, right: 16, top: 14, bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Risk Disclosures on Derivatives',
-                  style: WebTextStyles.dialogTitle(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -80,70 +80,42 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                   children: [
                     _buildWebBulletPoint(
                       "9 out of 10 individual traders in the equity Futures and Options (F&O) segment incurred net losses.",
-                      theme,
+                      context,
                     ),
                     const SizedBox(height: 12),
                     _buildWebBulletPoint(
                       "On average, the loss-making traders registered a net trading loss close to ₹50,000.",
-                      theme,
+                      context,
                     ),
                     const SizedBox(height: 12),
                     _buildWebBulletPoint(
                       "Over and above the net trading losses incurred, loss makers expended an additional 28% of net trading losses as transaction costs.",
-                      theme,
+                      context,
                     ),
                     const SizedBox(height: 12),
                     _buildWebBulletPoint(
                       "Those making net trading profits incurred between 15% to 50% of such profits as transaction costs.",
-                      theme,
+                      context,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       "Source: SEBI study dated January 25, 2023, on 'Analysis of Profit and Loss of Individual Traders dealing in equity Futures and Options (F&O) Segment,' wherein Aggregate Level findings are based on annual Profit/Loss incurred by individual traders in equity F&O during FY 2021-22.",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
-                        height: 1.4,
-                      ),
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                        fontWeight: FontWeight.w500,
+                      ).copyWith(height: 1.4),
                     ),
                     const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Container(
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(5),
-                            splashColor: Colors.white.withOpacity(0.2),
-                            highlightColor: Colors.white.withOpacity(0.1),
-                            onTap: () {
+                    MyntPrimaryButton(
+                      label: 'I Understand',
+                      isFullWidth: true,
+                      onPressed: () {
                               pref.setRiskDiscloser(true);
                               Navigator.pop(context);
                             },
-                            child: Center(
-                              child: Text(
-                                'I Understand',
-                                style: WebTextStyles.buttonMd(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -156,7 +128,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildWebBulletPoint(String text, ThemesProvider theme) {
+  Widget _buildWebBulletPoint(String text, BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,8 +139,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
             height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color:
-                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+              color: MyntColors.primary,
             ),
           ),
         ),
@@ -176,14 +147,13 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
         Expanded(
           child: Text(
             text,
-            style: WebTextStyles.bodySmall(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: FontWeight.w500,
+            ).copyWith(height: 1.5),
           ),
         ),
       ],

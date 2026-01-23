@@ -5,11 +5,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
-import '../../../../models/marketwatch_model/get_quotes.dart';
+// import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
-import '../../../../provider/order_provider.dart';
+// import '../../../../provider/order_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -160,8 +160,6 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     return MouseRegion(
       onEnter: (_) => _isCallHovered.value = true,
       onExit: (_) => _isCallHovered.value = false,
-      child: GestureDetector(
-        onTap: () => _handleCellTap(option, true),
         child: ValueListenableBuilder<bool>(
           valueListenable: _isCallHovered,
           builder: (context, isHovered, child) {
@@ -289,8 +287,8 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             );
           },
         ),
-      ),
     );
+    
   }
 
   Widget _buildStrikeCell() {
@@ -374,8 +372,6 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     return MouseRegion(
       onEnter: (_) => _isPutHovered.value = true,
       onExit: (_) => _isPutHovered.value = false,
-      child: GestureDetector(
-        onTap: () => _handleCellTap(option, false),
         child: ValueListenableBuilder<bool>(
           valueListenable: _isPutHovered,
           builder: (context, isHovered, child) {
@@ -502,84 +498,83 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             );
           },
         ),
-      ),
     );
   }
 
-  void _handleCellTap(OptionValues option, bool isCall) {
-    if (option.tsym?.contains("|||") ?? false) {
-      showResponsiveWarningMessage(context, "Symbol not available for trading");
-      return;
-    }
+  // void _handleCellTap(OptionValues option, bool isCall) {
+  //   if (option.tsym?.contains("|||") ?? false) {
+  //     showResponsiveWarningMessage(context, "Symbol not available for trading");
+  //     return;
+  //   }
+  //
+  //   if (widget.isBasketMode) {
+  //     _handleBasketModeTap(option);
+  //   } else {
+  //     _handleTap(option, isCall);
+  //   }
+  // }
 
-    if (widget.isBasketMode) {
-      _handleBasketModeTap(option);
-    } else {
-      _handleTap(option, isCall);
-    }
-  }
+  // void _handleTap(OptionValues option, bool isCall) async {
+  //   final scripData = ref.read(marketWatchProvider);
+  //
+  //   await scripData.fetchScripQuoteIndex(
+  //     "${option.token}",
+  //     "${option.exch}",
+  //     context,
+  //   );
+  //   final quots = scripData.getQuotes;
+  //   if (quots != null) {
+  //     DepthInputArgs depthArgs = DepthInputArgs(
+  //       exch: quots.exch.toString(),
+  //       token: quots.token.toString(),
+  //       tsym: quots.tsym.toString(),
+  //       instname: quots.instname.toString(),
+  //       symbol: quots.symbol.toString(),
+  //       expDate: quots.expDate.toString(),
+  //       option: quots.option.toString(),
+  //     );
+  //     scripData.scripdepthsize(false);
+  //     await scripData.calldepthApis(context, depthArgs, "");
+  //   }
+  // }
 
-  void _handleTap(OptionValues option, bool isCall) async {
-    final scripData = ref.read(marketWatchProvider);
-
-    await scripData.fetchScripQuoteIndex(
-      "${option.token}",
-      "${option.exch}",
-      context,
-    );
-    final quots = scripData.getQuotes;
-    if (quots != null) {
-      DepthInputArgs depthArgs = DepthInputArgs(
-        exch: quots.exch.toString(),
-        token: quots.token.toString(),
-        tsym: quots.tsym.toString(),
-        instname: quots.instname.toString(),
-        symbol: quots.symbol.toString(),
-        expDate: quots.expDate.toString(),
-        option: quots.option.toString(),
-      );
-      scripData.scripdepthsize(false);
-      await scripData.calldepthApis(context, depthArgs, "");
-    }
-  }
-
-  Future<void> _handleBasketModeTap(OptionValues option) async {
-    final scripData = ref.read(marketWatchProvider);
-    final orderProv = ref.read(orderProvider);
-
-    // Check if a basket is selected
-    if (orderProv.selectedBsktName.isEmpty) {
-      showResponsiveErrorMessage(context, "Please select a basket");
-      return;
-    }
-
-    // Preserve current symbol context before basket operations
-    scripData.preserveContextForBasket();
-
-    await scripData.fetchScripQuoteIndex(
-      "${option.token}",
-      "${option.exch}",
-      context,
-    );
-    final quots = scripData.getQuotes;
-
-    if (quots != null) {
-      DepthInputArgs depthArgs = DepthInputArgs(
-        exch: quots.exch.toString(),
-        token: quots.token.toString(),
-        tsym: quots.tsym.toString(),
-        instname: quots.instname.toString(),
-        symbol: quots.symbol.toString(),
-        expDate: quots.expDate.toString(),
-        option: quots.option.toString(),
-      );
-
-      await scripData.calldepthApis(context, depthArgs, "BasketMode");
-
-      // Restore original symbol context after basket operations
-      scripData.restoreContextFromBasket();
-    }
-  }
+  // Future<void> _handleBasketModeTap(OptionValues option) async {
+  //   final scripData = ref.read(marketWatchProvider);
+  //   final orderProv = ref.read(orderProvider);
+  //
+  //   // Check if a basket is selected
+  //   if (orderProv.selectedBsktName.isEmpty) {
+  //     showResponsiveErrorMessage(context, "Please select a basket");
+  //     return;
+  //   }
+  //
+  //   // Preserve current symbol context before basket operations
+  //   scripData.preserveContextForBasket();
+  //
+  //   await scripData.fetchScripQuoteIndex(
+  //     "${option.token}",
+  //     "${option.exch}",
+  //     context,
+  //   );
+  //   final quots = scripData.getQuotes;
+  //
+  //   if (quots != null) {
+  //     DepthInputArgs depthArgs = DepthInputArgs(
+  //       exch: quots.exch.toString(),
+  //       token: quots.token.toString(),
+  //       tsym: quots.tsym.toString(),
+  //       instname: quots.instname.toString(),
+  //       symbol: quots.symbol.toString(),
+  //       expDate: quots.expDate.toString(),
+  //       option: quots.option.toString(),
+  //     );
+  //
+  //     await scripData.calldepthApis(context, depthArgs, "BasketMode");
+  //
+  //     // Restore original symbol context after basket operations
+  //     scripData.restoreContextFromBasket();
+  //   }
+  // }
 
   Future<void> _placeOrder(OptionValues option, bool isBuy) async {
     final scripData = ref.read(marketWatchProvider);

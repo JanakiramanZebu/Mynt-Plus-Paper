@@ -13,6 +13,7 @@ import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/list_divider.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -217,17 +218,20 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                       }
                     }
                   },
-                  child: Container(
-                    color: isHovered
-                        ? MyntColors.primary.withOpacity(0.10)
-                        : resolveThemeColor(context,
-                            dark: MyntColors.backgroundColorDark,
-                            light: MyntColors.backgroundColor),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        color: isHovered
+                            ? MyntColors.primary.withOpacity(0.10)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.backgroundColorDark,
+                                light: MyntColors.backgroundColor),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                         // First row: Symbol name | LTP
                         SizedBox(
                           height: 24,
@@ -319,13 +323,15 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                     ),
                                   if (_currentQty != "0" &&
                                       _currentQty.isNotEmpty) ...[
+                                    const SizedBox(width: 4),
+
                                     SvgPicture.asset(
                                       assets.suitcase,
-                                      height: 14,
-                                      width: 18,
+                                      height: 16,
+                                      width: 16,
                                       color: resolveThemeColor(context,
-                                          dark: MyntColors.iconDark,
-                                          light: MyntColors.icon),
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
@@ -334,117 +340,13 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                         context,
                                         fontWeight: FontWeight.w500,
                                         color: resolveThemeColor(context,
-                                            dark: MyntColors.textSecondaryDark,
-                                            light: MyntColors.textSecondary),
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary),
                                       ),
                                     ),
                                   ],
                                 ],
                               ),
-                              // Left spacer
-                              const Spacer(),
-                              // Fixed-width container for action buttons
-                              AnimatedOpacity(
-                                opacity: isHovered ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 150),
-                                child: IgnorePointer(
-                                  ignoring: !isHovered,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      _buildHoverButton(
-                                        label: 'B',
-                                        color: Colors.white,
-                                        backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primary,
-                                            light: MyntColors.primary),
-                                        onPressed: () async {
-                                          try {
-                                            await _placeOrderInput(
-                                                context, true);
-                                          } catch (e) {
-                                            debugPrint('Buy button error: $e');
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(width: 4),
-                                      _buildHoverButton(
-                                        label: 'S',
-                                        color: Colors.white,
-                                        backgroundColor: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.tertiary,
-                                            light: MyntColors.tertiary),
-                                        onPressed: () async {
-                                          try {
-                                            await _placeOrderInput(
-                                                context, false);
-                                          } catch (e) {
-                                            debugPrint('Sell button error: $e');
-                                          }
-                                        },
-                                      ),
-                                      const SizedBox(width: 4),
-                                      _buildHoverButton(
-                                        iconAsset: assets.depthIcon,
-                                        color: Colors.black,
-                                        backgroundColor: Colors.white,
-                                        borderColor: resolveThemeColor(context,
-                                            dark: MyntColors.dividerDark,
-                                            light: MyntColors.divider),
-                                        borderRadius: 5.0,
-                                        onPressed: () async {
-                                          if (_isNavigating) return;
-                                          try {
-                                            setState(
-                                                () => _isNavigating = true);
-                                            WidgetsBinding.instance
-                                                .addPostFrameCallback(
-                                                    (_) async {
-                                              ref
-                                                  .read(marketWatchProvider)
-                                                  .setIsDepthVisibleWeb(true);
-
-                                              DepthInputArgs depthArgs =
-                                                  DepthInputArgs(
-                                                exch: _exch,
-                                                token: _token,
-                                                tsym: _tsym,
-                                                instname: _symbol,
-                                                symbol: _symbol,
-                                                expDate: _expDate,
-                                                option: _option,
-                                              );
-
-                                              widget.marketWatch
-                                                  .scripdepthsize(false);
-                                              await widget.marketWatch
-                                                  .calldepthApis(
-                                                      context, depthArgs, "");
-                                            });
-                                          } catch (e) {
-                                            debugPrint(
-                                                'Error opening chart: $e');
-                                          } finally {
-                                            if (mounted) {
-                                              Future.delayed(
-                                                  const Duration(
-                                                      milliseconds: 500), () {
-                                                if (mounted) {
-                                                  setState(() =>
-                                                      _isNavigating = false);
-                                                }
-                                              });
-                                            }
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // Right spacer
                               const Spacer(),
                               // Right: Price change only
                               RepaintBoundary(
@@ -463,8 +365,130 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                             ],
                           ),
                         ),
-                      ],
-                    ),
+                          ],
+                        ),
+                      ),
+                      // Positioned hover actions at bottom center
+                      if (isHovered)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 8,
+                          child: Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.backgroundColorDark,
+                                  light: MyntColors.backgroundColor,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: HoverActionsContainer(
+                                isVisible: true,
+                                actions: [
+                                  HoverActionButton(
+                                    label: 'B',
+                                    color: Colors.white,
+                                    backgroundColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
+                                    borderColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
+                                    onPressed: () async {
+                                      try {
+                                        await _placeOrderInput(context, true);
+                                      } catch (e) {
+                                        debugPrint('Buy button error: $e');
+                                      }
+                                    },
+                                  ),
+                                  HoverActionButton(
+                                    label: 'S',
+                                    color: Colors.white,
+                                    backgroundColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.errorDark,
+                                      light: MyntColors.tertiary,
+                                    ),
+                                    borderColor: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.errorDark,
+                                      light: MyntColors.tertiary,
+                                    ),
+                                    onPressed: () async {
+                                      try {
+                                        await _placeOrderInput(context, false);
+                                      } catch (e) {
+                                        debugPrint('Sell button error: $e');
+                                      }
+                                    },
+                                  ),
+                                  HoverActionButton(
+                                    iconAsset: assets.depthIcon,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: Colors.black,
+                                    ),
+                                    backgroundColor: Colors.transparent,
+                                    onPressed: () async {
+                                      if (_isNavigating) return;
+                                      try {
+                                        setState(() => _isNavigating = true);
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) async {
+                                          ref
+                                              .read(marketWatchProvider)
+                                              .setIsDepthVisibleWeb(true);
+
+                                          DepthInputArgs depthArgs =
+                                              DepthInputArgs(
+                                            exch: _exch,
+                                            token: _token,
+                                            tsym: _tsym,
+                                            instname: _symbol,
+                                            symbol: _symbol,
+                                            expDate: _expDate,
+                                            option: _option,
+                                          );
+
+                                          widget.marketWatch.scripdepthsize(false);
+                                          await widget.marketWatch
+                                              .calldepthApis(context, depthArgs, "");
+                                        });
+                                      } catch (e) {
+                                        debugPrint('Error opening chart: $e');
+                                      } finally {
+                                        if (mounted) {
+                                          Future.delayed(
+                                              const Duration(milliseconds: 500), () {
+                                            if (mounted) {
+                                              setState(() => _isNavigating = false);
+                                            }
+                                          });
+                                        }
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               );
@@ -472,63 +496,6 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildHoverButton({
-    String? label,
-    String? iconAsset,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    required VoidCallback? onPressed,
-  }) {
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: 24,
-      height: 24,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: iconAsset != null
-                  ? SvgPicture.asset(
-                      iconAsset,
-                      width: 13,
-                      height: 13,
-                      colorFilter: ColorFilter.mode(
-                        color,
-                        BlendMode.srcIn,
-                      ),
-                    )
-                  : Text(
-                      label ?? "",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
