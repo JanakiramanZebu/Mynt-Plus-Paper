@@ -573,10 +573,10 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
         setState(() {});
       }
     } else {
-      // Add to watchlist
+      // Add to watchlist - using depth subscription for web
       provider.read(websocketProvider).establishConnection(
             channelInput: scripToken,
-            task: "t",
+            task: "d",
             context: context,
           );
 
@@ -727,9 +727,10 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
         fontSize: 14.0,
       );
     } else {
+      // Using depth subscription for web
       provider.read(websocketProvider).establishConnection(
             channelInput: "${option.exch}|${option.token}",
-            task: "t",
+            task: "d",
             context: context,
           );
       scripData.addDelMarketScrip(

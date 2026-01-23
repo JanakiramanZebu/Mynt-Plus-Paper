@@ -177,19 +177,38 @@ class WebSocketProvider extends ChangeNotifier {
       return;
     }
 
+    // CRITICAL: Prevent closing if socket is currently being established
+    // This prevents race conditions where screen dispose closes connection during establishment
+    if (_connecting && !_wsConnected) {
+      print('⚠️  [WEBSOCKET] Connection in progress, preventing premature close');
+      print('   Connecting: $_connecting, Connected: $_wsConnected');
+      log('⚠️  WebSocket: Preventing close during connection establishment');
+      return;
+    }
+
     // Get stack trace to see who is calling closeSocket
     final stackTrace = StackTrace.current;
-    final caller = stackTrace.toString().split('\n').take(3).join('\n');
+    final callerLines = stackTrace.toString().split('\n');
+    // Find the actual caller (skip closeSocket itself)
+    String callerInfo = 'Unknown';
+    for (int i = 1; i < callerLines.length && i < 6; i++) {
+      final line = callerLines[i].trim();
+      if (!line.contains('closeSocket') && line.isNotEmpty) {
+        callerInfo = line;
+        break;
+      }
+    }
 
     print('\n═══════════════════════════════════════════════════════════');
     print('🔴 [WEBSOCKET] CLOSING CONNECTION');
     print('   Status: ${_wsConnected ? "Connected" : "Not Connected"}');
+    print('   Connecting: $_connecting');
     print('   Mounted: $mounted');
     print('   Reason: ${mounted ? "App/Screen disposed" : "Connection closed"}');
-    print('   Caller: ${caller.split('\n')[1].trim()}');
+    print('   Caller: $callerInfo');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Closing connection (mounted: $mounted)');
-    log('   Caller: $caller');
+    log('   Caller: $callerInfo');
 
     wsmount = mounted;
     _wsConnected = false;
@@ -1524,7 +1543,7 @@ class WebSocketProvider extends ChangeNotifier {
             log('   ➕ Restoring tick subscriptions');
             connectTouchLine(
               input: ConstantName.lastSubscribe,
-              task: "t",
+              task: kIsWeb ? "d" : "t",  // Web uses depth subscription
               context: context,
             );
           }

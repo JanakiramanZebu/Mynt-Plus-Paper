@@ -538,7 +538,7 @@ class OrderProvider extends DefaultChangeNotifier {
         input = symbolsToSubscribe.join("#");
         print("Subscribing to new basket scripts: $input");
         ref.read(websocketProvider).establishConnection(
-            channelInput: input, task: "t", context: context);
+            channelInput: input, task: kIsWeb ? "d" : "t", context: context);
       }
 
       // Update basket with latest values from socket data

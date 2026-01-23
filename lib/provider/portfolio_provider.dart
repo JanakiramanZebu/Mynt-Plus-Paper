@@ -1188,7 +1188,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     try {
       if (_subscr.isNotEmpty) {
         ref.read(websocketProvider).establishConnection(
-            channelInput: _subscr, task: 't', context: context);
+            channelInput: _subscr, task: kIsWeb ? 'd' : 't', context: context);
       }
     } catch (e) {}
   }

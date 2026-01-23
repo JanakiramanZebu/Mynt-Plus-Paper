@@ -195,9 +195,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
         print('📦 [WebSubscriptionManager] Sending batch $batchNum/$totalBatches (${batch.length} symbols)');
 
-        // Send directly via websocket
+        // Send directly via websocket - using depth subscription for web
         wsProvider.connectTouchLine(
-          task: "t",
+          task: "d",
           input: batchString,
           context: context,
         );
@@ -391,9 +391,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final wsProvider = ref.read(websocketProvider);
       final symbolString = newSymbols.join('#');
 
-      // Use connectTouchLine which properly tracks subscriptions
+      // Use connectTouchLine which properly tracks subscriptions - using depth for web
       wsProvider.connectTouchLine(
-        task: "t",
+        task: "d",
         input: symbolString,
         context: context,
       );
@@ -639,9 +639,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       final wsProvider = ref.read(websocketProvider);
       final symbolString = symbolsToUnsubscribe.join('#');
 
-      // Use connectTouchLine with unsubscribe task
+      // Use connectTouchLine with unsubscribe depth task for web
       wsProvider.connectTouchLine(
-        task: "u", // Unsubscribe task
+        task: "ud", // Unsubscribe depth task
         input: symbolString,
         context: context,
       );
@@ -849,7 +849,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           log('WebSubscriptionManager: Unsubscribing from ${_currentWebSocketSubscriptions.length} symbols');
 
           wsProvider.connectTouchLine(
-            task: "u",
+            task: "ud", // Unsubscribe depth for web
             input: symbolString,
             context: context,
           );

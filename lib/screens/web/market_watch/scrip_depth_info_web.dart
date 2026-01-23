@@ -157,7 +157,23 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       // Ensure Overview state and safe initial size for the new scrip
       Future.microtask(() async {
         if (!_isDisposed) {
-          await ref.read(marketWatchProvider).chngDephBtn("Overview");
+          final scripInfo = ref.read(marketWatchProvider);
+
+          // Handle futures re-subscription when scrip changes while futures is expanded
+          if (scripInfo.isFuturesExpanded) {
+            // Unsubscribe from old futures first
+            await scripInfo.requestWSFut(context: context, isSubscribe: false);
+
+            // Always fetch linked scrips for the new symbol to populate futures list
+            // This is needed regardless of whether options exist, as futures might still be available
+            await scripInfo.fetchLinkeScrip(
+                widget.wlValue.token, widget.wlValue.exch, context);
+
+            // Subscribe to new futures (if any exist for the new symbol)
+            await scripInfo.requestWSFut(context: context, isSubscribe: true);
+          }
+
+          await scripInfo.chngDephBtn("Overview");
           setState(() {
             initSize = _getSafeInitialSize(0.35);
           });

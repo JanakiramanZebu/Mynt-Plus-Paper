@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -257,7 +258,7 @@ class IndexListProvider extends DefaultChangeNotifier {
           }
           if (_subscr.isNotEmpty) {
             ref.read(websocketProvider).establishConnection(
-                channelInput: _subscr, task: 't', context: context);
+                channelInput: _subscr, task: kIsWeb ? 'd' : 't', context: context);
           }
         } else {
           if (_indexList!.emsg == "Session Expired :  Invalid Session Key" &&

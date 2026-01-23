@@ -478,10 +478,11 @@ class _CustomizableSplitHomeScreenState
     // Establish base WebSocket connection if not connected
     // Note: Subscriptions are now handled by WebSubscriptionManager
     if (!websocket.wsConnected) {
+      // Web uses depth subscription ("d") for all symbols to have depth data ready
       if (ConstantName.lastSubscribe.isNotEmpty) {
         websocket.establishConnection(
             channelInput: ConstantName.lastSubscribe,
-            task: "t",
+            task: "d",
             context: context);
       }
 

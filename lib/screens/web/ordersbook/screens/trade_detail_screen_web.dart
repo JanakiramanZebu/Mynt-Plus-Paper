@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../models/order_book_model/trade_book_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/thems.dart';
+import '../../../../provider/websocket_provider.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -31,6 +33,83 @@ class TradeDetailScreenWeb extends ConsumerStatefulWidget {
 
 class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
   bool _isProcessingRepeat = false;
+  StreamSubscription? _socketSubscription;
+
+  // Live market data from WebSocket
+  String? _ltp;
+  String? _change;
+  String? _perChange;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with trade data values
+    _ltp = widget.trade.ltp;
+    _change = widget.trade.change;
+    _perChange = widget.trade.perChange;
+  }
+
+  bool _didInitDependencies = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_didInitDependencies) {
+      _didInitDependencies = true;
+      Future.microtask(() {
+        if (mounted) {
+          _setupSocketSubscription();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _socketSubscription?.cancel();
+    super.dispose();
+  }
+
+  // Set up socket subscription for real-time LTP, change, percentage updates
+  void _setupSocketSubscription() {
+    if (!mounted) return;
+
+    final token = widget.trade.token;
+    if (token == null || token.isEmpty) return;
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      _socketSubscription = wsProvider.socketDataStream.listen((socketData) {
+        if (!mounted) return;
+
+        final data = socketData[token];
+        if (data != null) {
+          setState(() {
+            final lp = data['lp']?.toString();
+            final pc = data['pc']?.toString();
+            final chng = data['chng']?.toString();
+
+            if (_isValidValue(lp)) _ltp = lp;
+            if (_isValidValue(pc)) _perChange = pc;
+            if (_isValidValue(chng)) _change = chng;
+          });
+        }
+      });
+    } catch (e) {
+      debugPrint("Error setting up socket subscription: $e");
+    }
+  }
+
+  // Helper method to check if a value is valid
+  bool _isValidValue(String? value) {
+    return value != null &&
+        value != "null" &&
+        value != "0" &&
+        value != "0.0" &&
+        value != "0.00";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,11 +229,11 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
         ),
         const SizedBox(height: 8),
 
-        // Price (using avgprc as trade price)
+        // Price - show live LTP from WebSocket, fallback to trade price (avgprc)
         Row(
           children: [
             Text(
-              widget.trade.avgprc?.toString() ?? '0.00',
+              _ltp ?? widget.trade.avgprc?.toString() ?? '0.00',
               style: MyntWebTextStyles.title(
                 context,
                 color: resolveThemeColor(context,
@@ -163,18 +242,34 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
                 fontWeight: MyntFonts.medium,
               ),
             ),
-            // Mock change/percentage as it's not directly in TradeBookModel usually, or calculate if avail
-            // Using placeholder to match image style 0.00 (0.00%)
+            // Show live change and percentage from WebSocket
             const SizedBox(width: 8),
-            Text(
-              "0.00 (0.00%)", // Placeholder/Mock for now as per image often static in history
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.medium,
-              ),
+            Builder(
+              builder: (context) {
+                final change = double.tryParse(_change ?? '0') ?? 0.0;
+                final perChange = double.tryParse(_perChange ?? '0') ?? 0.0;
+                final isPositive = change >= 0;
+                final changeText = "${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)} (${perChange >= 0 ? '+' : ''}${perChange.toStringAsFixed(2)}%)";
+
+                return Text(
+                  changeText,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: change == 0
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)
+                        : isPositive
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.profitDark,
+                                light: MyntColors.profit)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss),
+                    fontWeight: MyntFonts.medium,
+                  ),
+                );
+              },
             ),
           ],
         ),

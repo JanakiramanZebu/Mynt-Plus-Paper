@@ -538,10 +538,10 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
         setState(() {});
       }
     } else {
-      // Add to watchlist
+      // Add to watchlist - using depth subscription for web
       provider.read(websocketProvider).establishConnection(
         channelInput: scripToken,
-        task: "t",
+        task: "d",
         context: context,
       );
       
@@ -583,9 +583,10 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
         fontSize: 14.0,
       );
     } else {
+      // Using depth subscription for web
       provider.read(websocketProvider).establishConnection(
             channelInput: "${option.exch}|${option.token}",
-            task: "t",
+            task: "d",
             context: context,
           );
       scripData.addDelMarketScrip(

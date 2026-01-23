@@ -71,15 +71,9 @@ class _OrderBookDetailScreenWebState
   @override
   void dispose() {
     _socketSubscription?.cancel();
-
-    try {
-      ProviderScope.containerOf(context)
-          .read(websocketProvider)
-          .closeSocket(false);
-    } catch (e) {
-      print('WebSocket close error during disposal: $e');
-    }
-
+    // NOTE: Do NOT close WebSocket here - this is just a detail screen
+    // The shared WebSocket should stay connected for the main app
+    // Only the main home screen should close WebSocket on full app exit
     super.dispose();
   }
 

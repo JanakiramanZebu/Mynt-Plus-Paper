@@ -646,10 +646,10 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             context, 'Removed from ${scripData.wlName}');
       }
     } else {
-      // Add to watchlist - establish websocket connection first
+      // Add to watchlist - using depth subscription for web
       ref.read(websocketProvider).establishConnection(
             channelInput: scripToken,
-            task: "t",
+            task: "d",
             context: context,
           );
 

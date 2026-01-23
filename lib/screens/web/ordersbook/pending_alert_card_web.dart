@@ -175,7 +175,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         print("Subscribing to alert tokens: $tokens");
         ref.read(websocketProvider).establishConnection(
               channelInput: tokens,
-              task: "t", // Subscribe
+              task: "d", // Subscribe with depth for web
               context: context,
             );
       }
