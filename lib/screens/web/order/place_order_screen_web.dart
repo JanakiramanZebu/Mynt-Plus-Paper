@@ -1858,6 +1858,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ? "Target Trigger Price"
                                                     : "Trigger Price",
                                                 theme),
+                                                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
                                           ]),
                                           const SizedBox(height: 10),
                                           SizedBox(
@@ -2602,6 +2603,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ? "Stoploss Trigger Price"
                                                       : "Trigger Price",
                                                   theme),
+                                                  Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
                                             ]),
                                             const SizedBox(height: 10),
                                             SizedBox(
@@ -6821,7 +6823,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 2),
-              headerTitleText("Trigger", theme),
+              Row(children: [
+                headerTitleText("Trigger", theme),
+                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+              ],),
               const SizedBox(height: 10),
               SizedBox(
                   height: 40,
@@ -6903,7 +6908,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             children: [
               
           headerTitleText("Target", theme),
-          Text("(in Rs)", style: WebTextStyles.formInput(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
           
             ],
           ),
@@ -6980,7 +6985,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          headerTitleText("Stoploss", theme),
+          Row(children: [
+            headerTitleText("Stoploss", theme),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          ],),
           const SizedBox(height: 10),
           SizedBox(
               height: 40,
@@ -7053,7 +7061,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(children: [
           headerTitleText("Trailing SL", theme),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          ],),
           const SizedBox(height: 10),
           SizedBox(
               height: 40,
