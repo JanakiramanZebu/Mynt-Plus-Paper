@@ -33,7 +33,6 @@ import 'package:flutter/material.dart'
         ValueKey,
         Padding,
         LayoutBuilder,
-        CircularProgressIndicator,
         Center,
         BorderRadius,
         BoxDecoration,
@@ -56,7 +55,9 @@ import 'package:flutter/material.dart'
         FontWeight,
         Radius,
         RawScrollbar,
-        MediaQuery;
+        MediaQuery,
+        ValueNotifier,
+        ValueListenableBuilder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn
     hide Colors, Tooltip;
@@ -68,8 +69,10 @@ import 'package:mynt_plus/provider/market_watch_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
 import '../refactored/utils/cell_formatters.dart';
 import '../gtt_order_book_detail_screen_web.dart';
 import '../modify_gtt_web.dart';
@@ -92,7 +95,8 @@ class GttOrdersScreen extends ConsumerStatefulWidget {
 class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  int? _hoveredRowIndex;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken;
@@ -110,6 +114,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
   @override
   void dispose() {
+    _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
     super.dispose();
@@ -156,18 +161,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     // Show loading or empty state
     if (gttOrders.isEmpty) {
       if (orderBook.loading) {
-        return const SizedBox(
+        return SizedBox(
           height: 400,
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Loading GTT orders...',
-                    style: TextStyle(color: Colors.grey)),
-              ],
-            ),
+            child: MyntLoader.centered(message: 'Loading GTT orders...'),
           ),
         );
       } else {
@@ -324,7 +321,6 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                         rows: sortedOrders.asMap().entries.map((entry) {
                           final index = entry.key;
                           final gttOrder = entry.value;
-                          final isRowHovered = _hoveredRowIndex == index;
 
                           return shadcn.TableRow(
                             cells: [
@@ -332,8 +328,14 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                 rowIndex: index,
                                 columnIndex: 0,
                                 onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildInstrumentCell(
-                                    gttOrder, theme, isRowHovered),
+                                child: ValueListenableBuilder<int?>(
+                                  valueListenable: _hoveredRowIndex,
+                                  builder: (context, hoveredIndex, _) {
+                                    final isRowHovered = hoveredIndex == index;
+                                    return _buildInstrumentCell(
+                                        gttOrder, theme, isRowHovered);
+                                  },
+                                ),
                               ),
                               // Product
                               buildCellWithHover(
@@ -489,27 +491,32 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: GestureDetector(
           onTap: onTap,
           behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            padding: cellPadding,
-            alignment:
-                alignRight ? Alignment.centerRight : Alignment.centerLeft,
-            decoration: BoxDecoration(
-              color: _hoveredRowIndex == rowIndex
-                  ? resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ).withValues(alpha: 0.08)
-                  : Colors.transparent,
-            ),
-            child: child,
+          child: ValueListenableBuilder<int?>(
+            valueListenable: _hoveredRowIndex,
+            builder: (context, hoveredIndex, _) {
+              return Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: cellPadding,
+                alignment:
+                    alignRight ? Alignment.centerRight : Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: hoveredIndex == rowIndex
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: child,
+              );
+            },
           ),
         ),
       ),
@@ -799,7 +806,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           ),
         ),
         // Action buttons - positioned at the right edge
-        if (isRowHovered)
+        if (isRowHovered && isPending)
           Positioned(
             right: 0,
             top: 0,
@@ -808,8 +815,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               onTap: () {}, // Empty handler to stop propagation
               behavior: HitTestBehavior.opaque,
               child: Container(
+                padding: const EdgeInsets.only(left: 12),
+                alignment: Alignment.centerRight,
                 decoration: BoxDecoration(
-                  // Subtle background gradient for better button visibility
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
@@ -817,117 +825,70 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                       shadcn.Theme.of(context)
                           .colorScheme
                           .background
-                          .withOpacity(0.0),
+                          .withValues(alpha: 0.0),
                       shadcn.Theme.of(context)
                           .colorScheme
                           .background
-                          .withOpacity(0.95),
-                      resolveThemeColor(context,
-                          dark: MyntColors.backgroundColorDark,
-                          light: MyntColors.backgroundColor),
+                          .withValues(alpha: 0.95),
                     ],
-                    stops: const [0.0, 0.3, 0.5],
                   ),
                 ),
-                padding: const EdgeInsets.only(left: 16),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isPending) ...[
-                        _buildHoverButton(
-                          label: 'Modify',
-                          onPressed: (isProcessing && _isProcessingModify)
-                              ? null
-                              : () async {
-                                  setState(() {
-                                    _processingOrderToken = uniqueId;
-                                    _isProcessingModify = true;
-                                  });
-                                  await _handleModifyGttOrder(gttOrder);
-                                  if (mounted) {
-                                    setState(() {
-                                      _isProcessingModify = false;
-                                      _processingOrderToken = null;
-                                    });
-                                  }
-                                },
-                          backgroundColor: resolveThemeColor(context,
-                              dark: MyntColors.primary,
-                              light: MyntColors.primary),
-                          textColor: Colors.white,
-                          theme: theme,
-                          context: context,
-                        ),
-                        const SizedBox(width: 6),
-                        _buildHoverButton(
-                          label: 'Cancel',
-                          onPressed: (isProcessing && _isProcessingCancel)
-                              ? null
-                              : () async {
-                                  setState(() {
-                                    _processingOrderToken = uniqueId;
-                                    _isProcessingCancel = true;
-                                  });
-                                  await _handleCancelGttOrder(gttOrder);
-                                  if (mounted) {
-                                    setState(() {
-                                      _isProcessingCancel = false;
-                                      _processingOrderToken = null;
-                                    });
-                                  }
-                                },
-                          backgroundColor: resolveThemeColor(context,
-                              dark: MyntColors.loss, light: MyntColors.loss),
-                          textColor: Colors.white,
-                          theme: theme,
-                          context: context,
-                        ),
-                      ],
-                    ],
-                  ),
+                child: HoverActionsContainer(
+                  isVisible: isRowHovered && isPending,
+                  actions: [
+                    HoverActionButton(
+                      label: 'Modify',
+                      size: 54,
+                      borderRadius: 5,
+                      color: Colors.white,
+                      onPressed: (isProcessing && _isProcessingModify)
+                          ? null
+                          : () async {
+                              setState(() {
+                                _processingOrderToken = uniqueId;
+                                _isProcessingModify = true;
+                              });
+                              await _handleModifyGttOrder(gttOrder);
+                              if (mounted) {
+                                setState(() {
+                                  _isProcessingModify = false;
+                                  _processingOrderToken = null;
+                                });
+                              }
+                            },
+                      backgroundColor: resolveThemeColor(context,
+                          dark: MyntColors.primary, light: MyntColors.primary),
+                    ),
+                    HoverActionButton(
+                      label: 'Cancel',
+                      size: 54,
+                      borderRadius: 5,
+                      color: Colors.white,
+                      onPressed: (isProcessing && _isProcessingCancel)
+                          ? null
+                          : () async {
+                              setState(() {
+                                _processingOrderToken = uniqueId;
+                                _isProcessingCancel = true;
+                              });
+                              await _handleCancelGttOrder(gttOrder);
+                              if (mounted) {
+                                setState(() {
+                                  _isProcessingCancel = false;
+                                  _processingOrderToken = null;
+                                });
+                              }
+                            },
+                      backgroundColor: resolveThemeColor(context,
+                          dark: MyntColors.tertiary,
+                          light: MyntColors.tertiary),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildHoverButton({
-    required String label,
-    required VoidCallback? onPressed,
-    required Color backgroundColor,
-    required Color textColor,
-    required ThemesProvider theme,
-    required BuildContext context,
-  }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: MyntWebTextStyles.tableCell(
-            context,
-            color: textColor,
-            darkColor: textColor,
-            lightColor: textColor,
-            fontWeight: MyntFonts.medium,
-          ).copyWith(fontSize: 12),
-        ),
-      ),
     );
   }
 

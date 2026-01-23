@@ -345,15 +345,15 @@ class OrderProvider extends DefaultChangeNotifier {
     showSipSearch(false);
     ref.read(marketWatchProvider).clearAlertSearch();
 
-    // Clear search only if switching away from search-enabled tabs
-    if (index > 3) {
+    // Clear search only if switching away from search-enabled tabs (indices 0-3 and index 5 are searchable)
+    if (index == 4) {
       clearOrderSearch();
       clearGttOrderSearch();
       clearSipSearch();
     }
 
     // Only perform search if there's text and we're on a searchable tab
-    if (orderSearchCtrl.text.isNotEmpty && index <= 3) {
+    if (orderSearchCtrl.text.isNotEmpty && (index <= 3 || index == 5)) {
       searchOrders(orderSearchCtrl.text, context);
     }
 
@@ -365,10 +365,10 @@ class OrderProvider extends DefaultChangeNotifier {
     }
     // Tab 3: GTT Orders - data is loaded with order book, no lazy load needed
     // Tab 4 (web: 5): SIP Orders
-    else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
-      debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
-      fetchSipOrderHistory(context);
-    }
+    // else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
+    //   debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
+    //   fetchSipOrderHistory(context);
+    // }
 
     // Handle WebSocket subscription/unsubscription for order book tabs (0-3)
     // Unsubscribe from previous tab if it was a subscription tab (0-3)
@@ -384,7 +384,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
 
     // Only fetch basket data when switching to basket tab
-    if (kIsWeb ? index == 5 : index == 4) {
+    if (index == 4) {
       debugPrint("=== TAB SWITCH TO BASKET ===");
       debugPrint("Calling getBasketName()...");
       getBasketName();
@@ -630,7 +630,7 @@ class OrderProvider extends DefaultChangeNotifier {
             : "GTT",
       ),
       // Newly added tabs after GTT
-      const Tab(text: "MF"),
+      // const Tab(text: "MF"),
       // const Tab(text: "IPO"),
       // const Tab(text: "Bonds"),
       Tab(
@@ -796,42 +796,8 @@ class OrderProvider extends DefaultChangeNotifier {
             _gttOrderBookSearch = [];
           }
           break;
-        case 4: // MF Orders (Web) / Basket (Mobile)
-          // Only perform MF search on web (mobile uses case 4 for Basket which doesn't need search)
-          if (kIsWeb) {
-            final mf = ref.read(mfProvider);
-
-            // Search MF orders - only if data exists
-            if (mf.mflumpsumorderbook?.data != null &&
-                mf.mflumpsumorderbook!.data!.isNotEmpty) {
-              final searchResult = mf.mflumpsumorderbook!.data!.where((order) {
-                final schemeName =
-                    (order.name ?? order.schemename ?? '').toUpperCase();
-                return schemeName.contains(value.toUpperCase());
-              }).toList();
-              mf.setMfOrderSearch(searchResult);
-            } else {
-              // Clear search if no data
-              mf.clearMfSearch();
-            }
-
-            // Search SIP orders - only if data exists
-            if (mf.mfsiporderlist?.data != null &&
-                mf.mfsiporderlist!.data!.isNotEmpty) {
-              final searchResult = mf.mfsiporderlist!.data!.where((sip) {
-                final schemeName = (sip.name ?? '').toUpperCase();
-                final sipRegNo = (sip.sIPRegnNo ?? '').toUpperCase();
-                final searchUpper = value.toUpperCase();
-                return schemeName.contains(searchUpper) ||
-                    sipRegNo.contains(searchUpper);
-              }).toList();
-              mf.setMfSipSearch(searchResult);
-            } else {
-              // Clear search if no data
-              mf.setMfSipSearch([]);
-            }
-          }
-          // Mobile case 4 is Basket - no search needed, so do nothing
+        case 4: // Basket (Web & Mobile)
+          // Basket doesn't need search as per current implementation
           break;
         // case 5: // SIP Orders
         //   _siporderBookSearch = _siporderBookModel!.sipDetails!

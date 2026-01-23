@@ -6,6 +6,7 @@ import 'package:mynt_plus/models/order_book_model/trade_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../refactored/utils/cell_formatters.dart';
 import 'trade_detail_screen_web.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -91,17 +92,10 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     // Show loading or empty state
     if (trades.isEmpty) {
       if (orderBook.loading) {
-        return const SizedBox(
+        return SizedBox(
           height: 400,
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Loading trades...', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
+            child: MyntLoader.centered(message: 'Loading trades...'),
           ),
         );
       } else {

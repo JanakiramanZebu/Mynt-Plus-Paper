@@ -199,16 +199,18 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           builder: (context, hoveredIndex, _) {
             final isRowHovered = hoveredIndex == rowIndex;
 
-            // Background color logic: Hover color takes precedence over closed background
+            // Background color logic: No hover effect for closed positions
             Color? backgroundColor;
-            if (isRowHovered) {
+            if (isClosed) {
+              // Closed positions: show muted background, no hover effect
+              backgroundColor = resolveThemeColor(context,
+                  dark: MyntColors.textPrimary.withValues(alpha: 0.15),
+                  light: MyntColors.textPrimary.withValues(alpha: 0.09));
+            } else if (isRowHovered) {
+              // Open positions: show hover effect only
               backgroundColor = resolveThemeColor(context,
                   dark: MyntColors.primary.withValues(alpha: 0.08),
                   light: MyntColors.primary.withValues(alpha: 0.08));
-            } else if (isClosed) {
-              backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.primaryDark.withValues(alpha: 0.01),
-                  light: MyntColors.primary.withValues(alpha: 0.04));
             }
 
             return Container(
@@ -802,6 +804,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                 rowIndex: index,
                                 columnIndex: columnIndex,
                                 alignRight: isNumeric,
+                                isClosed: isClosed,
                                 child: ValueListenableBuilder<int?>(
                                   valueListenable: _hoveredRowIndex,
                                   builder: (context, hoveredIndex, _) {
@@ -1223,40 +1226,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   padding: const EdgeInsets.only(left: 12),
                   alignment: Alignment.centerRight,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        shadcn.Theme.of(context)
-                            .colorScheme
-                            .background
-                            .withOpacity(0.0),
-                        shadcn.Theme.of(context)
-                            .colorScheme
-                            .background
-                            .withOpacity(0.95),
-                      ],
-                    ),
+                    gradient: (isRowHovered && !isClosed)
+                        ? LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withValues(alpha: 0.0),
+                              shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withValues(alpha: 0.95),
+                            ],
+                          )
+                        : null,
                   ),
                   child: HoverActionsContainer(
                     isVisible: isRowHovered,
-                    spacing: 8.0,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    borderRadius: 6.0,
-                    backgroundColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.listItemBgDark,
-                      light: Colors.white,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 20,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
                     actions: [
                       if (!isClosed &&
                           position.qty != "0" &&

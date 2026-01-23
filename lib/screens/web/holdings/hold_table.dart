@@ -814,7 +814,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                                           size:
                                                                               12,
                                                                           color:
-                                                                              Color(0xFFFF6161),
+                                                                              MyntColors.secondary,
                                                                         ),
                                                                         const SizedBox(
                                                                             width:
@@ -825,11 +825,11 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                                               MyntWebTextStyles.para(
                                                                             ctx,
                                                                             color:
-                                                                                const Color(0xFFFF6161),
+                                                                                MyntColors.secondary,
                                                                             darkColor:
-                                                                                const Color(0xFFFF6161),
+                                                                                MyntColors.secondary,
                                                                             lightColor:
-                                                                                const Color(0xFFFF6161),
+                                                                                MyntColors.secondary,
                                                                             fontWeight:
                                                                                 MyntFonts.medium,
                                                                           ),
@@ -888,32 +888,6 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                       child:
                                                           HoverActionsContainer(
                                                         isVisible: isRowHovered,
-                                                        spacing: 8.0,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                horizontal: 10,
-                                                                vertical: 5),
-                                                        borderRadius: 6.0,
-                                                        backgroundColor:
-                                                            resolveThemeColor(
-                                                          context,
-                                                          dark: MyntColors
-                                                              .listItemBgDark,
-                                                          light: Colors.white,
-                                                        ),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: Colors.black
-                                                                .withOpacity(
-                                                                    0.08),
-                                                            blurRadius: 20,
-                                                            spreadRadius: 0,
-                                                            offset:
-                                                                const Offset(
-                                                                    0, 6),
-                                                          ),
-                                                        ],
                                                         actions: [
                                                           if (qty > 0) ...[
                                                             HoverActionButton(

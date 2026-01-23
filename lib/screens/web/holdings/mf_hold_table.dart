@@ -38,7 +38,6 @@ import 'package:flutter/material.dart'
         Expanded,
         Column,
         WidgetsBinding,
-        CircularProgressIndicator,
         Padding,
         Stack,
         Clip,
@@ -59,6 +58,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/hover_actions_web.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
@@ -446,7 +446,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
 
     // Show loading indicator while fetching data
     if (mfData.holdstatload ?? false) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     final holdings = mfData.mfholdingnew?.data ?? [];
@@ -719,7 +719,6 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                                     child:
                                                         HoverActionsContainer(
                                                       isVisible: isRowHovered,
-                                                      borderRadius: 6.0,
                                                       actions: [
                                                         HoverActionButton
                                                             .redeem(

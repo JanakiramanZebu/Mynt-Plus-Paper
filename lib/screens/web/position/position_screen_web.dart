@@ -23,6 +23,7 @@ import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 
 class PositionScreenWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
@@ -120,7 +121,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     final theme = ref.read(themeProvider);
 
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     // ✅ Access positionBook without watching to avoid rebuilds

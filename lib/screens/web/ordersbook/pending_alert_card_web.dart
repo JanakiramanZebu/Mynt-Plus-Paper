@@ -9,6 +9,7 @@ import 'package:flutter/material.dart'
         MediaQuery,
         Column,
         Expanded,
+        Flexible,
         SingleChildScrollView,
         ScrollController,
         Axis,
@@ -26,10 +27,6 @@ import 'package:flutter/material.dart'
         EdgeInsets,
         Alignment,
         TextOverflow,
-        Curves,
-        AnimatedContainer,
-        IgnorePointer,
-        AnimatedOpacity,
         GestureDetector,
         HitTestBehavior,
         MouseRegion,
@@ -60,7 +57,13 @@ import 'package:flutter/material.dart'
         Navigator,
         showDialog,
         RichText,
-        TextAlign;
+        TextAlign,
+        ValueNotifier,
+        ValueListenableBuilder,
+        Stack,
+        Positioned,
+        Clip,
+        LinearGradient;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -76,6 +79,7 @@ import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/hover_actions_web.dart';
 import '../../../utils/responsive_snackbar.dart';
 import 'pending_alert_detail_screen_web.dart';
 
@@ -100,8 +104,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   DateTime _lastSocketUpdateTime = DateTime.now();
   static const Duration _minUpdateInterval = Duration(milliseconds: 50);
 
-  // Hover state
-  String? _hoveredRowToken;
+  // Hover state - Use ValueNotifier for performance
+  final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
 
   // Processing state for actions
   bool _isProcessingCancel = false;
@@ -134,6 +138,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   @override
   void dispose() {
     _teardownSocketSubscription();
+    _hoveredRowToken.dispose();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
@@ -599,7 +604,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                             final uniqueId = alert is BrokerMessage
                                 ? 'triggered_${alert.norentm ?? index}'
                                 : '${alert.alId ?? alert.token ?? index}';
-                            final isRowHovered = _hoveredRowToken == '$index';
 
                             return shadcn.TableRow(
                               cells: [
@@ -607,8 +611,15 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                                   rowIndex: index,
                                   columnIndex: 0,
                                   onTap: () => _showAlertDetail(alert),
-                                  child: _buildInstrumentCell(
-                                      alert, theme, isRowHovered, uniqueId),
+                                  child: ValueListenableBuilder<String?>(
+                                    valueListenable: _hoveredRowToken,
+                                    builder: (context, hoveredToken, _) {
+                                      final isRowHovered =
+                                          hoveredToken == '$index';
+                                      return _buildInstrumentCell(
+                                          alert, theme, isRowHovered, uniqueId);
+                                    },
+                                  ),
                                 ),
                                 buildCellWithHover(
                                   rowIndex: index,
@@ -729,28 +740,33 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowToken = '$rowIndex'),
-        onExit: (_) => setState(() => _hoveredRowToken = null),
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding, vertical: 8),
-            alignment: alignRight ? Alignment.topRight : null,
-            decoration: BoxDecoration(
-              color: _hoveredRowToken == '$rowIndex'
-                  ? resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ).withValues(alpha: 0.08)
-                  : Colors.transparent,
-            ),
-            child: child,
-          ),
+        onEnter: (_) => _hoveredRowToken.value = '$rowIndex',
+        onExit: (_) => _hoveredRowToken.value = null,
+        child: ValueListenableBuilder<String?>(
+          valueListenable: _hoveredRowToken,
+          builder: (context, hoveredToken, _) {
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding, vertical: 8),
+                alignment: alignRight ? Alignment.topRight : null,
+                decoration: BoxDecoration(
+                  color: hoveredToken == '$rowIndex'
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: child,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -983,75 +999,39 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       exchange = alert.exch ?? '';
     }
 
-    return Row(
+    return Stack(
+      clipBehavior: Clip.hardEdge,
       children: [
-        // Instrument name - symbol (normal color) + exchange (grey)
-        Expanded(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                symbol,
-                style: _geistTextStyle(
-                  color: colorScheme.foreground,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (exchange.isNotEmpty) ...[
-                const SizedBox(width: 4),
-                Text(
-                  exchange,
-                  style: _geistTextStyle(
-                    color: colorScheme.mutedForeground,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-        // Action buttons - appear on hover
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          width: isRowHovered ? null : 0,
-          curve: Curves.easeInOut,
-          child: IgnorePointer(
-            ignoring: !isRowHovered,
-            child: AnimatedOpacity(
-              opacity: isRowHovered ? 1 : 0,
-              duration: const Duration(milliseconds: 140),
+        // Instrument name - full width, can be partially covered by buttons
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.only(
+                  right: isRowHovered && isPending ? 140.0 : 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 8),
-                  if (isPending) ...[
-                    _buildAlertHoverButton(
-                      label: 'Modify',
-                      color: Colors.white,
-                      backgroundColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.primary,
-                        light: MyntColors.primary,
+                  Flexible(
+                    child: Text(
+                      symbol,
+                      style: _geistTextStyle(
+                        color: colorScheme.foreground,
                       ),
-                      onPressed: isProcessing && _isProcessingModify
-                          ? null
-                          : () => _handleModifyAlert(alert),
-                      theme: theme,
+                      maxLines: 1,
+                      overflow: isRowHovered
+                          ? TextOverflow.ellipsis
+                          : TextOverflow.visible,
                     ),
-                    const SizedBox(width: 6),
-                    _buildAlertHoverButton(
-                      label: 'Cancel',
-                      color: Colors.white,
-                      backgroundColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.errorDark,
-                        light: MyntColors.error,
+                  ),
+                  if (exchange.isNotEmpty) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      exchange,
+                      style: _geistTextStyle(
+                        color: colorScheme.mutedForeground,
+                        fontSize: 12,
                       ),
-                      onPressed: isProcessing && _isProcessingCancel
-                          ? null
-                          : () => _handleCancelAlert(alert),
-                      theme: theme,
                     ),
                   ],
                 ],
@@ -1059,6 +1039,65 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             ),
           ),
         ),
+        // Action buttons - positioned at the right edge
+        if (isRowHovered && isPending)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onTap: () {}, // Empty handler to stop propagation
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.only(left: 12),
+                alignment: Alignment.centerRight,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      shadcn.Theme.of(context)
+                          .colorScheme
+                          .background
+                          .withValues(alpha: 0.0),
+                      shadcn.Theme.of(context)
+                          .colorScheme
+                          .background
+                          .withValues(alpha: 0.95),
+                    ],
+                  ),
+                ),
+                child: HoverActionsContainer(
+                  isVisible: isRowHovered && isPending,
+                  actions: [
+                    HoverActionButton(
+                      label: 'Modify',
+                      size: 54,
+                      borderRadius: 5,
+                      color: Colors.white,
+                      onPressed: isProcessing && _isProcessingModify
+                          ? null
+                          : () => _handleModifyAlert(alert),
+                      backgroundColor: resolveThemeColor(context,
+                          dark: MyntColors.primary, light: MyntColors.primary),
+                    ),
+                    HoverActionButton(
+                      label: 'Cancel',
+                      size: 54,
+                      borderRadius: 5,
+                      color: Colors.white,
+                      onPressed: isProcessing && _isProcessingCancel
+                          ? null
+                          : () => _handleCancelAlert(alert),
+                      backgroundColor: resolveThemeColor(context,
+                          dark: MyntColors.tertiary,
+                          light: MyntColors.tertiary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -1200,84 +1239,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
       ),
     );
-  }
-
-  Widget _buildAlertHoverButton({
-    String? label,
-    IconData? icon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    double? iconWeight,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    final effectiveIconWeight = iconWeight ?? 400.0;
-
-    Widget button = Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(borderRadiusValue),
-        splashColor: color.withOpacity(0.15),
-        highlightColor: color.withOpacity(0.08),
-        onTap: onPressed,
-        child: Container(
-          padding: isLongLabel
-              ? const EdgeInsets.symmetric(horizontal: 8)
-              : EdgeInsets.zero,
-          constraints: BoxConstraints(
-            minHeight: 25,
-            minWidth: isLongLabel ? 0 : 25,
-          ),
-          decoration: BoxDecoration(
-            color: backgroundColor ?? Colors.transparent,
-            borderRadius: BorderRadius.circular(borderRadiusValue),
-            border: borderColor != null
-                ? Border.all(
-                    color: borderColor,
-                    width: 1.3,
-                  )
-                : null,
-          ),
-          child: Center(
-            child: icon != null
-                ? Icon(
-                    icon,
-                    size: 16,
-                    color: color,
-                    weight: effectiveIconWeight,
-                  )
-                : Text(
-                    label ?? "",
-                    style: MyntWebTextStyles.buttonSm(
-                      context,
-                      color: color,
-                    ),
-                    softWrap: false,
-                    overflow: TextOverflow.visible,
-                  ),
-          ),
-        ),
-      ),
-    );
-
-    if (isLongLabel) {
-      return IntrinsicWidth(
-        child: SizedBox(
-          height: 25,
-          child: button,
-        ),
-      );
-    } else {
-      return SizedBox(
-        width: 25,
-        height: 25,
-        child: button,
-      );
-    }
   }
 
   // Helper function to parse BrokerMessage dmsg

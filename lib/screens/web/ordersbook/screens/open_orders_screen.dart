@@ -12,6 +12,7 @@ import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
 import '../refactored/services/order_action_handler.dart';
 import '../refactored/utils/cell_formatters.dart';
@@ -493,17 +494,10 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     // Show loading or empty state
     if (orders.isEmpty) {
       if (orderBook.loading) {
-        return const SizedBox(
+        return SizedBox(
           height: 400,
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Loading orders...', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
+            child: MyntLoader.centered(message: 'Loading orders...'),
           ),
         );
       } else {
@@ -951,7 +945,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               ),
             ),
           ),
-          // Action buttons using HoverActionsContainer
+          // Action buttons using HoverActionsContainer with gradient background
           Positioned(
             right: 0,
             top: 0,
@@ -959,19 +953,47 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             child: GestureDetector(
               onTap: () {}, // Empty handler to stop propagation
               behavior: HitTestBehavior.opaque,
-              child: Center(
+              child: Container(
+                padding: const EdgeInsets.only(left: 12),
+                alignment: Alignment.centerRight,
+                decoration: BoxDecoration(
+                  gradient: isHovered
+                      ? LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            shadcn.Theme.of(context)
+                                .colorScheme
+                                .background
+                                .withValues(alpha: 0.0),
+                            shadcn.Theme.of(context)
+                                .colorScheme
+                                .background
+                                .withValues(alpha: 0.95),
+                          ],
+                        )
+                      : null,
+                ),
                 child: HoverActionsContainer(
                   isVisible: isHovered,
-                  spacing: 6.0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   actions: [
                     if (isPending) ...[
-                      _buildActionButton(
+                      HoverActionButton(
                         label: 'Modify',
-                        isPrimary: true,
-                        isProcessing: isProcessing && _isProcessingModify,
-                        onPressed: isProcessing && _isProcessingModify
+                        size: 44,
+                        borderRadius: 5,
+                        color: Colors.white,
+                        backgroundColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        borderColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        onPressed: (isProcessing && _isProcessingModify)
                             ? null
                             : () async {
                                 setState(() {
@@ -993,11 +1015,22 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                 );
                               },
                       ),
-                      _buildActionButton(
+                      HoverActionButton(
                         label: 'Cancel',
-                        isPrimary: false,
-                        isProcessing: isProcessing && _isProcessingCancel,
-                        onPressed: isProcessing && _isProcessingCancel
+                        size: 44,
+                        borderRadius: 5,
+                        color: Colors.white,
+                        backgroundColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.tertiary,
+                          light: MyntColors.tertiary,
+                        ),
+                        borderColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.tertiary,
+                          light: MyntColors.tertiary,
+                        ),
+                        onPressed: (isProcessing && _isProcessingCancel)
                             ? null
                             : () async {
                                 setState(() {
@@ -1016,18 +1049,40 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                               },
                       ),
                     ] else ...[
-                      _buildActionButton(
+                      HoverActionButton(
                         label: 'Repeat',
-                        isPrimary: true,
-                        isProcessing: false,
+                        size: 44,
+                        borderRadius: 5,
+                        color: Colors.white,
+                        backgroundColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        borderColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
                         onPressed: () => actionHandler.repeatOrder(order),
                       ),
                       if (order.status == "OPEN")
-                        _buildActionButton(
+                        HoverActionButton(
                           label: 'Cancel',
-                          isPrimary: false,
-                          isProcessing: isProcessing && _isProcessingCancel,
-                          onPressed: isProcessing && _isProcessingCancel
+                          size: 44,
+                          borderRadius: 5,
+                          color: Colors.white,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          borderColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          onPressed: (isProcessing && _isProcessingCancel)
                               ? null
                               : () async {
                                   setState(() {
@@ -1056,52 +1111,6 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required String label,
-    required bool isPrimary,
-    required bool isProcessing,
-    required VoidCallback? onPressed,
-  }) {
-    final backgroundColor = isPrimary
-        ? resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          )
-        : resolveThemeColor(
-            context,
-            dark: MyntColors.errorDark,
-            light: MyntColors.tertiary,
-          );
-
-    return SizedBox(
-      height: 26,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(4),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: Text(
-                label,
-                style: WebTextStyles.buttonXs(
-                  isDarkTheme: Theme.of(context).brightness == Brightness.dark,
-                  color: Colors.white,
-                  fontWeight: MyntFonts.medium,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // Action button widget

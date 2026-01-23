@@ -13,6 +13,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../provider/fund_provider.dart';
@@ -307,13 +308,9 @@ class _FundScreenWebState extends ConsumerState<FundScreenWeb> {
                                       child: Container(
                                         alignment: Alignment.center,
                                         child: fundState.fundLoading
-                                            ? const SizedBox(
-                                                width: 18,
-                                                height: 18,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                  color: Colors.white,
-                                                ),
+                                            ? MyntLoader.inline(
+                                                color: Colors.white,
+                                                strokeWidth: 2.0,
                                               )
                                             : Text(
                                                 "Pay Via UPI ID",

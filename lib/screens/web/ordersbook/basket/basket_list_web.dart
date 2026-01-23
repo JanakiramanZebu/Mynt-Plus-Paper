@@ -23,6 +23,8 @@ import '../../../../utils/responsive_snackbar.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/no_data_found_web.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import 'create_basket_web.dart';
 // import '../../../web/market_watch/search_dialog_web.dart'; // Commented out - search bar integrated
 import '../../../web/order/place_order_screen_web.dart';
@@ -97,32 +99,6 @@ class _BasketListState extends ConsumerState<BasketList> {
     final isLastColumn = columnIndex == 2;
     final horizontalPadding = isFirstColumn || isLastColumn ? 16.0 : 8.0;
 
-    Widget cellContent = Container(
-      width: double.infinity,
-      height: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
-      alignment: alignRight ? Alignment.topRight : null,
-      decoration: BoxDecoration(
-        color: _hoveredRowIndex.value == '$rowIndex'
-            ? resolveThemeColor(
-                context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary,
-              ).withValues(alpha: 0.08)
-            : Colors.transparent,
-      ),
-      child: child,
-    );
-
-    // Wrap with GestureDetector if onTap is provided
-    if (onTap != null) {
-      cellContent = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: cellContent,
-      );
-    }
-
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -137,7 +113,39 @@ class _BasketListState extends ConsumerState<BasketList> {
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = '$rowIndex',
         onExit: (_) => _hoveredRowIndex.value = null,
-        child: cellContent,
+        child: ValueListenableBuilder<String?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredRowId, _) {
+            Widget cellContent = Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding, vertical: 8),
+              alignment: alignRight ? Alignment.topRight : null,
+              decoration: BoxDecoration(
+                color: hoveredRowId == '$rowIndex'
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ).withValues(alpha: 0.08)
+                    : Colors.transparent,
+              ),
+              child: child,
+            );
+
+            // Wrap with GestureDetector if onTap is provided
+            if (onTap != null) {
+              cellContent = GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: cellContent,
+              );
+            }
+
+            return cellContent;
+          },
+        ),
       ),
     );
   }
@@ -334,95 +342,92 @@ class _BasketListState extends ConsumerState<BasketList> {
     final bsktName = basket['bsketName'] ?? 'N/A';
     final colorScheme = shadcn.Theme.of(context).colorScheme;
 
-    return Row(
+    return Stack(
+      clipBehavior: Clip.hardEdge,
       children: [
-        // Basket icon and name
-        Expanded(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SvgPicture.asset(
-                assets.basketdashboard,
-                width: 10,
-                height: 18,
-                color: colorScheme.mutedForeground,
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  bsktName,
-                  style: _geistTextStyle(
-                    color: colorScheme.foreground,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Action buttons fade in on hover
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 140),
-          width: isRowHovered ? null : 0,
-          curve: Curves.easeInOut,
-          child: IgnorePointer(
-            ignoring: !isRowHovered,
-            child: AnimatedOpacity(
-              opacity: isRowHovered ? 1 : 0,
-              duration: const Duration(milliseconds: 140),
+        // Basket icon and name - full width, can be partially covered by buttons
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.only(right: isRowHovered ? 80.0 : 0.0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 8),
-                  /* _buildHoverButton(
-                    label: 'Edit',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.primary
-                        : WebColors.primary,
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        builder: (BuildContext context) {
-                          final theme = ref.read(themeProvider);
-                          return Dialog(
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.surface
-                                : WebColors.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: SizedBox(
-                              width: 400,
-                              child: CreateBasket(
-                                initialName: bsktName,
-                                isEdit: true,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    theme: theme,
+                  SvgPicture.asset(
+                    assets.basketdashboard,
+                    width: 10,
+                    height: 18,
+                    colorFilter: ColorFilter.mode(
+                      colorScheme.mutedForeground,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                  const SizedBox(width: 4), */
-                  _buildHoverButton(
-                    label: 'Delete',
-                    color: Colors.white,
-                    backgroundColor: theme.isDarkMode
-                        ? MyntColors.tertiary
-                        : MyntColors.tertiary,
-                    onPressed: () =>
-                        _handleDeleteBasket(context, basket, index),
-                    theme: theme,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      bsktName,
+                      style: _geistTextStyle(
+                        color: colorScheme.foreground,
+                      ),
+                      maxLines: 1,
+                      overflow: isRowHovered
+                          ? TextOverflow.ellipsis
+                          : TextOverflow.visible,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
         ),
+        // Action buttons - positioned at the right edge
+        if (isRowHovered)
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onTap: () {}, // Empty handler to stop propagation
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.only(left: 12),
+                alignment: Alignment.centerRight,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      shadcn.Theme.of(context)
+                          .colorScheme
+                          .background
+                          .withValues(alpha: 0.0),
+                      shadcn.Theme.of(context)
+                          .colorScheme
+                          .background
+                          .withValues(alpha: 0.95),
+                    ],
+                  ),
+                ),
+                child: HoverActionsContainer(
+                  isVisible: isRowHovered,
+                  actions: [
+                    HoverActionButton(
+                      label: 'Delete',
+                      size: 54,
+                      borderRadius: 5,
+                      color: Colors.white,
+                      onPressed: () =>
+                          _handleDeleteBasket(context, basket, index),
+                      backgroundColor: resolveThemeColor(context,
+                          dark: MyntColors.tertiary,
+                          light: MyntColors.tertiary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -660,64 +665,6 @@ class _BasketListState extends ConsumerState<BasketList> {
     );
   }
 
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    double? iconWeight,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: isLongLabel ? null : 25,
-      height: 25,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding:
-                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1.3,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 16,
-                      color: color,
-                      weight: iconWeight ?? 400,
-                    )
-                  : Text(
-                      label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: theme.isDarkMode,
-                        color: color,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _handleDeleteBasket(
       BuildContext context, Map<String, dynamic> basket, int index) async {
     final bsktName = basket['bsketName'] ?? '';
@@ -811,13 +758,9 @@ class _BasketListState extends ConsumerState<BasketList> {
                       ),
                     ),
                     child: _isDeleting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                        ? MyntLoader.inline(
+                            color: Colors.white,
+                            strokeWidth: 2.0,
                           )
                         : Text(
                             'Delete',
@@ -966,8 +909,8 @@ class _BasketListState extends ConsumerState<BasketList> {
         ),
         const SizedBox(height: 16),
         basket.isBasketLoading
-            ? const SizedBox(
-                height: 400, child: Center(child: CircularProgressIndicator()))
+            ? SizedBox(
+                height: 400, child: Center(child: MyntLoader.simple()))
             : basket.bsktList.isEmpty
                 ? const SizedBox(height: 400, child: NoDataFound())
                 : Expanded(
