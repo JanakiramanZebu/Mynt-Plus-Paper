@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/res.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../res/mynt_web_text_styles.dart';
 import '../res/mynt_web_color_styles.dart';
@@ -221,9 +222,9 @@ class MyntButton extends StatelessWidget {
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor:
-              (isDarkMode ? Colors.white : Colors.black).withOpacity(0.05),
+              (resolveThemeColor(context, dark: WebColors.backgroundColorDark, light: WebColors.backgroundColor) ).withOpacity(0.05),
           highlightColor:
-              (isDarkMode ? Colors.white : Colors.black).withOpacity(0.02),
+              (resolveThemeColor(context, dark: WebColors.backgroundColorDark, light: WebColors.backgroundColor) ).withOpacity(0.02),
           child: Align(
             alignment: Alignment.center,
             widthFactor: 1.0,
