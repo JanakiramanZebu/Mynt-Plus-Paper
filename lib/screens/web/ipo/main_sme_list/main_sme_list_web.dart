@@ -4,18 +4,19 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
+
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
 import '../../../../models/ipo_model/ipo_sme_model.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/stocks_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_font_web.dart';
-import '../../../../res/web_colors.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import 'single_page_web.dart';
@@ -45,47 +46,48 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   @override
   Widget build(BuildContext context) {
-      final ipos = ref.watch(ipoProvide);
-      final mainstreamipo = ref.watch(ipoProvide);
-      final theme = ref.watch(themeProvider);
+    final ipos = ref.watch(ipoProvide);
+    final mainstreamipo = ref.watch(ipoProvide);
+    final theme = ref.watch(themeProvider);
 
-      // Get filtered IPOs based on search
+    // Get filtered IPOs based on search
     final filteredIpos = _getFilteredIPOs(ipos, mainstreamipo, ref);
 
-      List<dynamic> openIpos = filteredIpos.where((ipo) {
-        if (ipo is! SMEIPO && ipo is! MainIPO) {
+    List<dynamic> openIpos = filteredIpos.where((ipo) {
+      if (ipo is! SMEIPO && ipo is! MainIPO) {
         return false;
-        }
-        return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Open";
-      }).toList();
+      }
+      return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Open";
+    }).toList();
 
-      List<dynamic> preOpenIpos = filteredIpos.where((ipo) {
-        if (ipo is! SMEIPO && ipo is! MainIPO) {
+    List<dynamic> preOpenIpos = filteredIpos.where((ipo) {
+      if (ipo is! SMEIPO && ipo is! MainIPO) {
         return false;
-        }
-      return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Pre-open";
-      }).toList();
+      }
+      return ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ==
+          "Pre-open";
+    }).toList();
 
     // Combine all IPOs for table display
     List<dynamic> allIpos = [...openIpos, ...preOpenIpos];
 
     final preCloseMsg = ipos.ipoPreClose?.msg;
-      final hasAnyData = openIpos.isNotEmpty ||
-          preOpenIpos.isNotEmpty ||
+    final hasAnyData = openIpos.isNotEmpty ||
+        preOpenIpos.isNotEmpty ||
         (preCloseMsg != null && preCloseMsg.isNotEmpty);
 
     if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isEmpty) {
       return const Center(
-          child: NoDataFound(),
-        );
-       }
+        child: NoDataFound(),
+      );
+    }
 
-      if (!hasAnyData) {
+    if (!hasAnyData) {
       return const Center(
-          child: NoDataFound(),
-        );
-      }
+        child: NoDataFound(),
+      );
+    }
 
     // Apply sorting
     final sortedIpos = _getSortedIPOs(allIpos);
@@ -94,21 +96,24 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             if (_hasPreCloseData(ipos)) ...[
               const ClosedIPOScreen(),
               const SizedBox(height: 16),
             ],
             Expanded(
-              child: _buildIPOTable(sortedIpos, theme, ipos, ref.read(transcationProvider)),
+              child: _buildIPOTable(
+                  sortedIpos, theme, ipos, ref.read(transcationProvider)),
             ),
-                ],
-              ),
-            ),
-      );
+          ],
+        ),
+      ),
+    );
   }
 
   List<dynamic> _getFilteredIPOs(
@@ -162,13 +167,13 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
   }
 
   String _toTitleCase(String input) {
-      return input
-          .toLowerCase()
-          .split(' ')
-          .map((word) =>
-              word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
-          .join(' ');
-    }
+    return input
+        .toLowerCase()
+        .split(' ')
+        .map((word) =>
+            word.isNotEmpty ? word[0].toUpperCase() + word.substring(1) : '')
+        .join(' ');
+  }
 
   Widget _buildIPOTable(List<dynamic> ipos, ThemesProvider theme,
       IPOProvider ipoProvider, TranctionProvider upiProvider) {
@@ -180,470 +185,337 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 32.0;
-        const headerHeight = 100.0;
-        const spacing = 16.0;
-        final tableHeight = screenHeight - padding - headerHeight - spacing;
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight =
-            tableHeight > maxHeight ? maxHeight : (tableHeight > 400 ? tableHeight : 400.0);
+        final width = constraints.maxWidth;
+        // Allocation: Name (40%), Date (20%), Price (20%), Min (20%)
+        final nameWidth = width * 0.40;
+        final dateWidth = width * 0.20;
+        final priceWidth = width * 0.20;
+        final minWidth = width * 0.20;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            height: calculatedHeight.toDouble(),
-            decoration: BoxDecoration(
-              border: Border.all(
-                                    color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
-            ),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  radius: const Radius.circular(3),
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
-                  }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
-                  }),
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
-                ),
-              ),
-              child:               DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1200,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 1,
-                fixedColumnsColor: theme.isDarkMode
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                dataRowHeight: 56.0,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+        final columnWidths = {
+          0: shadcn.FixedTableSize(nameWidth),
+          1: shadcn.FixedTableSize(dateWidth),
+          2: shadcn.FixedTableSize(priceWidth),
+          3: shadcn.FixedTableSize(minWidth),
+        };
+
+        return shadcn.OutlinedContainer(
+          child: Column(
+            children: [
+              shadcn.Table(
+                columnWidths: columnWidths,
+                defaultRowHeight: const shadcn.FixedTableSize(50),
+                rows: [
+                  shadcn.TableHeader(
+                    cells: [
+                      _buildHeaderCell("Stock name", 0, theme),
+                      _buildHeaderCell("IPO date", 1, theme),
+                      _buildHeaderCell("Price range", -1, theme,
+                          alignRight: true),
+                      _buildHeaderCell("Min. amount", -1, theme,
+                          alignRight: true),
+                    ],
                   ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+                ],
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: shadcn.Table(
+                    columnWidths: columnWidths,
+                    defaultRowHeight: const shadcn.FixedTableSize(65),
+                    rows: ipos.asMap().entries.map((entry) {
+                      return _buildShadcnRow(entry.value, entry.key, theme,
+                          ipoProvider, upiProvider);
+                    }).toList(),
                   ),
                 ),
-                columns: _buildDataTable2Columns(theme),
-                rows: _buildDataTable2Rows(ipos, theme, ipoProvider, upiProvider),
               ),
-            ),
+            ],
           ),
         );
       },
     );
   }
 
-  List<DataColumn2> _buildDataTable2Columns(ThemesProvider theme) {
-    return [
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Stock name',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(0, theme),
-          ],
-        ),
-        size: ColumnSize.L,
-        fixedWidth: 300.0,
-        onSort: (index, ascending) => _onSortTable(0, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Type',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(1, theme),
-          ],
-        ),
-        size: ColumnSize.S,
-        onSort: (index, ascending) => _onSortTable(1, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'IPO date',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(2, theme),
-          ],
-        ),
-        size: ColumnSize.M,
-        onSort: (index, ascending) => _onSortTable(2, ascending),
-      ),
-      DataColumn2(
-        label: Text(
-          'Price range (₹)',
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
-        ),
-        size: ColumnSize.S,
-      ),
-      DataColumn2(
-        label: Text(
-          'Min. amount',
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
-          ),
-        ),
-        size: ColumnSize.S,
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Subscription',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(5, theme),
-          ],
-        ),
-        size: ColumnSize.S,
-        onSort: (index, ascending) => _onSortTable(5, ascending),
-      ),
-    ];
+  // Header text style
+  // 14px, weight 600, MyntColors for text
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
   }
 
-  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
-    if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16);
-    } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.textSecondary.withOpacity(0.6),
-      );
-    }
-  }
-
-  List<DataRow2> _buildDataTable2Rows(List<dynamic> ipos, ThemesProvider theme,
-      IPOProvider ipoProvider, TranctionProvider upiProvider) {
-    return ipos.asMap().entries.map((entry) {
-      final index = entry.key;
-      final ipo = entry.value;
-      final uniqueId = '${ipo.id ?? ""}$index';
-      final isPreOpen = ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Pre-open";
-      final rowIsHovered = _hoveredRowId == uniqueId;
-
-      return DataRow2(
-        onTap: () => _onIPOTap(context, ipo, ipoProvider),
-        color: WidgetStateProperty.resolveWith<Color>((states) {
-          if (states.contains(WidgetState.hovered) ||
-              _hoveredRowId == uniqueId) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return Colors.transparent;
-        }),
-        cells: [
-          // Stock name column with hover button
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-      children: [
-        Expanded(
-                        flex: rowIsHovered ? 1 : 2,
-                        child: Tooltip(
-                          message: _toTitleCase(ipo.name ?? ""),
-                          child: Text(
-                            _toTitleCase(ipo.name ?? ""),
-                            style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: WebFonts.medium,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      // Apply button on hover
-                      IgnorePointer(
-                        ignoring: !rowIsHovered,
-                        child: AnimatedOpacity(
-                          opacity: rowIsHovered ? 1 : 0,
-                          duration: const Duration(milliseconds: 140),
-                          child: _buildHoverButton(
-                            label: isPreOpen ? 'Pre Apply' : 'Apply',
-                            color: Colors.white,
-                            backgroundColor: theme.isDarkMode
-                                ? WebDarkColors.primary
-                                : WebColors.primary,
-                            onPressed: () => _onApplyPressed(context, ipo, ipoProvider, upiProvider),
-                            theme: theme,
-                          ),
-                        ),
+  shadcn.TableCell _buildHeaderCell(
+      String text, int sortIndex, ThemesProvider theme,
+      {bool alignRight = false}) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: GestureDetector(
+        onTap: sortIndex >= 0
+            ? () => _onSortTable(sortIndex, !_sortAscending)
+            : null,
+        child: Container(
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          decoration: BoxDecoration(
+            color: theme.isDarkMode
+                ? Colors.white.withOpacity(0.04)
+                : Colors.black.withOpacity(0.03),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                text,
+                style: _getHeaderStyle(context),
               ),
             ],
           ),
         ),
-              ),
-            ),
-          ),
-          // Type column (left-aligned)
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    ipo.key ?? "",
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // IPO date column
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    _formatIPODate(ipo),
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                    overflow: TextOverflow.visible,
-                    softWrap: false,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Price range column
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    _formatPriceRange(ipo),
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                      fontWeight: WebFonts.medium,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Min. amount column
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _formatMinAmount(ipo),
-                        style: WebTextStyles.custom(
-                          fontSize: 13,
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                          fontWeight: WebFonts.medium,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  shadcn.TableRow _buildShadcnRow(dynamic ipo, int index, ThemesProvider theme,
+      IPOProvider ipoProvider, TranctionProvider upiProvider) {
+    final uniqueId = '${ipo.id ?? ""}$index';
+    final isPreOpen =
+        ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Pre-open";
+    final status =
+        ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ?? "Closed";
+    final rowIsHovered = _hoveredRowId == uniqueId;
+
+    return shadcn.TableRow(
+      cells: [
+        // Stock Name Cell
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          onTap: () => _onIPOTap(context, ipo, ipoProvider),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _toTitleCase(ipo.name ?? ""),
+                      style: MyntWebTextStyles.bodyMedium(
+                        context,
+                        fontWeight: MyntFonts.medium,
+                        color: rowIsHovered
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.primary,
+                                light: MyntColors.primary)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary),
                       ),
-                      if (_getLotSize(ipo) != null) ...[
-                        const SizedBox(height: 1),
-                        Text(
-                          "${_getLotSize(ipo)} Qty",
-                          style: WebTextStyles.custom(
-                            fontSize: 12,
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                            fontWeight: WebFonts.medium,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        if (ipo.symbol != null) ...[
+                          Text(
+                            ipo.symbol ?? "",
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
+                              fontWeight: MyntFonts.medium,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 6),
+                        ],
+                        Text(
+                          ipo is SMEIPO ? "SME" : "IPO",
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          status,
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                            fontWeight: MyntFonts.medium,
+                          ),
                         ),
                       ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Subscription column
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowId = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    ipo.totalsub != null && ipo.totalsub.toString().isNotEmpty
-                        ? "${ipo.totalsub}x"
-                        : "-",
-                    style: WebTextStyles.custom(
-                      fontSize: 13,
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
-                      fontWeight: WebFonts.medium,
                     ),
+                  ],
+                ),
+              ),
+              // Apply button on hover
+              IgnorePointer(
+                ignoring: !rowIsHovered,
+                child: AnimatedOpacity(
+                  opacity: rowIsHovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  child: _buildHoverButton(
+                    label: isPreOpen ? 'Pre Apply' : 'Apply',
+                    color: Colors.white,
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.primary, light: MyntColors.primary),
+                    onPressed: () =>
+                        _onApplyPressed(context, ipo, ipoProvider, upiProvider),
+                    theme: theme,
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+        // IPO Date Cell
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          onTap: () => _onIPOTap(context, ipo, ipoProvider),
+          child: Text(
+            _formatIPODate(ipo),
+            style: MyntWebTextStyles.bodyMedium(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
+            ),
+            overflow: TextOverflow.visible,
+            softWrap: false,
+          ),
+        ),
+        // Price Range Cell
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          alignRight: true,
+          onTap: () => _onIPOTap(context, ipo, ipoProvider),
+          child: Text(
+            _formatPriceRange(ipo),
+            style: MyntWebTextStyles.bodyMedium(
+              context,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
-        ],
-      );
-    }).toList();
+        ),
+        // Min Amount Cell
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          alignRight: true,
+          onTap: () => _onIPOTap(context, ipo, ipoProvider),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _formatMinAmount(ipo),
+                style: MyntWebTextStyles.bodyMedium(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (_getLotSize(ipo) != null) ...[
+                const SizedBox(height: 1),
+                Text(
+                  "${_getLotSize(ipo)} Qty",
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
+                    fontWeight: MyntFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  shadcn.TableCell _buildShadcnCell({
+    required Widget child,
+    required String uniqueId,
+    required bool rowIsHovered,
+    required ThemesProvider theme,
+    VoidCallback? onTap,
+    bool alignRight = false,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowId = null),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            color: rowIsHovered
+                ? resolveThemeColor(context,
+                        dark: MyntColors.primary, light: MyntColors.primary)
+                    .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
+                : Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            width: double.infinity,
+            height: double.infinity,
+            child: Align(
+              alignment:
+                  alignRight ? Alignment.centerRight : Alignment.centerLeft,
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildHoverButton({
@@ -663,8 +535,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
       width: isLongLabel ? null : 25,
       height: 25,
       child: Material(
-          color: Colors.transparent,
-          child: InkWell(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor: color.withOpacity(0.15),
           highlightColor: color.withOpacity(0.08),
@@ -692,11 +564,12 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                     )
                   : Text(
                       label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: theme.isDarkMode,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
                         color: color,
+                        fontWeight: MyntFonts.bold,
                       ),
-              ),
+                    ),
             ),
           ),
         ),
@@ -711,45 +584,15 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     });
   }
 
-  String _formatDate(dynamic ipo, bool isPreOpen) {
-    if (isPreOpen) {
-      if (ipo.biddingStartDate == null || ipo.biddingStartDate.isEmpty) {
-        return "-";
-      }
-      try {
-        List<String> parts = ipo.biddingStartDate.split('-');
-        if (parts.length >= 3) {
-          int day = int.parse(parts[0]);
-          int month = int.parse(parts[1]);
-          int year = int.parse(parts[2]);
-          DateTime parsedDate = DateTime(year, month, day);
-          return DateFormat('d MMM').format(parsedDate);
-        }
-      } catch (e) {
-        return "-";
-      }
-    } else {
-      if (ipo.biddingEndDate == null || ipo.biddingEndDate.isEmpty) {
-        return "-";
-      }
-      try {
-        if (ipo.biddingEndDate.length >= 11) {
-          return ipo.biddingEndDate.substring(5, 11);
-        }
-      } catch (e) {
-        return "-";
-      }
-    }
-    return "-";
-  }
-
   String _formatIPODate(dynamic ipo) {
     try {
       String? startDateStr = ipo.biddingStartDate;
       String? endDateStr = ipo.biddingEndDate;
 
-      if (startDateStr == null || startDateStr.isEmpty ||
-          endDateStr == null || endDateStr.isEmpty) {
+      if (startDateStr == null ||
+          startDateStr.isEmpty ||
+          endDateStr == null ||
+          endDateStr.isEmpty) {
         return "-";
       }
 
@@ -836,7 +679,10 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
       String? minPrice = ipo.minPrice;
       String? maxPrice = ipo.maxPrice;
 
-      if (minPrice == null || minPrice.isEmpty || maxPrice == null || maxPrice.isEmpty) {
+      if (minPrice == null ||
+          minPrice.isEmpty ||
+          maxPrice == null ||
+          maxPrice.isEmpty) {
         return "-";
       }
 
@@ -844,10 +690,12 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
       double min = double.tryParse(minPrice) ?? 0;
       double max = double.tryParse(maxPrice) ?? 0;
 
-      String minStr = min == min.toInt() ? min.toInt().toString() : min.toStringAsFixed(2);
-      String maxStr = max == max.toInt() ? max.toInt().toString() : max.toStringAsFixed(2);
+      String minStr =
+          min == min.toInt() ? min.toInt().toString() : min.toStringAsFixed(2);
+      String maxStr =
+          max == max.toInt() ? max.toInt().toString() : max.toStringAsFixed(2);
 
-      return "$minStr - $maxStr";
+      return "₹$minStr - ₹$maxStr";
     } catch (e) {
       return "-";
     }
@@ -855,14 +703,41 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   String _formatMinAmount(dynamic ipo) {
     try {
-      String? minValue = ipo.minvalue ?? ipo.minValue;
-      if (minValue == null || minValue.isEmpty) {
+      String? minValue = ipo.minvalue;
+
+      // Check if it's missing or effectively empty
+      if (minValue == null ||
+          minValue.isEmpty ||
+          minValue == "null" ||
+          minValue == "0") {
+        minValue = ipo.minValue;
+      }
+
+      // Fallback: Calculate from price and quantity if direct field is missing
+      if (minValue == null ||
+          minValue.isEmpty ||
+          minValue == "null" ||
+          minValue == "0") {
+        final minPrice = double.tryParse(ipo.minPrice ?? "0") ?? 0;
+        // Search for minBidQuantity, fallback to lotSize
+        final minQty =
+            double.tryParse(ipo.minBidQuantity ?? ipo.lotSize ?? "0") ?? 0;
+
+        if (minPrice > 0 && minQty > 0) {
+          minValue = (minPrice * minQty).toString();
+        }
+      }
+
+      if (minValue == null || minValue.isEmpty || minValue == "null") {
         return "-";
       }
 
       double amount = double.tryParse(minValue) ?? 0;
-      String amountStr = amount == amount.toInt() 
-          ? amount.toInt().toString() 
+      if (amount <= 0) return "-";
+
+      // Display as whole number if possible, otherwise 2 decimals
+      String amountStr = amount == amount.toInt()
+          ? amount.toInt().toString()
           : amount.toStringAsFixed(2);
 
       return "₹$amountStr";
@@ -873,8 +748,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   String? _getLotSize(dynamic ipo) {
     try {
-      String? lotSize = ipo.lotSize;
-      if (lotSize == null || lotSize.isEmpty) {
+      // Priority: lotSize, fallback to minBidQuantity
+      String? lotSize = ipo.lotSize ?? ipo.minBidQuantity;
+      if (lotSize == null || lotSize.isEmpty || lotSize == "null") {
         return null;
       }
       return lotSize;
@@ -887,7 +763,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
       BuildContext context, dynamic ipo, IPOProvider ipoProvider) async {
     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
 
-      if (context.mounted) {
+    if (context.mounted) {
       _showIPODetailsDialog(
         context,
         ipo,
@@ -910,7 +786,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           builder: (context, ref, _) {
             final currentTheme = ref.watch(themeProvider);
             return Stack(
-          children: [
+              children: [
                 // Backdrop
                 Positioned.fill(
                   child: GestureDetector(
@@ -933,9 +809,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                       ),
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: currentTheme.isDarkMode
-                            ? WebDarkColors.surface
-                            : WebColors.surface,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.backgroundColorDark,
+                            light: MyntColors.backgroundColor),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: ConstrainedBox(
@@ -949,13 +825,15 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                             Consumer(
                               builder: (context, ref, _) {
                                 final ipoProvider = ref.watch(ipoProvide);
-                                final singlePageData = ipoProvider.iposinglepage?.data;
-                                
+                                final singlePageData =
+                                    ipoProvider.iposinglepage?.data;
+
                                 // Safely access the data - check if it's a Map
                                 String companyName = ipo.name ?? '';
                                 String? imageLink = ipo.imageLink;
-                                
-                                if (singlePageData != null && singlePageData is Map) {
+
+                                if (singlePageData != null &&
+                                    singlePageData is Map) {
                                   try {
                                     final name = singlePageData['Company Name'];
                                     if (name != null) {
@@ -964,9 +842,10 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                   } catch (e) {
                                     // If access fails, use ipo.name
                                   }
-                                  
+
                                   try {
-                                    final imgLink = singlePageData['image_link'];
+                                    final imgLink =
+                                        singlePageData['image_link'];
                                     if (imgLink != null) {
                                       imageLink = imgLink.toString();
                                     }
@@ -979,15 +858,16 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                   ipo.biddingEndDate ?? '',
                                 );
                                 final isOpen = status == "Open";
-                                
+
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: BorderSide(
-                                        color: currentTheme.isDarkMode
-                                            ? WebDarkColors.divider
-                                            : WebColors.divider,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.dividerDark,
+                                            light: MyntColors.divider),
                                         width: 1,
                                       ),
                                     ),
@@ -995,26 +875,34 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                   child: Row(
                                     children: [
                                       // Company Logo
-                                      if (imageLink != null && imageLink.isNotEmpty)
+                                      if (imageLink != null &&
+                                          imageLink.isNotEmpty)
                                         Padding(
-                                          padding: const EdgeInsets.only(right: 12),
+                                          padding:
+                                              const EdgeInsets.only(right: 12),
                                           child: ClipOval(
                                             child: Container(
-                                              color: currentTheme.isDarkMode
-                                                  ? WebDarkColors.divider
-                                                  : WebColors.divider,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.dividerDark,
+                                                  light: MyntColors.divider),
                                               width: 50,
                                               height: 50,
                                               child: Container(
-                                                padding: const EdgeInsets.all(8),
+                                                padding:
+                                                    const EdgeInsets.all(8),
                                                 child: CachedNetworkImage(
                                                   imageUrl: imageLink,
                                                   memCacheWidth: 100,
                                                   memCacheHeight: 100,
-                                                  placeholder: (context, url) => const Center(
-                                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                                  placeholder: (context, url) =>
+                                                      const Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                            strokeWidth: 2),
                                                   ),
-                                                  errorWidget: (context, url, error) => const SizedBox(),
+                                                  errorWidget:
+                                                      (context, url, error) =>
+                                                          const SizedBox(),
                                                 ),
                                               ),
                                             ),
@@ -1023,16 +911,20 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                       // Company Name and Status
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               companyName,
-                                              style: WebTextStyles.sub(
-                                                isDarkTheme: currentTheme.isDarkMode,
-                                                color: currentTheme.isDarkMode
-                                                    ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary,
-                                                fontWeight: FontWeight.w700,
+                                              style: MyntWebTextStyles.titlesub(
+                                                context,
+                                                color: resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors
+                                                        .textPrimaryDark,
+                                                    light:
+                                                        MyntColors.textPrimary),
+                                                fontWeight: MyntFonts.bold,
                                               ),
                                             ),
                                             const SizedBox(height: 8),
@@ -1040,40 +932,65 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                               children: [
                                                 Text(
                                                   ipo.key ?? '',
-                                                  style: WebTextStyles.bodySmall(
-                                                    isDarkTheme: currentTheme.isDarkMode,
-                                                    color: currentTheme.isDarkMode
-                                                        ? WebDarkColors.textSecondary
-                                                        : WebColors.textSecondary,
+                                                  style: MyntWebTextStyles
+                                                      .bodySmall(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                        context,
+                                                        dark: MyntColors
+                                                            .textSecondaryDark,
+                                                        light: MyntColors
+                                                            .textSecondary),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 2),
                                                   decoration: BoxDecoration(
                                                     color: isOpen
-                                                        ? (currentTheme.isDarkMode
-                                                            ? WebDarkColors.profit
-                                                            : WebColors.profit)
+                                                        ? resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .profit,
+                                                                light:
+                                                                    MyntColors
+                                                                        .profit)
                                                             .withOpacity(0.2)
-                                                        : (currentTheme.isDarkMode
-                                                            ? WebDarkColors.loss
-                                                            : WebColors.loss)
+                                                        : resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors
+                                                                    .loss,
+                                                                light:
+                                                                    MyntColors
+                                                                        .loss)
                                                             .withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(4),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4),
                                                   ),
                                                   child: Text(
                                                     status.toUpperCase(),
-                                                    style: WebTextStyles.bodySmall(
-                                                      isDarkTheme: currentTheme.isDarkMode,
+                                                    style: MyntWebTextStyles
+                                                        .bodySmall(
+                                                      context,
                                                       color: isOpen
-                                                          ? (currentTheme.isDarkMode
-                                                              ? WebDarkColors.profit
-                                                              : WebColors.profit)
-                                                          : (currentTheme.isDarkMode
-                                                              ? WebDarkColors.loss
-                                                              : WebColors.loss),
-                                                      fontWeight: FontWeight.w600,
+                                                          ? resolveThemeColor(
+                                                              context,
+                                                              dark: MyntColors
+                                                                  .profit,
+                                                              light: MyntColors
+                                                                  .profit)
+                                                          : resolveThemeColor(
+                                                              context,
+                                                              dark: MyntColors
+                                                                  .loss,
+                                                              light: MyntColors
+                                                                  .loss),
+                                                      fontWeight:
+                                                          MyntFonts.semiBold,
                                                     ),
                                                   ),
                                                 ),
@@ -1091,7 +1008,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                           splashColor: currentTheme.isDarkMode
                                               ? Colors.white.withOpacity(.15)
                                               : Colors.black.withOpacity(.15),
-                                          highlightColor: currentTheme.isDarkMode
+                                          highlightColor: currentTheme
+                                                  .isDarkMode
                                               ? Colors.white.withOpacity(.08)
                                               : Colors.black.withOpacity(.08),
                                           onTap: () {
@@ -1102,9 +1020,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                                             child: Icon(
                                               Icons.close,
                                               size: 18,
-                                              color: currentTheme.isDarkMode
-                                                  ? WebDarkColors.iconSecondary
-                                                  : WebColors.iconSecondary,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.iconDark,
+                                                  light: MyntColors.icon),
                                             ),
                                           ),
                                         ),
@@ -1116,16 +1034,21 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                             ),
                             // Content
                             Flexible(
-            child: MainSmeSinglePage(
-              pricerange:
+                              child: MainSmeSinglePage(
+                                pricerange:
                                     "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
-              mininv:
-                                    convertCurrencyINRStandard(mininv(double.parse(ipo.minPrice ?? "0").toDouble(), int.parse(ipo.minBidQuantity ?? "0").toInt()).toInt()),
+                                mininv: convertCurrencyINRStandard(mininv(
+                                        double.parse(ipo.minPrice ?? "0")
+                                            .toDouble(),
+                                        int.parse(ipo.minBidQuantity ?? "0")
+                                            .toInt())
+                                    .toInt()),
                                 enddate: "${ipo.biddingEndDate ?? ""}",
                                 startdate: "${ipo.biddingStartDate ?? ""}",
                                 ipotype: "${ipo.key ?? ""}",
                                 ipodetails: jsonEncode(ipo),
-                                isDialog: true, // Mark as dialog to skip DraggableScrollableSheet
+                                isDialog:
+                                    true, // Mark as dialog to skip DraggableScrollableSheet
                               ),
                             ),
                           ],

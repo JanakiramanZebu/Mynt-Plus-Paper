@@ -5,8 +5,8 @@ import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/stocks_provider.dart';
-import '../../../res/global_font_web.dart';
-import '../../../res/web_colors.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import 'ipo_orderbook_screen/ipo_order_book_main_screen_web.dart';
@@ -202,38 +202,36 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
           FocusScope.of(context).unfocus();
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
-                : Colors.white,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
+            color: Colors.transparent,
+            border: isSelected
+                ? Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primary, light: MyntColors.primary),
+                      width: 2.0,
+                    ),
+                  )
+                : const Border(
+                    bottom: BorderSide(
+                      color: Colors.transparent,
+                      width: 2.0,
+                    ),
+                  ),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
+            style: MyntWebTextStyles.body(
+              context,
               color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary, light: MyntColors.primary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
@@ -50,21 +50,25 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     // Apply sorting
     final sortedOrders = _getSortedOrders(ordersToDisplay);
 
-    return Builder(
-      builder: (context) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 16.0 * 2;
-        const headerHeight = 100.0;
-        const spacing = 16.0;
-        final tableHeight = screenHeight - padding - headerHeight - spacing;
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight =
-            tableHeight > maxHeight ? maxHeight : (tableHeight > 400 ? tableHeight : 400.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        // Allocation: Name (40%), Date (20%), Status (20%), Amount (20%)
+        final nameWidth = width * 0.40;
+        final dateWidth = width * 0.20;
+        final statusWidth = width * 0.20;
+        final amountWidth = width * 0.20;
+
+        final columnWidths = {
+          0: shadcn.FixedTableSize(nameWidth),
+          1: shadcn.FixedTableSize(dateWidth),
+          2: shadcn.FixedTableSize(statusWidth),
+          3: shadcn.FixedTableSize(amountWidth),
+        };
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: Container(
-            height: calculatedHeight.toDouble(),
             decoration: BoxDecoration(
               border: Border.all(
                 color: resolveThemeColor(
@@ -74,107 +78,53 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 ),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(8),
               color: theme.isDarkMode
-                  ? Theme.of(context).colorScheme.background
+                  ? Theme.of(context).colorScheme.surface
                   : Colors.white,
             ),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  radius: const Radius.circular(3),
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return resolveThemeColor(
-                      context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary,
-                    ).withOpacity(0.3);
-                  }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return resolveThemeColor(
-                      context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider,
-                    ).withOpacity(0.1);
-                  }),
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
-                ),
-              ),
-              child: DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1000,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 1,
-                fixedColumnsColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.searchBgDark.withOpacity(0.8),
-                  light: MyntColors.searchBg.withOpacity(0.8),
-                ),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                dataRowHeight: 56.0,
-                headingRowColor: WidgetStateProperty.all(
-                  resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary.withOpacity(0.05),
-                  ),
-                ),
-                headingTextStyle: MyntWebTextStyles.head(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                ),
-                dataTextStyle: MyntWebTextStyles.bodySmall(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                  fontWeight: MyntFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Column(
+                children: [
+                  // Header
+                  Container(
                     color: resolveThemeColor(
                       context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider,
+                      dark: MyntColors.primaryDark.withOpacity(0.05),
+                      light: MyntColors.primary.withOpacity(0.05),
                     ),
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider,
+                    child: shadcn.Table(
+                      columnWidths: columnWidths,
+                      defaultRowHeight: const shadcn.FixedTableSize(48),
+                      rows: [
+                        shadcn.TableHeader(
+                          cells: [
+                            _buildHeaderCell("Stock name", 0, theme),
+                            _buildHeaderCell("Date", 1, theme,
+                                alignRight: true),
+                            _buildHeaderCell("Status", 2, theme,
+                                centered: true),
+                            _buildHeaderCell("Amount", 3, theme,
+                                alignRight: true),
+                          ],
+                        ),
+                      ],
                     ),
-                    width: 1,
                   ),
-                  horizontalInside: BorderSide(
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider,
+                  // Body
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: shadcn.Table(
+                        columnWidths: columnWidths,
+                        defaultRowHeight: const shadcn.FixedTableSize(60),
+                        rows: sortedOrders.asMap().entries.map((entry) {
+                          return _buildShadcnRow(entry.value, entry.key, theme);
+                        }).toList(),
+                      ),
                     ),
-                    width: 1,
                   ),
-                ),
-                columns: _buildDataTable2Columns(theme),
-                rows: _buildDataTable2Rows(sortedOrders, theme),
+                ],
               ),
             ),
           ),
@@ -218,6 +168,18 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     return sorted;
   }
 
+  // Header text style
+  // 14px, weight 600, MyntColors for text
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {
       if (_sortColumnIndex == columnIndex) {
@@ -229,114 +191,95 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     });
   }
 
-  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
-    if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16);
+  shadcn.TableCell _buildHeaderCell(
+      String text, int sortIndex, ThemesProvider theme,
+      {bool alignRight = false, bool centered = false}) {
+    Alignment alignment;
+    if (centered) {
+      alignment = Alignment.center;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-      color: resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textSecondary,
-      ).withOpacity(0.6),
-      );
+      alignment = alignRight ? Alignment.centerRight : Alignment.centerLeft;
     }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: GestureDetector(
+        onTap: sortIndex >= 0
+            ? () => _onSortTable(sortIndex, !_sortAscending)
+            : null,
+        child: Container(
+          alignment: alignment,
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                text,
+                style: _getHeaderStyle(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  List<DataColumn2> _buildDataTable2Columns(ThemesProvider theme) {
-    return [
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Stock name',
-              style: MyntWebTextStyles.head(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(0, theme),
-          ],
+  shadcn.TableCell _buildShadcnCell({
+    required Widget child,
+    required String uniqueId,
+    required bool rowIsHovered,
+    required ThemesProvider theme,
+    VoidCallback? onTap,
+    bool alignRight = false,
+    bool centered = false,
+  }) {
+    Alignment alignment;
+    if (centered) {
+      alignment = Alignment.center;
+    } else {
+      alignment = alignRight ? Alignment.centerRight : Alignment.centerLeft;
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
         ),
-        size: ColumnSize.L,
-        fixedWidth: 300.0,
-        onSort: (index, ascending) => _onSortTable(0, ascending),
       ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Date',
-              style: MyntWebTextStyles.head(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowToken = null),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            color: Colors.transparent,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+            width: double.infinity,
+            height: double.infinity,
+            child: Align(
+              alignment: alignment,
+              child: child,
             ),
-            const SizedBox(width: 4),
-            _buildSortIcon(1, theme),
-          ],
+          ),
         ),
-        size: ColumnSize.M,
-        onSort: (index, ascending) => _onSortTable(1, ascending),
       ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Status',
-              style: MyntWebTextStyles.head(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(2, theme),
-          ],
-        ),
-        size: ColumnSize.S,
-        onSort: (index, ascending) => _onSortTable(2, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Amount',
-              style: MyntWebTextStyles.head(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(3, theme),
-          ],
-        ),
-        size: ColumnSize.M,
-        onSort: (index, ascending) => _onSortTable(3, ascending),
-      ),
-    ];
+    );
   }
 
   void _showOrderDetailsDialog(dynamic order) {
@@ -380,7 +323,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                       children: [
                         // Header
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
@@ -471,7 +415,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           borderRadius: BorderRadius.circular(5),
           onTap: onPressed,
           child: Container(
-            padding: isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
+            padding:
+                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
             decoration: BoxDecoration(
               color: backgroundColor ?? Colors.transparent,
               borderRadius: BorderRadius.circular(5),
@@ -502,32 +447,38 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     if (orderStatus == "new success") {
       return false;
     }
-    
+
     // Check if bidding start date exists and is not empty/null string
     final startDate = order.biddingstartdate?.toString().trim();
-    if (startDate == null || startDate.isEmpty || startDate == "null" || startDate == "") {
+    if (startDate == null ||
+        startDate.isEmpty ||
+        startDate == "null" ||
+        startDate == "") {
       // If dates are not available, default to showing button for pending orders
       // The backend will handle validation
       return true;
     }
-    
+
     // Get the correct end date based on exchange type (BSE vs NSE)
-    final endDateStr = order.type == "BSE" 
+    final endDateStr = order.type == "BSE"
         ? order.biddingendDate?.toString().trim()
         : order.biddingenddate?.toString().trim();
-    
-    if (endDateStr == null || endDateStr.isEmpty || endDateStr == "null" || endDateStr == "") {
+
+    if (endDateStr == null ||
+        endDateStr.isEmpty ||
+        endDateStr == "null" ||
+        endDateStr == "") {
       // If dates are not available, default to showing button for pending orders
       return true;
     }
-    
+
     // Check if the IPO bidding period is currently "Open"
     try {
       final status = modifyButtonStatus(
         startDate,
         endDateStr,
       );
-      
+
       // Only allow cancellation if IPO bidding is still open
       return status == "Open";
     } catch (e) {
@@ -536,185 +487,162 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     }
   }
 
-  List<DataRow2> _buildDataTable2Rows(
-      List<dynamic> orders, ThemesProvider theme) {
-    return orders.asMap().entries.map((entry) {
-      final index = entry.key;
-      final order = entry.value;
-      final orderToken = order.applicationNumber?.toString() ?? '';
-      final uniqueId = '$orderToken$index';
-      final isHovered = _hoveredRowToken == uniqueId;
-      final canCancel = _canCancelOrder(order);
-      final companyName = order.companyName?.toString() ?? '';
+  shadcn.TableRow _buildShadcnRow(
+      dynamic order, int index, ThemesProvider theme) {
+    final orderToken = order.applicationNumber?.toString() ?? '';
+    final uniqueId = '$orderToken$index';
+    final isHovered = _hoveredRowToken == uniqueId;
+    final canCancel = _canCancelOrder(order);
+    final companyName = order.companyName?.toString() ?? '';
 
-      return DataRow2(
-        onTap: () {
-          _showOrderDetailsDialog(order);
-        },
-        color: WidgetStateProperty.resolveWith<Color>((states) {
-          if (states.contains(WidgetState.hovered) || isHovered) {
-            return resolveThemeColor(
+    return shadcn.TableRow(
+      cells: [
+        // Stock Name
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: isHovered,
+          theme: theme,
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Row(
+            children: [
+              Expanded(
+                flex: isHovered && canCancel ? 1 : 2,
+                child: Text(
+                  companyName,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
+                    fontWeight: MyntFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              // Cancel button fade in on hover
+              if (canCancel)
+                AnimatedOpacity(
+                  opacity: isHovered ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: IgnorePointer(
+                    ignoring: !isHovered,
+                    child: _buildHoverButton(
+                      label: 'Cancel',
+                      color: Colors.white,
+                      backgroundColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.tertiary,
+                        light: MyntColors.tertiary,
+                      ),
+                      onPressed: isHovered
+                          ? () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return IpoCancelAlert(ipocancel: order);
+                                },
+                              );
+                            }
+                          : null,
+                      theme: theme,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // Date
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: isHovered,
+          theme: theme,
+          alignRight: true,
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Text(
+            order.responseDatetime?.toString() == "" ||
+                    order.responseDatetime == null
+                ? "----"
+                : ipodateres(order.responseDatetime.toString()),
+            style: MyntWebTextStyles.body(
               context,
-              dark: MyntColors.primaryDark,
-              light: MyntColors.primary,
-            ).withOpacity(theme.isDarkMode ? 0.06 : 0.10);
-          }
-          return Colors.transparent;
-        }),
-        cells: [
-          // Stock name (fixed column) with hover actions
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: isHovered && canCancel ? 1 : 2,
-                        child: Tooltip(
-                          message: companyName,
-                          child: Text(
-                            companyName,
-                            style: MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      // Cancel button fade in on hover (only if can cancel)
-                      if (canCancel)
-                        AnimatedOpacity(
-                          opacity: isHovered ? 1.0 : 0.0,
-                          duration: const Duration(milliseconds: 150),
-                          child: IgnorePointer(
-                            ignoring: !isHovered,
-                            child: _buildHoverButton(
-                              label: 'Cancel',
-                              color: Colors.white,
-                              backgroundColor: resolveThemeColor(
-                                context,
-                                dark: MyntColors.tertiary,
-                                light: MyntColors.tertiary,
-                              ),
-                              onPressed: isHovered ? () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return IpoCancelAlert(ipocancel: order);
-                                  },
-                                );
-                              } : null,
-                              theme: theme,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
+              fontWeight: MyntFonts.medium,
             ),
           ),
-          // Date
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    order.responseDatetime?.toString() == "" || order.responseDatetime == null
-                        ? "----"
-                        : ipodateres(order.responseDatetime.toString()),
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: resolveThemeColor(
+        ),
+        // Status
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: isHovered,
+          theme: theme,
+          centered: true,
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: (order.reponseStatus == "new success"
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit,
+                        )
+                      : MyntColors.pending)
+                  .withOpacity(0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              (order.reponseStatus == "new success" ? "Success" : "Pending")
+                  .toUpperCase(),
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                color: order.reponseStatus == "new success"
+                    ? resolveThemeColor(
                         context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary,
-                      ),
-                      fontWeight: MyntFonts.regular,
-                    ),
-                  ),
-                ),
+                        dark: MyntColors.profitDark,
+                        light: MyntColors.profit,
+                      )
+                    : MyntColors.pending,
+                fontWeight: MyntFonts.medium,
               ),
             ),
           ),
-          // Status
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    order.reponseStatus == "new success" ? "Success" : "Pending",
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: order.reponseStatus == "new success"
-                          ? resolveThemeColor(
-                              context,
-                              dark: MyntColors.profitDark,
-                              light: MyntColors.profit,
-                            )
-                          : MyntColors.pending,
-                      fontWeight: MyntFonts.regular,
-                    ),
-                  ),
-                ),
+        ),
+        // Amount
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: isHovered,
+          theme: theme,
+          alignRight: true,
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Text(
+            _getInvestedAmount(order),
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
+              fontWeight: MyntFonts.medium,
             ),
           ),
-          // Amount
-          DataCell(
-            MouseRegion(
-              onEnter: (_) => setState(() => _hoveredRowToken = uniqueId),
-              onExit: (_) => setState(() => _hoveredRowToken = null),
-              child: SizedBox.expand(
-                child: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-                  child: Text(
-                    _getInvestedAmount(order),
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary,
-                      ),
-                      fontWeight: MyntFonts.regular,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }).toList();
+        ),
+      ],
+    );
   }
 
   String _getInvestedAmount(dynamic order) {
     if (order.bidDetail == null || order.bidDetail!.isEmpty) {
       return "0";
     }
-    
+
     // Calculate max value from all bids
     List<String> stringList = [];
     for (var i = 0; i < order.bidDetail!.length; i++) {
@@ -724,16 +652,16 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
               .toString()
           : order.bidDetail![i].amount?.toString() ?? "0");
     }
-    
+
     if (stringList.isEmpty) {
       return "0";
     }
-    
+
     String maxValue = stringList
         .reduce((curr, next) =>
             double.parse(curr) > double.parse(next) ? curr : next)
         .toString();
-    return getFormatter(noDecimal: true, v4d: false, value: double.parse(maxValue));
+    return getFormatter(
+        noDecimal: true, v4d: false, value: double.parse(maxValue));
   }
 }
-

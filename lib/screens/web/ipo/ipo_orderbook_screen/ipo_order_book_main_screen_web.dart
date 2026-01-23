@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../../provider/iop_provider.dart';
-import '../../../../res/global_font_web.dart';
-import '../../../../res/web_colors.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'ipo_order_book_tab/open_orders_table_web.dart';
 import 'ipo_order_book_tab/close_orders_table_web.dart';
 
@@ -19,7 +19,8 @@ class IpoOrderbookMainScreen extends ConsumerStatefulWidget {
 class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  VoidCallback? _tabControllerListener; // Store listener reference for proper cleanup
+  VoidCallback?
+      _tabControllerListener; // Store listener reference for proper cleanup
   int _selectedTabIndex = 0;
 
   @override
@@ -28,7 +29,8 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     // Store listener reference for proper cleanup
     _tabControllerListener = () {
-      if (_tabController.indexIsChanging || _tabController.index != _selectedTabIndex) {
+      if (_tabController.indexIsChanging ||
+          _tabController.index != _selectedTabIndex) {
         setState(() {
           _selectedTabIndex = _tabController.index;
         });
@@ -80,7 +82,8 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Tabs
-        _buildTabs(theme),
+        _buildTabs(
+            theme, filteredOpenOrders.length, filteredCloseOrders.length),
         const SizedBox(height: 16),
         // Tab content
         Expanded(
@@ -96,69 +99,90 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     );
   }
 
-  Widget _buildTabs(ThemesProvider theme) {
-    final tabs = ['Open orders', 'Close orders'];
-    
+  Widget _buildTabs(ThemesProvider theme, int openCount, int closeCount) {
+    final tabs = [
+      {'title': 'Open orders', 'count': openCount},
+      {'title': 'Close orders', 'count': closeCount}
+    ];
+
     return SizedBox(
-      height: 40,     
+      height: 40,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           for (int index = 0; index < tabs.length; index++)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: _buildTab(tabs[index], index, theme),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _buildTab(
+                tabs[index]['title'] as String,
+                index,
+                theme,
+                tabs[index]['count'] as int,
+              ),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildTab(String title, int index, ThemesProvider theme) {
+  Widget _buildTab(String title, int index, ThemesProvider theme, int count) {
     final isSelected = _selectedTabIndex == index;
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(50),
+      child: GestureDetector(
         onTap: () {
           if (_tabController.index != index) {
             _tabController.animateTo(index);
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
                 ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05))
                 : Colors.transparent,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(6),
+            border: null,
           ),
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight:
+                      isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                ).copyWith(
+                  color: isSelected
+                      ? shadcn.Theme.of(context).colorScheme.foreground
+                      : shadcn.Theme.of(context).colorScheme.mutedForeground,
+                ),
+              ),
+              if (count > 0) ...[
+                const SizedBox(width: 4),
+                Transform.translate(
+                  offset: const Offset(0, -6),
+                  child: Text(
+                    '$count',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      fontWeight:
+                          isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                    ).copyWith(
+                      fontSize: 13,
+                      color: isSelected
+                          ? shadcn.Theme.of(context).colorScheme.foreground
+                          : shadcn.Theme.of(context)
+                              .colorScheme
+                              .mutedForeground,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),

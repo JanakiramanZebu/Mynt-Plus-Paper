@@ -2,14 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_font_web.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/res.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 
 class UpcomingIpo extends ConsumerStatefulWidget {
@@ -22,6 +20,7 @@ class UpcomingIpo extends ConsumerStatefulWidget {
 class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  String? _hoveredRowId;
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
 
@@ -56,112 +55,54 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
     // Apply sorting
     final sortedUpcomingIPOs = _getSortedUpcomingIPOs(filteredUpcomingIPOs);
 
-    return Builder(
-      builder: (context) {
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 16.0 * 2; // Top and bottom padding
-        const headerHeight = 100.0;
-        const spacing = 16.0;
-        final tableHeight = screenHeight - padding - headerHeight - spacing;
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight =
-            tableHeight > maxHeight ? maxHeight : (tableHeight > 400 ? tableHeight : 400.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        // Allocation: Name (40%), Size (20%), Updated (20%), Exchanges (20%)
+        final nameWidth = width * 0.40;
+        final sizeWidth = width * 0.20;
+        final updatedWidth = width * 0.20;
+        final excWidth = width * 0.20;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            height: calculatedHeight.toDouble(),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
-            ),
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  radius: const Radius.circular(3),
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
-                  }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
-                  }),
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
-                ),
-              ),
-              child: DataTable2(
-                columnSpacing: 12,
-                horizontalMargin: 12,
-                minWidth: 1000,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 1,
-                fixedColumnsColor: theme.isDarkMode
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                dataRowHeight: 56.0,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+        final columnWidths = {
+          0: shadcn.FixedTableSize(nameWidth),
+          1: shadcn.FixedTableSize(sizeWidth),
+          2: shadcn.FixedTableSize(updatedWidth),
+          3: shadcn.FixedTableSize(excWidth),
+        };
+
+        return shadcn.OutlinedContainer(
+          child: Column(
+            children: [
+              shadcn.Table(
+                columnWidths: columnWidths,
+                defaultRowHeight: const shadcn.FixedTableSize(50),
+                rows: [
+                  shadcn.TableHeader(
+                    cells: [
+                      _buildHeaderCell("Stock name", 0, theme),
+                      _buildHeaderCell("Issue Size", 2, theme,
+                          alignRight: true),
+                      _buildHeaderCell("Last Updated", 3, theme,
+                          alignRight: true),
+                      _buildHeaderCell("Stock Exchanges", 4, theme,
+                          alignRight: true),
+                    ],
                   ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
+                ],
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: shadcn.Table(
+                    columnWidths: columnWidths,
+                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                    rows: sortedUpcomingIPOs.asMap().entries.map((entry) {
+                      return _buildShadcnRow(entry.value, entry.key, theme);
+                    }).toList(),
                   ),
                 ),
-                columns: _buildDataTable2Columns(theme),
-                rows: _buildDataTable2Rows(sortedUpcomingIPOs, theme),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -237,327 +178,173 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
     });
   }
 
-  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
-    if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16);
+  // Header text style
+  // 14px, weight 600, MyntColors for text
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
+  shadcn.TableCell _buildHeaderCell(
+      String text, int sortIndex, ThemesProvider theme,
+      {bool alignRight = false, bool centered = false}) {
+    Alignment alignment;
+    if (centered) {
+      alignment = Alignment.center;
     } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.textSecondary.withOpacity(0.6)
-            : WebColors.textSecondary.withOpacity(0.6),
-      );
+      alignment = alignRight ? Alignment.centerRight : Alignment.centerLeft;
     }
-  }
 
-  List<DataColumn2> _buildDataTable2Columns(ThemesProvider theme) {
-    return [
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Stock name',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(0, theme),
-          ],
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
         ),
-        size: ColumnSize.L,
-        fixedWidth: 300.0,
-        onSort: (index, ascending) => _onSortTable(0, ascending),
       ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Type',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(1, theme),
-          ],
-        ),
-        size: ColumnSize.S,
-        onSort: (index, ascending) => _onSortTable(1, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Issue Size',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(2, theme),
-          ],
-        ),
-        size: ColumnSize.M,
-        onSort: (index, ascending) => _onSortTable(2, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Last Updated',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(3, theme),
-          ],
-        ),
-        size: ColumnSize.M,
-        onSort: (index, ascending) => _onSortTable(3, ascending),
-      ),
-      DataColumn2(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Stock Exchanges',
-              style: WebTextStyles.tableHeader(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 4),
-            _buildSortIcon(4, theme),
-          ],
-        ),
-        size: ColumnSize.S,
-        onSort: (index, ascending) => _onSortTable(4, ascending),
-      ),
-      DataColumn2(
-        label: Text(
-          'DRHP',
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
+      child: GestureDetector(
+        onTap: sortIndex >= 0
+            ? () => _onSortTable(sortIndex, !_sortAscending)
+            : null,
+        child: Container(
+          alignment: alignment,
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          decoration: BoxDecoration(
             color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+                ? Colors.white.withOpacity(0.04)
+                : Colors.black.withOpacity(0.03),
           ),
-        ),
-        size: ColumnSize.S,
-      ),
-    ];
-  }
-
-  List<DataRow2> _buildDataTable2Rows(
-      List<dynamic> upcomingIPOs, ThemesProvider theme) {
-    return upcomingIPOs.map((ipo) {
-      return DataRow2(
-        cells: [
-          // Stock name (fixed column)
-          DataCell(
-            Container(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                ipo.companyName ?? '',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                overflow: TextOverflow.ellipsis,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                text,
+                style: _getHeaderStyle(context),
               ),
-            ),
-          ),
-          // Type (left aligned)
-          DataCell(
-            Container(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                ipo.ipoType ?? '',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.regular,
-                ),
-              ),
-            ),
-          ),
-          // Issue Size
-          DataCell(
-            Container(
-              alignment: Alignment.centerRight,
-              child: Text(
-                ipo.issueSize ?? '',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.regular,
-                ),
-              ),
-            ),
-          ),
-          // Last Updated
-          DataCell(
-            Container(
-              alignment: Alignment.centerRight,
-              child: Text(
-                ipo.lastUpdated ?? '',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.regular,
-                ),
-              ),
-            ),
-          ),
-          // Stock Exchanges
-          DataCell(
-            Container(
-              alignment: Alignment.centerRight,
-              child: Text(
-                ipo.stockExchanges ?? '',
-                style: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.regular,
-                ),
-              ),
-            ),
-          ),
-          // DRHP
-          DataCell(
-            Container(
-              alignment: Alignment.center,
-              child: _buildDRHPButton(ipo, theme),
-            ),
-          ),
-        ],
-      );
-    }).toList();
-  }
-
-  Widget _buildDRHPButton(dynamic ipo, ThemesProvider theme) {
-    final String? drhpUrl = ipo.drhp;
-    final bool hasDRHP = drhpUrl != null && drhpUrl.isNotEmpty && drhpUrl != 'null';
-
-    if (!hasDRHP) {
-      return Text(
-        '-',
-        style: WebTextStyles.custom(
-          fontSize: 13,
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textSecondary
-              : WebColors.textSecondary,
-          fontWeight: WebFonts.regular,
-        ),
-      );
-    }
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _onDRHPTap(drhpUrl),
-          customBorder: const RoundedRectangleBorder(),
-          splashColor: theme.isDarkMode
-              ? colors.splashColorDark
-              : colors.splashColorLight,
-          highlightColor: theme.isDarkMode
-              ? colors.highlightDark
-              : colors.highlightLight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              'DRHP',
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.primaryDark
-                    : colors.primaryLight,
-                fontWeight: WebFonts.semiBold,
-              ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Future<void> _onDRHPTap(String url) async {
-    try {
-      // Ensure URL has a protocol
-      String finalUrl = url.trim();
-      if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-        finalUrl = 'https://$finalUrl';
-      }
+  shadcn.TableRow _buildShadcnRow(
+      dynamic ipo, int index, ThemesProvider theme) {
+    final uniqueId = '${ipo.companyName ?? ""}$index';
+    final rowIsHovered = _hoveredRowId == uniqueId;
 
-      final Uri uri = Uri.parse(finalUrl);
-      
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-      } else {
-        debugPrint("Could not launch $finalUrl");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not open DRHP link: $finalUrl'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint("Error launching DRHP URL: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error opening DRHP link: ${e.toString()}'),
-            duration: const Duration(seconds: 2),
+    final cellTextStyle = MyntWebTextStyles.tableCell(
+      context,
+      fontWeight: MyntFonts.medium,
+      color: resolveThemeColor(context,
+          dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+    );
+
+    return shadcn.TableRow(
+      cells: [
+        // Name
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          child: Text(
+            ipo.companyName ?? '',
+            style: cellTextStyle,
+            overflow: TextOverflow.ellipsis,
           ),
-        );
-      }
+        ),
+        // Issue Size
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          alignRight: true,
+          child: Text(
+            ipo.issueSize ?? '',
+            style: cellTextStyle,
+          ),
+        ),
+        // Last Updated
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          alignRight: true,
+          child: Text(
+            ipo.lastUpdated ?? '',
+            style: cellTextStyle,
+          ),
+        ),
+        // Stock Exchanges
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: rowIsHovered,
+          theme: theme,
+          alignRight: true,
+          child: Text(
+            ipo.stockExchanges ?? '',
+            style: cellTextStyle,
+          ),
+        ),
+      ],
+    );
+  }
+
+  shadcn.TableCell _buildShadcnCell({
+    required Widget child,
+    required String uniqueId,
+    required bool rowIsHovered,
+    required ThemesProvider theme,
+    VoidCallback? onTap,
+    bool alignRight = false,
+    bool centered = false,
+  }) {
+    Alignment alignment;
+    if (centered) {
+      alignment = Alignment.center;
+    } else {
+      alignment = alignRight ? Alignment.centerRight : Alignment.centerLeft;
     }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hoveredRowId = uniqueId),
+        onExit: (_) => setState(() => _hoveredRowId = null),
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            color: Colors.transparent,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            width: double.infinity,
+            height: double.infinity,
+            child: Align(
+              alignment: alignment,
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
