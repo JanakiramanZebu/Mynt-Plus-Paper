@@ -144,6 +144,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     // Use ref.watch to rebuild when provider values update (from pnlHoldCal)
     final portfolioData = ref.watch(portfolioProvider);
 
+    // DrawerOverlay is now at app level in main.dart
     return SizedBox.expand(
       child: Container(
         width: double.infinity,

@@ -290,27 +290,27 @@ class MyApp extends ConsumerWidget {
         initialRoute: Routes.splash,
         onGenerateRoute: AppRoutes.router,
         navigatorObservers: [routeObserver],
-        // builder: (context, child) {
-        //   return shadcn.DrawerOverlay(
-        //     child: Stack(
-        //       children: [
-        //         MediaQuery(
-        //           data: MediaQuery.of(context).copyWith(
-        //             textScaler: const TextScaler.linear(1.0),
-        //           ),
-        //           child: DefaultTextStyle(
-        //             style: TextStyle(
-        //               fontFamily: 'Geist',
-        //               fontFeatures: const [FontFeature.proportionalFigures()],
-        //             ),
-        //             child: child!,
-        //           ),
-        //         ),
-        //         const ChartOverlayWidget(),
-        //       ],
-        //     ),
-        //   );
-        // },
+        builder: (context, child) {
+          return shadcn.DrawerOverlay(
+            child: Stack(
+              children: [
+                MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: const TextScaler.linear(1.0),
+                  ),
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      fontFamily: 'Geist',
+                      fontFeatures: const [FontFeature.proportionalFigures()],
+                    ),
+                    child: child!,
+                  ),
+                ),
+                const ChartOverlayWidget(),
+              ],
+            ),
+          );
+        },
       );
     } else {
       return MaterialApp(

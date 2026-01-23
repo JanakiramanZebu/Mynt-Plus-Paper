@@ -127,6 +127,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     // ✅ Access positionBook without watching to avoid rebuilds
     final positionBook = ref.read(portfolioProvider);
 
+    // DrawerOverlay is now at app level in main.dart
     return SizedBox.expand(
       child: Container(
         width: double.infinity,
