@@ -46,6 +46,7 @@ import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
+import '../../../utils/responsive_snackbar.dart';
 // import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
 
@@ -111,6 +112,10 @@ class _CustomizableSplitHomeScreenState
   // Cooldown for portfolio data fetching to prevent excessive API calls
   DateTime? _lastPortfolioFetch;
   static const _portfolioFetchCooldown = Duration(seconds: 30);
+
+  // Track WebSocket connection state for snackbar notifications
+  bool _wasDisconnected = false;
+  bool _showedDisconnectSnackbar = false;
 
   // Track ongoing API requests to prevent duplicate calls when user rapidly clicks the same screen
   // Key: screen identifier (e.g., 'holdings', 'positions')
@@ -581,22 +586,48 @@ class _CustomizableSplitHomeScreenState
         final retryscreen =
             ref.watch(websocketProvider.select((p) => p.retryscreen));
 
-        if ((internet.connectionStatus == ConnectivityResult.none ||
+        // WEB: Silent auto-reconnect with snackbar notifications instead of blocking overlay
+        // Track disconnection state for snackbar notifications
+        final isDisconnected = (internet.connectionStatus == ConnectivityResult.none ||
                 connectionCount >= 5) &&
             !reconnectionSuccess &&
-            !wsConnected) {
-          ref.read(networkStateProvider).getContext(context);
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: Colors.white,
-            ),
-            body: NoInternetScreen(
-              onReconnectionSuccess: _handleReconnectionSuccess,
-            ),
-          );
+            !wsConnected;
+
+        if (isDisconnected && !_wasDisconnected) {
+          // Just became disconnected - show snackbar and auto-reconnect
+          _wasDisconnected = true;
+          _showedDisconnectSnackbar = false;
+          Future.microtask(() {
+            if (mounted && !_showedDisconnectSnackbar) {
+              _showedDisconnectSnackbar = true;
+              ResponsiveSnackBar.showWarning(
+                context,
+                'Connection lost. Reconnecting...',
+                duration: const Duration(seconds: 3),
+              );
+              // Trigger auto-reconnect
+              ref.read(networkStateProvider).getContext(context);
+              _handleWebSocketConnections();
+            }
+          });
+        } else if (!isDisconnected && _wasDisconnected) {
+          // Just reconnected - show success snackbar and refresh data
+          _wasDisconnected = false;
+          _showedDisconnectSnackbar = false;
+          Future.microtask(() {
+            if (mounted) {
+              ResponsiveSnackBar.showSuccess(
+                context,
+                'Connected successfully',
+                duration: const Duration(seconds: 2),
+              );
+              // Refresh data after reconnection
+              _refreshDataAfterReconnection();
+            }
+          });
         }
 
+        // Auto-reconnect when network is available but websocket disconnected
         if (internet.connectionStatus != ConnectivityResult.none &&
             !wsConnected &&
             retryscreen) {
@@ -615,6 +646,32 @@ class _CustomizableSplitHomeScreenState
         );
       },
     );
+  }
+
+  /// Refresh data after WebSocket reconnection to avoid showing stale/zero data
+  void _refreshDataAfterReconnection() {
+    if (!mounted) return;
+
+    debugPrint('[RECONNECTION] Refreshing data after WebSocket reconnection');
+
+    // Refresh portfolio data (holdings, positions)
+    final portfolio = ref.read(portfolioProvider);
+    portfolio.fetchPositionBook(context, true); // isDay = true for day positions
+    portfolio.fetchHoldings(context, "");
+
+    // Refresh order book data
+    final orders = ref.read(orderProvider);
+    orders.fetchOrderBook(context, true); // websocCon = true since we're reconnecting
+
+    // Refresh fund data
+    final fund = ref.read(fundProvider);
+    fund.fetchFunds(context);
+
+    // Re-establish WebSocket subscriptions for active screens
+    _updateSubscriptionManagerForPanels(forceRefresh: true);
+
+    // Trigger UI refresh
+    _handleReconnectionSuccess();
   }
 
   /// New layout: Watchlist full height on one side, AppBar + Content on other side

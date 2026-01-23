@@ -309,7 +309,7 @@ class _ModifyPlaceOrderScreenState
       triggerPriceCtrl =
           TextEditingController(text: "${widget.modifyOrderArgs.trgprc ?? 0}");
       discQtyCtrl = TextEditingController(text: widget.modifyOrderArgs.dscqty);
-      validity = widget.modifyOrderArgs.ret!.toUpperCase();
+      validity = (widget.modifyOrderArgs.ret ?? 'DAY').toUpperCase();
 
       // isActiveValidity = [
       //   validity == 'DAY' ? true : false,

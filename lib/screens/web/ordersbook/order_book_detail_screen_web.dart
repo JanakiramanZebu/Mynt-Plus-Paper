@@ -111,6 +111,7 @@ class _OrderBookDetailScreenWebState
     copy.amo = original.amo;
     copy.snonum = original.snonum;
     copy.prd = original.prd;
+    copy.ret = original.ret;
     return copy;
   }
 
