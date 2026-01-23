@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
@@ -770,12 +771,71 @@ class WebSocketProvider extends ChangeNotifier {
       _holdStartTime?.cancel();
     }
 
+    // Show order status notification
+    _showOrderStatusNotification(res);
+
     _holdStartTime = Timer(const Duration(milliseconds: 500), () {
       if (_context != null) {
         _refreshData(_context!);
       }
       _holdStartTime = null;
     });
+  }
+
+  /// Shows a snackbar notification based on order status from websocket message
+  void _showOrderStatusNotification(Map<String, dynamic> res) {
+    if (_context == null) return;
+
+    final status = res['status']?.toString().toUpperCase() ?? '';
+    final symbol = res['tsym']?.toString() ?? '';
+    final tranType = res['trantype']?.toString().toUpperCase() == 'B' ? 'Buy' : 'Sell';
+    final exchange = res['exch']?.toString() ?? '';
+
+    if (status.isEmpty || symbol.isEmpty) return;
+
+    String message;
+
+    switch (status) {
+      case 'COMPLETE':
+        message = '$tranType order for $symbol ($exchange) executed successfully';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(_context!, message);
+        } else {
+          successMessage(_context!, message);
+        }
+        break;
+      case 'REJECTED':
+        // final rejectionReason = res['rejreason']?.toString() ?? res['reporttype']?.toString() ?? 'Order rejected';
+        message = '$tranType order for $symbol ($exchange) rejected';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showError(_context!, message);
+        } else {
+          warningMessage(_context!, message);
+        }
+        break;
+      case 'OPEN':
+        message = '$tranType order for $symbol ($exchange) placed successfully';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(_context!, message);
+        } else {
+          successMessage(_context!, message);
+        }
+        break;
+      case 'PENDING':
+        // Skip PENDING notification to avoid duplicate with OPEN
+        break;
+      default:
+        // For other statuses like TRIGGER_PENDING, CANCELLED, etc.
+        if (status.isNotEmpty) {
+          message = '$tranType order for $symbol ($exchange): $status';
+          if (kIsWeb) {
+            ResponsiveSnackBar.showInfo(_context!, message);
+          } else {
+            successMessage(_context!, message);
+          }
+        }
+        break;
+    }
   }
 
   void _refreshData(BuildContext context) {

@@ -992,12 +992,12 @@ class OrderProvider extends DefaultChangeNotifier {
             await Future.delayed(const Duration(milliseconds: 100));
           }
 
-          showDialog(
-            context: context,
-            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
-            builder: (BuildContext context) =>
-                OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
-          );
+          // showDialog(
+          //   context: context,
+          //   barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+          //   builder: (BuildContext context) =>
+          //       OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
+          // );
         } else {
           // Navigate to order confirmation screen
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
@@ -1125,13 +1125,13 @@ class OrderProvider extends DefaultChangeNotifier {
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {
           if (kIsWeb) {
-            showDialog(
-              context: context,
-              barrierColor:
-                  Colors.black.withOpacity(0.3), // Subtle dark backdrop
-              builder: (BuildContext context) =>
-                  OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
-            );
+            // showDialog(
+            //   context: context,
+            //   barrierColor:
+            //       Colors.black.withOpacity(0.3), // Subtle dark backdrop
+            //   builder: (BuildContext context) =>
+            //       OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
+            // );
           } else {
             // Navigate to order confirmation screen
             Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
@@ -1545,15 +1545,15 @@ class OrderProvider extends DefaultChangeNotifier {
           // So we don't need to call Navigator.pop here
 
           // Small delay to ensure overlay closes smoothly before showing confirmation
-          await Future.delayed(const Duration(milliseconds: 100));
+          // await Future.delayed(const Duration(milliseconds: 100));
 
-          // Show confirmation dialog
-          showDialog(
-            context: context,
-            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
-            builder: (BuildContext context) =>
-                OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
-          );
+          // // Show confirmation dialog
+          // showDialog(
+          //   context: context,
+          //   barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+          //   builder: (BuildContext context) =>
+          //       OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
+          // );
         } else {
           Navigator.pop(context);
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {

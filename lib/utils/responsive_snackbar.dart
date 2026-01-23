@@ -8,7 +8,8 @@ import 'dart:async';
 /// Shows toast-style notification in bottom-right corner on desktop with Stacking effect
 /// Uses standard SnackBar behavior on mobile
 class ResponsiveSnackBar {
-  
+  static int _toastCounter = 0;
+
   /// Shows a responsive snackbar/toast notification
   static void show({
     required BuildContext context,
@@ -57,9 +58,10 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     // 1. Add toast to manager
+    _toastCounter++;
     _ToastManager.instance.addToast(
       _ToastData(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        id: '${DateTime.now().microsecondsSinceEpoch}_$_toastCounter',
         message: message,
         type: type,
         duration: duration,

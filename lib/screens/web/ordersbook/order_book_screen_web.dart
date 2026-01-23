@@ -55,6 +55,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   // Track initialization state
   bool _isInitialized = false;
 
+  // Store reference to search controller for safe disposal
+  TextEditingController? _orderSearchCtrl;
+
   bool _canScrollLeft = false;
   bool _canScrollRight = true;
 
@@ -117,7 +120,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void _setupSearchListener() {
     if (!mounted) return;
     final orderBook = ref.read(orderProvider);
-    orderBook.orderSearchCtrl.addListener(_onSearchChanged);
+    _orderSearchCtrl = orderBook.orderSearchCtrl;
+    _orderSearchCtrl?.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
@@ -189,13 +193,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   void dispose() {
-    // Remove search listener
-    try {
-      final orderBook = ref.read(orderProvider);
-      orderBook.orderSearchCtrl.removeListener(_onSearchChanged);
-    } catch (e) {
-      // Ignore if provider is not available
-    }
+    // Remove search listener using stored reference (safe during dispose)
+    _orderSearchCtrl?.removeListener(_onSearchChanged);
 
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
