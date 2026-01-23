@@ -298,7 +298,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
                 await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                final url = 'https://profile.zebuetrade.com/ledger?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
             ),
@@ -314,7 +314,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
                 await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                final url = 'https://profile.zebuetrade.com/corporateaction?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
             ),
@@ -330,7 +330,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
                 await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                final url = 'https://profile.zebuetrade.com/pledge?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
             ),
@@ -345,9 +345,11 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await Share.share(
-                  "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
-                );
+                final url = 'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
+                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                // await Share.share(
+                //   "Get 20% of brokerage for trades made by your friends.\n ${Uri.parse(reflink)}",
+                // );
               },
             ),
 
@@ -362,7 +364,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
                 await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                final url = 'https://zebuetrade.com/contactus';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
             ),
@@ -405,8 +407,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
           if (widget.onThemeToggle != null)
             _buildSimpleMenuItem(
               context,
-              icon: widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              title: widget.isDarkMode ? 'Light Mode' : 'Dark Mode',
+              icon: theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              title: theme.isDarkMode ? 'Light Mode' : 'Dark Mode',
               iconColor: iconColor,
               textColor: textColor,
               onPressed: (ctx) {
@@ -432,32 +434,32 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
           // const MenuDivider(),
 
           // Logout
-          // MenuButton(
-          //   onPressed: (ctx) {
-          //     _showLogoutDialog(widget.parentContext, ref, theme);
-          //   },
-          //   child: Padding(
-          //     padding: const EdgeInsets.symmetric(vertical: 4),
-          //     child: Row(
-          //       children: [
-          //         Icon(
-          //           Icons.logout,
-          //           size: 22,
-          //           color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
-          //         ),
-          //         const SizedBox(width: 14),
-          //         Text(
-          //           'Logout',
-          //           style: MyntWebTextStyles.body(
-          //             context,
-          //             fontWeight: MyntFonts.medium,
-          //             color: textColor,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
+          MenuButton(
+            onPressed: (ctx) {
+              _showLogoutDialog(widget.parentContext, ref, theme);
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.logout,
+                    size: 22,
+                    color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
+                  ),
+                  const SizedBox(width: 14),
+                  Text(
+                    'Logout',
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                      color: textColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
           ),
@@ -533,7 +535,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
     return MenuButton(
       onPressed: onPressed,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
             Icon(
@@ -560,6 +562,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
       BuildContext context, WidgetRef ref, ThemesProvider theme) {
     // Store the parent context for use in the logout callback
     final parentContext = context;
+    // Capture authProvider before showing dialog to avoid "ref unmounted" error
+    final authProviderRef = ref.read(authProvider);
     material.showDialog(
       context: context,
       barrierDismissible: false,
@@ -670,9 +674,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                                   highlightColor: Colors.white.withOpacity(0.1),
                                   onTap: () async {
                                     Navigator.of(dialogContext).pop();
-                                    await ref
-                                        .read(authProvider)
-                                        .fetchLogout(parentContext);
+                                    await authProviderRef.fetchLogout(parentContext);
                                   },
                                   child: Center(
                                     child: Text(

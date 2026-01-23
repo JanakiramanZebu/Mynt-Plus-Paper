@@ -96,14 +96,18 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
 
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
+      // Clear fundamental data immediately when scrip changes to prevent stale data
+      ref.read(marketWatchProvider).clearFundamentalData();
+
       // Reset depth subscription for new scrip when scrip changes
       // Delay provider modification until after build phase completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final mw = ref.read(marketWatchProvider);
-          // If on Overview tab, re-subscribe to depth for the new scrip
+          // Only show depth on Overview tab (index 0), hide on all other tabs
           final isOverviewTab = (_tabController?.index ?? 0) == 0;
-          if (isOverviewTab || mw.isDepthVisible) {
+          if (isOverviewTab) {
+            // Overview tab: show depth with new scrip data
             mw.setIsDepthVisibleWeb(
               true,
               context: context,
@@ -111,6 +115,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
               token: widget.wlValue.token,
               tsym: widget.wlValue.tsym,
             );
+          } else {
+            // Chart/Options/Stock Report tabs: hide depth
+            mw.setIsDepthVisibleWeb(false, context: context);
           }
         }
       });

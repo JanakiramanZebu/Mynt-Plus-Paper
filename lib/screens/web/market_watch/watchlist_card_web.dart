@@ -302,8 +302,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                           width: 18,
                                           color: resolveThemeColor(
                                             context,
-                                            dark: MyntColors.iconDark,
-                                            light: MyntColors.icon,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary,
                                           )),
                                       const SizedBox(width: 4),
                                       Text(

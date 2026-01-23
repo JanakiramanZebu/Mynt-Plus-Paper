@@ -24,6 +24,7 @@ import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/splash_loader.dart';
 import '../../../../utils/no_emoji_inputformatter.dart';
+import '../../../../utils/responsive_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 
@@ -46,18 +47,6 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   // OTP Timer Logic
   Timer? _timer;
   int _start = 89;
-  // --- Listen for QR Login Success ---
-  void _listenForQrLoginSuccess() {
-    ref.listen<WebAuthProvider>(webAuthProvider, (previous, next) {
-      if (_showQrScreen && next.mobileOtp?.stat == 'Ok' && next.mobileOtp?.apitoken != null) {
-        // Login Successful via QR
-         // ref.read(themeProvider).navigateToNewPage(context);
-         Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
-         ref.read(authProvider).initialLoadMethods(context, "");
-      }
-    });
-  }
-
   String resendTime = "01.29";
 
   void startTimer() {
@@ -104,16 +93,30 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     focusNode.addListener(_onFocusChange);
     focusNode1 = FocusNode();
     focusNode1.addListener(_onFocusChange);
-    
+
     // Defer context-dependent operations to avoid holding context reference
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(versionProvider).checkVersion(context);
         ref.read(authProvider).setChangetotp(true);
         ref.read(webAuthProvider).init(); // Initialize web auth provider
-        
+
+        // Set up QR login success listener
+        _setupQrLoginListener();
+
         // Auto-login check
         ref.read(webAuthProvider).checkAutoLogin(context);
+      }
+    });
+  }
+
+  /// Setup QR Login Success Listener (called once in initState)
+  void _setupQrLoginListener() {
+    ref.listenManual<WebAuthProvider>(webAuthProvider, (previous, next) {
+      if (_showQrScreen && next.mobileOtp?.stat == 'Ok' && next.mobileOtp?.apitoken != null) {
+        // Login Successful via QR
+        Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+        ref.read(authProvider).initialLoadMethods(context, "");
       }
     });
   }
@@ -191,9 +194,18 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     webAuth.loginController.text = ref.read(authProvider).loginMethCtrl.text;
     webAuth.passwordController.text = ref.read(authProvider).passCtrl.text;
 
-    if (_isProcessing ||
-        webAuth.loginController.text.isEmpty ||
-        webAuth.passwordController.text.isEmpty) return;
+    // Validate inputs and show appropriate messages
+    if (_isProcessing) return;
+
+    if (webAuth.loginController.text.trim().isEmpty) {
+      ResponsiveSnackBar.showWarning(context, 'Please enter your Mobile / Client ID');
+      return;
+    }
+
+    if (webAuth.passwordController.text.isEmpty) {
+      ResponsiveSnackBar.showWarning(context, 'Please enter your password');
+      return;
+    }
 
     setState(() => _isProcessing = true);
 
@@ -203,10 +215,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
 
       // Submit web login with source="WEB"
       final success = await webAuth.submitWebLogin(context);
-      
+
       if (success && mounted) {
+        ref.read(authProvider).passCtrl.clear();
+        webAuth.passwordController.clear();
         // Check if we need OTP verification
-        if (webAuth.mobileLogin?.stat == 'Ok' && 
+        if (webAuth.mobileLogin?.stat == 'Ok' &&
             webAuth.mobileLogin?.apitoken == null) {
           // OTP/TOTP flow needed
           setState(() {
@@ -214,7 +228,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
             _start = 89;
             resendTime = "01.29";
           });
-          
+
           if (!webAuth.isTotp) {
             startTimer();
           }
@@ -226,7 +240,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
           }
         }
       }
-      
+
       ledgerprovider.setterfornullallSwitch = null;
     } finally {
       if (mounted) {
@@ -245,22 +259,37 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
 
     if (_isProcessing) return;
 
+    // Validate OTP length
+    final requiredLength = webAuth.isTotp ? 6 : 4;
+    if (otp.trim().length != requiredLength) {
+      if (mounted) {
+        ResponsiveSnackBar.showWarning(
+          context,
+          'Please enter $requiredLength digit ${webAuth.isTotp ? 'TOTP' : 'OTP'}',
+        );
+      }
+      return;
+    }
+
     setState(() => _isProcessing = true);
 
     try {
       final success = await webAuth.verifyOtp(context);
-      
+
       if (success && mounted) {
         // If in Generate TOTP flow (topflow) and showing setup, don't navigate
         if (webAuth.topflow && webAuth.showTotpSetup) {
-           setState(() {}); // Updates UI to show QR code
-           return;
+          ref.read(authProvider).otpCtrl.clear();
+          webAuth.otpController.clear();
+          setState(() {}); // Updates UI to show QR code
+          return;
         }
-        
+
         // Navigate to dashboard after successful OTP verification
-        // ref.read(themeProvider).navigateToNewPage(context); // Old mobile flow
+        ref.read(authProvider).otpCtrl.clear();
+        webAuth.otpController.clear();
         Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
-        
+
         ref.read(authProvider).initialLoadMethods(context, "");
       }
     } finally {
@@ -276,16 +305,17 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     if (mounted) FocusScope.of(context).unfocus();
     final webAuth = ref.read(webAuthProvider);
     final auth = ref.read(authProvider);
-    
+
     // Ensure loginController has the client ID
     if (webAuth.loginController.text.isEmpty) {
       webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
     }
-    
-    // Clear OTP field before switching mode
+
+    // Clear OTP field and errors before switching mode
     auth.otpCtrl.clear();
-    
-    webAuth.toggleTotpMode();
+    auth.optError = ''; // Clear old auth error
+
+    webAuth.toggleTotpMode(); // This also clears webAuth.otpError
     
     // If switching to OTP mode, send OTP
     if (!webAuth.isTotp) {
@@ -339,8 +369,8 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   /// Cancel QR Login - Back to Login Form
   void _handleCancelQrLogin() {
     final webAuth = ref.read(webAuthProvider);
-    webAuth.stopQrLogin();
-    
+    webAuth.cancelQrLogin(); // Use cancelQrLogin to clear mobileOtp and prevent stale data
+
     setState(() {
       _showQrScreen = false;
     });
@@ -352,20 +382,20 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     // Delay to let gesture settle before altering focus/state
     await Future.delayed(const Duration(milliseconds: 200));
     if (mounted) FocusScope.of(context).unfocus();
-    
 
     final webAuth = ref.read(webAuthProvider);
     final auth = ref.read(authProvider);
-    
+
     // Ensure loginController has the client ID
     if (webAuth.loginController.text.isEmpty) {
       webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
     }
-    
-    // Clear OTP field to prevent length mismatch errors
+
+    // Clear OTP field and errors to prevent stale state
     auth.otpCtrl.clear();
-    
-    // Enable the Generate TOTP flow (sets topflow = true and switches to OTP mode)
+    auth.optError = ''; // Clear old auth error
+
+    // Enable the Generate TOTP flow (sets topflow = true, switches to OTP mode, clears errors)
     webAuth.enableGenerateTotpFlow();
     
     // Send OTP for verification
@@ -454,7 +484,6 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
 
   @override
   Widget build(BuildContext context) {
-    _listenForQrLoginSuccess(); 
     Preferences pref = Preferences();
     return Consumer(builder: ((context, WidgetRef ref, _) {
       final auth = ref.watch(authProvider);
@@ -498,19 +527,19 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                         color: theme.isDarkMode
                             ? MyntColors.searchBgDark
                             : Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        // borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             color: theme.isDarkMode
                                 ? MyntColors.dividerDark
                                 : Colors.grey.shade300,
                             width: 0.3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //     color: Colors.black.withOpacity(0.1),
+                        //     blurRadius: 4,
+                        //     offset: const Offset(0, 4),
+                        //   ),
+                        // ],
                       ),
                       child: Stack(
                         children: [
@@ -528,6 +557,10 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                           ),
                           const SizedBox(height: 24),
                           // Welcome Text
+
+                             if (!(pref.islogOut == true &&
+                              (pref.clientId?.isNotEmpty == true ||
+                                  pref.clientMob?.isNotEmpty == true)))
                           Text(
                             "Welcome to Zebu",
                             style: MyntWebTextStyles.titlesub(
@@ -576,12 +609,17 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                       style: MyntWebTextStyles.body(context, color: MyntColors.textSecondary),
                                     ),
                                     const SizedBox(height: 16),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: InkWell(
-                                        onTap: _handleCancelQrLogin,
-                                        child: Text("back to login", style: MyntWebTextStyles.title(context, fontWeight: FontWeight.bold, color: MyntColors.primary)),
-                                      ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(right: 12.0),
+                                          child: InkWell(
+                                            onTap: _handleCancelQrLogin,
+                                            child: Text("Back to login", style: MyntWebTextStyles.body(context, fontWeight: FontWeight.bold, color: MyntColors.primary)),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 );
@@ -857,9 +895,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                 : null
                                    ),
                                    onChanged: (v) {
-                                      auth.validateOtp(v);
+                                      // Clear error when user starts typing
+                                      if (webAuth.otpError != null) {
+                                        webAuth.clearErrors();
+                                      }
                                       auth.activeBtnOtp(v);
-                                      
+
                                       // Auto-submit if length is sufficient (using web auth)
                                       if (!_isProcessing && !auth.loading) {
                                         if (webAuth.isTotp && v.length == 6) {
@@ -877,19 +918,23 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                             ),
                             
                             const SizedBox(height: 5),
-                            if (auth.optError != null && auth.optError!.isNotEmpty)
-                              Text(
-                                "${auth.optError}",
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  color: (auth.optError!.contains("Verified") || auth.optError == "OTP Verified") 
-                                     ? MyntColors.profit 
-                                     : MyntColors.loss,
-                                  darkColor: (auth.optError!.contains("Verified") || auth.optError == "OTP Verified") 
-                                     ? MyntColors.profitDark 
-                                     : MyntColors.lossDark,
-                                ),
-                              ),
+                            // Use webAuth.otpError for proper TOTP/OTP error messages
+                            Consumer(
+                              builder: (context, ref, _) {
+                                final webAuth = ref.watch(webAuthProvider);
+                                if (webAuth.otpError != null && webAuth.otpError!.isNotEmpty) {
+                                  return Text(
+                                    webAuth.otpError!,
+                                    style: MyntWebTextStyles.para(
+                                      context,
+                                      color: MyntColors.loss,
+                                      darkColor: MyntColors.lossDark,
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
 
                             const SizedBox(height: 32),
 

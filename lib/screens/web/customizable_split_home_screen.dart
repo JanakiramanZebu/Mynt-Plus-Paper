@@ -135,6 +135,15 @@ class _CustomizableSplitHomeScreenState
     // Load saved layout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedLayout();
+
+      // Ensure index data is loaded (may not be loaded if session was restored)
+      final indexProvider = ref.read(indexListProvider);
+      if (indexProvider.defaultIndexList == null ||
+          indexProvider.defaultIndexList?.indValues == null ||
+          indexProvider.defaultIndexList!.indValues!.isEmpty) {
+        indexProvider.getDeafultIndexList(context);
+      }
+
       // Panels already initialized with defaults in initState(), no need to call _addDefaultScreens()
       // Mark initial load as complete after setup and initialize default screens
       Future.delayed(const Duration(milliseconds: 500), () {
