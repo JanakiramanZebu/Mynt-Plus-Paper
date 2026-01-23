@@ -32,7 +32,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
   // Track which symbols are currently subscribed via websocket (for deduplication)
   final Set<String> _currentWebSocketSubscriptions = {};
-  
+
+  // MASTER LIST: Track ALL subscribed symbols (used for reconnection)
+  // This persists across screen changes and is used to resend all subscriptions on reconnect
+  final Set<String> _activeSubscriptions = <String>{};
+
   // Track which screens need which subscription types
   Map<ScreenType, SubscriptionType> _screenSubscriptionTypes = {};
   
@@ -44,6 +48,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   // Network tracking
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   ConnectivityResult _lastNetworkStatus = ConnectivityResult.mobile;
+
+  // WebSocket state tracking for reconnection
+  bool _lastKnownWsConnected = false;
+  VoidCallback? _wsProviderListener;
   
   // Context management
   BuildContext? _lastValidContext;
@@ -53,22 +61,158 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   Map<int, ScreenType?> get activeScreens => Map.from(_activeScreens);
   Map<ScreenType, Set<String>> get screenSubscriptions => Map.from(_screenSubscriptions);
   AppLifecycleState get currentState => _currentState;
+
+  // Master subscription list getters (like mobile)
+  Set<String> get activeSubscriptions => Set.from(_activeSubscriptions);
+  int get subscriptionCount => _activeSubscriptions.length;
+  bool get hasActiveSubscriptions => _activeSubscriptions.isNotEmpty;
   
   void _init() {
     // Initialize subscription types for each screen
     _initializeSubscriptionTypes();
-    
+
     // Listen to network changes
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
       // connectivity_plus 7.0.0 returns List<ConnectivityResult>
       // Take the first result or check if any connection is available
-      final result = results.isNotEmpty 
-          ? (results.contains(ConnectivityResult.none) 
-              ? ConnectivityResult.none 
+      final result = results.isNotEmpty
+          ? (results.contains(ConnectivityResult.none)
+              ? ConnectivityResult.none
               : results.first)
           : ConnectivityResult.none;
       _handleNetworkChange(result);
     });
+
+    // Listen to websocket connection state changes
+    // This ensures subscriptions are restored after websocket reconnects (e.g., after page refresh)
+    _setupWebSocketListener();
+  }
+
+  /// Set up listener for websocket connection state changes
+  void _setupWebSocketListener() {
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      _lastKnownWsConnected = wsProvider.wsConnected;
+
+      _wsProviderListener = () {
+        _handleWebSocketStateChange();
+      };
+
+      wsProvider.addListener(_wsProviderListener!);
+      log('WebSubscriptionManager: WebSocket listener set up');
+    } catch (e) {
+      log('WebSubscriptionManager: Error setting up websocket listener: $e');
+    }
+  }
+
+  /// Handle websocket connection state changes
+  void _handleWebSocketStateChange() {
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      final isNowConnected = wsProvider.wsConnected;
+
+      // Check if socket just connected (was disconnected, now connected)
+      if (!_lastKnownWsConnected && isNowConnected) {
+        log('WebSubscriptionManager: WebSocket reconnected, restoring subscriptions');
+        print('🔄 [WebSubscriptionManager] WebSocket reconnected');
+        print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
+
+        // Clear deduplication tracking (NOT the master list!)
+        _currentWebSocketSubscriptions.clear();
+
+        // Check if we have subscriptions to restore from master list
+        if (_activeSubscriptions.isNotEmpty && _isUserLoggedIn()) {
+          print('📤 [WebSubscriptionManager] Restoring ${_activeSubscriptions.length} subscriptions from master list');
+
+          // Minimal delay to let connection stabilize, then restore
+          Future.delayed(const Duration(milliseconds: 100), () {
+            // Double-check socket is still connected before restoring
+            final stillConnected = ref.read(websocketProvider).wsConnected;
+            if (stillConnected) {
+              _sendAllSubscriptionsFromMasterList();
+            } else {
+              log('WebSubscriptionManager: Socket disconnected before restore, skipping');
+            }
+          });
+        } else if (_activeScreens.isNotEmpty && _isUserLoggedIn()) {
+          // No master list but have active screens - restore via screen-based method
+          print('📤 [WebSubscriptionManager] No master list, restoring via active screens');
+          Future.delayed(const Duration(milliseconds: 100), () {
+            final stillConnected = ref.read(websocketProvider).wsConnected;
+            if (stillConnected) {
+              _restoreActiveSubscriptions();
+            }
+          });
+        } else if (_isUserLoggedIn()) {
+          // No subscriptions yet - screens will register and subscribe later
+          log('WebSubscriptionManager: No subscriptions to restore, waiting for screens to register');
+        }
+      }
+
+      _lastKnownWsConnected = isNowConnected;
+    } catch (e) {
+      log('WebSubscriptionManager: Error handling websocket state change: $e');
+    }
+  }
+
+  /// Send ALL subscriptions from master list directly to websocket
+  /// This is used on reconnection to restore all subscriptions at once
+  void _sendAllSubscriptionsFromMasterList() {
+    if (_activeSubscriptions.isEmpty) {
+      log('WebSubscriptionManager: No subscriptions in master list to send');
+      return;
+    }
+
+    final context = _getValidContext();
+    if (context == null) {
+      log('WebSubscriptionManager: No valid context for sending subscriptions');
+      return;
+    }
+
+    print('═══════════════════════════════════════════════════════════');
+    print('📤 [WebSubscriptionManager] SENDING ALL SUBSCRIPTIONS FROM MASTER LIST');
+    print('   Total symbols: ${_activeSubscriptions.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      // Send subscriptions in batches of 50 to avoid overwhelming the server
+      final subscriptionList = _activeSubscriptions.toList();
+      const batchSize = 50;
+      int totalBatches = (subscriptionList.length / batchSize).ceil();
+
+      log('WebSubscriptionManager: Sending $totalBatches batches of up to $batchSize symbols each');
+
+      for (int i = 0; i < subscriptionList.length; i += batchSize) {
+        final endIndex = (i + batchSize < subscriptionList.length)
+            ? i + batchSize
+            : subscriptionList.length;
+
+        final batch = subscriptionList.sublist(i, endIndex);
+        final batchString = batch.join('#');
+        final batchNum = (i ~/ batchSize) + 1;
+
+        print('📦 [WebSubscriptionManager] Sending batch $batchNum/$totalBatches (${batch.length} symbols)');
+
+        // Send directly via websocket
+        wsProvider.connectTouchLine(
+          task: "t",
+          input: batchString,
+          context: context,
+        );
+
+        // Track as currently subscribed
+        _currentWebSocketSubscriptions.addAll(batch);
+      }
+
+      print('✅ [WebSubscriptionManager] All ${_activeSubscriptions.length} subscriptions sent');
+      print('═══════════════════════════════════════════════════════════\n');
+
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] Error sending subscriptions: $e');
+      log('WebSubscriptionManager: Error sending subscriptions from master list: $e');
+    }
   }
   
   /// Initialize which subscription type each screen needs
@@ -254,10 +398,15 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         context: context,
       );
 
-      // Track these symbols as subscribed
+      // Track these symbols as subscribed (for deduplication)
       _currentWebSocketSubscriptions.addAll(newSymbols);
-      print('📝 [WebSubscriptionManager] Added ${newSymbols.length} symbols to tracking set');
-      print('   Total tracked symbols now: ${_currentWebSocketSubscriptions.length}');
+
+      // ADD TO MASTER LIST (for reconnection)
+      _activeSubscriptions.addAll(newSymbols);
+
+      print('📝 [WebSubscriptionManager] Added ${newSymbols.length} symbols to tracking');
+      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
+      print('   Master list total: ${_activeSubscriptions.length}');
 
       // Store symbols per screen type for cleanup later
       _screenSubscriptions[screenType] = symbolsToSubscribe;
@@ -497,10 +646,15 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         context: context,
       );
 
-      // Remove these symbols from our tracking
+      // Remove these symbols from our tracking (deduplication)
       _currentWebSocketSubscriptions.removeAll(symbolsToUnsubscribe);
-      print('📝 [WebSubscriptionManager] Removed ${symbolsToUnsubscribe.length} symbols from tracking set');
-      print('   Total tracked symbols now: ${_currentWebSocketSubscriptions.length}');
+
+      // REMOVE FROM MASTER LIST (for reconnection)
+      _activeSubscriptions.removeAll(symbolsToUnsubscribe);
+
+      print('📝 [WebSubscriptionManager] Removed ${symbolsToUnsubscribe.length} symbols from tracking');
+      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
+      print('   Master list total: ${_activeSubscriptions.length}');
 
       // Clear the screen's subscription record
       _screenSubscriptions.remove(screenType);
@@ -708,16 +862,19 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _activeScreens.clear();
     _screenSubscriptions.clear();
     _currentWebSocketSubscriptions.clear();
+    _activeSubscriptions.clear(); // Clear master list on logout
     notifyListeners();
   }
-  
+
   /// Get debug info
   Map<String, dynamic> getDebugInfo() {
     return {
       'activeScreens': _activeScreens.map((k, v) => MapEntry(k.toString(), v?.toString())),
       'screenSubscriptions': _screenSubscriptions.map((k, v) => MapEntry(k.toString(), v.length.toString())),
       'currentWebSocketSubscriptions': _currentWebSocketSubscriptions.length,
+      'activeSubscriptions (master list)': _activeSubscriptions.length,
       'websocketSymbols': _currentWebSocketSubscriptions.toList(),
+      'masterListSymbols': _activeSubscriptions.toList(),
       'currentState': _currentState.toString(),
       'lastPauseTime': _lastPauseTime?.toIso8601String(),
       'wasDisconnectedInBackground': _wasDisconnectedInBackground,
@@ -730,9 +887,20 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _updateDebounceTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription.cancel();
+
+    // Remove websocket listener
+    if (_wsProviderListener != null) {
+      try {
+        ref.read(websocketProvider).removeListener(_wsProviderListener!);
+      } catch (e) {
+        log('WebSubscriptionManager: Error removing websocket listener: $e');
+      }
+    }
+
     _activeScreens.clear();
     _screenSubscriptions.clear();
     _currentWebSocketSubscriptions.clear();
+    _activeSubscriptions.clear(); // Clear master list
     super.dispose();
   }
 }
