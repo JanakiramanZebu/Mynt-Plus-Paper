@@ -7448,27 +7448,25 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         } else if (!isSecu) {
           _showSurveillanceBottomSheet(orderInput, isSliceOrd, theme);
         } else {
-          showDialog(
+          SliceOrderSheetWeb.showAsOverlay(
             context: context,
-            builder: (context) => SliceOrderSheetWeb(
-              scripInfo: widget.scripInfo,
-              isBuy: isBuy!,
-              quantity: quantity,
-              frezQty: frezQty,
-              reminder: reminder,
-              lotSize: lotSize,
-              isAmo: _afterMarketOrder,
-              orderType: orderType,
-              priceType: priceType,
-              ordPrice: ordPrice,
-              validityType: validityType,
-              stopLossCtrl: stopLossCtrl,
-              targetCtrl: targetCtrl,
-              discQtyCtrl: discQtyCtrl,
-              triggerPriceCtrl: triggerPriceCtrl,
-              mktProtCtrl: mktProtCtrl,
-              isBracketOrderEnabled: _isBracketOrderEnabled,
-            ),
+            scripInfo: widget.scripInfo,
+            isBuy: isBuy!,
+            quantity: quantity,
+            frezQty: frezQty,
+            reminder: reminder,
+            lotSize: lotSize,
+            isAmo: _afterMarketOrder,
+            orderType: orderType,
+            priceType: priceType,
+            ordPrice: ordPrice,
+            validityType: validityType,
+            stopLossCtrl: stopLossCtrl,
+            targetCtrl: targetCtrl,
+            discQtyCtrl: discQtyCtrl,
+            triggerPriceCtrl: triggerPriceCtrl,
+            mktProtCtrl: mktProtCtrl,
+            isBracketOrderEnabled: _isBracketOrderEnabled,
           );
         }
       }
