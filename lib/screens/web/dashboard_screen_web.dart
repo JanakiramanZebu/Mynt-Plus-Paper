@@ -30,8 +30,13 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   final ScrollController _tradeActionScrollController = ScrollController();
   // WebSocket subscription for live position updates
   StreamSubscription? _positionSocketSubscription;
+  // WebSocket subscription for live holdings updates
+  StreamSubscription? _holdingsSocketSubscription;
   // Flag to prevent accessing ref after disposal (race condition with stream callbacks)
   bool _isDisposed = false;
+  // Throttle holdings updates
+  DateTime _lastHoldingsUpdate = DateTime.now();
+  static const Duration _holdingsUpdateInterval = Duration(milliseconds: 300);
 
   @override
   void initState() {
@@ -58,6 +63,14 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
         // Set up WebSocket subscription for live position updates
         _setupPositionSocketSubscription();
+        // Set up WebSocket subscription for live holdings updates
+        _setupHoldingsSocketSubscription();
+
+        // Calculate holdings totals on initial load to ensure correct values
+        final portfolio = ref.read(portfolioProvider);
+        if (portfolio.holdingsModel != null && portfolio.holdingsModel!.isNotEmpty) {
+          portfolio.pnlHoldCal();
+        }
       }
     });
   }
@@ -100,12 +113,48 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     });
   }
 
+  void _setupHoldingsSocketSubscription() {
+    final websocket = ref.read(websocketProvider);
+    final portfolio = ref.read(portfolioProvider);
+
+    _holdingsSocketSubscription = websocket.socketDataStream.listen((socketDatas) {
+      if (_isDisposed || !mounted) return;
+
+      final holdings = portfolio.holdingsModel ?? [];
+      if (holdings.isEmpty || socketDatas.isEmpty) return;
+
+      // Throttle updates to avoid excessive rebuilds
+      final now = DateTime.now();
+      if (now.difference(_lastHoldingsUpdate) < _holdingsUpdateInterval) return;
+
+      bool needsUpdate = false;
+
+      // Check if any holdings tokens have updates
+      for (var holding in holdings) {
+        if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
+          final token = holding.exchTsym![0].token;
+          if (token != null && socketDatas.containsKey(token)) {
+            needsUpdate = true;
+            break;
+          }
+        }
+      }
+
+      // Call pnlHoldCal() which calculates all totals and calls notifyListeners()
+      if (needsUpdate) {
+        _lastHoldingsUpdate = now;
+        portfolio.pnlHoldCal();
+      }
+    });
+  }
+
   @override
   void dispose() {
     // Set disposed flag FIRST to prevent stream callbacks from accessing ref
     _isDisposed = true;
-    // Cancel WebSocket subscription for position updates
+    // Cancel WebSocket subscriptions
     _positionSocketSubscription?.cancel();
+    _holdingsSocketSubscription?.cancel();
 
     // Note: WebbodyscriptionManager handles unbodyscription automatically
     // when screen is replaced or removed via updateActiveScreen()

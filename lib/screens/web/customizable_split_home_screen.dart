@@ -2616,6 +2616,16 @@ class _CustomizableSplitHomeScreenState
       // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
       await portfolio.fetchHoldings(context, "Refresh");
 
+      // Wait for WebSocket data to arrive and updateHoldingValues() to calculate profitNloss
+      // for all holdings. Without this delay, pnlHoldCal() reads stale values because
+      // the WebSocket stream broadcasts BEFORE updateHoldingValues() processes the data.
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Calculate holdings totals after WebSocket data has been processed
+      if (mounted) {
+        portfolio.pnlHoldCal();
+      }
+
       // Fetch positions for dashboard stats and subscribe to WebSocket for live updates
       await portfolio.fetchPositionBook(context, false);
       // Subscribe position tokens to WebSocket for real-time price updates
@@ -2804,6 +2814,9 @@ class _CustomizableSplitHomeScreenState
         if (mounted) {
           // Reset to Open Orders tab (index 0) and subscribe
           orderProviderRef.changeTabIndex(0, context);
+          // Force WebSocket subscription for order tokens
+          // (changeTabIndex may skip if already on tab 0, so call directly)
+          orderProviderRef.requestWSOrderBook(isSubscribe: true, context: context);
           debugPrint(
               "📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
         }

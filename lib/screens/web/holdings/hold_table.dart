@@ -1090,6 +1090,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                       child: token.isNotEmpty
                                           ? _DayPnLCell(
                                               token: token,
+                                              qty: qty,
+                                              close: double.tryParse(
+                                                      exchTsym?.close ?? '0') ??
+                                                  0.0,
                                               initialValue:
                                                   exchTsym?.oneDayChg ?? '0.00',
                                               initialPercent:
@@ -1607,11 +1611,15 @@ class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
 /// Day P&L Cell with WebSocket updates (includes percentage)
 class _DayPnLCell extends ConsumerStatefulWidget {
   final String token;
+  final int qty;
+  final double close;
   final String initialValue;
   final String initialPercent;
 
   const _DayPnLCell({
     required this.token,
+    required this.qty,
+    required this.close,
     required this.initialValue,
     required this.initialPercent,
   });
@@ -1634,29 +1642,26 @@ class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
     _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
       if (!mounted || !data.containsKey(widget.token)) return;
 
-      final newDayPnL = data[widget.token]['oneDayChg']?.toString();
-      final newDayPercent = data[widget.token]['perChange']?.toString();
+      final newLtp = data[widget.token]['lp']?.toString();
+      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
+        final ltp = double.tryParse(newLtp) ?? 0.0;
+        // Day P&L = (LTP - Close) * Qty
+        final dayPnLValue = (ltp - widget.close) * widget.qty;
+        final newPnL = dayPnLValue.toStringAsFixed(2);
 
-      bool needsUpdate = false;
-      String updatedPnL = dayPnL;
-      String updatedPercent = dayPercent;
+        // Day Percentage = ((LTP - Close) / Close) * 100
+        String newPercent = '0.00';
+        if (widget.close != 0) {
+          final percentValue = ((ltp - widget.close) / widget.close) * 100;
+          newPercent = percentValue.toStringAsFixed(2);
+        }
 
-      if (newDayPnL != null && newDayPnL != dayPnL && newDayPnL != 'null') {
-        updatedPnL = newDayPnL;
-        needsUpdate = true;
-      }
-      if (newDayPercent != null &&
-          newDayPercent != dayPercent &&
-          newDayPercent != 'null') {
-        updatedPercent = newDayPercent;
-        needsUpdate = true;
-      }
-
-      if (needsUpdate) {
-        setState(() {
-          dayPnL = updatedPnL;
-          dayPercent = updatedPercent;
-        });
+        if (newPnL != dayPnL || newPercent != dayPercent) {
+          setState(() {
+            dayPnL = newPnL;
+            dayPercent = newPercent;
+          });
+        }
       }
     });
   }
