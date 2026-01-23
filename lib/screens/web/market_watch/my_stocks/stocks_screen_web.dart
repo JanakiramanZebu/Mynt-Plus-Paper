@@ -331,7 +331,7 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                       width: 16,
                                       color: resolveThemeColor(context,
                                           dark: MyntColors.primaryDark,
-                                          light: MyntColors.primary),
+                                          light: MyntColors.primary.withOpacity(0.8)),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(

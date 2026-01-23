@@ -575,7 +575,27 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
-          child: SizedBox(
+          child: PointerInterceptor(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.basic,
+              onEnter: (_) {
+                ChartIframeGuard.acquire();
+                _disableAllChartIframes();
+              },
+              onHover: (_) {
+                _disableAllChartIframes();
+              },
+              onExit: (_) {
+                ChartIframeGuard.release();
+                _enableAllChartIframes();
+              },
+              child: Listener(
+                onPointerMove: (_) {
+                  _disableAllChartIframes();
+                },
+                child: GestureDetector(
+                  onTap: () {},
+                  child: SizedBox(
             width: 400,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -696,6 +716,10 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                   ),
                 ),
               ],
+            ),
+          ),
+                ),
+              ),
             ),
           ),
         );
