@@ -1142,6 +1142,8 @@ class _OptionChainContent extends ConsumerStatefulWidget {
 class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
   // Track if initial scroll to ATM has been done (prevents scroll reset on every rebuild)
   bool _hasScrolledInitially = false;
+  // Track the last numStrike to detect when strike selection changes
+  int? _lastNumStrike;
 
   @override
   Widget build(BuildContext context) {
@@ -1158,6 +1160,18 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
         ref.watch(marketWatchProvider.select((p) => p.optChainPutDown));
     final depthData =
         ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+
+    // Watch numStrike to detect when strike selection changes
+    final numStrike = ref.watch(marketWatchProvider.select((p) => p.numStrike));
+
+    // Reset scroll flag when strike selection changes (e.g., "Near 5" -> "All")
+    // This ensures scroll to ATM happens after changing strike count
+    // Note: numStrike can be "5", "10", "15", or "All" - use hashCode for "All"
+    final currentNumStrike = numStrike == "All" ? -1 : (int.tryParse(numStrike) ?? 0);
+    if (_lastNumStrike != null && currentNumStrike != _lastNumStrike) {
+      _hasScrolledInitially = false;
+    }
+    _lastNumStrike = currentNumStrike;
 
     // PERFORMANCE FIX: Do NOT watch socketDatas at parent level!
     // When parent watches entire socketDatas map, ANY token update causes:
@@ -1328,14 +1342,17 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
     // Find ATM index for initial scroll position
     final atmIndex = strikeRowData.indexWhere((row) => row.isATM);
 
-    // Step 5: Schedule scroll to ATM ONLY on initial load (not on every rebuild!)
+    // Step 5: Schedule scroll to ATM ONLY on initial load or after strike change
     // This prevents scroll from snapping back to center on every 500ms refresh
+    // but ensures it scrolls when strike selection changes (e.g., "Near 5" -> "All")
     if (atmIndex >= 0 && !_hasScrolledInitially) {
       _hasScrolledInitially = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (widget.mainScrollController.hasClients) {
+      // Delay scroll by 1 second to ensure data is fully loaded and rendered
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted && widget.mainScrollController.hasClients) {
+          // Note: itemExtent is 56, center ATM in viewport
           final targetOffset =
-              atmIndex * 40.0 - (MediaQuery.of(context).size.height / 3);
+              atmIndex * 56.0 - (MediaQuery.of(context).size.height / 3);
           widget.mainScrollController.jumpTo(targetOffset.clamp(
               0.0, widget.mainScrollController.position.maxScrollExtent));
         }

@@ -72,15 +72,9 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   @override
   void dispose() {
     _socketSubscription?.cancel();
-    
-    // Close WebSocket connection when screen is disposed
-    try {
-      ProviderScope.containerOf(context).read(websocketProvider).closeSocket(false);
-    } catch (e) {
-      // Context might not be available during disposal, ignore error
-      print('WebSocket close error during disposal: $e');
-    }
-    
+    // NOTE: Do NOT close WebSocket here - this is just a detail screen
+    // The shared WebSocket should stay connected for the main app
+    // Only the main home screen should close WebSocket on full app exit
     super.dispose();
   }
 
@@ -671,7 +665,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
 
       wsProvider.establishConnection(
           channelInput: "${_exchTsym.exch}|${_exchTsym.token}#",
-          task: "t",
+          task: "d",  // Use depth subscription for web
           context: context);
 
       await mwProvider.fetchScripInfo(
@@ -753,7 +747,7 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
 
       wsProvider.establishConnection(
           channelInput: "${_exchTsym.exch}|${_exchTsym.token}#",
-          task: "t",
+          task: "d",  // Use depth subscription for web
           context: context);
 
       await mwProvider.fetchScripInfo(

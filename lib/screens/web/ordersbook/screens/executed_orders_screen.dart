@@ -9,6 +9,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
@@ -31,13 +32,20 @@ class ExecutedOrdersScreen extends ConsumerStatefulWidget {
 }
 
 class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
-  int? _hoveredRowIndex;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   int? _sortColumnIndex;
   bool _sortAscending = true;
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
+
+  @override
+  void dispose() {
+    _hoveredRowIndex.dispose();
+    super.dispose();
+  }
 
   // Helper method to get appropriate text style for table cells
   // 14px, weight 500, MyntColors for text
@@ -96,14 +104,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       if (orderBook.loading) {
         return SizedBox.expand(
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 16),
-                Text('Loading orders...', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
+            child: MyntLoader.centered(message: 'Loading orders...'),
           ),
         );
       } else {
@@ -294,8 +295,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       order.norenordno?.toString() ??
                                           order.token?.toString() ??
                                           '';
-                                  final isRowHovered =
-                                      _hoveredRowIndex == index;
                                   final actionHandler = OrderActionHandler(
                                       ref: ref, context: context);
 
@@ -320,138 +319,141 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         columnIndex: 1,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
-                                        child: Stack(
-                                          clipBehavior: Clip.hardEdge,
-                                          children: [
-                                            // Instrument name - full width, can be partially covered by buttons
-                                            // Only truncate when hovered (buttons visible), otherwise show full text
-                                            Positioned.fill(
-                                              child: Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Tooltip(
-                                                  message:
-                                                      '${_formatInstrumentText(order)}${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
-                                                  child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                        right: isRowHovered
-                                                            ? 90.0
-                                                            : 0.0),
-                                                    child: RichText(
-                                                      overflow: isRowHovered
-                                                          ? TextOverflow
-                                                              .ellipsis
-                                                          : TextOverflow
-                                                              .visible,
-                                                      maxLines: 1,
-                                                      softWrap: false,
-                                                      text: TextSpan(
-                                                        children: [
-                                                          // Symbol (14px, 500)
-                                                          TextSpan(
-                                                            text:
-                                                                _formatInstrumentText(
-                                                                    order),
-                                                            style:
-                                                                _getTextStyle(
-                                                                    context),
-                                                          ),
-                                                          // Exchange (12px, 500, muted color)
-                                                          if (order.exch !=
-                                                                  null &&
-                                                              order.exch!
-                                                                  .isNotEmpty)
-                                                            TextSpan(
-                                                              text:
-                                                                  ' ${order.exch}',
-                                                              style:
-                                                                  MyntWebTextStyles
-                                                                      .para(
-                                                                context,
-                                                                darkColor:
-                                                                    MyntColors
-                                                                        .textSecondaryDark,
-                                                                lightColor:
-                                                                    MyntColors
-                                                                        .textSecondary,
-                                                                fontWeight:
-                                                                    MyntFonts
-                                                                        .medium,
+                                        child: ValueListenableBuilder<int?>(
+                                          valueListenable: _hoveredRowIndex,
+                                          builder: (context, hoveredIndex, _) {
+                                            final isRowHovered =
+                                                hoveredIndex == index;
+                                            return Stack(
+                                              clipBehavior: Clip.hardEdge,
+                                              children: [
+                                                // Instrument name - full width, can be partially covered by buttons
+                                                // Only truncate when hovered (buttons visible), otherwise show full text
+                                                Positioned.fill(
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Tooltip(
+                                                      message:
+                                                          '${_formatInstrumentText(order)}${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
+                                                      child: Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                right:
+                                                                    isRowHovered
+                                                                        ? 90.0
+                                                                        : 0.0),
+                                                        child: RichText(
+                                                          overflow: isRowHovered
+                                                              ? TextOverflow
+                                                                  .ellipsis
+                                                              : TextOverflow
+                                                                  .visible,
+                                                          maxLines: 1,
+                                                          softWrap: false,
+                                                          text: TextSpan(
+                                                            children: [
+                                                              // Symbol (14px, 500)
+                                                              TextSpan(
+                                                                text:
+                                                                    _formatInstrumentText(
+                                                                        order),
+                                                                style:
+                                                                    _getTextStyle(
+                                                                        context),
                                                               ),
-                                                            ),
-                                                        ],
+                                                              // Exchange (12px, 500, muted color)
+                                                              if (order.exch !=
+                                                                      null &&
+                                                                  order.exch!
+                                                                      .isNotEmpty)
+                                                                TextSpan(
+                                                                  text:
+                                                                      ' ${order.exch}',
+                                                                  style:
+                                                                      MyntWebTextStyles
+                                                                          .para(
+                                                                    context,
+                                                                    darkColor:
+                                                                        MyntColors
+                                                                            .textSecondaryDark,
+                                                                    lightColor:
+                                                                        MyntColors
+                                                                            .textSecondary,
+                                                                    fontWeight:
+                                                                        MyntFonts
+                                                                            .medium,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                              ),
-                                            ),
-                                            // Action buttons - positioned at the right edge
-                                            if (isRowHovered)
-                                              Positioned(
-                                                right: 0,
-                                                top: 0,
-                                                bottom: 0,
-                                                child: GestureDetector(
-                                                  onTap:
-                                                      () {}, // Empty handler to stop propagation
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      // Subtle background gradient for better button visibility
-                                                      gradient: LinearGradient(
-                                                        begin: Alignment
-                                                            .centerLeft,
-                                                        end: Alignment
+                                                // Action buttons with gradient background and HoverActionsContainer
+                                                if (isRowHovered)
+                                                  Positioned(
+                                                    right: 0,
+                                                    top: 0,
+                                                    bottom: 0,
+                                                    child: GestureDetector(
+                                                      onTap:
+                                                          () {}, // Empty handler to stop propagation
+                                                      behavior: HitTestBehavior
+                                                          .opaque,
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 12),
+                                                        alignment: Alignment
                                                             .centerRight,
-                                                        colors: [
-                                                          shadcn.Theme.of(
-                                                                  context)
-                                                              .colorScheme
-                                                              .background
-                                                              .withOpacity(0.0),
-                                                          shadcn.Theme.of(
-                                                                  context)
-                                                              .colorScheme
-                                                              .background
-                                                              .withOpacity(
-                                                                  0.95),
-                                                          shadcn.Theme.of(
-                                                                  context)
-                                                              .colorScheme
-                                                              .background,
-                                                        ],
-                                                        stops: const [
-                                                          0.0,
-                                                          0.3,
-                                                          0.5
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 16),
-                                                    child: Center(
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          ..._buildActionButtons(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          gradient:
+                                                              LinearGradient(
+                                                            begin: Alignment
+                                                                .centerLeft,
+                                                            end: Alignment
+                                                                .centerRight,
+                                                            colors: [
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.0),
+                                                              shadcn.Theme.of(
+                                                                      context)
+                                                                  .colorScheme
+                                                                  .background
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.95),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        child:
+                                                            HoverActionsContainer(
+                                                          isVisible:
+                                                              isRowHovered,
+                                                          actions:
+                                                              _buildActionButtons(
                                                             order,
                                                             uniqueId,
-                                                            isRowHovered,
                                                             actionHandler,
                                                             theme,
                                                             context,
-                                                            6.0,
                                                           ),
-                                                        ],
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ),
-                                          ],
+                                              ],
+                                            );
+                                          },
                                         ),
                                       ),
                                       // Product
@@ -658,7 +660,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 10; // Status column
-    final isRowHovered = _hoveredRowIndex == rowIndex;
 
     // Match the cell padding logic
     EdgeInsets cellPadding;
@@ -684,28 +685,34 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
-        onExit: (_) => setState(() => _hoveredRowIndex = null),
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            width: double.infinity,
-            height: double.infinity,
-            padding: cellPadding,
-            alignment:
-                alignRight ? Alignment.centerRight : Alignment.centerLeft,
-            decoration: BoxDecoration(
-              color: isRowHovered
-                  ? resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ).withValues(alpha: 0.08)
-                  : Colors.transparent,
-            ),
-            child: child,
-          ),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: cellPadding,
+                alignment:
+                    alignRight ? Alignment.centerRight : Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: isRowHovered
+                      ? resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: child,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -924,11 +931,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   List<Widget> _buildActionButtons(
     OrderBookModel order,
     String uniqueId,
-    bool isRowHovered,
     OrderActionHandler actionHandler,
     ThemesProvider theme,
     BuildContext context,
-    double buttonSpacing,
   ) {
     final isProcessing = _processingOrderToken == uniqueId;
     final isPending = order.status == "PENDING" ||
@@ -938,31 +943,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     if (isPending) {
       return [
         HoverActionButton(
-          label: 'Cancel',
-          color: Colors.white,
-          backgroundColor: MyntColors.tertiary,
-          borderColor: MyntColors.tertiary,
-          borderRadius: 4,
-          onPressed: isProcessing && _isProcessingCancel
-              ? null
-              : () async {
-                  setState(() {
-                    _processingOrderToken = uniqueId;
-                  });
-                  await actionHandler.cancelOrder(
-                    order,
-                    onProcessingStateChanged: (processing) {
-                      setState(() {
-                        _isProcessingCancel = processing;
-                        if (!processing) _processingOrderToken = null;
-                      });
-                    },
-                  );
-                },
-        ),
-        SizedBox(width: buttonSpacing),
-        HoverActionButton(
           label: 'Modify',
+          size: 44,
+          borderRadius: 5,
           color: Colors.white,
           backgroundColor: resolveThemeColor(
             context,
@@ -974,7 +957,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             dark: MyntColors.primaryDark,
             light: MyntColors.primary,
           ),
-          borderRadius: 4,
           onPressed: isProcessing && _isProcessingModify
               ? null
               : () async {
@@ -996,53 +978,74 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                   );
                 },
         ),
+        HoverActionButton(
+          label: 'Cancel',
+          size: 44,
+          borderRadius: 5,
+          color: Colors.white,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.tertiary,
+            light: MyntColors.tertiary,
+          ),
+          borderColor: resolveThemeColor(
+            context,
+            dark: MyntColors.tertiary,
+            light: MyntColors.tertiary,
+          ),
+          onPressed: isProcessing && _isProcessingCancel
+              ? null
+              : () async {
+                  setState(() {
+                    _processingOrderToken = uniqueId;
+                  });
+                  await actionHandler.cancelOrder(
+                    order,
+                    onProcessingStateChanged: (processing) {
+                      setState(() {
+                        _isProcessingCancel = processing;
+                        if (!processing) _processingOrderToken = null;
+                      });
+                    },
+                  );
+                },
+        ),
       ];
     } else {
       return [
-        // Custom Repeat button with pill-shaped design
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(8),
-            onTap: () => actionHandler.repeatOrder(order),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Repeat',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  fontFamily: 'Geist',
-                ),
-              ),
-            ),
+        HoverActionButton(
+          label: 'Repeat',
+          size: 54,
+          borderRadius: 5,
+          color: Colors.white,
+          backgroundColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
           ),
+          borderColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ),
+          onPressed: () => actionHandler.repeatOrder(order),
         ),
-        if (order.status == "OPEN") ...[
-          SizedBox(width: buttonSpacing),
+        if (order.status == "OPEN")
           HoverActionButton(
             label: 'Cancel',
+            size: 54,
+            borderRadius: 5,
             color: Colors.white,
             backgroundColor: resolveThemeColor(
               context,
-              dark: MyntColors.lossDark,
-              light: MyntColors.loss,
+              dark: MyntColors.tertiary,
+              light: MyntColors.tertiary,
             ),
             borderColor: resolveThemeColor(
               context,
-              dark: MyntColors.lossDark,
-              light: MyntColors.loss,
+              dark: MyntColors.tertiary,
+              light: MyntColors.tertiary,
             ),
-            borderRadius: 4,
             onPressed: isProcessing && _isProcessingCancel
                 ? null
                 : () async {
@@ -1060,7 +1063,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                     );
                   },
           ),
-        ],
       ];
     }
   }

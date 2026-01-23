@@ -11,8 +11,8 @@ import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/splash_loader.dart';
-import 'mf/mf_order_book_screen_web.dart';
-import 'mf/mf_sip_screen_web.dart';
+// import 'mf/mf_order_book_screen_web.dart';
+// import 'mf/mf_sip_screen_web.dart';
 import 'pending_alert_card_web.dart';
 import 'screens/open_orders_screen.dart';
 import 'screens/executed_orders_screen.dart';
@@ -54,6 +54,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   // Track initialization state
   bool _isInitialized = false;
+
+  // Store reference to search controller for safe disposal
+  TextEditingController? _orderSearchCtrl;
 
   bool _canScrollLeft = false;
   bool _canScrollRight = true;
@@ -117,7 +120,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void _setupSearchListener() {
     if (!mounted) return;
     final orderBook = ref.read(orderProvider);
-    orderBook.orderSearchCtrl.addListener(_onSearchChanged);
+    _orderSearchCtrl = orderBook.orderSearchCtrl;
+    _orderSearchCtrl?.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
@@ -189,13 +193,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   @override
   void dispose() {
-    // Remove search listener
-    try {
-      final orderBook = ref.read(orderProvider);
-      orderBook.orderSearchCtrl.removeListener(_onSearchChanged);
-    } catch (e) {
-      // Ignore if provider is not available
-    }
+    // Remove search listener using stored reference (safe during dispose)
+    _orderSearchCtrl?.removeListener(_onSearchChanged);
 
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
@@ -361,22 +360,51 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Text(
-                                    badge != null ? '$title ($badge)' : title,
-                                    style: MyntWebTextStyles.body(
-                                      context,
-                                      fontWeight: isActive
-                                          ? MyntFonts.semiBold
-                                          : MyntFonts.medium,
-                                    ).copyWith(
-                                      color: isActive
-                                          ? shadcn.Theme.of(context)
-                                              .colorScheme
-                                              .foreground
-                                          : shadcn.Theme.of(context)
-                                              .colorScheme
-                                              .mutedForeground,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: MyntWebTextStyles.body(
+                                          context,
+                                          fontWeight: isActive
+                                              ? MyntFonts.semiBold
+                                              : MyntFonts.medium,
+                                        ).copyWith(
+                                          color: isActive
+                                              ? shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .foreground
+                                              : shadcn.Theme.of(context)
+                                                  .colorScheme
+                                                  .mutedForeground,
+                                        ),
+                                      ),
+                                      if (badge != null) ...[
+                                        const SizedBox(width: 4),
+                                        Transform.translate(
+                                          offset: const Offset(0, -6),
+                                          child: Text(
+                                            badge,
+                                            style: MyntWebTextStyles.bodySmall(
+                                              context,
+                                              fontWeight: isActive
+                                                  ? MyntFonts.semiBold
+                                                  : MyntFonts.medium,
+                                            ).copyWith(
+                                              fontSize: 13,
+                                              color: isActive
+                                                  ? shadcn.Theme.of(context)
+                                                      .colorScheme
+                                                      .foreground
+                                                  : shadcn.Theme.of(context)
+                                                      .colorScheme
+                                                      .mutedForeground,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                               ),
@@ -520,7 +548,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           verticalScrollController: _gttVerticalScrollController,
         ),
         // MF tab with sub tabs: Orders and SIP
-        _buildMFSubTabs(theme),
+        // _buildMFSubTabs(theme),
         // Basket List
         const BasketList(),
         // Pending Alerts
@@ -529,6 +557,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
+  // COMMENTED: MF tab functionality
+  /*
   Widget _buildMFSubTabs(ThemesProvider theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,4 +645,5 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       ],
     );
   }
+  */
 }

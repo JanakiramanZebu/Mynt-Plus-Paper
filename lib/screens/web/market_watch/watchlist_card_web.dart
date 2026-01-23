@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mynt_plus/provider/web_subscription_manager.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
 import 'package:percent_indicator/percent_indicator.dart';
@@ -254,13 +256,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                               ],
                             ),
                           ),
-                          // Second row: Exchange info | Price change (same height as first row)
                           SizedBox(
                             height: 24,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Left: Exchange and expiry info
                                 Row(
                                   children: [
                                     Text(
@@ -302,8 +302,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                           width: 18,
                                           color: resolveThemeColor(
                                             context,
-                                            dark: MyntColors.iconDark,
-                                            light: MyntColors.icon,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary,
                                           )),
                                       const SizedBox(width: 4),
                                       Text(
@@ -1927,25 +1927,29 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       print('Watchlist: ${ref.read(marketWatchProvider).wlName}');
 
       // Update chart/depth view to show this stock before opening order screen
-      final depthArgs = DepthInputArgs(
-        token: currentToken,
-        exch: currentExch,
-        tsym: currentTsym,
-        instname: widget.watchListData['instname']?.toString() ??
-            widget.watchListData['symbol']?.toString() ??
-            "",
-        symbol: widget.watchListData['symbol']?.toString() ?? "",
-        expDate: widget.watchListData['expDate']?.toString() ?? "",
-        option: widget.watchListData['option']?.toString() ?? "",
-        isOption: false,
-      );
-
-      final marketWatch = ref.read(marketWatchProvider);
-      marketWatch.scripdepthsize(false);
-      await marketWatch.calldepthApis(context, depthArgs, "");
-
-      // Also update chart script
-      marketWatch.setChartScript(currentExch, currentToken, currentTsym);
+      final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+      
+      if (subscriptionManager.activeScreens.values.any((s) => s == ScreenType.scripDepthInfo)) {
+  final depthArgs = DepthInputArgs(
+    token: currentToken,
+    exch: currentExch,
+    tsym: currentTsym,
+    instname: widget.watchListData['instname']?.toString() ??
+        widget.watchListData['symbol']?.toString() ??
+        "",
+    symbol: widget.watchListData['symbol']?.toString() ?? "",
+    expDate: widget.watchListData['expDate']?.toString() ?? "",
+    option: widget.watchListData['option']?.toString() ?? "",
+    isOption: false,
+  );
+  
+  final marketWatch = ref.read(marketWatchProvider);
+  marketWatch.scripdepthsize(false);
+  await marketWatch.calldepthApis(context, depthArgs, "");
+  
+  // Also update chart script
+  marketWatch.setChartScript(currentExch, currentToken, currentTsym);
+}
 
       // Fetch scrip info first, exactly like reference implementation
       await ref

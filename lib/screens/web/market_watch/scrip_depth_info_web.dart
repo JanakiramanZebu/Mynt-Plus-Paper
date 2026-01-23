@@ -157,7 +157,23 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       // Ensure Overview state and safe initial size for the new scrip
       Future.microtask(() async {
         if (!_isDisposed) {
-          await ref.read(marketWatchProvider).chngDephBtn("Overview");
+          final scripInfo = ref.read(marketWatchProvider);
+
+          // Handle futures re-subscription when scrip changes while futures is expanded
+          if (scripInfo.isFuturesExpanded) {
+            // Unsubscribe from old futures first
+            await scripInfo.requestWSFut(context: context, isSubscribe: false);
+
+            // Always fetch linked scrips for the new symbol to populate futures list
+            // This is needed regardless of whether options exist, as futures might still be available
+            await scripInfo.fetchLinkeScrip(
+                widget.wlValue.token, widget.wlValue.exch, context);
+
+            // Subscribe to new futures (if any exist for the new symbol)
+            await scripInfo.requestWSFut(context: context, isSubscribe: true);
+          }
+
+          await scripInfo.chngDephBtn("Overview");
           setState(() {
             initSize = _getSafeInitialSize(0.35);
           });
@@ -2019,156 +2035,157 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                               theme,
                                                               depthData,
                                                             ),
-                                                          if (scripInfo.fundamentalData != null &&
-                                                              scripInfo.fundamentalData?.msg != "no data found")
-                                                            _buildAccordionItem(
-                                                              context: context,
-                                                              label: "Stock report",
-                                                              onTap: () async {
-                                                                try {
-                                                                  await scripInfo.fetchFundamentalData(
-                                                                    tradeSym: "${widget.wlValue.exch}:${widget.wlValue.tsym}",
-                                                                  );
+                                                          // Stock Report and Scrip Info moved to header icons
+                                                          // if (scripInfo.fundamentalData != null &&
+                                                          //     scripInfo.fundamentalData?.msg != "no data found")
+                                                          //   _buildAccordionItem(
+                                                          //     context: context,
+                                                          //     label: "Stock report",
+                                                          //     onTap: () async {
+                                                          //       try {
+                                                          //         await scripInfo.fetchFundamentalData(
+                                                          //           tradeSym: "${widget.wlValue.exch}:${widget.wlValue.tsym}",
+                                                          //         );
 
-                                                                  if (!mounted) return;
+                                                          //         if (!mounted) return;
 
-                                                                  if (scripInfo.fundamentalData != null &&
-                                                                      scripInfo.fundamentalData?.msg != "no data found") {
-                                                                    DepthInputArgs depthArgs = _createDepthArgs();
-                                                                    final depthData = scripInfo.getQuotes!;
+                                                          //         if (scripInfo.fundamentalData != null &&
+                                                          //             scripInfo.fundamentalData?.msg != "no data found") {
+                                                          //           DepthInputArgs depthArgs = _createDepthArgs();
+                                                          //           final depthData = scripInfo.getQuotes!;
 
-                                                                    if (mounted) {
-                                                                      showDialog(
-                                                                        context: context,
-                                                                        barrierDismissible: true,
-                                                                        builder: (BuildContext dialogContext) {
-                                                                          return Center(
-                                                                            child: shadcn.Card(
-                                                                              borderRadius: BorderRadius.circular(12),
-                                                                              child: Container(
-                                                                                width: 700,
-                                                                                constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
-                                                                                child: Column(
-                                                                                  mainAxisSize: MainAxisSize.min,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: const EdgeInsets.all(16),
-                                                                                      child: Row(
-                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                        children: [
-                                                                                          Text(
-                                                                                            '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
-                                                                                            style: MyntWebTextStyles.title(context),
-                                                                                          ),
-                                                                                          Material(
-                                                                                            color: Colors.transparent,
-                                                                                            shape: const CircleBorder(),
-                                                                                            child: InkWell(
-                                                                                              customBorder: const CircleBorder(),
-                                                                                              splashColor: resolveThemeColor(
-                                                                                                context,
-                                                                                                dark: MyntColors.rippleDark,
-                                                                                                light: MyntColors.rippleLight,
-                                                                                              ),
-                                                                                              highlightColor: resolveThemeColor(
-                                                                                                context,
-                                                                                                dark: MyntColors.highlightDark,
-                                                                                                light: MyntColors.highlightLight,
-                                                                                              ),
-                                                                                              onTap: () => Navigator.of(context).pop(),
-                                                                                              child: Padding(
-                                                                                                padding: const EdgeInsets.all(8),
-                                                                                                child: Icon(
-                                                                                                  Icons.close,
-                                                                                                  size: 20,
-                                                                                                  color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                    Expanded(
-                                                                                      child: ClipRRect(
-                                                                                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-                                                                                        child: MediaQuery.removePadding(
-                                                                                          context: context,
-                                                                                          removeTop: true,
-                                                                                          child: NewFundamentalScreen(
-                                                                                            wlValue: depthArgs,
-                                                                                            depthData: depthData,
-                                                                                          ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                      );
-                                                                    }
-                                                                  }
-                                                                } finally {}
-                                                              },
-                                                            ),
-                                                          // Scrip Info accordion item
-                                                          _buildAccordionItem(
-                                                            context: context,
-                                                            label: "Scrip info",
-                                                            onTap: () async {
-                                                              try {
-                                                                // Fetch scrip info before showing dialog
-                                                                await scripInfo.fetchScripInfo(
-                                                                  widget.wlValue.token,
-                                                                  widget.wlValue.exch,
-                                                                  context,
-                                                                );
+                                                          //           if (mounted) {
+                                                          //             showDialog(
+                                                          //               context: context,
+                                                          //               barrierDismissible: true,
+                                                          //               builder: (BuildContext dialogContext) {
+                                                          //                 return Center(
+                                                          //                   child: shadcn.Card(
+                                                          //                     borderRadius: BorderRadius.circular(12),
+                                                          //                     child: Container(
+                                                          //                       width: 700,
+                                                          //                       constraints: const BoxConstraints(maxHeight: 800, minHeight: 400),
+                                                          //                       child: Column(
+                                                          //                         mainAxisSize: MainAxisSize.min,
+                                                          //                         children: [
+                                                          //                           Padding(
+                                                          //                             padding: const EdgeInsets.all(16),
+                                                          //                             child: Row(
+                                                          //                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          //                               children: [
+                                                          //                                 Text(
+                                                          //                                   '${depthArgs.symbol.replaceAll("-EQ", "").toUpperCase()}${depthArgs.expDate} ${depthArgs.option} Stock Report',
+                                                          //                                   style: MyntWebTextStyles.title(context),
+                                                          //                                 ),
+                                                          //                                 Material(
+                                                          //                                   color: Colors.transparent,
+                                                          //                                   shape: const CircleBorder(),
+                                                          //                                   child: InkWell(
+                                                          //                                     customBorder: const CircleBorder(),
+                                                          //                                     splashColor: resolveThemeColor(
+                                                          //                                       context,
+                                                          //                                       dark: MyntColors.rippleDark,
+                                                          //                                       light: MyntColors.rippleLight,
+                                                          //                                     ),
+                                                          //                                     highlightColor: resolveThemeColor(
+                                                          //                                       context,
+                                                          //                                       dark: MyntColors.highlightDark,
+                                                          //                                       light: MyntColors.highlightLight,
+                                                          //                                     ),
+                                                          //                                     onTap: () => Navigator.of(context).pop(),
+                                                          //                                     child: Padding(
+                                                          //                                       padding: const EdgeInsets.all(8),
+                                                          //                                       child: Icon(
+                                                          //                                         Icons.close,
+                                                          //                                         size: 20,
+                                                          //                                         color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                                                          //                                       ),
+                                                          //                                     ),
+                                                          //                                   ),
+                                                          //                                 ),
+                                                          //                               ],
+                                                          //                             ),
+                                                          //                           ),
+                                                          //                           Expanded(
+                                                          //                             child: ClipRRect(
+                                                          //                               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+                                                          //                               child: MediaQuery.removePadding(
+                                                          //                                 context: context,
+                                                          //                                 removeTop: true,
+                                                          //                                 child: NewFundamentalScreen(
+                                                          //                                   wlValue: depthArgs,
+                                                          //                                   depthData: depthData,
+                                                          //                                 ),
+                                                          //                               ),
+                                                          //                             ),
+                                                          //                           ),
+                                                          //                         ],
+                                                          //                       ),
+                                                          //                     ),
+                                                          //                   ),
+                                                          //                 );
+                                                          //               },
+                                                          //             );
+                                                          //           }
+                                                          //         }
+                                                          //       } finally {}
+                                                          //     },
+                                                          //   ),
+                                                          // // Scrip Info accordion item
+                                                          // _buildAccordionItem(
+                                                          //   context: context,
+                                                          //   label: "Scrip info",
+                                                          //   onTap: () async {
+                                                          //     try {
+                                                          //       // Fetch scrip info before showing dialog
+                                                          //       await scripInfo.fetchScripInfo(
+                                                          //         widget.wlValue.token,
+                                                          //         widget.wlValue.exch,
+                                                          //         context,
+                                                          //       );
 
-                                                                if (!mounted) return;
+                                                          //       if (!mounted) return;
 
-                                                                if (scripInfo.scripInfoModel != null) {
-                                                                  showGeneralDialog(
-                                                                    context: context,
-                                                                    barrierDismissible: true,
-                                                                    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                                                                    barrierColor: resolveThemeColor(
-                                                                      context,
-                                                                      dark: MyntColors.modalBarrierDark,
-                                                                      light: MyntColors.modalBarrierLight,
-                                                                    ),
-                                                                    transitionDuration: const Duration(milliseconds: 200),
-                                                                    pageBuilder: (context, animation, secondaryAnimation) {
-                                                                      return PointerInterceptor(
-                                                                        child: Center(
-                                                                          child: const ScripDetailWeb(),
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                    transitionBuilder: (context, animation, secondaryAnimation, child) {
-                                                                      final curvedAnimation = CurvedAnimation(
-                                                                        parent: animation,
-                                                                        curve: Curves.easeOut,
-                                                                        reverseCurve: Curves.easeIn,
-                                                                      );
+                                                          //       if (scripInfo.scripInfoModel != null) {
+                                                          //         showGeneralDialog(
+                                                          //           context: context,
+                                                          //           barrierDismissible: true,
+                                                          //           barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                                                          //           barrierColor: resolveThemeColor(
+                                                          //             context,
+                                                          //             dark: MyntColors.modalBarrierDark,
+                                                          //             light: MyntColors.modalBarrierLight,
+                                                          //           ),
+                                                          //           transitionDuration: const Duration(milliseconds: 200),
+                                                          //           pageBuilder: (context, animation, secondaryAnimation) {
+                                                          //             return PointerInterceptor(
+                                                          //               child: Center(
+                                                          //                 child: const ScripDetailWeb(),
+                                                          //               ),
+                                                          //             );
+                                                          //           },
+                                                          //           transitionBuilder: (context, animation, secondaryAnimation, child) {
+                                                          //             final curvedAnimation = CurvedAnimation(
+                                                          //               parent: animation,
+                                                          //               curve: Curves.easeOut,
+                                                          //               reverseCurve: Curves.easeIn,
+                                                          //             );
 
-                                                                      return FadeTransition(
-                                                                        opacity: curvedAnimation,
-                                                                        child: ScaleTransition(
-                                                                          scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
-                                                                          child: child,
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                                  );
-                                                                }
-                                                              } catch (e) {
-                                                                debugPrint('Error showing scrip info: $e');
-                                                              }
-                                                            },
-                                                          ),
+                                                          //             return FadeTransition(
+                                                          //               opacity: curvedAnimation,
+                                                          //               child: ScaleTransition(
+                                                          //                 scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+                                                          //                 child: child,
+                                                          //               ),
+                                                          //             );
+                                                          //           },
+                                                          //         );
+                                                          //       }
+                                                          //     } catch (e) {
+                                                          //       debugPrint('Error showing scrip info: $e');
+                                                          //     }
+                                                          //   },
+                                                          // ),
                                                         ],
                                                       ),
                                                     ]),

@@ -11,13 +11,14 @@ import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../sharedWidget/snack_bar.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 
 class WithdrawScreenWeb extends ConsumerStatefulWidget {
   final TranctionProvider withdarw;
   final FocusNode foucs;
   final ThemesProvider theme;
   final String segment;
-  
+
   const WithdrawScreenWeb({
     super.key,
     required this.withdarw,
@@ -71,7 +72,7 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
           children: [
             // Header
             _buildHeader(theme),
-            
+
             // Content
             Expanded(
               child: SingleChildScrollView(
@@ -82,11 +83,11 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                     // Withdrawable Amount
                     _buildWithdrawableAmountHeader(funds, theme),
                     const SizedBox(height: 16),
-                    
+
                     // Amount Input
                     _buildAmountInput(theme, fund),
                     const SizedBox(height: 8),
-                    
+
                     // Error Message
                     if (withdarwerror.isNotEmpty)
                       Padding(
@@ -95,19 +96,21 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                           withdarwerror,
                           style: WebTextStyles.caption(
                             isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? WebDarkColors.error : WebColors.error,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.error
+                                : WebColors.error,
                           ),
                         ),
                       ),
                     const SizedBox(height: 16),
-                    
+
                     // Withdraw Button
                     _buildWithdrawButton(theme, fund),
                     const SizedBox(height: 16),
-                    
+
                     // Breakup Section
                     _buildBreakUpSection(theme, funds),
-                    
+
                     // Open Request Section
                     if (_isVisible == true) ...[
                       const SizedBox(height: 16),
@@ -180,7 +183,9 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
       children: [
         Icon(
           Icons.account_balance_wallet_outlined,
-          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textSecondary
+              : WebColors.textSecondary,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -191,7 +196,9 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                 "Withdrawable Amount",
                 style: WebTextStyles.para(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textSecondary
+                      : WebColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -199,7 +206,9 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                 "₹ ${widget.withdarw.payoutdetails!.withdrawAmount}",
                 style: WebTextStyles.title(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.textPrimary
+                      : WebColors.textPrimary,
                   fontWeight: WebFonts.semiBold,
                 ),
               ),
@@ -224,17 +233,18 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
       style: WebTextStyles.custom(
         fontSize: 20,
         isDarkTheme: theme.isDarkMode,
-        color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+        color: theme.isDarkMode
+            ? WebDarkColors.textPrimary
+            : WebColors.textPrimary,
       ),
       controller: widget.withdarw.withdrawamount,
       onChanged: (value) {
         setState(() {
           if (widget.withdarw.withdrawamount.text.isNotEmpty) {
-            double enteredAmount = double.parse(
-                widget.withdarw.withdrawamount.text);
-            double availableAmount = double.parse(widget
-                .withdarw.payoutdetails!.withdrawAmount
-                .toString());
+            double enteredAmount =
+                double.parse(widget.withdarw.withdrawamount.text);
+            double availableAmount = double.parse(
+                widget.withdarw.payoutdetails!.withdrawAmount.toString());
 
             if (enteredAmount <= 0) {
               disable = true;
@@ -246,10 +256,8 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
               disable = false;
               withdarwerror = "";
             }
-          } else if (widget
-                  .withdarw.withdrawamount.text.isEmpty ||
-              widget.withdarw.payoutdetails!.withdrawAmount ==
-                  "0.00") {
+          } else if (widget.withdarw.withdrawamount.text.isEmpty ||
+              widget.withdarw.payoutdetails!.withdrawAmount == "0.00") {
             disable = true;
             withdarwerror = "";
           } else {
@@ -259,17 +267,18 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
         });
       },
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+              color:
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
             ),
             borderRadius: BorderRadius.circular(5)),
         disabledBorder: InputBorder.none,
         focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
+              color:
+                  theme.isDarkMode ? WebDarkColors.primary : WebColors.primary,
             ),
             borderRadius: BorderRadius.circular(5)),
         border: OutlineInputBorder(
@@ -283,7 +292,9 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
         hintStyle: WebTextStyles.custom(
           fontSize: 20,
           isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode ? WebDarkColors.textSecondary : WebColors.textSecondary,
+          color: theme.isDarkMode
+              ? WebDarkColors.textSecondary
+              : WebColors.textSecondary,
         ),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -317,22 +328,20 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
         ),
         onPressed: (disable)
             ? () {
-                if (widget.withdarw.payoutdetails!.withdrawAmount ==
-                    "0.00") {
+                if (widget.withdarw.payoutdetails!.withdrawAmount == "0.00") {
                   showResponsiveWarningMessage(context, "Insufficient fund");
-                } else if (widget
-                    .withdarw.withdrawamount.text.isEmpty) {
-                  showResponsiveWarningMessage(context, "Please enter the amount");
+                } else if (widget.withdarw.withdrawamount.text.isEmpty) {
+                  showResponsiveWarningMessage(
+                      context, "Please enter the amount");
                 } else if (double.tryParse(
                             widget.withdarw.withdrawamount.text) !=
                         null &&
-                    double.parse(
-                            widget.withdarw.withdrawamount.text) <=
-                        0) {
-                  showResponsiveWarningMessage(context,
-                      "Amount must be greater than 0");
+                    double.parse(widget.withdarw.withdrawamount.text) <= 0) {
+                  showResponsiveWarningMessage(
+                      context, "Amount must be greater than 0");
                 } else {
-                  showResponsiveWarningMessage(context, "Please enter a valid amount");
+                  showResponsiveWarningMessage(
+                      context, "Please enter a valid amount");
                 }
               }
             : () async {
@@ -358,20 +367,17 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                 });
               },
         child: _withdrawLoading
-            ? SizedBox(
-                width: 18,
-                height: 20,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary),
+            ? MyntLoader.inline(
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+                strokeWidth: 2.0,
               )
             : Text(
                 'Withdraw',
                 style: WebTextStyles.buttonMd(
                   isDarkTheme: theme.isDarkMode,
-                  color: disable
-                      ? colors.colorGrey
-                      : colors.colorWhite,
+                  color: disable ? colors.colorGrey : colors.colorWhite,
                 ),
               ),
       ),
@@ -410,14 +416,18 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                   assets.breakup,
                   width: 14,
                   height: 14,
-                  color: theme.isDarkMode ? WebDarkColors.primaryDark : WebColors.primaryLight,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.primaryDark
+                      : WebColors.primaryLight,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   "Break up",
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                    color: theme.isDarkMode
+                        ? colors.primaryDark
+                        : colors.primaryLight,
                     fontWeight: WebFonts.bold,
                   ),
                 ),
@@ -426,14 +436,16 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
                   isBreakUpExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
-                  color: theme.isDarkMode ? WebDarkColors.primaryDark : WebColors.primaryLight,
+                  color: theme.isDarkMode
+                      ? WebDarkColors.primaryDark
+                      : WebColors.primaryLight,
                   size: 20,
                 ),
               ],
             ),
           ),
         ),
-        
+
         // Expandable break up content
         if (isBreakUpExpanded) ...[
           const SizedBox(height: 16),
@@ -472,9 +484,8 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
             Container(
               width: 0.5,
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: theme.isDarkMode
-                  ? WebDarkColors.divider
-                  : WebColors.divider,
+              color:
+                  theme.isDarkMode ? WebDarkColors.divider : WebColors.divider,
             ),
             // Right column
             Expanded(
@@ -495,7 +506,8 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
     );
   }
 
-  Widget _buildBreakUpInfoRow(String title, String value, ThemesProvider theme) {
+  Widget _buildBreakUpInfoRow(
+      String title, String value, ThemesProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -505,14 +517,18 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
             title,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
               isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+              color: theme.isDarkMode
+                  ? WebDarkColors.textPrimary
+                  : WebColors.textPrimary,
             ),
           ),
         ],
@@ -545,13 +561,16 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
             minLeadingWidth: 10,
             leading: Icon(
               Icons.timer_outlined,
-              color: theme.isDarkMode ? WebDarkColors.warning : WebColors.warning,
+              color:
+                  theme.isDarkMode ? WebDarkColors.warning : WebColors.warning,
             ),
             title: Text(
               "₹ ${widget.withdarw.withdrawstatus?[0].dUEAMT}",
               style: WebTextStyles.title(
                 isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
                 fontWeight: WebFonts.semiBold,
               ),
             ),
@@ -596,5 +615,3 @@ class _WithdrawScreenWebState extends ConsumerState<WithdrawScreenWeb> {
     });
   }
 }
-
-

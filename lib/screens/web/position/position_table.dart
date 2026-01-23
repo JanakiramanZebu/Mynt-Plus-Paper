@@ -54,7 +54,6 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -196,26 +195,31 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         onExit: (_) => _hoveredRowIndex.value = null,
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
+          // PERFORMANCE FIX: Pass child to the 'child' parameter so it's cached
+          // and NOT rebuilt when hover changes. Only the Container color changes.
+          child: child,
+          builder: (context, hoveredIndex, cachedChild) {
             final isRowHovered = hoveredIndex == rowIndex;
 
-            // Background color logic: Hover color takes precedence over closed background
+            // Background color logic: No hover effect for closed positions
             Color? backgroundColor;
-            if (isRowHovered) {
+            if (isClosed) {
+              // Closed positions: show muted background, no hover effect
+              backgroundColor = resolveThemeColor(context,
+                  dark: MyntColors.textPrimary.withValues(alpha: 0.15),
+                  light: MyntColors.textPrimary.withValues(alpha: 0.09));
+            } else if (isRowHovered) {
+              // Open positions: show hover effect only
               backgroundColor = resolveThemeColor(context,
                   dark: MyntColors.primary.withValues(alpha: 0.08),
                   light: MyntColors.primary.withValues(alpha: 0.08));
-            } else if (isClosed) {
-              backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.primaryDark.withValues(alpha: 0.01),
-                  light: MyntColors.primary.withValues(alpha: 0.04));
             }
 
             return Container(
               padding: cellPadding,
               color: backgroundColor,
               alignment: alignRight ? Alignment.topRight : null,
-              child: child,
+              child: cachedChild, // Use cached child - won't rebuild on hover!
             );
           },
         ),
@@ -797,46 +801,69 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                               final isClickable =
                                   header != 'Select' && header != 'Instrument';
 
-                              // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent content
-                              return buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: columnIndex,
-                                alignRight: isNumeric,
-                                child: ValueListenableBuilder<int?>(
-                                  valueListenable: _hoveredRowIndex,
-                                  builder: (context, hoveredIndex, _) {
-                                    final isRowHovered = hoveredIndex == index;
-                                    return isClickable
-                                        ? GestureDetector(
-                                            onTap: () =>
-                                                _showPositionDetail(position),
-                                            behavior: HitTestBehavior.opaque,
-                                            child: SizedBox(
-                                              width: double.infinity,
-                                              height: double.infinity,
-                                              child: _buildCellContent(
-                                                context,
-                                                header,
-                                                position,
-                                                theme,
-                                                isClosed,
-                                                isRowHovered,
-                                                positionBook,
-                                              ),
+                              // PERFORMANCE FIX: Only Instrument column needs hover state for showing buttons
+                              // Other columns (MTM, P&L, LTP, etc.) should NOT rebuild on hover
+                              if (header == 'Instrument') {
+                                // Instrument column: needs hover state to show/hide action buttons
+                                return buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: columnIndex,
+                                  alignRight: isNumeric,
+                                  isClosed: isClosed,
+                                  child: ValueListenableBuilder<int?>(
+                                    valueListenable: _hoveredRowIndex,
+                                    builder: (context, hoveredIndex, _) {
+                                      final isRowHovered = hoveredIndex == index;
+                                      return _buildCellContent(
+                                        context,
+                                        header,
+                                        position,
+                                        theme,
+                                        isClosed,
+                                        isRowHovered,
+                                        positionBook,
+                                      );
+                                    },
+                                  ),
+                                );
+                              } else {
+                                // All other columns: do NOT listen to hover state
+                                // This prevents MTM, P&L, LTP cells from rebuilding on hover
+                                return buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: columnIndex,
+                                  alignRight: isNumeric,
+                                  isClosed: isClosed,
+                                  child: isClickable
+                                      ? GestureDetector(
+                                          onTap: () =>
+                                              _showPositionDetail(position),
+                                          behavior: HitTestBehavior.opaque,
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            child: _buildCellContent(
+                                              context,
+                                              header,
+                                              position,
+                                              theme,
+                                              isClosed,
+                                              false, // Not hover-dependent
+                                              positionBook,
                                             ),
-                                          )
-                                        : _buildCellContent(
-                                            context,
-                                            header,
-                                            position,
-                                            theme,
-                                            isClosed,
-                                            isRowHovered,
-                                            positionBook,
-                                          );
-                                  },
-                                ),
-                              );
+                                          ),
+                                        )
+                                      : _buildCellContent(
+                                          context,
+                                          header,
+                                          position,
+                                          theme,
+                                          isClosed,
+                                          false, // Not hover-dependent
+                                          positionBook,
+                                        ),
+                                );
+                              }
                             }).toList(),
                           );
                         }).toList(),
@@ -985,81 +1012,40 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           ),
         );
       case 'LTP':
-        if (position.token == null || position.token!.isEmpty) {
-          return Align(
-            alignment: alignment,
-            child: Text(
-              position.lp ?? '0.00',
-              style: _getTextStyle(context, color: textColor),
-            ),
-          );
-        } else {
-          return Align(
-            alignment: alignment,
-            child: _LTPCell(
-              token: position.token!,
-              initialLtp: position.lp ?? '0.00',
-              isClosed: isClosed,
-            ),
-          );
-        }
+        // Just display provider value - provider already updates from WebSocket
+        return Align(
+          alignment: alignment,
+          child: Text(
+            position.lp ?? '0.00',
+            style: _getTextStyle(context, color: textColor),
+          ),
+        );
       case 'P&L':
-        // Use profitNloss for both open and closed positions
-        // positionCal() already calculates this correctly:
-        // - Open: actualBookedPnl + actualUnrealizedPnl
-        // - Closed: actualBookedPnl (unrealized = 0 when qty = 0)
+        // Just display provider value - positionCal() already calculates correctly
         final pnlValue = position.profitNloss ?? '0.00';
-
-        if (position.token == null || position.token!.isEmpty) {
-          return Align(
-            alignment: alignment,
-            child: Text(
-              pnlValue,
-              style: _getTextStyle(context,
-                  color:
-                      _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
-            ),
-          );
-        } else {
-          final qty = int.tryParse(position.qty ?? '0') ?? 0;
-          final avgPrice = double.tryParse(position.avgPrc ?? '0') ?? 0.0;
-          return Align(
-            alignment: alignment,
-            child: _PnLCell(
-              token: position.token!,
-              qty: qty,
-              avgPrice: avgPrice,
-              initialValue: pnlValue,
-              isClosed: isClosed,
-            ),
-          );
-        }
+        return Align(
+          alignment: alignment,
+          child: Text(
+            pnlValue,
+            style: _getTextStyle(context,
+                color: isClosed
+                    ? textColor
+                    : _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
+          ),
+        );
       case 'MTM':
-        if (position.token == null || position.token!.isEmpty) {
-          return Align(
-            alignment: alignment,
-            child: Text(
-              position.mTm ?? '0.00',
-              style: _getTextStyle(context,
-                  // Show profit/loss colors for both open and closed positions
-                  color: _getCellColor(
-                      double.tryParse(position.mTm ?? '0') ?? 0.0, context)),
-            ),
-          );
-        } else {
-          final qty = int.tryParse(position.qty ?? '0') ?? 0;
-          final avgPrice = double.tryParse(position.avgPrc ?? '0') ?? 0.0;
-          return Align(
-            alignment: alignment,
-            child: _MTMCell(
-              token: position.token!,
-              qty: qty,
-              avgPrice: avgPrice,
-              initialValue: position.mTm ?? '0.00',
-              isClosed: isClosed,
-            ),
-          );
-        }
+        // Just display provider value - positionCal() already calculates correctly
+        final mtmValue = position.mTm ?? '0.00';
+        return Align(
+          alignment: alignment,
+          child: Text(
+            mtmValue,
+            style: _getTextStyle(context,
+                color: isClosed
+                    ? textColor
+                    : _getCellColor(double.tryParse(mtmValue) ?? 0.0, context)),
+          ),
+        );
       case 'Avg Price':
         return Align(
           alignment: alignment,
@@ -1223,40 +1209,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   padding: const EdgeInsets.only(left: 12),
                   alignment: Alignment.centerRight,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        shadcn.Theme.of(context)
-                            .colorScheme
-                            .background
-                            .withOpacity(0.0),
-                        shadcn.Theme.of(context)
-                            .colorScheme
-                            .background
-                            .withOpacity(0.95),
-                      ],
-                    ),
+                    gradient: (isRowHovered && !isClosed)
+                        ? LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withValues(alpha: 0.0),
+                              shadcn.Theme.of(context)
+                                  .colorScheme
+                                  .background
+                                  .withValues(alpha: 0.95),
+                            ],
+                          )
+                        : null,
                   ),
                   child: HoverActionsContainer(
                     isVisible: isRowHovered,
-                    spacing: 8.0,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    borderRadius: 6.0,
-                    backgroundColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.listItemBgDark,
-                      light: Colors.white,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 20,
-                        spreadRadius: 0,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
                     actions: [
                       if (!isClosed &&
                           position.qty != "0" &&
@@ -1494,230 +1465,5 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   }
 }
 
-// ==================== WEBSOCKET CELLS ====================
-
-/// LTP Cell with WebSocket updates
-class _LTPCell extends ConsumerStatefulWidget {
-  final String token;
-  final String initialLtp;
-  final bool isClosed;
-
-  const _LTPCell({
-    required this.token,
-    required this.initialLtp,
-    required this.isClosed,
-  });
-
-  @override
-  ConsumerState<_LTPCell> createState() => _LTPCellState();
-}
-
-class _LTPCellState extends ConsumerState<_LTPCell> {
-  late String ltp;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    ltp = widget.initialLtp;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != 'null') {
-        setState(() => ltp = newLtp);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      ltp,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        color: widget.isClosed
-            ? resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary)
-            : null,
-      ),
-    );
-  }
-}
-
-/// P&L Cell with WebSocket updates
-class _PnLCell extends ConsumerStatefulWidget {
-  final String token;
-  final int qty;
-  final double avgPrice;
-  final String initialValue;
-  final bool isClosed;
-
-  const _PnLCell({
-    required this.token,
-    required this.qty,
-    required this.avgPrice,
-    required this.initialValue,
-    required this.isClosed,
-  });
-
-  @override
-  ConsumerState<_PnLCell> createState() => _PnLCellState();
-}
-
-class _PnLCellState extends ConsumerState<_PnLCell> {
-  late String pnl;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    pnl = widget.initialValue;
-
-    // For closed positions (qty = 0), don't subscribe to updates
-    // Just show the realized P&L from initialValue
-    if (widget.isClosed || widget.qty == 0) {
-      return;
-    }
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newPnL =
-            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
-        if (newPnL != pnl) {
-          setState(() => pnl = newPnL);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getCellColor(String value, BuildContext context) {
-    final numValue = double.tryParse(value) ?? 0.0;
-    if (numValue > 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit);
-    } else if (numValue < 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.lossDark, light: MyntColors.loss);
-    } else {
-      return resolveThemeColor(context,
-          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      pnl,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        // Show profit/loss colors for both open and closed positions
-        color: _getCellColor(pnl, context),
-      ),
-    );
-  }
-}
-
-/// MTM Cell with WebSocket updates
-class _MTMCell extends ConsumerStatefulWidget {
-  final String token;
-  final int qty;
-  final double avgPrice;
-  final String initialValue;
-  final bool isClosed;
-
-  const _MTMCell({
-    required this.token,
-    required this.qty,
-    required this.avgPrice,
-    required this.initialValue,
-    required this.isClosed,
-  });
-
-  @override
-  ConsumerState<_MTMCell> createState() => _MTMCellState();
-}
-
-class _MTMCellState extends ConsumerState<_MTMCell> {
-  late String mtm;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    mtm = widget.initialValue;
-
-    // For closed positions (qty = 0), don't subscribe to updates
-    // Just show the realized MTM from initialValue
-    if (widget.isClosed || widget.qty == 0) {
-      return;
-    }
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newMtm =
-            ((ltp - widget.avgPrice) * widget.qty).toStringAsFixed(2);
-        if (newMtm != mtm) {
-          setState(() => mtm = newMtm);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getCellColor(String value, BuildContext context) {
-    final numValue = double.tryParse(value) ?? 0.0;
-    if (numValue > 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit);
-    } else if (numValue < 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.lossDark, light: MyntColors.loss);
-    } else {
-      return resolveThemeColor(context,
-          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      mtm,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        // Show profit/loss colors for both open and closed positions
-        color: _getCellColor(mtm, context),
-      ),
-    );
-  }
-}
+// LTP, P&L, MTM cells now just display provider values directly
+// No custom WebSocket cells needed - provider already handles updates

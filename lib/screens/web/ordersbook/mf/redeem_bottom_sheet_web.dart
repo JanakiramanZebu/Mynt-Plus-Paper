@@ -6,6 +6,7 @@ import '../../../../../provider/mf_provider.dart';
 import '../../../../../res/res.dart';
 import '../../../../../res/global_font_web.dart';
 import '../../../../../sharedWidget/cust_text_formfield.dart';
+import '../../../../../sharedWidget/mynt_loader.dart';
 import '../../../../res/web_colors.dart';
 
 class RedemptionBottomSheetWeb extends ConsumerStatefulWidget {
@@ -44,7 +45,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     final holding = mfData.holssinglelist?.isNotEmpty == true ? mfData.holssinglelist![0] : null;
 
     if (holding == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     return Dialog(

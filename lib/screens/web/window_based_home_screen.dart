@@ -239,10 +239,11 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
     }
 
     if (!websocket.wsConnected) {
+      // Web uses depth subscription ("d") for all symbols to have depth data ready
       if (ConstantName.lastSubscribe.isNotEmpty) {
         websocket.establishConnection(
             channelInput: ConstantName.lastSubscribe,
-            task: "t",
+            task: "d",
             context: context);
       }
 

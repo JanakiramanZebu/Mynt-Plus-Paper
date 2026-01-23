@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:mynt_plus/provider/network_state_provider.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/portfolio_provider.dart';
@@ -176,19 +177,38 @@ class WebSocketProvider extends ChangeNotifier {
       return;
     }
 
+    // CRITICAL: Prevent closing if socket is currently being established
+    // This prevents race conditions where screen dispose closes connection during establishment
+    if (_connecting && !_wsConnected) {
+      print('⚠️  [WEBSOCKET] Connection in progress, preventing premature close');
+      print('   Connecting: $_connecting, Connected: $_wsConnected');
+      log('⚠️  WebSocket: Preventing close during connection establishment');
+      return;
+    }
+
     // Get stack trace to see who is calling closeSocket
     final stackTrace = StackTrace.current;
-    final caller = stackTrace.toString().split('\n').take(3).join('\n');
+    final callerLines = stackTrace.toString().split('\n');
+    // Find the actual caller (skip closeSocket itself)
+    String callerInfo = 'Unknown';
+    for (int i = 1; i < callerLines.length && i < 6; i++) {
+      final line = callerLines[i].trim();
+      if (!line.contains('closeSocket') && line.isNotEmpty) {
+        callerInfo = line;
+        break;
+      }
+    }
 
     print('\n═══════════════════════════════════════════════════════════');
     print('🔴 [WEBSOCKET] CLOSING CONNECTION');
     print('   Status: ${_wsConnected ? "Connected" : "Not Connected"}');
+    print('   Connecting: $_connecting');
     print('   Mounted: $mounted');
     print('   Reason: ${mounted ? "App/Screen disposed" : "Connection closed"}');
-    print('   Caller: ${caller.split('\n')[1].trim()}');
+    print('   Caller: $callerInfo');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔴 WebSocket: Closing connection (mounted: $mounted)');
-    log('   Caller: $caller');
+    log('   Caller: $callerInfo');
 
     wsmount = mounted;
     _wsConnected = false;
@@ -770,12 +790,71 @@ class WebSocketProvider extends ChangeNotifier {
       _holdStartTime?.cancel();
     }
 
+    // Show order status notification
+    _showOrderStatusNotification(res);
+
     _holdStartTime = Timer(const Duration(milliseconds: 500), () {
       if (_context != null) {
         _refreshData(_context!);
       }
       _holdStartTime = null;
     });
+  }
+
+  /// Shows a snackbar notification based on order status from websocket message
+  void _showOrderStatusNotification(Map<String, dynamic> res) {
+    if (_context == null) return;
+
+    final status = res['status']?.toString().toUpperCase() ?? '';
+    final symbol = res['tsym']?.toString() ?? '';
+    final tranType = res['trantype']?.toString().toUpperCase() == 'B' ? 'Buy' : 'Sell';
+    final exchange = res['exch']?.toString() ?? '';
+
+    if (status.isEmpty || symbol.isEmpty) return;
+
+    String message;
+
+    switch (status) {
+      case 'COMPLETE':
+        message = '$tranType order for $symbol ($exchange) executed successfully';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(_context!, message);
+        } else {
+          successMessage(_context!, message);
+        }
+        break;
+      case 'REJECTED':
+        // final rejectionReason = res['rejreason']?.toString() ?? res['reporttype']?.toString() ?? 'Order rejected';
+        message = '$tranType order for $symbol ($exchange) rejected';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showError(_context!, message);
+        } else {
+          warningMessage(_context!, message);
+        }
+        break;
+      case 'OPEN':
+        message = '$tranType order for $symbol ($exchange) placed successfully';
+        if (kIsWeb) {
+          ResponsiveSnackBar.showSuccess(_context!, message);
+        } else {
+          successMessage(_context!, message);
+        }
+        break;
+      case 'PENDING':
+        // Skip PENDING notification to avoid duplicate with OPEN
+        break;
+      default:
+        // For other statuses like TRIGGER_PENDING, CANCELLED, etc.
+        if (status.isNotEmpty) {
+          message = '$tranType order for $symbol ($exchange): $status';
+          if (kIsWeb) {
+            ResponsiveSnackBar.showInfo(_context!, message);
+          } else {
+            successMessage(_context!, message);
+          }
+        }
+        break;
+    }
   }
 
   void _refreshData(BuildContext context) {
@@ -1464,7 +1543,7 @@ class WebSocketProvider extends ChangeNotifier {
             log('   ➕ Restoring tick subscriptions');
             connectTouchLine(
               input: ConstantName.lastSubscribe,
-              task: "t",
+              task: kIsWeb ? "d" : "t",  // Web uses depth subscription
               context: context,
             );
           }

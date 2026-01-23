@@ -1574,7 +1574,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
                   (_getQuotes.exch == "MCX" && _getQuotes.instname == "OPTFUT"))
               ? '${_getQuotes.undExch}|${_getQuotes.undTk!}'
               : '${_getQuotes.exch}|${_getQuotes.token!}',
-          task: "t",
+          task: kIsWeb ? "d" : "t",
           context: context);
 
       // STEP 5: Fetch linked scripts which will set optionExch and selectedTradeSym
@@ -2309,7 +2309,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         }
         await ref.read(websocketProvider).establishConnection(
             channelInput: '${_getStikePrc!.exch}|${_getStikePrc!.token!}',
-            task: "t",
+            task: kIsWeb ? "d" : "t",
             context: context);
       }
       if (_getStikePrc!.emsg == "Session Expired :  Invalid Session Key" &&
@@ -3170,7 +3170,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // lastScbTok(input);
       await ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? "t" : "u",
+          task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
           context: context);
     }
   }
@@ -3191,7 +3191,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // lastScbTok(input);
       ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? "t" : "u",
+          task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
           context: context);
     }
   }
@@ -3740,7 +3740,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? "t" : "u",
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
             context: context);
 
         // For predefined watchlists, ensure data wasn't accidentally cleared during subscription

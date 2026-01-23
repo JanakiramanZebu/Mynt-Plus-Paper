@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
-import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 
 /// Web-specific authentication API service
 /// This service handles the web login flow with source="WEB" 
@@ -57,14 +57,24 @@ class WebAuthApi {
       );
 
       log("Web Login Response => ${res.body}");
-      
+
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        return MobileLoginModel.fromJson(json as Map<String, dynamic>);
+        final model = MobileLoginModel.fromJson(json as Map<String, dynamic>);
+        // Show error if stat is not Ok - check both emsg and msg fields
+        if (model.stat != 'Ok') {
+          final errorMessage = model.emsg ?? model.msg;
+          if (errorMessage != null && errorMessage.isNotEmpty) {
+            ResponsiveSnackBar.showError(context, errorMessage);
+          }
+        }
+        return model;
+      } else {
+        ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
       debugPrint("Web Login error: $e");
-      error(context, "An error occurred. Please try again.");
+      ResponsiveSnackBar.showError(context, "An error occurred. Please try again.");
     }
     return null;
   }
@@ -101,7 +111,7 @@ class WebAuthApi {
       }
     } catch (e) {
       debugPrint("Send OTP error: $e");
-      error(context, "Failed to send OTP. Please try again.");
+      ResponsiveSnackBar.showError(context, "Failed to send OTP. Please try again.");
     }
     return null;
   }
@@ -142,14 +152,19 @@ class WebAuthApi {
       );
 
       log("Web OTP Verify Response => ${res.body}");
-      
+
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        return MobileOtpModel.fromJson(json as Map<String, dynamic>);
+        final model = MobileOtpModel.fromJson(json as Map<String, dynamic>);
+        // Don't show error toast here - let the provider handle it
+        // This allows proper TOTP vs OTP distinction in error messages
+        return model;
+      } else {
+        ResponsiveSnackBar.showError(context, "Server error. Please try again later.");
       }
     } catch (e) {
       debugPrint("Web OTP Verify error: $e");
-      error(context, "OTP verification failed. Please try again.");
+      ResponsiveSnackBar.showError(context, "OTP verification failed. Please try again.");
     }
     return null;
   }
@@ -214,7 +229,7 @@ class WebAuthApi {
       }
     } catch (e) {
       debugPrint("Gen TOTP Key error: $e");
-      error(context, "Failed to generate TOTP. Please try again.");
+      ResponsiveSnackBar.showError(context, "Failed to generate TOTP. Please try again.");
     }
     return null;
   }
@@ -310,7 +325,7 @@ class WebAuthApi {
       }
     } catch (e) {
       debugPrint("Forgot Password error: $e");
-      error(context, "Failed to process request. Please try again.");
+      ResponsiveSnackBar.showError(context, "Failed to process request. Please try again.");
     }
     return null;
   }

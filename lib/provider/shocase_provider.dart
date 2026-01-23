@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -45,7 +46,7 @@ class ShowCaseProvider extends DefaultChangeNotifier {
       Future.delayed(const Duration(seconds: 3), () {
         ref.read(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribe,
-            task: "t",
+            task: kIsWeb ? "d" : "t",
             context: context);
         ref.read(websocketProvider).establishConnection(
             channelInput: ConstantName.lastSubscribeDepth,

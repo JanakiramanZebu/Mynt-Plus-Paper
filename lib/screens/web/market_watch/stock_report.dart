@@ -128,11 +128,13 @@ class ShareholdersDonutChartPainter extends CustomPainter {
 class NewFundamentalScreen extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
   final GetQuotes depthData;
+  final bool showHeader;
 
   const NewFundamentalScreen({
     super.key,
     required this.wlValue,
     required this.depthData,
+    this.showHeader = true,
   });
 
   @override
@@ -163,13 +165,17 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Clear any existing data to prevent showing old data
-      ref.read(marketWatchProvider).clearChartData();
-      ref.read(marketWatchProvider).clearFundamentalData();
-      
-      // Clear cache for this specific token to ensure fresh data
-      if (widget.wlValue.token.isNotEmpty) {
-        ref.read(marketWatchProvider).clearCacheForToken(widget.wlValue.token);
+      // Only clear data when showing as standalone screen (with header)
+      // When embedded in tabs (showHeader: false), don't clear to prevent tab flickering
+      if (widget.showHeader) {
+        // Clear any existing data to prevent showing old data
+        ref.read(marketWatchProvider).clearChartData();
+        ref.read(marketWatchProvider).clearFundamentalData();
+
+        // Clear cache for this specific token to ensure fresh data
+        if (widget.wlValue.token.isNotEmpty) {
+          ref.read(marketWatchProvider).clearCacheForToken(widget.wlValue.token);
+        }
       }
       
       ref.read(websocketProvider).socketDataStream.listen((socketData) {
@@ -635,6 +641,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
       // Show loading indicator if still loading
       if (_isLoadingNewData) {
+        if (!widget.showHeader) {
+          return _buildLoadingIndicator(theme);
+        }
         return Scaffold(
           appBar: AppBar(
             centerTitle: false,
@@ -681,6 +690,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
       // Check if fundamental data is available, if not show error message
       if (!_isFundamentalDataAvailable(marketWatch)) {
+        if (!widget.showHeader) {
+          return const Center(child: NoDataFound());
+        }
         return Scaffold(
           appBar: AppBar(
             centerTitle: false,

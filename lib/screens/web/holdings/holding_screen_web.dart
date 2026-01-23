@@ -13,6 +13,7 @@ import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -24,7 +25,7 @@ class HoldingScreenWeb extends ConsumerWidget {
     final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
 
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     return _HoldingScreenContent(listofHolding: listofHolding);
@@ -89,7 +90,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     final theme = ref.read(themeProvider);
 
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     final portfolioData = ref.read(portfolioProvider);

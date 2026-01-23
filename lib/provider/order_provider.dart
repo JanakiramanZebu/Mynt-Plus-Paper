@@ -345,15 +345,15 @@ class OrderProvider extends DefaultChangeNotifier {
     showSipSearch(false);
     ref.read(marketWatchProvider).clearAlertSearch();
 
-    // Clear search only if switching away from search-enabled tabs
-    if (index > 3) {
+    // Clear search only if switching away from search-enabled tabs (indices 0-3 and index 5 are searchable)
+    if (index == 4) {
       clearOrderSearch();
       clearGttOrderSearch();
       clearSipSearch();
     }
 
     // Only perform search if there's text and we're on a searchable tab
-    if (orderSearchCtrl.text.isNotEmpty && index <= 3) {
+    if (orderSearchCtrl.text.isNotEmpty && (index <= 3 || index == 5)) {
       searchOrders(orderSearchCtrl.text, context);
     }
 
@@ -365,10 +365,10 @@ class OrderProvider extends DefaultChangeNotifier {
     }
     // Tab 3: GTT Orders - data is loaded with order book, no lazy load needed
     // Tab 4 (web: 5): SIP Orders
-    else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
-      debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
-      fetchSipOrderHistory(context);
-    }
+    // else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
+    //   debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
+    //   fetchSipOrderHistory(context);
+    // }
 
     // Handle WebSocket subscription/unsubscription for order book tabs (0-3)
     // Unsubscribe from previous tab if it was a subscription tab (0-3)
@@ -384,7 +384,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
 
     // Only fetch basket data when switching to basket tab
-    if (kIsWeb ? index == 5 : index == 4) {
+    if (index == 4) {
       debugPrint("=== TAB SWITCH TO BASKET ===");
       debugPrint("Calling getBasketName()...");
       getBasketName();
@@ -538,7 +538,7 @@ class OrderProvider extends DefaultChangeNotifier {
         input = symbolsToSubscribe.join("#");
         print("Subscribing to new basket scripts: $input");
         ref.read(websocketProvider).establishConnection(
-            channelInput: input, task: "t", context: context);
+            channelInput: input, task: kIsWeb ? "d" : "t", context: context);
       }
 
       // Update basket with latest values from socket data
@@ -630,7 +630,7 @@ class OrderProvider extends DefaultChangeNotifier {
             : "GTT",
       ),
       // Newly added tabs after GTT
-      const Tab(text: "MF"),
+      // const Tab(text: "MF"),
       // const Tab(text: "IPO"),
       // const Tab(text: "Bonds"),
       Tab(
@@ -796,42 +796,8 @@ class OrderProvider extends DefaultChangeNotifier {
             _gttOrderBookSearch = [];
           }
           break;
-        case 4: // MF Orders (Web) / Basket (Mobile)
-          // Only perform MF search on web (mobile uses case 4 for Basket which doesn't need search)
-          if (kIsWeb) {
-            final mf = ref.read(mfProvider);
-
-            // Search MF orders - only if data exists
-            if (mf.mflumpsumorderbook?.data != null &&
-                mf.mflumpsumorderbook!.data!.isNotEmpty) {
-              final searchResult = mf.mflumpsumorderbook!.data!.where((order) {
-                final schemeName =
-                    (order.name ?? order.schemename ?? '').toUpperCase();
-                return schemeName.contains(value.toUpperCase());
-              }).toList();
-              mf.setMfOrderSearch(searchResult);
-            } else {
-              // Clear search if no data
-              mf.clearMfSearch();
-            }
-
-            // Search SIP orders - only if data exists
-            if (mf.mfsiporderlist?.data != null &&
-                mf.mfsiporderlist!.data!.isNotEmpty) {
-              final searchResult = mf.mfsiporderlist!.data!.where((sip) {
-                final schemeName = (sip.name ?? '').toUpperCase();
-                final sipRegNo = (sip.sIPRegnNo ?? '').toUpperCase();
-                final searchUpper = value.toUpperCase();
-                return schemeName.contains(searchUpper) ||
-                    sipRegNo.contains(searchUpper);
-              }).toList();
-              mf.setMfSipSearch(searchResult);
-            } else {
-              // Clear search if no data
-              mf.setMfSipSearch([]);
-            }
-          }
-          // Mobile case 4 is Basket - no search needed, so do nothing
+        case 4: // Basket (Web & Mobile)
+          // Basket doesn't need search as per current implementation
           break;
         // case 5: // SIP Orders
         //   _siporderBookSearch = _siporderBookModel!.sipDetails!
@@ -1026,12 +992,12 @@ class OrderProvider extends DefaultChangeNotifier {
             await Future.delayed(const Duration(milliseconds: 100));
           }
 
-          showDialog(
-            context: context,
-            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
-            builder: (BuildContext context) =>
-                OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
-          );
+          // showDialog(
+          //   context: context,
+          //   barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+          //   builder: (BuildContext context) =>
+          //       OrderConfirmationScreenWeb(orderData: [_placeOrderModel!]),
+          // );
         } else {
           // Navigate to order confirmation screen
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
@@ -1159,13 +1125,13 @@ class OrderProvider extends DefaultChangeNotifier {
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {
           if (kIsWeb) {
-            showDialog(
-              context: context,
-              barrierColor:
-                  Colors.black.withOpacity(0.3), // Subtle dark backdrop
-              builder: (BuildContext context) =>
-                  OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
-            );
+            // showDialog(
+            //   context: context,
+            //   barrierColor:
+            //       Colors.black.withOpacity(0.3), // Subtle dark backdrop
+            //   builder: (BuildContext context) =>
+            //       OrderConfirmationScreenWeb(orderData: _sliceOrderResults),
+            // );
           } else {
             // Navigate to order confirmation screen
             Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
@@ -1579,15 +1545,15 @@ class OrderProvider extends DefaultChangeNotifier {
           // So we don't need to call Navigator.pop here
 
           // Small delay to ensure overlay closes smoothly before showing confirmation
-          await Future.delayed(const Duration(milliseconds: 100));
+          // await Future.delayed(const Duration(milliseconds: 100));
 
-          // Show confirmation dialog
-          showDialog(
-            context: context,
-            barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
-            builder: (BuildContext context) =>
-                OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
-          );
+          // // Show confirmation dialog
+          // showDialog(
+          //   context: context,
+          //   barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
+          //   builder: (BuildContext context) =>
+          //       OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
+          // );
         } else {
           Navigator.pop(context);
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {

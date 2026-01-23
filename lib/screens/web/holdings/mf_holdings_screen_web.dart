@@ -10,6 +10,7 @@ import '../../../../res/res.dart';
 import '../../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart' hide WebTextStyles;
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
 
@@ -65,7 +66,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     final theme = ref.read(themeProvider);
 
     if (mfData.holdstatload ?? false) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: MyntLoader.simple());
     }
 
     return GestureDetector(
