@@ -161,13 +161,13 @@ class WebAuthProvider extends ChangeNotifier {
   }
 
   /// Check for existing valid session and auto-login
-  Future<void> checkAutoLogin(BuildContext context) async {
+  Future<bool> checkAutoLogin(BuildContext context) async {
     // 1. Check if we have session data in preferences
     final session = pref.clientSession;
     final clientId = pref.clientId;
 
     if (session == null || session.isEmpty || clientId == null || clientId.isEmpty) {
-      return; // No session, stay on login
+      return false; // No session, stay on login
     }
 
     _setLoading(true);
@@ -193,6 +193,7 @@ class WebAuthProvider extends ChangeNotifier {
            Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
            ref.read(authProvider).initialLoadMethods(context, "");
         }
+        return true;
       } else {
         debugPrint('Auto-login failed: Invalid session');
         // Optional: specific error handling or clearing session
@@ -203,6 +204,7 @@ class WebAuthProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+    return false;
   }
 
   /// Web Login - Submit login credentials

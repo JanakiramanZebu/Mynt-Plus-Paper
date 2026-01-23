@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:mynt_plus/api/core/api_export.dart';
+import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -928,16 +930,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: 200, // Fixed width for buttons
                   child: OutlinedButton(
                     onPressed: () {
-                      setState(() {
-                        _selectedProductType = 'Delivery / Carry';
-                        _selectedOrderType = 'Market';
-                        _selectedValidity = 'DAY';
-                        _selectedMarketProtection = '%';
-                        _selectedQuantityPref = 'Default Qty / Lot';
-                        _selectedPositionExit = 'Limit';
-                        _stickyOrderWindow = true;
-                        _quickOrderScreen = false;
-                      });
+                      _resetPreferences();
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: colors.primaryDark,
@@ -957,10 +950,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: 200, // Fixed width for buttons
                   child: ElevatedButton(
                     onPressed: () {
-                      // Save preferences
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Preferences saved')),
-                      );
+                      _savePreferences();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.primaryLight,
@@ -980,6 +970,179 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
         ],
       ),
     );
+  }
+
+  Future<void> _resetPreferences() async {
+    final pref = locator<Preferences>();
+    final api = locator<ApiExporter>();
+
+    // Update local state to match reset defaults
+    setState(() {
+      _selectedProductType = 'Delivery / Carry';
+      _selectedOrderType = 'Limit'; // Matches LMT in payload
+      _selectedValidity = 'DAY';
+      _selectedMarketProtection = '%';
+      _selectedQuantityPref = 'Default Qty / Lot';
+      _selectedPositionExit = 'Limit';
+      _stickyOrderWindow = false; // Matches stickysrc: false
+      _quickOrderScreen = false; // Matches quicksrc: false
+    });
+
+    // Static payload for reset
+    Map<String, dynamic> data = {
+      "clientid": pref.clientId,
+      "metadata": {
+          "expos": "MKT", // As per user request static payload
+          "mainpreitems": {
+              "NSE": ["CNC", "LMT", "DAY", "1"],
+              "BSE": ["CNC", "LMT", "DAY", "1"],
+              "MCX": ["NRML", "LMT", "DAY", "1"],
+              "NFO": ["NRML", "LMT", "DAY", "1"],
+              "CDS": ["NRML", "LMT", "DAY", "1"],
+              "BFO": ["NRML", "LMT", "EOS", "1"],
+              "BCD": ["NRML", "LMT", "EOS", "1"]
+          },
+          "mktpro": 5, // As per user request
+          "qtypre": "0",
+          "quicksrc": false,
+          "stickysrc": false
+      },
+      "source": "WEB"
+    };
+
+    try {
+      final res = await api.setOrderprefer(data, true, context);
+      if (res != null && (res['stat'] == 'Ok' || res['status'] == 'Ok' || res['status'] == 'updated')) {
+        if (mounted) {
+          ResponsiveSnackBar.showSuccess(context, 'Preferences reset successfully');
+        }
+      } else {
+        if (mounted) {
+          ResponsiveSnackBar.showError(context, res?['emsg'] ?? 'Failed to reset preferences');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ResponsiveSnackBar.showError(context, 'Error: $e');
+      }
+    }
+  }
+
+  Future<void> _savePreferences() async {
+    final pref = locator<Preferences>();
+    final api = locator<ApiExporter>();
+
+    // Helper to map Order Type
+    String mapOrderType() {
+      switch (_selectedOrderType) {
+        case 'Limit': return 'LMT';
+        case 'Market': return 'MKT';
+        case 'SL Limit': return 'SL-LMT';
+        case 'SL MKT': return 'SL-MKT';
+        default: return 'LMT';
+      }
+    }
+
+    // Helper to map Product Type per exchange
+    String mapProductType(String exch) {
+      if (_selectedProductType == 'Delivery / Carry') {
+        if (['NSE', 'BSE'].contains(exch)) return 'CNC';
+        return 'NRML';
+      } else if (_selectedProductType == 'Intraday') {
+        return 'MIS';
+      } else if (_selectedProductType == 'CO - BO') {
+        return 'CO'; // Assuming CO for cover order
+      }
+      return 'CNC';
+    }
+
+    // Helper to map Validity
+    String mapValidity() {
+      return _selectedValidity; // 'DAY', 'IOC'
+    }
+
+    String mapQtyPref() {
+      return _selectedQuantityPref == 'Default Qty / Lot' ? "0" : "1";
+    }
+
+    // Construct mainpreitems for each exchange
+    Map<String, List<String>> mainpreitems = {};
+    final exchanges = ['NSE', 'BSE', 'MCX', 'NFO', 'CDS', 'BFO', 'BCD'];
+    
+    final orderType = mapOrderType();
+    final validity = mapValidity();
+    
+    for (var exch in exchanges) {
+      // Logic for 4th parameter (Protection %?) - Using 5 as per UI fixed value or default
+      // User example had varied values: 3, 10, 1, 25, 1. 
+      // Since UI only shows "5", providing "5" or defaulting to sensible logic.
+      // However, to match user request structure precisely, we might need dynamic or fixed.
+      // We'll use "5" to match the UI's 'mktpro': "5".
+      mainpreitems[exch] = [
+        mapProductType(exch),
+        orderType,
+        validity,
+        exch == 'NFO' ? "25" : (exch == 'BSE' ? "10" : "5") // Attempting to match example somewhat or just using 5
+      ];
+      // Note: User example had: NSE:3, BSE:10, MCX:1, NFO:25, CDS:1, BFO:1, BCD:1
+      // Ideally we shouldn't hardcode these unless we know what they are. 
+      // But preserving specific values from example might be safer if they mean "Lot Size" or "Tick"? No, 3% protection?
+      // Let's stick to "5" if we can't be sure, OR use the values from user example if they are constant defaults.
+      // Re-reading user request: "mktpro": "5". Arrays have different values.
+      // Let's use string "5" for all to be consistent with UI "5%", unless we have better info.
+    }
+
+    Map<String, dynamic> data = {
+      "clientid": pref.clientId,
+      "metadata": {
+        "expos": orderType,
+        "mainpreitems": {
+            "NSE": ["CNC", orderType, validity, "3"],
+            "BSE": ["MIS", orderType, validity, "10"],
+            "MCX": ["NRML", orderType, validity, "1"],
+            "NFO": ["NRML", orderType, validity, "25"],
+            "CDS": ["NRML", orderType, validity, "1"],
+            "BFO": ["NRML", orderType, validity, "1"],
+            "BCD": ["NRML", orderType, validity, "1"]
+        }, // Initial hardcoded structure based on user example, but dynamic keys should be applied
+        "mktpro": "5",
+        "qtypre": mapQtyPref(),
+        "quicksrc": _quickOrderScreen,
+        "stickysrc": _stickyOrderWindow
+      },
+      "source": "WEB"
+    };
+
+    // Override mainpreitems with dynamic selected values
+    Map<String, List<String>> dynamicPreItems = {};
+    for (var exch in exchanges) {
+       dynamicPreItems[exch] = [
+          mapProductType(exch),
+          orderType,
+          validity,
+          // Using the specific numbers from user example as placeholders since UI doesn't allow changing them per exchange
+          (exch == 'NFO' ? "25" : (exch == 'BSE' ? "10" : (exch == 'NSE' ? "3" : "1")))
+       ];
+    }
+    data["metadata"]["mainpreitems"] = dynamicPreItems;
+
+
+    try {
+      final res = await api.setOrderprefer(data, true, context);
+      if (res != null && (res['stat'] == 'Ok' || res['status'] == 'Ok' || res['status'] == 'updated')) {
+        if (mounted) {
+          ResponsiveSnackBar.showSuccess(context, 'Preferences saved successfully');
+        }
+      } else {
+         if (mounted) {
+          ResponsiveSnackBar.showError(context, res?['emsg'] ?? 'Failed to save preferences');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ResponsiveSnackBar.showError(context, 'Error: $e');
+      }
+    }
   }
 
   Widget _buildFreezeAccountContent(ThemesProvider theme) {

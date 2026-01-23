@@ -462,7 +462,10 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
       final theme = ref.watch(themeProvider);
       final userProfile = ref.watch(userProfileProvider);
 
-      if (auth.initLoad) {
+      final webAuth = ref.watch(webAuthProvider);
+      
+      // Show loader during initial load OR during auto-login session check
+      if (auth.initLoad || webAuth.loading) {
         return Scaffold(
           backgroundColor:
               theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,

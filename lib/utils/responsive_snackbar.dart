@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'dart:async';
 
 /// Responsive SnackBar utility that adapts to screen size
@@ -427,21 +427,20 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
                           // Title (Type)
                           Text(
                             _getTypeLabel(widget.toast.type),
-                            style: WebTextStyles.custom(
-                              fontSize: 14,
-                              isDarkTheme: false,
+                            style: MyntWebTextStyles.body(
+                              context,
                               color: statusColor, // Title uses status color
-                              fontWeight: FontWeight.w700,
+                              fontWeight: MyntFonts.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           // Message
                           Text(
                             widget.toast.message,
-                            style: WebTextStyles.bodySmall(
-                              isDarkTheme: widget.toast.type != SnackBarType.info,
-                              color: subTextColor,
-                              fontWeight: FontWeight.w500,
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: contentColor,
+                              fontWeight: MyntFonts.medium,
                             ),
                             maxLines: 10, // Increased maxLines to show full text
                             overflow: TextOverflow.visible,
