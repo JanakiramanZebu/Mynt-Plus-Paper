@@ -5,6 +5,10 @@ import 'package:mynt_plus/res/global_font_web.dart' hide WebTextStyles;
 
 class ExitDialog {
   static Future<bool> show(BuildContext context, bool isDarkMode) async {
+    // Dialog disabled - return false immediately
+    return false;
+
+    // ignore: dead_code
     return await showDialog(
           context: context,
           builder: (BuildContext context) {
