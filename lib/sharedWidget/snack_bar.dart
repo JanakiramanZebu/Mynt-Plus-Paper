@@ -212,25 +212,29 @@ void warningToaster(BuildContext context, String warningtoaster) {
 /// Shows responsive error message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveError(BuildContext context, String message) {
-  ResponsiveSnackBar.showError(context, message);
+  ResponsiveSnackBar.showError(
+      rootNavigatorKey.currentContext ?? context, message);
 }
 
 /// Shows responsive warning message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveWarning(BuildContext context, String message) {
-  ResponsiveSnackBar.showWarning(context, message);
+  ResponsiveSnackBar.showWarning(
+      rootNavigatorKey.currentContext ?? context, message);
 }
 
 /// Shows responsive success message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveSuccess(BuildContext context, String message) {
-  ResponsiveSnackBar.showSuccess(context, message);
+  ResponsiveSnackBar.showSuccess(
+      rootNavigatorKey.currentContext ?? context, message);
 }
 
 /// Shows responsive info message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveInfo(BuildContext context, String message) {
-  ResponsiveSnackBar.showInfo(context, message);
+  ResponsiveSnackBar.showInfo(
+      rootNavigatorKey.currentContext ?? context, message);
 }
 
 /// Replaces ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, message))

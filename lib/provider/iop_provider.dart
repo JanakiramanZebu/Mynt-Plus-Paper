@@ -116,7 +116,7 @@ class IPOProvider extends DefaultChangeNotifier {
       "index": 0,
     },
     {
-      "title": "Upcoming", 
+      "title": "Upcoming",
       "index": 1,
     },
     {
@@ -245,7 +245,6 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-  
   void resetTabToDefault() {
     _selectedTab = 0;
     notifyListeners();
@@ -340,7 +339,7 @@ class IPOProvider extends DefaultChangeNotifier {
 
   clearCommonIpoSearch() {
     // ipocommonsearchcontroller.clear();
-   ref.read(stocksProvide).searchController.clear();
+    ref.read(stocksProvide).searchController.clear();
     _ipoCommonSearchList = [];
     notifyListeners();
   }
@@ -381,7 +380,7 @@ class IPOProvider extends DefaultChangeNotifier {
               ? element.companyName!.toUpperCase().contains(value.toUpperCase())
               : element.name!.toUpperCase().contains(value.toUpperCase()))
           .toList();
-          
+
       // print("_ipoCommonSearchList :: ${inspect(_ipoCommonSearchList)}");
       // if (_ipoCommonSearchList.isEmpty) {
       //   ScaffoldMessenger.of(context)
@@ -513,7 +512,9 @@ class IPOProvider extends DefaultChangeNotifier {
 
   smebidpriceOnChange(
       String value, IpoDetails addIpo, bool ischecked, SMEIPO smeipo) {
-    addIpo.bidpricecontroller.text = value;
+    if (addIpo.bidpricecontroller.text != value) {
+      addIpo.bidpricecontroller.text = value;
+    }
     addIpo.bidpricecontroller.text.isEmpty
         ? addIpo.requriedprice = 0
         : addIpo.requriedprice = (int.parse(addIpo.bidpricecontroller.text) *
@@ -534,6 +535,15 @@ class IPOProvider extends DefaultChangeNotifier {
       setisSMEPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.biderrortext = "";
+    }
+
+    if (addIpo.requriedprice > maxUPIAmt) {
+      addIpo.qualityerrortext =
+          "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
+    } else {
+      if (addIpo.qualityerrortext.contains("Maximum investment")) {
+        addIpo.qualityerrortext = "";
+      }
     }
     notifyListeners();
   }
@@ -703,7 +713,7 @@ class IPOProvider extends DefaultChangeNotifier {
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
       ischecked = false;
     } else if (addIpo.bidpricecontroller.text.isEmpty) {
-          warningMessage(context, "*Bid Price Value is required");
+      warningMessage(context, "*Bid Price Value is required");
       ischecked = false;
     } else if (upiid.viewupiid.text.isEmpty) {
       ischecked = false;
@@ -921,7 +931,9 @@ class IPOProvider extends DefaultChangeNotifier {
 
   bidpricefunction(
       IpoDetails addIpo, MainIPO mainstream, String value, bool ischecked) {
-    addIpo.bidpricecontroller.text = value;
+    if (addIpo.bidpricecontroller.text != value) {
+      addIpo.bidpricecontroller.text = value;
+    }
     addIpo.bidpricecontroller.text.isEmpty
         ? addIpo.requriedprice = 0
         : addIpo.requriedprice = (int.parse(addIpo.bidpricecontroller.text) *
@@ -943,6 +955,15 @@ class IPOProvider extends DefaultChangeNotifier {
       setisMainIPOPlaceOrderBtnActiveValue = false;
     } else {
       addIpo.biderrortext = "";
+    }
+
+    if (addIpo.requriedprice > maxUPIAmt) {
+      addIpo.qualityerrortext =
+          "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ";
+    } else {
+      if (addIpo.qualityerrortext.contains("Maximum investment")) {
+        addIpo.qualityerrortext = "";
+      }
     }
     notifyListeners();
   }
@@ -1108,12 +1129,13 @@ class IPOProvider extends DefaultChangeNotifier {
   policyfunction(bool ischecked, IpoDetails addIpo, double maxUPIAmt,
       BuildContext context) {
     ischecked = !ischecked;
-    if (addIpo.requriedprice > maxUPIAmt) {warningMessage(context,
+    if (addIpo.requriedprice > maxUPIAmt) {
+      warningMessage(context,
           "Maximum investment upto ₹${double.parse(maxUPIAmt.toString()).toInt()} only ");
 
       ischecked = false;
     } else if (addIpo.bidpricecontroller.text.isEmpty) {
-          warningMessage(context, "*Bid Price Value is required");
+      warningMessage(context, "*Bid Price Value is required");
       ischecked = false;
     }
     notifyListeners();
@@ -1418,41 +1440,41 @@ class IPOProvider extends DefaultChangeNotifier {
 
   bool _singlepageapply = false;
   bool get singlepageapply => _singlepageapply;
-  
+
   void setSinglepageapply(bool value) {
     _singlepageapply = value;
     notifyListeners();
   }
 
   Future fetchupiidvalidation(BuildContext context, String upiId, String accno,
-      MenuData menudata, List<IposBid> iposbids, String iposupiid, {bool isOverlayDialog = false}) async {
+      MenuData menudata, List<IposBid> iposbids, String iposupiid,
+      {bool isOverlayDialog = false}) async {
     try {
       toggleLoadingOn(true);
       _upiIdValidationModel = await api.getVerifyUpi(upiId, accno);
       if (_upiIdValidationModel!.data!.verifiedVPAStatus1 == "Available" ||
           _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
-        getipoplaceorder(context, menudata, iposbids, iposupiid);
+        await getipoplaceorder(context, menudata, iposbids, iposupiid);
         getipoorderbookmodel(context, true);
         // ipotab();
         _upierror = "";
         _upivalid = false;
         setSelectedTab(2);
-        
+
         // Only use Navigator.pop if not in overlay dialog
         // Overlay dialogs are closed via their callbacks
         if (!isOverlayDialog) {
           Navigator.pop(context);
           Navigator.pop(context);
-          if(singlepageapply){
+          if (singlepageapply) {
             Navigator.pop(context);
           }
         }
         // Navigator.pushNamed(context, Routes.ipo, arguments: 2);
-
       } else {
         _upivalid = true;
         _upierror = "Invalid UPI ID";
-        warningMessage(context, 'Invalid UPI ID');
+        showResponsiveWarning(context, 'Invalid UPI ID');
       }
 
       //log("HDFC BANK $_upiIdValidationModel");
@@ -1476,7 +1498,12 @@ class IPOProvider extends DefaultChangeNotifier {
       // ipotab();
 
       setSelectedTab(2); // "My Bids" tab
-          successMessage(context, '${_ipoOrderResponcesModel!.msg}');
+      showResponsiveSuccess(
+          context,
+          (_ipoOrderResponcesModel?.msg != null &&
+                  _ipoOrderResponcesModel!.msg!.isNotEmpty)
+              ? _ipoOrderResponcesModel!.msg!
+              : 'Order placed successfully');
 
       return _ipoOrderResponcesModel;
     } catch (e) {

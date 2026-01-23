@@ -58,11 +58,11 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        // Allocation: Name (40%), Size (20%), Updated (20%), Exchanges (20%)
-        final nameWidth = width * 0.40;
-        final sizeWidth = width * 0.20;
-        final updatedWidth = width * 0.20;
-        final excWidth = width * 0.20;
+        // Allocation: All columns 25%
+        final nameWidth = width * 0.25;
+        final sizeWidth = width * 0.25;
+        final updatedWidth = width * 0.25;
+        final excWidth = width * 0.25;
 
         final columnWidths = {
           0: shadcn.FixedTableSize(nameWidth),
@@ -81,12 +81,9 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
                   shadcn.TableHeader(
                     cells: [
                       _buildHeaderCell("Stock name", 0, theme),
-                      _buildHeaderCell("Issue Size", 2, theme,
-                          alignRight: true),
-                      _buildHeaderCell("Last Updated", 3, theme,
-                          alignRight: true),
-                      _buildHeaderCell("Stock Exchanges", 4, theme,
-                          alignRight: true),
+                      _buildHeaderCell("Issue Size", 1, theme),
+                      _buildHeaderCell("Last Updated", 2, theme),
+                      _buildHeaderCell("Stock Exchanges", 3, theme),
                     ],
                   ),
                 ],
@@ -141,22 +138,17 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
           final nameB = b.companyName ?? '';
           comparison = nameA.compareTo(nameB);
           break;
-        case 1: // Type
-          final typeA = a.ipoType ?? '';
-          final typeB = b.ipoType ?? '';
-          comparison = typeA.compareTo(typeB);
-          break;
-        case 2: // Issue Size
+        case 1: // Issue Size
           final sizeA = a.issueSize ?? '';
           final sizeB = b.issueSize ?? '';
           comparison = sizeA.compareTo(sizeB);
           break;
-        case 3: // Last Updated
+        case 2: // Last Updated
           final updatedA = a.lastUpdated ?? '';
           final updatedB = b.lastUpdated ?? '';
           comparison = updatedA.compareTo(updatedB);
           break;
-        case 4: // Stock Exchanges
+        case 3: // Stock Exchanges
           final exchangeA = a.stockExchanges ?? '';
           final exchangeB = b.stockExchanges ?? '';
           comparison = exchangeA.compareTo(exchangeB);
@@ -267,7 +259,6 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
           uniqueId: uniqueId,
           rowIsHovered: rowIsHovered,
           theme: theme,
-          alignRight: true,
           child: Text(
             ipo.issueSize ?? '',
             style: cellTextStyle,
@@ -278,7 +269,6 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
           uniqueId: uniqueId,
           rowIsHovered: rowIsHovered,
           theme: theme,
-          alignRight: true,
           child: Text(
             ipo.lastUpdated ?? '',
             style: cellTextStyle,
@@ -289,7 +279,6 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
           uniqueId: uniqueId,
           rowIsHovered: rowIsHovered,
           theme: theme,
-          alignRight: true,
           child: Text(
             ipo.stockExchanges ?? '',
             style: cellTextStyle,

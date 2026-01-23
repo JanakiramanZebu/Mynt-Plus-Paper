@@ -222,7 +222,7 @@ class SMEIPO {
     tplusmodificationto = json['tplusmodificationto'].toString();
     type = json['type'].toString();
     updateIpoDate = json['update_ipo_date'].toString();
-    key = json['key'].toString();
+    key = json['key']?.toString() ?? "";
     totalsub = json["total_sub"];
     imageLink = json["image_link"];
     ipostatus = "Live";

@@ -1,9 +1,7 @@
-// ignore_for_file: unused_local_variable
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart' hide WebTextStyles;
 import 'package:mynt_plus/res/res.dart';
@@ -17,7 +15,6 @@ import '../../../../provider/iop_provider.dart';
 import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
-import '../../../Mobile/ipo/mainstream_order_screen/orderscreenbottompage.dart';
 
 // InheritedWidget to pass close callback to child widgets
 class _IpoOrderDialogCloseNotifier extends InheritedWidget {
@@ -89,7 +86,7 @@ class UnifiedIpoOrderScreen extends ConsumerStatefulWidget {
     Offset? initialPosition,
   }) {
     final overlay = Overlay.of(context);
-    
+
     // Close existing IPO order screen if one is already open
     if (_currentOverlayEntry != null) {
       try {
@@ -100,10 +97,14 @@ class UnifiedIpoOrderScreen extends ConsumerStatefulWidget {
       _currentOverlayEntry = null;
     }
 
+    final size = MediaQuery.of(context).size;
+    final dialogWidth = size.width < 500 ? size.width * 0.9 : 420.0;
+    final dialogHeight = size.height * 0.8;
+
     final position = initialPosition ??
         Offset(
-          MediaQuery.of(context).size.width * 0.1,
-          MediaQuery.of(context).size.height * 0.05,
+          (size.width - dialogWidth) / 2,
+          (size.height - dialogHeight) / 2,
         );
 
     late OverlayEntry overlayEntry;
@@ -131,6 +132,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
   String upierrortext = "";
   String selectedChip = "Individual";
   List<IpoDetails> addIpo = [];
+  bool _isTermsAccepted = false;
 
   // Helper getters to determine IPO type and access data
   bool get isSME => widget.ipoData is SMEIPO;
@@ -138,7 +140,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
 
   dynamic get ipoData => widget.ipoData;
   String get ipoName => isSME ? (ipoData.name ?? "") : (ipoData.name ?? "");
-  String get ipoKey => isSME ? (ipoData.key ?? "") : (ipoData.key ?? "");
+  String get ipoKey => isSME ? "SME" : "IPO";
   String get ipoSymbol =>
       isSME ? (ipoData.symbol ?? "") : (ipoData.symbol ?? "");
   String get ipoType => isSME ? (ipoData.type ?? "") : (ipoData.type ?? "");
@@ -236,29 +238,40 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
         builder: (context, ref, child) {
           final ipo = ref.watch(ipoProvide);
           final theme = ref.watch(themeProvider);
+          final upiProvider = ref.watch(transcationProvider);
           final status = ipostartdate(biddingStartDate, biddingEndDate);
           final isOpen = status == "Open";
 
-          var chips =
-              ipo.ipoCategory.map((e) => e['subCatCode']).toSet().toList();
-          // Only set selectedChip to first chip if it's still the default value
-          if (selectedChip == "Individual" && chips.isNotEmpty) {
+          final screenSize = MediaQuery.of(context).size;
+          // Scale factor based on screen width for responsive text sizing
+          final double textScale = screenSize.width < 1400
+              ? (screenSize.width / 1400).clamp(0.85, 1.0)
+              : 1.0;
+          final double paddingScale = screenSize.width < 1400
+              ? (screenSize.width / 1400).clamp(0.7, 1.0)
+              : 1.0;
+
+          var chips = ipo.ipoCategory
+              .map((e) => e['subCatCode'] as String)
+              .toSet()
+              .toList();
+          if (selectedChip == "Individual" &&
+              chips.isNotEmpty &&
+              !chips.contains("Individual")) {
             selectedChip = chips[0];
           }
 
           _updateProviderState(ipo);
 
-          // Check if we're in a draggable dialog
           final closeNotifier = _IpoOrderDialogCloseNotifier.of(context);
           final dragNotifier = _IpoOrderDialogDragNotifier.of(context);
 
-          // Build header content
-          Widget headerContent = Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          // Custom Header
+          Widget headerSection = Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : WebColors.background,
+              color:
+                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
               border: Border(
                 bottom: BorderSide(
                   color: theme.isDarkMode
@@ -267,719 +280,162 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                 ),
               ),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.titleText(
-                          text: ipoName,
-                          theme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 1),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          TextWidget.paraText(
-                              text: ipoKey,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                              fw: 0),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextWidget.titleText(
+                        text: ipoName,
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fw: 1),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            text: ipoKey,
+                            theme: theme.isDarkMode,
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            fw: 0),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isOpen
+                                ? const Color(0xffE6F4EA)
+                                : const Color(0xffFCE8E6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            status.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
                               color: isOpen
-                                  ? theme.isDarkMode
-                                      ? colors.profitDark.withOpacity(0.2)
-                                      : colors.profitLight.withOpacity(0.2)
-                                  : theme.isDarkMode
-                                      ? colors.lossDark.withOpacity(0.2)
-                                      : colors.lossLight.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: TextWidget.paraText(
-                              text: status.toUpperCase(),
-                              theme: false,
-                              fw: 0,
-                              color: isOpen
-                                  ? theme.isDarkMode
-                                      ? colors.profitDark
-                                      : colors.profitLight
-                                  : theme.isDarkMode
-                                      ? colors.lossDark
-                                      : colors.lossLight,
+                                  ? const Color(0xff1E8E3E)
+                                  : const Color(0xffD93025),
                             ),
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (closeNotifier != null)
+                  IconButton(
+                    onPressed: closeNotifier.onClose,
+                    icon: Icon(Icons.close,
+                        color: theme.isDarkMode ? Colors.white : Colors.black),
                   ),
-                ],
-              ),
+              ],
             ),
           );
 
-          // Wrap with drag functionality if drag notifier is available
           if (dragNotifier != null) {
-            headerContent = MouseRegion(
+            headerSection = MouseRegion(
               cursor: SystemMouseCursors.move,
               child: GestureDetector(
                 onPanStart: dragNotifier.onPanStart,
                 onPanUpdate: dragNotifier.onPanUpdate,
                 onPanEnd: dragNotifier.onPanEnd,
-                child: headerContent,
+                child: headerSection,
               ),
             );
           }
 
-          return Scaffold(
-            appBar: AppBar(
-              elevation: .2,
-              centerTitle: false,
-              leadingWidth: closeNotifier != null ? 0 : 38,
-              titleSpacing: 1,
-              leading: closeNotifier == null
-                  ? Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      clipBehavior: Clip.hardEdge,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: theme.isDarkMode
-                            ? colors.highlightDark
-                            : colors.highlightLight,
-                        onTap: () => Navigator.pop(context),
-                        child: Icon(
-                          Icons.arrow_back_ios_outlined,
-                          size: 18,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(textScale),
+            ),
+            child: Scaffold(
               backgroundColor:
                   theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              title: headerContent,
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(chips.isNotEmpty ? 50 : 0),
-                child: chips.isNotEmpty
-                    ? Container(
-                        height: 50,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            final isSelected = selectedChip == chips[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 6),
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: InkWell(
-                                  onTap: () async {
-                                    final chip = chips[index];
-                                    setState(() {
-                                      selectedChip = chip;
-                                      _updateProviderState(ipo);
-                                    });
-                                    ipo.chngCategoryType(chip);
-                                    await ipo.categoryOnChange(
-                                      addIpo,
-                                      ipo.maxUPIAmt,
-                                      _getButtonActiveState(ipo),
-                                      selectedChip,
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 7),
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? (theme.isDarkMode
-                                              ? WebDarkColors.backgroundTertiary
-                                              : WebColors.backgroundTertiary)
-                                          : Colors.transparent,
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? (theme.isDarkMode
-                                                ? WebDarkColors.primary
-                                                : WebColors.primary)
-                                            : (theme.isDarkMode
-                                                ? WebDarkColors.textSecondary
-                                                : WebColors.textSecondary),
-                                        width: isSelected ? 1.5 : 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                    child: Text(
-                                      chips[index],
-                                      overflow: TextOverflow.ellipsis,
-                                      style: WebTextStyles.tab(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: isSelected
-                                            ? (theme.isDarkMode
-                                                ? WebDarkColors.textPrimary
-                                                : WebColors.textPrimary)
-                                            : (theme.isDarkMode
-                                                ? WebDarkColors.navItem
-                                                : WebColors.navItem),
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          itemCount: chips.length,
-                        ),
-                      )
-                    : const SizedBox(),
-              ),
-            ),
-            body: SafeArea(
-              child: Column(
+              body: Column(
                 children: [
+                  headerSection,
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-                          // Container(
-                          //   color: Color(0xFFFCEFD4),
-                          //   height: 30,
-                          //   child: Center(
-                          //     child: Text(
-                          //         "IPO window is open from $dailyStartTime till $dailyEndTime on trading days.",
-                          //         style: textStyle(
-                          //             theme.isDarkMode
-                          //                 ? colors.colorWhite
-                          //                 : colors.colorBlack,
-                          //             10,
-                          //             FontWeight.w600)),
-                          //   ),
-                          // ),
-                        
-                          // Category chips container with conditional styling
-                        
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: addIpo.length,
-                            itemBuilder: (context, index) {
-                              _updateProviderState(ipo);
-                        
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          // Text("Bid - 0${index + 1}",
-                                          //     style: textStyle(
-                                          //         theme.isDarkMode
-                                          //             ? colors.colorWhite
-                                          //             : colors.colorBlack,
-                                          //         14,
-                                          //         FontWeight.w600)),
-                                          index > 0
-                                              ? InkWell(
-                                                  splashFactory: InkSparkle
-                                                      .constantTurbulenceSeedSplashFactory,
-                                                  onTap: ipo.loading
-                                                      ? null
-                                                      : () {
-                                                          removeItem(index);
-                                                        },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(5),
-                                                    child: Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          assets.trash,
-                                                          color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                                        ),
-                                                        const SizedBox(width: 5),
-                                                        TextWidget.subText(
-                                                          text: "Delete",
-                                                          theme: false,
-                                                          fw: 2,
-                                                          color:  theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                )
-                                              : Container()
-                                        ],
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                TextWidget.subText(
-                                                  text: "Qty",
-                                                  theme: false,
-                                                  fw: 1,
-                                                  color: theme.isDarkMode
-                                                      ? colors.textPrimaryDark
-                                                      : colors.textPrimaryLight,
-                                                ),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                  height: 45,
-                                                  child: TextFormField(
-                                                    readOnly: true,
-                                                    textAlign: TextAlign.center,
-                                                    style: TextWidget.textStyle(
-                                                      fontSize: 16,
-                                                      theme: false,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      fw: 0,
-                                                      
-                                                    ),
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    controller: addIpo[index]
-                                                        .qualityController,
-                                                    decoration: InputDecoration(
-                                                       fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                                                        filled: true,
-                                                        enabledBorder: OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: colors
-                                                                    .btnOutlinedBorder),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    5)),
-                                                        disabledBorder:
-                                                            InputBorder.none,
-                                                        focusedBorder: OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: colors
-                                                                    .btnOutlinedBorder),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                    5)),
-                                                        contentPadding:
-                                                            const EdgeInsets.all(
-                                                                13),
-                                                        border: OutlineInputBorder(
-                                                            borderSide: BorderSide(
-                                                                color: colors
-                                                                    .btnOutlinedBorder),
-                                                            borderRadius:
-                                                                BorderRadius.circular(5)),
-                                                        suffixIcon: Material(
-                                                          color:
-                                                              Colors.transparent,
-                                                          shape:
-                                                              const CircleBorder(),
-                                                          clipBehavior:
-                                                              Clip.hardEdge,
-                                                          child: InkWell(
-                                                            customBorder:
-                                                                const CircleBorder(),
-                                                            splashColor: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .splashColorDark
-                                                                : colors
-                                                                    .splashColorLight,
-                                                            highlightColor: theme
-                                                                    .isDarkMode
-                                                                ? colors
-                                                                    .highlightDark
-                                                                : colors
-                                                                    .highlightLight,
-                                                            onTap: ipo.loading
-                                                                ? null
-                                                                : () {
-                                                                    if (isSME) {
-                                                                      ipo.smequalityplusefunction(
-                                                                          addIpo[
-                                                                              index],
-                                                                          _getButtonActiveState(
-                                                                              ipo),
-                                                                          ipoData,
-                                                                          ipo.maxUPIAmt,
-                                                                          selectedChip);
-                                                                    } else {
-                                                                      ipo.qualityplusefunction(
-                                                                          addIpo[
-                                                                              index],
-                                                                          _getButtonActiveState(
-                                                                              ipo),
-                                                                          ipo,
-                                                                          ipoData,
-                                                                          selectedChip);
-                                                                    }
-                                                                    setState(() {
-                                                                      _updateProviderState(
-                                                                          ipo);
-                                                                    });
-                                                                  },
-                                                            child: SvgPicture.asset(
-                                                                theme.isDarkMode
-                                                                    ? assets
-                                                                        .darkAdd
-                                                                    : assets
-                                                                        .addIcon,
-                                                                fit: BoxFit
-                                                                    .scaleDown),
-                                                          ),
-                                                        ),
-                                                        prefixIcon: InkWell(
-                                                          onTap: addIpo[index]
-                                                                      .qualityController
-                                                                      .text ==
-                                                                  addIpo[index]
-                                                                      .qualitytext
-                                                              ? null
-                                                              : ipo.loading
-                                                                  ? null
-                                                                  : () {
-                                                                      if (isSME) {
-                                                                        ipo.smequantityminusfunction(
-                                                                            addIpo[
-                                                                                index],
-                                                                            _getButtonActiveState(
-                                                                                ipo),
-                                                                            ipoData,
-                                                                            ipo.maxUPIAmt,
-                                                                            selectedChip);
-                                                                      } else {
-                                                                        ipo.quantityminusfunction(
-                                                                            addIpo[
-                                                                                index],
-                                                                            _getButtonActiveState(
-                                                                                ipo),
-                                                                            ipo,
-                                                                            ipoData,
-                                                                            selectedChip);
-                                                                      }
-                                                                      setState(
-                                                                          () {
-                                                                        _updateProviderState(
-                                                                            ipo);
-                                                                      });
-                                                                    },
-                                                          child: SvgPicture.asset(
-                                                              theme.isDarkMode
-                                                                  ? assets
-                                                                      .darkCMinus
-                                                                  : assets
-                                                                      .minusIcon,
-                                                              fit: BoxFit
-                                                                  .scaleDown),
-                                                        )),
-                                                    onChanged: (value) {
-                                                      if (isSME) {
-                                                        ipo.smequantityOnchange(
-                                                            value,
-                                                            addIpo[index],
-                                                            ipoData,
-                                                            _getButtonActiveState(
-                                                                ipo),
-                                                            ipo.maxUPIAmt,
-                                                            selectedChip);
-                                                      } else {
-                                                        ipo.quantityOnchange(
-                                                            addIpo[index],
-                                                            _getButtonActiveState(
-                                                                ipo),
-                                                            ipo,
-                                                            value,
-                                                            ipoData,
-                                                            selectedChip);
-                                                      }
-                                                      setState(() {
-                                                        _updateProviderState(ipo);
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    TextWidget.subText(
-                                                      text: "Bid Price",
-                                                      theme: false,
-                                                      fw: 1,
-                                                      color: theme.isDarkMode
-                                                          ? colors
-                                                              .textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                    ),
-                                                    // Text(
-                                                    //     "(${double.parse(minPrice).toInt()}- ${double.parse(maxPrice).toInt()})",
-                                                    //     style: textStyle(
-                                                    //         theme.isDarkMode
-                                                    //             ? colors.colorWhite
-                                                    //             : colors.colorBlack,
-                                                    //         10,
-                                                    //         FontWeight.w600)),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                  height: 45,
-                                                  child: TextFormField(
-                                                    style: TextWidget.textStyle(
-                                                      fontSize: 16,
-                                                      theme: false,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors
-                                                              .textPrimaryLight,
-                                                      fw: 0,
-                                                    ),
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                    readOnly: ipo.loading
-                                                        ? true
-                                                        : addIpo[index]
-                                                                    .isChecked ==
-                                                                true
-                                                            ? true
-                                                            : false,
-                                                    controller: addIpo[index]
-                                                        .bidpricecontroller,
-                                                    decoration: InputDecoration(
-                                                    fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                                                      filled: true,
-                                                      labelStyle:
-                                                          TextWidget.textStyle(
-                                                        fontSize: 16,
-                                                        theme: false,
-                                                        color: theme.isDarkMode
-                                                            ? colors.textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        
-                                                      ),
-                                                      enabledBorder: OutlineInputBorder(
-                                                          borderSide: BorderSide(
-                                                              color: colors
-                                                                  .btnOutlinedBorder),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5)),
-                                                      disabledBorder:
-                                                          InputBorder.none,
-                                                      focusedBorder: OutlineInputBorder(
-                                                          borderSide: BorderSide(
-                                                              color: colors
-                                                                  .btnOutlinedBorder),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5)),
-                                                      contentPadding:
-                                                          const EdgeInsets.all(
-                                                              13),
-                                                      border: OutlineInputBorder(
-                                                          borderSide: BorderSide(
-                                                              color: colors
-                                                                  .btnOutlinedBorder),
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5)),
-                                                      suffixIcon: Material(
-                                                        color: Colors.transparent,
-                                                        shape:
-                                                            const CircleBorder(),
-                                                        clipBehavior:
-                                                            Clip.hardEdge,
-                                                        child: InkWell(
-                                                          customBorder:
-                                                              const CircleBorder(),
-                                                          splashColor: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .splashColorDark
-                                                              : colors
-                                                                  .splashColorLight,
-                                                          highlightColor: theme
-                                                                  .isDarkMode
-                                                              ? colors
-                                                                  .highlightDark
-                                                              : colors
-                                                                  .highlightLight,
-                                                          onTap: ipo.loading
-                                                              ? null
-                                                              : () {
-                                                                  if (isSME) {
-                                                                    ipo.smecutoffprice(
-                                                                      addIpo[
-                                                                          index],
-                                                                      ipoData,
-                                                                    );
-                                                                  } else {
-                                                                    ipo.cutoffprice(
-                                                                        addIpo[
-                                                                            index],
-                                                                        ipoData);
-                                                                  }
-                                                                  FocusScope.of(
-                                                                          context)
-                                                                      .unfocus();
-                                                                  _updateProviderState(
-                                                                      ipo);
-                                                                },
-                                                          child: Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(14.0),
-                                                            child: SvgPicture.asset(
-                                                                assets.switchIcon,
-                                                                fit: BoxFit
-                                                                    .contain),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    onChanged: (value) {
-                                                      if (isSME) {
-                                                        ipo.smebidpriceOnChange(
-                                                            value,
-                                                            addIpo[index],
-                                                            _getButtonActiveState(
-                                                                ipo),
-                                                            ipoData);
-                                                      } else {
-                                                        ipo.bidpricefunction(
-                                                            addIpo[index],
-                                                            ipoData,
-                                                            value,
-                                                            _getButtonActiveState(
-                                                                ipo));
-                                                      }
-                                                      setState(() {
-                                                        _updateProviderState(ipo);
-                                                      });
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      // Row(
-                                      //   mainAxisAlignment: MainAxisAlignment.center,
-                                      //   children: [
-                                      //     const Padding(
-                                      //         padding: EdgeInsets.symmetric(
-                                      //             horizontal: 55, vertical: 20)),
-                        
-                                      //   ],
-                                      // ),
-                                     if (addIpo[index]
-                                            .qualityerrortext
-                                            .isNotEmpty ||
-                                        addIpo[index]
-                                            .biderrortext
-                                            .isNotEmpty) ...[
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: TextWidget.captionText(
-                                              theme: false,
-                                              text:
-                                                  addIpo[index].qualityerrortext,
-                                              color: colors.error,
-                                              fw: 0,
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: TextWidget.captionText(
-                                              theme: false,
-                                              text: addIpo[index].biderrortext,
-                                              color: colors.error,
-                                              fw: 0,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                        
-                                      // if (addIpo[index]
-                                      //     .qualityerrortext
-                                      //     .isNotEmpty) ...[
-                                      //   const SizedBox(height: 6),
-                                      //   IpoErrorBadge(
-                                      //     errorName:
-                                      //         addIpo[index].qualityerrortext,
-                                      //   )
-                                      // ],
-                                      // if (addIpo[index]
-                                      //     .biderrortext
-                                      //     .isNotEmpty) ...[
-                                      //   const SizedBox(height: 6),
-                                      //   IpoErrorBadge(
-                                      //     errorName: addIpo[index].biderrortext,
-                                      //   )
-                                      // ],
-                                    ],
-                                    ],
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0 * paddingScale),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextWidget.subText(
+                              text: "Category",
+                              theme: false,
+                              fw: 1,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                            ),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<String>(
+                              value: selectedChip,
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              items: chips
+                                  .map((chip) => DropdownMenuItem<String>(
+                                        value: chip,
+                                        child: Text(chip,
+                                            style: MyntWebTextStyles.body(
+                                                context)),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) async {
+                                if (value != null) {
+                                  setState(() {
+                                    selectedChip = value;
+                                  });
+                                  ipo.chngCategoryType(value);
+                                  await ipo.categoryOnChange(
+                                    addIpo,
+                                    ipo.maxUPIAmt,
+                                    _getButtonActiveState(ipo),
+                                    selectedChip,
+                                  );
+                                }
+                              },
+                              decoration: InputDecoration(
+                                fillColor: theme.isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                filled: true,
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: colors.btnOutlinedBorder),
+                                    borderRadius: BorderRadius.circular(5)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: colors.primary),
+                                    borderRadius: BorderRadius.circular(5)),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
-                              );
-                            },
-                          ),
-                          addIpo.length == 3
-                              ? Container()
-                              : Material(
-                                  color: Colors.transparent,
-                                  shape: const RoundedRectangleBorder(),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Bid Rows
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: addIpo.length,
+                              itemBuilder: (context, index) {
+                                return _buildBidRow(index, ipo, theme);
+                              },
+                            ),
+
+                            // Add Another Bid Link
+                            if (addIpo.length < 3)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Center(
                                   child: InkWell(
-                                    customBorder: const RoundedRectangleBorder(),
-                                    splashColor: theme.isDarkMode
-                                        ? colors.splashColorDark
-                                        : colors.splashColorLight,
-                                    highlightColor: theme.isDarkMode
-                                        ? colors.highlightDark
-                                        : colors.highlightLight,
                                     onTap: ipo.loading
                                         ? null
                                         : () {
@@ -993,8 +449,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           TextWidget.subText(
                                             text: "Add another bid",
@@ -1004,9 +459,10 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                                 ? colors.primaryDark
                                                 : colors.primaryLight,
                                           ),
-                                          const SizedBox(width: 8),
+                                          const SizedBox(width: 4),
                                           Icon(
                                             Icons.keyboard_arrow_down,
+                                            size: 18,
                                             color: colors.primary,
                                           ),
                                         ],
@@ -1014,250 +470,440 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                     ),
                                   ),
                                 ),
-                        ],
+                              ),
+                            const SizedBox(height: 16),
+
+                            // Global Validation Error Messages
+                            ...(() {
+                              final List<String> errorMessages = [];
+                              for (var e in addIpo) {
+                                if (e.qualityerrortext.isNotEmpty &&
+                                    !errorMessages
+                                        .contains(e.qualityerrortext.trim())) {
+                                  errorMessages.add(e.qualityerrortext.trim());
+                                }
+                                if (e.biderrortext.isNotEmpty &&
+                                    !errorMessages
+                                        .contains(e.biderrortext.trim())) {
+                                  errorMessages.add(e.biderrortext.trim());
+                                }
+                              }
+
+                              return errorMessages.map((msg) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                            0xFFFFF4E5), // Light orange background
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.info_outline,
+                                            color: Color(
+                                                0xFFFF8C00), // Darker orange icon
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              msg,
+                                              style:
+                                                  MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: const Color(
+                                                    0xFFFF8C00), // Darker orange text
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ));
+                            })(),
+
+                            const SizedBox(height: 24),
+
+                            // UPI ID Section
+                            TextWidget.subText(
+                              text: "UPI ID (Virtual payment address)",
+                              theme: false,
+                              fw: 1,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: upiProvider.upiid,
+                              decoration: InputDecoration(
+                                hintText: "Add UPI ID",
+                                fillColor: theme.isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                filled: true,
+                                enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(
+                                        color: colors.btnOutlinedBorder),
+                                    borderRadius: BorderRadius.circular(5)),
+                                focusedBorder: OutlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: colors.primary),
+                                    borderRadius: BorderRadius.circular(5)),
+                                contentPadding: const EdgeInsets.all(13),
+                              ),
+                              style: MyntWebTextStyles.body(context),
+                              onChanged: (value) => setState(() {}),
+                            ),
+
+                            const SizedBox(height: 24),
+
+                            // Terms Section
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Checkbox(
+                                  value: _isTermsAccepted,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _isTermsAccepted = val ?? false;
+                                    });
+                                  },
+                                  activeColor: colors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "I hereby undertake that I have read the Red Herring Prospectus and I am eligible bidder as per the applicable provisions of SEBI (Issue of Capital & Disclosure Agreement, 2009) regulations",
+                                    style: MyntWebTextStyles.bodySmall(
+                                      context,
+                                      color: theme.isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+
+                  // Footer Section
                   Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        width: double.infinity,
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode ? colors.darkGrey : colors.btnBg,
+                          color: theme.isDarkMode
+                              ? colors.darkGrey
+                              : const Color(0xffF1F3F8),
                           border: Border(
                             top: BorderSide(
                               color: theme.isDarkMode
                                   ? colors.dividerDark
                                   : colors.dividerLight,
                             ),
-                            bottom: BorderSide(
-                              color: theme.isDarkMode
-                                  ? colors.dividerDark
-                                  : colors.dividerLight,
-                            ),
                           ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
-                                text: "Margin",
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.textSecondaryDark
-                                    : colors.textSecondaryLight,
-                                fw: 0,
-                              ),
-                              TextWidget.paraText(
-                                text: " ${_getMaxPrice(ipo)}",
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight,
-                                fw: 0,
-                              ),
-                            ],
+                        child: Center(
+                          child: TextWidget.paraText(
+                            text:
+                                "Margin · ${_getMaxPrice(ipo).toStringAsFixed(2)}",
+                            theme: false,
+                            color: colors.primary,
+                            fw: 1,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            // Close button (only show when in draggable dialog)
-                            if (closeNotifier != null)
-                              Expanded(
-                                child: SizedBox(
-                                  height: 45,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      closeNotifier.onClose();
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(0, 45),
-                                      backgroundColor: theme.isDarkMode
-                                          ? WebDarkColors.background
-                                          : WebColors.background,
-                                      side: BorderSide(
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.divider
-                                            : WebColors.divider,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                    ),
-                                    child: TextWidget.titleText(
-                                      text: "Close",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 2,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            if (closeNotifier != null) const SizedBox(width: 12),
-                            // Continue button
-                            Expanded(
-                              child: SizedBox(
-                                height: 45,
-                                child: ElevatedButton(
-                                  onPressed: _getButtonActiveState(ipo)
-                                      ? () {
-                                          if (addIpo[addIpo.length - 1].requriedprice >
-                                              ipo.maxUPIAmt) {
-                                            warningMessage(context,
-                                                "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
-                                            _setButtonActiveState(ipo, false);
-                                          } else if (addIpo[addIpo.length - 1]
-                                                  .bidpricecontroller
-                                                  .text
-                                                  .isEmpty ||
-                                              addIpo[addIpo.length - 1]
-                                                      .bidpricecontroller
-                                                      .text ==
-                                                  "0") {
-                                            warningMessage(
-                                                context,
-                                                addIpo[addIpo.length - 1]
-                                                            .bidpricecontroller
-                                                            .text ==
-                                                        "0"
-                                                    ? "Bid Price Value cannot be 0"
-                                                    : "*Bid Price Value is required");
-                                          } else if (addIpo[addIpo.length - 1]
-                                                  .qualityController
-                                                  .text
-                                                  .isEmpty ||
-                                              addIpo[addIpo.length - 1]
-                                                      .qualityController
-                                                      .text ==
-                                                  "0") {
-                                            warningMessage(
-                                                context,
-                                                addIpo[addIpo.length - 1]
-                                                            .qualityController
-                                                            .text ==
-                                                        "0"
-                                                    ? '* Quantity cannot be 0'
-                                                    : '* Quantity cannot be empty');
-                                          } else {
-                                            if (ipo.checkForErrorsInSMEPlaceOrder(
-                                                addIpo)) {
-                                              _setButtonActiveState(ipo, true);
-                                              // Show payment screen as overlay dialog above the order screen
-                                              final overlay = Overlay.of(context, rootOverlay: true);
-                                              late OverlayEntry paymentOverlayEntry;
-
-                                              // Get the close notifier for the order screen
-                                              final orderScreenCloseNotifier = closeNotifier;
-
-                                              paymentOverlayEntry = OverlayEntry(
-                                                builder: (overlayContext) => Consumer(
-                                                  builder: (context, ref, _) {
-                                                    final currentTheme = ref.watch(themeProvider);
-                                                    return Stack(
-                                                      children: [
-                                                        // Backdrop
-                                                        Positioned.fill(
-                                                          child: GestureDetector(
-                                                            onTap: () {
-                                                              paymentOverlayEntry.remove();
-                                                            },
-                                                            child: Container(
-                                                              color: Colors.black.withOpacity(0.5),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        // Dialog centered
-                                                        Center(
-                                                          child: Material(
-                                                            color: Colors.transparent,
-                                                            child: Container(
-                                                              constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-                                                              margin: const EdgeInsets.symmetric(horizontal: 16),
-                                                              decoration: BoxDecoration(
-                                                                color: currentTheme.isDarkMode
-                                                                    ? WebDarkColors.surface
-                                                                    : WebColors.surface,
-                                                                borderRadius: BorderRadius.circular(5),
-                                                              ),
-                                                              child: PaymentDialogWrapper(
-                                                                onClose: () {
-                                                                  paymentOverlayEntry.remove();
-                                                                },
-                                                                onOrderScreenClose: orderScreenCloseNotifier != null
-                                                                    ? () {
-                                                                        orderScreenCloseNotifier.onClose();
-                                                                      }
-                                                                    : null,
-                                                                child: OrderScreenbottomPage(
-                                                                  mainstream: ipoData,
-                                                                  addIpo: addIpo,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                ),
-                                              );
-
-                                              overlay.insert(paymentOverlayEntry);
-                                            } else {
-                                              warningMessage(context,
-                                                      "can't able place Order with current selected combination of Bids");
-                                              _setButtonActiveState(ipo, false);
-                                            }
-                                          }
-                                        }
-                                      : () {},
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: const Size(0, 45),
-                                    backgroundColor: _getButtonActiveState(ipo) == false
-                                        ?  theme.isDarkMode
-                                                    ? colors.primaryDark
-                                                        .withOpacity(0.5)
-                                                    : colors.primaryLight
-                                                        .withOpacity(0.5) 
-                                        : theme.isDarkMode
-                                                    ? colors.primaryDark
-                                                    : colors.primaryLight,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                  ),
-                                  child: TextWidget.titleText(
-                                    text: "Continue",
-                                    theme: false,
-                                    color: _getButtonActiveState(ipo) == false
-                                    ? colors.colorWhite
-                                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                    fw: 2,
-                                  ),
-                                ),
+                        padding: const EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: (_getButtonActiveState(ipo) &&
+                                    _isTermsAccepted &&
+                                    upiProvider.upiid.text.isNotEmpty)
+                                ? () {
+                                    if (addIpo[addIpo.length - 1]
+                                            .requriedprice >
+                                        ipo.maxUPIAmt) {
+                                      showResponsiveWarning(context,
+                                          "Maximum investment upto ₹${double.parse(ipo.maxUPIAmt.toString()).toInt()} only ");
+                                      _setButtonActiveState(ipo, false);
+                                    } else {
+                                      ipoplaceorder(upiProvider, ipo);
+                                    }
+                                  }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: colors.primary,
+                              disabledBackgroundColor:
+                                  colors.primary.withOpacity(0.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                          ],
+                            child: TextWidget.titleText(
+                              text: "Continue",
+                              theme: false,
+                              color: colors.colorWhite,
+                              fw: 2,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 10),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildBidRow(int index, IPOProvider ipo, ThemesProvider theme) {
+    return Column(
+      children: [
+        // Headers Row
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: TextWidget.subText(
+                text: "Qty",
+                theme: false,
+                fw: 1,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextWidget.subText(
+                    text: "Bid Price",
+                    theme: false,
+                    fw: 1,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            bottom:
+                                2), // Minor adjustment for checkbox alignment
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: Checkbox(
+                            value: addIpo[index].isChecked,
+                            onChanged: (val) {
+                              if (isSME) {
+                                ipo.smecutoffprice(addIpo[index], ipoData);
+                              } else {
+                                ipo.cutoffprice(addIpo[index], ipoData);
+                              }
+                              setState(() {
+                                _updateProviderState(ipo);
+                              });
+                            },
+                            activeColor: colors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      TextWidget.paraText(
+                        text: "Cut-off",
+                        theme: theme.isDarkMode,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Inputs Row
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Qty Input
+            Expanded(
+              child: Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: theme.isDarkMode
+                      ? colors.darkGrey
+                      : const Color(0xffF1F3F8),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(color: colors.btnOutlinedBorder),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: ipo.loading
+                          ? null
+                          : () {
+                              if (isSME) {
+                                ipo.smequantityminusfunction(
+                                    addIpo[index],
+                                    _getButtonActiveState(ipo),
+                                    ipoData,
+                                    ipo.maxUPIAmt,
+                                    selectedChip);
+                              } else {
+                                ipo.quantityminusfunction(
+                                    addIpo[index],
+                                    _getButtonActiveState(ipo),
+                                    ipo,
+                                    ipoData,
+                                    selectedChip);
+                              }
+                              setState(() {
+                                _updateProviderState(ipo);
+                              });
+                            },
+                      icon: Icon(Icons.remove, size: 18, color: colors.primary),
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        readOnly: true,
+                        textAlign: TextAlign.center,
+                        controller: addIpo[index].qualityController,
+                        style: MyntWebTextStyles.body(context,
+                            fontWeight: FontWeight.w600),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: ipo.loading
+                          ? null
+                          : () {
+                              if (isSME) {
+                                ipo.smequalityplusefunction(
+                                    addIpo[index],
+                                    _getButtonActiveState(ipo),
+                                    ipoData,
+                                    ipo.maxUPIAmt,
+                                    selectedChip);
+                              } else {
+                                ipo.qualityplusefunction(
+                                    addIpo[index],
+                                    _getButtonActiveState(ipo),
+                                    ipo,
+                                    ipoData,
+                                    selectedChip);
+                              }
+                              setState(() {
+                                _updateProviderState(ipo);
+                              });
+                            },
+                      icon: Icon(Icons.add, size: 18, color: colors.primary),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Bid Price Input
+            Expanded(
+              child: SizedBox(
+                height: 45, // Match height of Qty Input container
+                child: TextFormField(
+                  controller: addIpo[index].bidpricecontroller,
+                  readOnly: addIpo[index].isChecked,
+                  decoration: InputDecoration(
+                    prefixText: "₹ ",
+                    fillColor: addIpo[index].isChecked
+                        ? (theme.isDarkMode
+                            ? colors.darkGrey.withOpacity(0.5)
+                            : const Color(0xffF1F3F8).withOpacity(0.5))
+                        : (theme.isDarkMode
+                            ? colors.darkGrey
+                            : const Color(0xffF1F3F8)),
+                    filled: true,
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: addIpo[index].isChecked
+                                ? colors.btnOutlinedBorder.withOpacity(0.5)
+                                : colors.btnOutlinedBorder),
+                        borderRadius: BorderRadius.circular(5)),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: colors.primary),
+                        borderRadius: BorderRadius.circular(5)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: addIpo[index].isChecked
+                        ? (theme.isDarkMode
+                            ? colors.textPrimaryDark.withOpacity(0.4)
+                            : colors.textPrimaryLight.withOpacity(0.4))
+                        : (theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                  ],
+                  onChanged: (value) {
+                    if (isSME) {
+                      ipo.smebidpriceOnChange(value, addIpo[index],
+                          _getButtonActiveState(ipo), ipoData);
+                    } else {
+                      ipo.bidpricefunction(addIpo[index], ipoData, value,
+                          _getButtonActiveState(ipo));
+                    }
+                    setState(() {
+                      _updateProviderState(ipo);
+                    });
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (index > 0)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => removeItem(index),
+              icon: Icon(Icons.delete_outline, color: colors.error, size: 18),
+              label: Text("Delete",
+                  style: TextStyle(color: colors.error, fontSize: 12)),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
@@ -1292,25 +938,17 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
     }
 
     // Check if we're in an overlay dialog wrapper
-    final paymentWrapper = PaymentDialogWrapper.of(context);
+    final closeNotifier = _IpoOrderDialogCloseNotifier.of(context);
 
     await ref.read(ipoProvide).fetchupiidvalidation(
         context, upiid.upiid.text, "343245", menudata, iposbids, iposupiid,
-        isOverlayDialog: paymentWrapper != null);
+        isOverlayDialog: closeNotifier != null);
 
-    // If in overlay dialog, close both dialogs after order is placed
-    // Note: We wait for the API call to complete, then close dialogs
-    // The success message is shown by getipoplaceorder in the provider
-    if (paymentWrapper != null) {
-      // Close payment dialog
-      paymentWrapper.onClose();
-      // Close order screen dialog if callback is available
-      if (paymentWrapper.onOrderScreenClose != null) {
-        // Add a small delay to allow success message to appear first
-        Future.delayed(const Duration(milliseconds: 300), () {
-          paymentWrapper.onOrderScreenClose!();
-        });
-      }
+    if (closeNotifier != null) {
+      // Add a small delay to allow success message to appear first
+      Future.delayed(const Duration(milliseconds: 300), () {
+        closeNotifier.onClose();
+      });
     }
   }
 }
@@ -1318,7 +956,8 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
 // Wrapper widget to pass close callbacks to OrderScreenbottomPage
 class PaymentDialogWrapper extends InheritedWidget {
   final VoidCallback onClose;
-  final VoidCallback? onOrderScreenClose; // Callback to close the order screen overlay
+  final VoidCallback?
+      onOrderScreenClose; // Callback to close the order screen overlay
 
   const PaymentDialogWrapper({
     super.key,
@@ -1333,7 +972,8 @@ class PaymentDialogWrapper extends InheritedWidget {
 
   @override
   bool updateShouldNotify(PaymentDialogWrapper oldWidget) {
-    return onClose != oldWidget.onClose || onOrderScreenClose != oldWidget.onOrderScreenClose;
+    return onClose != oldWidget.onClose ||
+        onOrderScreenClose != oldWidget.onOrderScreenClose;
   }
 }
 
@@ -1366,13 +1006,14 @@ class _DraggableIpoOrderScreenDialog extends ConsumerStatefulWidget {
 
 class _DraggableIpoOrderScreenDialogState
     extends ConsumerState<_DraggableIpoOrderScreenDialog> {
-  late Offset _position;
+  Offset? _customPosition;
   bool _isDragging = false;
 
   @override
   void initState() {
     super.initState();
-    _position = widget.initialPosition;
+    // Start with null to use automatic centering in build
+    _customPosition = null;
   }
 
   @override
@@ -1381,15 +1022,34 @@ class _DraggableIpoOrderScreenDialogState
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    const dialogWidth = 550.0;
+    final dialogWidth = (screenSize.width * 0.9).clamp(280.0, 420.0);
     final dialogHeight = screenSize.height * 0.8;
+
+    final currentPosition = _customPosition ??
+        Offset(
+          (screenSize.width - dialogWidth) / 2,
+          (screenSize.height - dialogHeight) / 2,
+        );
+
+    // Clamp current position to ensure it stays on screen during resize
     final constrainedPosition = Offset(
-      _position.dx.clamp(0, screenSize.width - dialogWidth),
-      _position.dy.clamp(0, screenSize.height - dialogHeight),
+      currentPosition.dx.clamp(
+          0.0, (screenSize.width - dialogWidth).clamp(0.0, double.infinity)),
+      currentPosition.dy.clamp(
+          0.0, (screenSize.height - dialogHeight).clamp(0.0, double.infinity)),
     );
 
     return Stack(
       children: [
+        // Backdrop
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: widget.onClose,
+            child: Container(
+              color: Colors.black.withOpacity(0.4),
+            ),
+          ),
+        ),
         // Actual dialog
         Positioned(
           left: constrainedPosition.dx,
@@ -1423,12 +1083,15 @@ class _DraggableIpoOrderScreenDialogState
                     },
                     onPanUpdate: (details) {
                       setState(() {
-                        _position = Offset(
-                          _position.dx + details.delta.dx,
-                          _position.dy + details.delta.dy,
+                        final basePos = constrainedPosition;
+                        _customPosition = Offset(
+                          basePos.dx + details.delta.dx,
+                          basePos.dy + details.delta.dy,
                         );
                       });
-                      widget.onPositionChanged(_position);
+                      if (_customPosition != null) {
+                        widget.onPositionChanged(_customPosition!);
+                      }
                     },
                     onPanEnd: (details) {
                       setState(() {
@@ -1436,8 +1099,13 @@ class _DraggableIpoOrderScreenDialogState
                       });
                     },
                     isDragging: _isDragging,
-                    child: UnifiedIpoOrderScreen(
-                      ipoData: widget.ipoData,
+                    child: Navigator(
+                      onGenerateRoute: (settings) => PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            UnifiedIpoOrderScreen(ipoData: widget.ipoData),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                      ),
                     ),
                   ),
                 ),
