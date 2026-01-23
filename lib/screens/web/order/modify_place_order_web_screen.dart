@@ -9,6 +9,8 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart' show resolveThemeColor;
 import '../../../../res/res.dart';
 import '../../../models/marketwatch_model/scrip_info.dart';
 import '../../../models/order_book_model/modify_order_model.dart';
@@ -17,7 +19,6 @@ import '../../../models/order_book_model/order_margin_model.dart';
 import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
@@ -93,6 +94,68 @@ class ModifyPlaceOrderScreenWeb extends ConsumerStatefulWidget {
   @override
   ConsumerState<ModifyPlaceOrderScreenWeb> createState() =>
       _ModifyPlaceOrderScreenState();
+
+  // Static variable to track inner dialog overlay entries
+  static OverlayEntry? _currentDialogOverlayEntry;
+
+  /// Static method to show a dialog on top of the modify place order overlay
+  /// This ensures dialogs appear above the draggable order screen
+  /// Dialog only closes when user explicitly clicks close (not on outside tap)
+  static void showDialogOverlay({
+    required BuildContext context,
+    required Widget Function(BuildContext context, VoidCallback closeDialog) builder,
+    Color barrierColor = const Color(0x80000000),
+  }) {
+    // Prevent multiple dialogs from opening
+    if (_currentDialogOverlayEntry != null) {
+      return;
+    }
+
+    // Check if context is still mounted/valid
+    if (!context.mounted) {
+      return;
+    }
+
+    OverlayState? overlay;
+    try {
+      overlay = Overlay.of(context, rootOverlay: true);
+    } catch (e) {
+      // Context is no longer valid
+      return;
+    }
+
+    late OverlayEntry dialogOverlayEntry;
+
+    void closeDialog() {
+      try {
+        dialogOverlayEntry.remove();
+      } catch (e) {
+        // Entry might already be removed
+      }
+      _currentDialogOverlayEntry = null;
+    }
+
+    dialogOverlayEntry = OverlayEntry(
+      builder: (overlayContext) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            // Barrier - does not dismiss on tap
+            Positioned.fill(
+              child: Container(color: barrierColor),
+            ),
+            // Dialog content
+            Center(
+              child: builder(overlayContext, closeDialog),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    _currentDialogOverlayEntry = dialogOverlayEntry;
+    overlay.insert(dialogOverlayEntry);
+  }
 
   /// Static method to show ModifyPlaceOrderScreenWeb as a draggable dialog
   static void showDraggable({
@@ -335,24 +398,11 @@ class _ModifyPlaceOrderScreenState
 
                   Widget headerContent = Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                        horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isBuy
-                          ? (theme.isDarkMode
-                                  ? WebDarkColors.primary
-                                  : WebColors.primary)
-                              .withOpacity(0.1)
-                          : (theme.isDarkMode
-                                  ? WebDarkColors.tertiary
-                                  : WebColors.tertiary)
-                              .withOpacity(0.1),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.divider
-                              : WebColors.divider,
-                        ),
-                      ),
+                      color: theme.isDarkMode
+                          ? colors.darkGrey
+                          : const Color(0xfffafbff),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -363,16 +413,16 @@ class _ModifyPlaceOrderScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(bottom: 8.0),
+                                padding: const EdgeInsets.only(bottom: 4.0),
                                 child: Row(
                                   children: [
                                     Text(
                                       "${(widget.scripInfo.symbol ?? widget.orderArg.tSym).replaceAll("-EQ", "")} ",
-                                      style: WebTextStyles.sub(
+                                      style: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimary,
+                                            light: MyntColors.textPrimary),
                                         fontWeight: WebFonts.medium,
                                       ),
                                       maxLines: 1,
@@ -381,11 +431,12 @@ class _ModifyPlaceOrderScreenState
                                     if ((widget.scripInfo.expDate ?? '').isNotEmpty)
                                       Text(
                                         " ${widget.scripInfo.expDate ?? ''} ",
-                                        style: WebTextStyles.symbolList(
+                                        style: WebTextStyles.title(
                                           isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimary,
+                                              light: MyntColors.textPrimary),
+                                          fontWeight: WebFonts.medium,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -395,9 +446,9 @@ class _ModifyPlaceOrderScreenState
                                         widget.scripInfo.option ?? '',
                                         style: WebTextStyles.sub(
                                           isDarkTheme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? WebDarkColors.textPrimary
-                                              : WebColors.textPrimary,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimary,
+                                              light: MyntColors.textPrimary),
                                           fontWeight: WebFonts.medium,
                                         ),
                                         maxLines: 1,
@@ -407,16 +458,14 @@ class _ModifyPlaceOrderScreenState
                                       " ${widget.scripInfo.exch}",
                                       style: WebTextStyles.para(
                                         isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? WebDarkColors.textSecondary
-                                            : WebColors.textSecondary,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimary,
+                                            light: MyntColors.textPrimary),
                                         fontWeight: WebFonts.medium,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
-                                    const SizedBox(width: 12),
-                                    // Buy/Sell Toggle
                                   ],
                                 ),
                               ),
@@ -430,108 +479,151 @@ class _ModifyPlaceOrderScreenState
                             ],
                           ),
                           Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Green "B" Button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      isBuy = true;
-                                    });
-                                    marginUpdate();
-                                  },
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    width: 25,
-                                    height: 25,
-                                    decoration: BoxDecoration(
-                                      color: WebColors.primary,
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Green "B" Button
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          isBuy = true;
+                                        });
+                                        marginUpdate();
+                                      },
                                       borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        'B',
-                                        style: WebTextStyles.buttonMd(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: Colors.white,
-                                          fontWeight: WebFonts.medium,
+                                      child: Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: MyntColors.primary,
+                                          borderRadius: BorderRadius.circular(5),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Toggle Switch
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      isBuy = !isBuy;
-                                    });
-                                    marginUpdate();
-                                  },
-                                  child: Container(
-                                    width: 42,
-                                    height: 22,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(11),
-                                    ),
-                                    child: Stack(
-                                      children: [
-                                        AnimatedPositioned(
-                                          duration:
-                                              const Duration(milliseconds: 200),
-                                          curve: Curves.easeInOut,
-                                          left: isBuy ? 2 : 24,
-                                          top: 2,
-                                          child: Container(
-                                            width: 16,
-                                            height: 16,
-                                            decoration: BoxDecoration(
-                                              color: Colors.black,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                        child: Center(
+                                          child: Text(
+                                            'B',
+                                            style: WebTextStyles.para(
+                                              isDarkTheme: theme.isDarkMode,
+                                              color: Colors.white,
+                                              fontWeight: WebFonts.medium,
                                             ),
                                           ),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Red "S" Button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      isBuy = false;
-                                    });
-                                    marginUpdate();
-                                  },
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Container(
-                                    width: 25,
-                                    height: 25,
-                                    decoration: BoxDecoration(
-                                      color: WebColors.tertiary,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        'S',
-                                        style: WebTextStyles.buttonMd(
-                                          isDarkTheme: theme.isDarkMode,
-                                          color: Colors.white,
-                                          fontWeight: WebFonts.medium,
+                                  const SizedBox(width: 8),
+                                  // Toggle Switch
+                                  MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          isBuy = !isBuy;
+                                        });
+                                        marginUpdate();
+                                      },
+                                      child: Container(
+                                        width: 42,
+                                        height: 22,
+                                        decoration: BoxDecoration(
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.backgroundColorDark,
+                                              light: MyntColors.backgroundColor),
+                                          border: Border.all(
+                                            color: isBuy
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.primaryDark,
+                                                    light: MyntColors.primary)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.tertiary,
+                                                    light: MyntColors.tertiary),
+                                          ),
+                                          borderRadius: BorderRadius.circular(11),
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            AnimatedPositioned(
+                                              duration:
+                                                  const Duration(milliseconds: 200),
+                                              curve: Curves.easeInOut,
+                                              left: isBuy ? 2 : 24,
+                                              top: 2,
+                                              child: Container(
+                                                width: 16,
+                                                height: 16,
+                                                decoration: BoxDecoration(
+                                                  color: isBuy
+                                                      ? resolveThemeColor(context,
+                                                          dark: MyntColors.primaryDark,
+                                                          light: MyntColors.primary)
+                                                      : resolveThemeColor(context,
+                                                          dark: MyntColors.tertiary,
+                                                          light: MyntColors.tertiary),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Red "S" Button
+                                  Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          isBuy = false;
+                                        });
+                                        marginUpdate();
+                                      },
+                                      borderRadius: BorderRadius.circular(5),
+                                      child: Container(
+                                        width: 20,
+                                        height: 20,
+                                        decoration: BoxDecoration(
+                                          color: MyntColors.tertiary,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            'S',
+                                            style: WebTextStyles.para(
+                                              isDarkTheme: theme.isDarkMode,
+                                              color: Colors.white,
+                                              fontWeight: WebFonts.medium,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 12),
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () {
+                                    closeNotifier?.onClose();
+                                  },
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      size: 18,
                                     ),
                                   ),
                                 ),
@@ -700,9 +792,8 @@ class _ModifyPlaceOrderScreenState
                                                     WebTextStyles.formInput(
                                                   isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
-                                                      ? WebDarkColors
-                                                          .textSecondary
-                                                      : WebColors.textSecondary,
+                                                      ? MyntColors.textSecondary
+                                                      : MyntColors.textSecondary,
                                                 ),
                                                 inputFormate: [
                                                   FilteringTextInputFormatter
@@ -713,9 +804,8 @@ class _ModifyPlaceOrderScreenState
                                                 style: WebTextStyles.formInput(
                                                   isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
-                                                      ? WebDarkColors
-                                                          .textPrimary
-                                                      : WebColors.textPrimary,
+                                                      ? MyntColors.textPrimary
+                                                      : MyntColors.textPrimary,
                                                 ),
                                                 // prefixIcon: InkWell(
                                                 //   onTap: () {
@@ -941,10 +1031,8 @@ class _ModifyPlaceOrderScreenState
                                                         isDarkTheme:
                                                             theme.isDarkMode,
                                                         color: theme.isDarkMode
-                                                            ? WebDarkColors
-                                                                .textPrimary
-                                                            : WebColors
-                                                                .textPrimary,
+                                                            ? MyntColors.textPrimary
+                                                            : MyntColors.textPrimary,
                                                       )),
                                                 ]),
                                             const SizedBox(height: 10),
@@ -1012,10 +1100,8 @@ class _ModifyPlaceOrderScreenState
                                                     isDarkTheme:
                                                         theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? WebDarkColors
-                                                            .textSecondary
-                                                        : WebColors
-                                                            .textSecondary,
+                                                        ? MyntColors.textSecondary
+                                                        : MyntColors.textSecondary,
                                                   ),
                                                   keyboardType:
                                                       const TextInputType
@@ -1026,9 +1112,8 @@ class _ModifyPlaceOrderScreenState
                                                     isDarkTheme:
                                                         theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? WebDarkColors
-                                                            .textPrimary
-                                                        : WebColors.textPrimary,
+                                                        ? MyntColors.textPrimary
+                                                        : MyntColors.textPrimary,
                                                   ),
                                                   isReadable: prcType ==
                                                               "MKT" ||
@@ -1068,51 +1153,71 @@ class _ModifyPlaceOrderScreenState
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                if (prcType == "MKT" ||
+                                    prcType == "SL-MKT") ...[
+                                  const SizedBox(height: 16),
+                                  marketProtectionDisclaimer(theme, context,
+                                      widget.scripInfo, mktProtCtrl.text),
+                                  // const SizedBox(height: 16),
+                                ],
                                 // Advance Option section
+                                const SizedBox(height: 10),
                                 Column(
                                   children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (!_isStoplossOrder &&
-                                              !_afterMarketOrder &&
-                                              !_addValidityAndDisclosedQty) {
-                                            isAdvancedOptionClicked =
-                                                !isAdvancedOptionClicked;
-                                          }
-                                          updatePriceType();
-                                        });
-                                      },
-                                      child: Container(
-                                        color: Colors
-                                            .transparent, // To make the full width tappable
-                                        height: 48,
-                                        child: Center(
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              TextWidget.subText(
-                                                  text: 'Advance',
-                                                  theme: theme.isDarkMode,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                  fw: 2),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 4),
-                                                child: Icon(
-                                                  isAdvancedOptionClicked
-                                                      ? Icons.keyboard_arrow_up
-                                                      : Icons
-                                                          .keyboard_arrow_down,
-                                                  color: theme.isDarkMode
-                                                      ? colors.colorLightBlue
-                                                      : colors.colorBlue,
-                                                ),
+                                    Center(
+                                      child: SizedBox(
+                                        width: 150,
+                                        child: TextButton(
+                                          style: TextButton.styleFrom(
+                                            shape: const RoundedRectangleBorder(),
+                                            padding: const EdgeInsets.all(0),
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.white,
+                                            elevation: 0.0,
+                                            minimumSize: const Size(0, 30),
+                                            side: BorderSide.none,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (!_isStoplossOrder &&
+                                                  !_afterMarketOrder &&
+                                                  !_addValidityAndDisclosedQty) {
+                                                isAdvancedOptionClicked =
+                                                    !isAdvancedOptionClicked;
+                                              }
+                                              updatePriceType();
+                                            });
+                                          },
+                                          child: Container(
+                                            color: Colors.transparent,
+                                            height: 40,
+                                            child: Center(
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text('Advance',
+                                                      style: WebTextStyles.sub(
+                                                        isDarkTheme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? MyntColors.secondary
+                                                            : MyntColors.secondary,
+                                                        fontWeight: WebFonts.semiBold,
+                                                      )),
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(
+                                                        left: 4),
+                                                    child: Icon(
+                                                      isAdvancedOptionClicked
+                                                          ? Icons.keyboard_arrow_up
+                                                          : Icons.keyboard_arrow_down,
+                                                      color: theme.isDarkMode
+                                                          ? colors.secondaryDark
+                                                          : colors.secondaryLight,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -1122,9 +1227,10 @@ class _ModifyPlaceOrderScreenState
                                       child: Column(
                                         children: [
                                           Divider(
-                                            color: theme.isDarkMode
-                                                ? WebDarkColors.divider
-                                                : WebColors.divider,
+                                            color: resolveThemeColor(context,
+                                                dark: colors.darkColorDivider,
+                                                light: colors.colorDivider),
+                                            thickness: 0.5,
                                           ),
 
                                           // Column with Stoploss and Add validity (stacked vertically)
@@ -1137,9 +1243,8 @@ class _ModifyPlaceOrderScreenState
                                                 data: ThemeData(
                                                   unselectedWidgetColor: theme
                                                           .isDarkMode
-                                                      ? WebDarkColors
-                                                          .textPrimary
-                                                      : WebColors.textPrimary,
+                                                      ? MyntColors.textPrimary
+                                                      : MyntColors.textPrimary,
                                                 ),
                                                 child: Container(
                                                   padding: const EdgeInsets
@@ -1160,9 +1265,9 @@ class _ModifyPlaceOrderScreenState
                                                                 .isDarkMode,
                                                             color: theme
                                                                     .isDarkMode
-                                                                ? WebDarkColors
+                                                                ? MyntColors
                                                                     .textSecondary
-                                                                : WebColors
+                                                                : MyntColors
                                                                     .textSecondary,
                                                           ),
                                                           overflow: TextOverflow
@@ -1197,9 +1302,12 @@ class _ModifyPlaceOrderScreenState
                                               ],
                                               // Divider after Stoploss order
                                               Divider(
-                                                  color: theme.isDarkMode
-                                                      ? WebDarkColors.divider
-                                                      : WebColors.divider),
+                                                        color: resolveThemeColor(
+                                                            context,
+                                                            dark: colors
+                                                                .darkColorDivider,
+                                                            light: colors
+                                                                .colorDivider),thickness: 0.5,),
 
                                               // Add validity & Disclosed Qty (only if not BO/CO)
                                               if (!_isBOCOOrderEnabled) ...[
@@ -1207,9 +1315,8 @@ class _ModifyPlaceOrderScreenState
                                                   data: ThemeData(
                                                     unselectedWidgetColor: theme
                                                             .isDarkMode
-                                                        ? WebDarkColors
-                                                            .textPrimary
-                                                        : WebColors.textPrimary,
+                                                        ? MyntColors.textPrimary
+                                                        : MyntColors.textPrimary,
                                                   ),
                                                   child: Container(
                                                     padding: const EdgeInsets
@@ -1230,10 +1337,8 @@ class _ModifyPlaceOrderScreenState
                                                                   .isDarkMode,
                                                               color: theme
                                                                       .isDarkMode
-                                                                  ? WebDarkColors
-                                                                      .textSecondary
-                                                                  : WebColors
-                                                                      .textSecondary,
+                                                                  ? MyntColors.textSecondary
+                                                                  : MyntColors.textSecondary,
                                                             ),
                                                             overflow:
                                                                 TextOverflow
@@ -1276,15 +1381,18 @@ class _ModifyPlaceOrderScreenState
                                           if (!_isBOCOOrderEnabled) ...[
                                             // AMO switch section
                                             Divider(
-                                                color: theme.isDarkMode
-                                                    ? WebDarkColors.divider
-                                                    : WebColors.divider),
+                                                        color: resolveThemeColor(
+                                                            context,
+                                                            dark: colors
+                                                                .darkColorDivider,
+                                                            light: colors
+                                                                .colorDivider),thickness: 0.5,),
                                             Theme(
                                               data: ThemeData(
                                                 unselectedWidgetColor: theme
                                                         .isDarkMode
-                                                    ? WebDarkColors.textPrimary
-                                                    : WebColors.textPrimary,
+                                                    ? MyntColors.textPrimary
+                                                    : MyntColors.textPrimary,
                                               ),
                                               child: Container(
                                                 padding:
@@ -1302,10 +1410,8 @@ class _ModifyPlaceOrderScreenState
                                                         isDarkTheme:
                                                             theme.isDarkMode,
                                                         color: theme.isDarkMode
-                                                            ? WebDarkColors
-                                                                .textSecondary
-                                                            : WebColors
-                                                                .textSecondary,
+                                                            ? MyntColors.textSecondary
+                                                            : MyntColors.textSecondary,
                                                       ),
                                                     ),
                                                     Checkbox(
@@ -1326,10 +1432,13 @@ class _ModifyPlaceOrderScreenState
                                                 ),
                                               ),
                                             ),
-                                            Divider(
-                                                color: theme.isDarkMode
-                                                    ? WebDarkColors.divider
-                                                    : WebColors.divider),
+                                           Divider(
+                                                        color: resolveThemeColor(
+                                                            context,
+                                                            dark: colors
+                                                                .darkColorDivider,
+                                                            light: colors
+                                                                .colorDivider),thickness: 0.5,),
                                           ],
                                         ],
                                       ),
@@ -1616,13 +1725,7 @@ class _ModifyPlaceOrderScreenState
                                 //                       ? assets.checkedbox
                                 //                       : assets.checkbox))
                                 //         ])),
-                                if (prcType == "MKT" ||
-                                    prcType == "SL-MKT") ...[
-                                  const SizedBox(height: 16),
-                                  marketProtectionDisclaimer(theme, context,
-                                      widget.scripInfo, mktProtCtrl.text),
-                                  const SizedBox(height: 16),
-                                ],
+                                
                                 const SizedBox(height: 100)
                               ])),
                       if (internet.connectionStatus ==
@@ -2013,57 +2116,57 @@ class _ModifyPlaceOrderScreenState
                                       padding: const EdgeInsets.all(10.0),
                                       child: Row(
                                         children: [
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Container(
-                                              height: 40,
-                                              decoration: BoxDecoration(
-                                                border: theme.isDarkMode
-                                                    ? null
-                                                    : Border.all(
-                                                        color:
-                                                            colors.primaryLight,
-                                                        width: 1),
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                        .withOpacity(0.6)
-                                                    : colors.btnBg,
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Material(
-                                                color: Colors.transparent,
-                                                shape: const CircleBorder(),
-                                                child: InkWell(
-                                                  customBorder:
-                                                      const BeveledRectangleBorder(),
-                                                  splashColor: theme.isDarkMode
-                                                      ? colors.splashColorDark
-                                                      : colors.splashColorLight,
-                                                  highlightColor: theme
-                                                          .isDarkMode
-                                                      ? colors.highlightDark
-                                                      : colors.highlightLight,
-                                                  onTap: closeNotifier?.onClose,
-                                                  child: Center(
-                                                    child: Text(
-                                                      "Close",
-                                                      style: WebTextStyles
-                                                          .buttonMd(
-                                                        isDarkTheme:
-                                                            theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors.colorWhite
-                                                            : colors
-                                                                .primaryLight,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
+                                          // const SizedBox(width: 8),
+                                          // Expanded(
+                                          //   child: Container(
+                                          //     height: 40,
+                                          //     decoration: BoxDecoration(
+                                          //       border: theme.isDarkMode
+                                          //           ? null
+                                          //           : Border.all(
+                                          //               color:
+                                          //                   colors.primaryLight,
+                                          //               width: 1),
+                                          //       color: theme.isDarkMode
+                                          //           ? colors.textSecondaryDark
+                                          //               .withOpacity(0.6)
+                                          //           : colors.btnBg,
+                                          //       borderRadius:
+                                          //           BorderRadius.circular(5),
+                                          //     ),
+                                          //     child: Material(
+                                          //       color: Colors.transparent,
+                                          //       shape: const CircleBorder(),
+                                          //       child: InkWell(
+                                          //         customBorder:
+                                          //             const BeveledRectangleBorder(),
+                                          //         splashColor: theme.isDarkMode
+                                          //             ? colors.splashColorDark
+                                          //             : colors.splashColorLight,
+                                          //         highlightColor: theme
+                                          //                 .isDarkMode
+                                          //             ? colors.highlightDark
+                                          //             : colors.highlightLight,
+                                          //         onTap: closeNotifier?.onClose,
+                                          //         child: Center(
+                                          //           child: Text(
+                                          //             "Close",
+                                          //             style: WebTextStyles
+                                          //                 .buttonMd(
+                                          //               isDarkTheme:
+                                          //                   theme.isDarkMode,
+                                          //               color: theme.isDarkMode
+                                          //                   ? colors.colorWhite
+                                          //                   : colors
+                                          //                       .primaryLight,
+                                          //             ),
+                                          //           ),
+                                          //         ),
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // ),
+                                          // const SizedBox(width: 8),
                                           Expanded(
                                             child: SizedBox(
                                               height: 40,
@@ -2340,8 +2443,8 @@ class _ModifyPlaceOrderScreenState
       style: WebTextStyles.formLabel(
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
-            ? WebDarkColors.textPrimary
-            : WebColors.textPrimary,
+            ? MyntColors.textPrimary
+            : MyntColors.textPrimary,
       ),
     );
   }
@@ -2365,7 +2468,7 @@ class _ModifyPlaceOrderScreenState
           const SizedBox(height: 10),
           SizedBox(
               height: 40,
-              width: 150,
+              width: 200,
               child: CustomTextFormField(
                   fillColor: theme.isDarkMode
                       ? colors.darkGrey
@@ -2374,8 +2477,8 @@ class _ModifyPlaceOrderScreenState
                   hintStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? WebDarkColors.textSecondary
-                        : WebColors.textSecondary,
+                        ? MyntColors.textSecondary
+                        : MyntColors.textSecondary,
                   ),
                   onChanged: (value) {
                     double inputPrice = double.tryParse(value) ?? 0;
@@ -2399,8 +2502,8 @@ class _ModifyPlaceOrderScreenState
                   style: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
+                        ? MyntColors.textPrimary
+                        : MyntColors.textPrimary,
                   ),
                   // prefixIcon: Container(
                   //     margin: const EdgeInsets.all(12),
@@ -2457,16 +2560,16 @@ class _ModifyPlaceOrderScreenState
                     hintStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                          ? MyntColors.textSecondary
+                          : MyntColors.textSecondary,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     style: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          ? MyntColors.textPrimary
+                          : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -2513,16 +2616,16 @@ class _ModifyPlaceOrderScreenState
                     hintStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textSecondary
-                          : WebColors.textSecondary,
+                          ? MyntColors.textSecondary
+                          : MyntColors.textSecondary,
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     style: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                          ? MyntColors.textPrimary
+                          : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
                     //   margin: const EdgeInsets.all(12),
@@ -2546,89 +2649,90 @@ class _ModifyPlaceOrderScreenState
         children: [
           Row(
             children: [
-              Text(
-                "Market Protected by",
-                style: textStyle(
-                    theme.isDarkMode ? colors.colorLightBlue : colors.colorBlue,
-                    14,
-                    FontWeight.w600),
-              ),
+              Text("Market Protected by",
+                  style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? MyntColors.primary
+                        : MyntColors.primary,
+                  )),
               InkWell(
                 // borderRadius: BorderRadius.circular(8),
                 onTap: () {
-                  showDialog(
+                  ModifyPlaceOrderScreenWeb.showDialogOverlay(
                     context: context,
-                    builder: (BuildContext context) {
+                    builder: (BuildContext dialogContext, VoidCallback closeDialog) {
                       return AlertDialog(
-                        backgroundColor: theme.isDarkMode
-                            ? const Color(0xFF121212)
-                            : const Color(0xFFF1F3F8),
-                        titlePadding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 8),
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8))),
-                        scrollable: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        actionsPadding: const EdgeInsets.only(
-                            bottom: 16, right: 16, left: 16, top: 8),
-                        insetPadding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 12),
-                        // title: Text('Enter Market Protection', style: textStyle(theme.isDarkMode ? colors.colorWhite : colors.colorBlack, 16, FontWeight.w600)),
-
-                        title: Column(children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  onTap: () async {
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 150));
-                                    Navigator.pop(context);
-                                  },
-                                  borderRadius: BorderRadius.circular(20),
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(6.0),
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      size: 22,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
+                              backgroundColor: theme.isDarkMode
+                                  ? const Color(0xFF121212)
+                                  : const Color(0xFFF1F3F8),
+                              titlePadding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 4),
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8))),
+                              scrollable: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              actionsPadding: const EdgeInsets.only(
+                                  bottom: 16, right: 16, left: 16, top: 8),
+                              insetPadding: const EdgeInsets.symmetric(
+                                  horizontal: 30, vertical: 12),
+                              title: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 150));
+                                        closeDialog();
+                                      },
+                                      borderRadius: BorderRadius.circular(20),
+                                      splashColor: theme.isDarkMode
+                                          ? colors.splashColorDark
+                                          : colors.splashColorLight,
+                                      highlightColor: theme.isDarkMode
+                                          ? colors.splashColorDark
+                                          : colors.splashColorLight,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          size: 22,
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 40,
-                            width: 150,
-                            child: CustomTextFormField(
+                        content: Column(
+                          children: [
+                            Text('Enter Market Protection',
+                            textAlign: TextAlign.start,
+                                      style: WebTextStyles.formLabel(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? MyntColors.textPrimary
+                                            : MyntColors.textPrimary,
+                                      )),
+                                  const SizedBox(height: 10),
+                            CustomTextFormField(
                               fillColor: theme.isDarkMode
-                                  ? colors.darkGrey
-                                  : const Color(0xffF1F3F8),
-                              inputFormate: [
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
-                              hintStyle: WebTextStyles.formInput(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textSecondary
-                                    : WebColors.textSecondary,
-                              ),
+                                          ? colors.darkGrey
+                                          : const Color(0xffF1F3F8),
+                                      inputFormate: [
+                                        FilteringTextInputFormatter.allow(
+                                          RegExp(r'^(0|[1-9][0-9]{0,19})$'),
+                                        ),
+                                      ],
                               onChanged: (value) {
                                 setState(() {
                                   if (value.isEmpty) {
@@ -2658,32 +2762,40 @@ class _ModifyPlaceOrderScreenState
                                 });
                               },
                               keyboardType: TextInputType.number,
-                              style: WebTextStyles.formInput(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                              ),
-                              textCtrl: mktProtCtrl,
-                              prefixIcon: Container(
-                                margin: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: theme.isDarkMode
-                                        ? const Color(0xff555555)
-                                        : colors.colorWhite),
-                                child: SvgPicture.asset(
-                                    color: theme.isDarkMode
-                                        ? colors.colorWhite
-                                        : colors.colorGrey,
-                                    assets.precentIcon,
-                                    fit: BoxFit.scaleDown),
-                              ),
-                              textAlign: TextAlign.start,
-                              hintText: "Add Market Protection %",
+                                      style: WebTextStyles.title(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: theme.isDarkMode
+                                            ? MyntColors.textPrimary
+                                            : MyntColors.textPrimary,
+                                      ),
+                                      textCtrl: mktProtCtrl,
+                                      prefixIcon: Container(
+                                        margin: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                            color: theme.isDarkMode
+                                                ? const Color(0xff555555)
+                                                : MyntColors.backgroundColor),
+                                        child: SvgPicture.asset(
+                                            color: theme.isDarkMode
+                                                ? MyntColors.textPrimary
+                                                : MyntColors.icon,
+                                            assets.precentIcon,
+                                            fit: BoxFit.scaleDown),
+                                      ),
+                                      textAlign: TextAlign.start,
+                                      hintText: "Add Market Protection %",
+                                      hintStyle: WebTextStyles.formLabel(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: (theme.isDarkMode
+                                                ? MyntColors.textSecondary
+                                                : MyntColors.textSecondary)
+                                            .withValues(alpha: 0.5),
+                                      ),
                             ),
-                          ),
-                        ]),
+                          ],
+                        ),
 
                         actions: [
                           SizedBox(
@@ -2691,7 +2803,7 @@ class _ModifyPlaceOrderScreenState
                             child: OutlinedButton(
                               onPressed: () {
                                 updatePriceType();
-                                Navigator.of(context).pop();
+                                closeDialog();
                               },
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size(0, 45), // width, height
@@ -2730,18 +2842,17 @@ class _ModifyPlaceOrderScreenState
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(4.0),
                   child: Text(
                     " $marketProtection %",
-                    style: textStyle(
-                      theme.isDarkMode
-                          ? colors.colorLightBlue
-                          : colors.colorBlue,
-                      14,
-                      FontWeight.w600,
-                    ).copyWith(
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: WebTextStyles.sub(
+                    isDarkTheme: theme.isDarkMode,
+                    color: theme.isDarkMode
+                        ? MyntColors.primary
+                        : MyntColors.primary,
+                  ).copyWith(
+                    decoration: TextDecoration.underline,
+                  ),
                   ),
                 ),
               ),
@@ -2985,7 +3096,7 @@ class _ModifyPlaceOrderScreenState
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 40,
-                  width: 150,
+                  width: 200,
                   child: CustomTextFormField(
                       fillColor: theme.isDarkMode
                           ? colors.darkGrey
@@ -2994,16 +3105,16 @@ class _ModifyPlaceOrderScreenState
                       hintStyle: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
+                            ? MyntColors.textSecondary
+                            : MyntColors.textSecondary,
                       ),
                       inputFormate: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
                       style: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            ? MyntColors.textPrimary
+                            : MyntColors.textPrimary,
                       ),
                       textCtrl: discQtyCtrl,
                       textAlign: TextAlign.start),
@@ -3099,8 +3210,8 @@ class _DraggableModifyPlaceOrderScreenDialogState
     final screenSize = MediaQuery.of(context).size;
 
     // Constrain position to screen bounds
-    const dialogWidth = 550.0;
-    final dialogHeight = screenSize.height * 0.8;
+    const dialogWidth = 450.0;
+    final dialogHeight = screenSize.height * 0.7;
     final constrainedPosition = Offset(
       _position.dx.clamp(0, screenSize.width - dialogWidth),
       _position.dy.clamp(0, screenSize.height - dialogHeight),
@@ -3136,8 +3247,8 @@ class _DraggableModifyPlaceOrderScreenDialogState
                     elevation: _isDragging ? 16 : 8,
                     borderRadius: BorderRadius.circular(5),
                     color: theme.isDarkMode
-                        ? WebDarkColors.background
-                        : WebColors.background,
+                        ? MyntColors.backgroundColorDark
+                        : MyntColors.backgroundColor,
                     child: Container(
                       width: dialogWidth,
                       height: dialogHeight,
@@ -3145,8 +3256,8 @@ class _DraggableModifyPlaceOrderScreenDialogState
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: theme.isDarkMode
-                              ? WebDarkColors.divider
-                              : WebColors.divider,
+                              ? MyntColors.divider
+                              : MyntColors.divider,
                         ),
                       ),
                       child: _ModifyPlaceOrderDialogCloseNotifier(

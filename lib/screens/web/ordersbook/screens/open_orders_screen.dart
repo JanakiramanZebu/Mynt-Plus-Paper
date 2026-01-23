@@ -339,9 +339,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
             // Measure symbol with normal font (fixed 14px)
             final symbolWidth = _measureTextWidth(symbol, textStyle);
 
-            // Measure exchange with smaller font (fixed 12px, matches rendering)
+            // Measure exchange with smaller font (fixed 10px, matches rendering)
             final exchangeStyle =
-                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+                const TextStyle(fontSize: 10, fontFamily: 'Geist');
             final exchangeWidth = exchangeText.isNotEmpty
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
@@ -927,7 +927,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                           text: displayText,
                           style: _getTextStyle(context),
                         ),
-                        // Exchange (12px, 500, muted color)
+                        // Exchange (10px, 500, muted color) - matching positions table style
                         if (order.exch != null && order.exch!.isNotEmpty)
                           TextSpan(
                             text: ' ${order.exch}',
@@ -936,7 +936,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                               darkColor: MyntColors.textSecondaryDark,
                               lightColor: MyntColors.textSecondary,
                               fontWeight: MyntFonts.medium,
-                            ),
+                            ).copyWith(fontSize: 10),
                           ),
                       ],
                     ),

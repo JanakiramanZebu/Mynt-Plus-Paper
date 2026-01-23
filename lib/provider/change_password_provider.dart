@@ -9,7 +9,7 @@ import '../locator/preference.dart';
 import '../models/auth_model/forgot_pass_model.dart';
 import '../models/auth_model/mynt_changepass_model.dart';
 import '../routes/route_names.dart';
-import '../sharedWidget/snack_bar.dart';
+import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
@@ -228,28 +228,54 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
     try {
       toggleLoadingOn(true);
       _forgetPasswordModel = await api.getForgetPassword(field, value, context);
+
+      // Handle null response
+      if (_forgetPasswordModel == null) {
+        if (context.mounted) {
+          ResponsiveSnackBar.showError(context, 'Failed to process request. Please try again.');
+        }
+        return;
+      }
+
       if (_forgetPasswordModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        successMessage(
-            context, 'New Password has been sent to your registered Mobile Number /Email');
+        if (context.mounted) {
+          ResponsiveSnackBar.showSuccess(
+              context, 'New Password has been sent to your registered Mobile Number /Email');
+        }
 
         userIdController.text = '${_forgetPasswordModel!.clientid}';
 
         Future.delayed(const Duration(milliseconds: 200), () {
           forgetMethod();
           clearError();
-          Navigator.pushNamed(context, Routes.changePass, arguments: "No");
+          if (context.mounted) {
+            Navigator.pushNamed(context, Routes.changePass, arguments: "No");
+          }
         });
       } else if (_forgetPasswordModel!.stat == "Not_Ok") {
-        warningMessage(context, _forgetPasswordModel!.emsg!);
+        // Show the specific error message from API
+        final errorMsg = _forgetPasswordModel!.emsg ?? 'Invalid Client ID or Mobile number';
+        if (context.mounted) {
+          ResponsiveSnackBar.showWarning(context, errorMsg);
+        }
       } else if (_forgetPasswordModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        // Fallback for any other status
+        final errorMsg = _forgetPasswordModel!.emsg ?? 'Something went wrong. Please try again.';
+        if (context.mounted) {
+          ResponsiveSnackBar.showWarning(context, errorMsg);
+        }
       }
 
       notifyListeners();
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      if (context.mounted) {
+        ResponsiveSnackBar.showError(context, 'An error occurred. Please try again.');
+      }
       notifyListeners();
     } finally {
       toggleLoadingOn(false);
@@ -271,35 +297,52 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       toggleLoadingOn(true);
       _changepasswordmodel =
           await api.getChangePasswordProfile(userId, oldpassword, password);
+
+      // Handle null response
+      if (_changepasswordmodel == null) {
+        if (context.mounted) {
+          ResponsiveSnackBar.showError(context, 'Failed to change password. Please try again.');
+        }
+        return;
+      }
+
       if (_changepasswordmodel!.stat == "Ok") {
         ConstantName.sessCheck = true;
         ref.read(authProvider).clearTextField();
-// FocusScope.of(context).unfocus();
-            successMessage(context, '${_changepasswordmodel!.dmsg}');
+        if (context.mounted) {
+          ResponsiveSnackBar.showSuccess(context, '${_changepasswordmodel!.dmsg}');
+        }
         pref.setHideLoginOptBtn(false);
         ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
         pref.setMobileLogin(false);
         changePassMethod();
 
+        if (context.mounted) {
           Navigator.pushNamedAndRemoveUntil(
-      context, Routes.loginScreen, (route) => route.isFirst);
-
-      //   Future.delayed(const Duration(seconds: 2), () {
-      //     changePassMethod();
-      //    Navigator.pushNamedAndRemoveUntil(
-      // context, Routes.loginScreen, (route) => route.isFirst);
-      //   });
+              context, Routes.loginScreen, (route) => route.isFirst);
+        }
       } else if (_changepasswordmodel!.stat == "Not_Ok") {
-        warningToaster(context,
-            _changepasswordmodel!.emsg!.replaceAll("Error Occurred :", ""));
+        final errorMsg = _changepasswordmodel!.emsg?.replaceAll("Error Occurred :", "") ?? 'Failed to change password';
+        if (context.mounted) {
+          ResponsiveSnackBar.showWarning(context, errorMsg);
+        }
       } else if (_changepasswordmodel!.emsg ==
           "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        // Fallback for any other status
+        final errorMsg = _changepasswordmodel!.emsg ?? 'Something went wrong. Please try again.';
+        if (context.mounted) {
+          ResponsiveSnackBar.showWarning(context, errorMsg);
+        }
       }
 
       notifyListeners();
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
+      if (context.mounted) {
+        ResponsiveSnackBar.showError(context, 'An error occurred. Please try again.');
+      }
       notifyListeners();
     } finally {
       toggleLoadingOn(false);

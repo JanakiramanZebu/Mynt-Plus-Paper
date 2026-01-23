@@ -952,9 +952,35 @@ class AuthProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   fetchLogout(BuildContext context) async {
+    print('╔════════════════════════════════════════════════════════════════╗');
+    print('║              LOGOUT FLOW STARTED (auth_provider)               ║');
+    print('╠════════════════════════════════════════════════════════════════╣');
+    print('║ Calling both logout APIs in parallel...');
+    print('║ 1. api.getLogout() - Main logout API');
+    print('║ 2. api.getDeskLogout() - Desk logout API');
+    print('╚════════════════════════════════════════════════════════════════╝');
+
     try {
-      _logoutModel = await api.getLogout();
+      // Call both logout APIs in parallel
+      final logoutFuture = api.getLogout();
+      final deskLogoutFuture = api.getDeskLogout();
+
+      // Wait for both APIs to complete
+      _logoutModel = await logoutFuture;
+      final deskLogoutModel = await deskLogoutFuture;
+
+      print('╔════════════════════════════════════════════════════════════════╗');
+      print('║              LOGOUT RESPONSES RECEIVED                         ║');
+      print('╠════════════════════════════════════════════════════════════════╣');
+      print('║ [API 1] LogoutModel.stat: ${_logoutModel?.stat}');
+      print('║ [API 1] LogoutModel.emsg: ${_logoutModel?.emsg}');
+      print('║ [API 1] LogoutModel.requestTime: ${_logoutModel?.requestTime}');
+      print('╠────────────────────────────────────────────────────────────────╣');
+      print('║ [API 2] DeskLogoutModel.msg: ${deskLogoutModel?.msg}');
+      print('╚════════════════════════════════════════════════════════════════╝');
+
       if (_logoutModel!.stat == "Ok") {
+        print('✅ Both logout APIs called successfully! Cleaning up...');
         // Close all open order/modify/GTT dialogs (web only)
         if (kIsWeb) {
           OverlayManager.closeAll();

@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/provider/web_subscription_manager.dart';
+import 'package:mynt_plus/provider/web_subscription_manager.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
@@ -302,8 +304,8 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                           width: 18,
                                           color: resolveThemeColor(
                                             context,
-                                            dark: MyntColors.iconDark,
-                                            light: MyntColors.icon,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary,
                                           )),
                                       const SizedBox(width: 4),
                                       Text(

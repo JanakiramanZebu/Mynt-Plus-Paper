@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -146,6 +147,17 @@ class FundProvider extends DefaultChangeNotifier {
     var base64Pass = base64Url.encode(enCodePass);
     // Redirecting OptionZ by using HS token encryption
     await fetchOptionZ(base64Pass, context);
+  }
+
+  Future<void> openOptionZInNewTab() async {
+    var enCodePass = utf8.encode(
+        'sLoginId=${pref.clientId}&sAccountId=${pref.clientId}&token=${fundHstoken!.hstk}&sBrokerId=ZEBU');
+    var base64Pass = base64Url.encode(enCodePass);
+    String url = "https://be.mynt.in/SSONew/OAuthNew?vc=instaoptions&key=$base64Pass";
+    
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
   }
 
   Future fetchOptionZ(String key, BuildContext context) async {

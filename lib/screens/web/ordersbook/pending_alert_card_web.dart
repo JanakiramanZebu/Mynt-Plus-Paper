@@ -1030,7 +1030,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       exchange,
                       style: _geistTextStyle(
                         color: colorScheme.mutedForeground,
-                        fontSize: 12,
+                        fontSize: 10,
                       ),
                     ),
                   ],

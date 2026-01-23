@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/list_divider.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/loader_ui.dart';
 import 'order_single_page.dart';
 
@@ -37,6 +39,15 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     "PAYMENT REJECTED"
   };
 
+  // State for table hover and sorting
+  // int? _hoveredRowIndex;
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+
+  // Scroll controllers for Orders table
+  final ScrollController _ordersVerticalScrollController = ScrollController();
+  final ScrollController _ordersHorizontalScrollController = ScrollController();
+
 
   @override
   void initState() {
@@ -50,6 +61,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _ordersVerticalScrollController.dispose();
+    _ordersHorizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -66,64 +79,127 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      height: 35,
-                      child: TabBar(
-                        controller: _tabController,
-                        tabAlignment: TabAlignment.start,
-                        isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicator: BoxDecoration(
-                          color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(5),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
+                    child: Row(
+                      children: [
+                        // Tabs on the left
+                        Expanded(
+                          child: SizedBox(
+                            height: 45,
+                            child: TabBar(
+                              controller: _tabController,
+                              tabAlignment: TabAlignment.start,
+                              isScrollable: true,
+                              indicatorSize: TabBarIndicatorSize.tab,
+                              dividerColor: Colors.transparent,
+                              indicator: BoxDecoration(
+                                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              unselectedLabelColor: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          labelStyle: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: false,
+                              fw: 2,
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight),
+                          unselectedLabelStyle: TextWidget.textStyle(
+                              fontSize: 14,
+                              theme: false,
+                              fw: 3,
+                              color: colors.textSecondaryLight),
+                              tabs: tablistitems.asMap().entries.map((entry) {
+                                final tabData = entry.value;
+                                return Tab(
+                                  text: tabData['title'].toString(),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                         ),
-                        unselectedLabelColor: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    labelStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        fw: 2,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight),
-                    unselectedLabelStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        fw: 3,
-                        color: colors.textSecondaryLight),
-                        // labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                        tabs: tablistitems.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final tabData = entry.value;
-                          return Tab(
-                            text: tabData['title'].toString(),
-                          //   child: Builder(
-                          //     builder: (context) {
-                          //       final isSelected = _tabController.index == index;
-                                
-                          //       return Padding(
-                          //         padding: const EdgeInsets.only(
-                          //             left: 10, right: 10, top: 0, bottom: 0),
-                          //         child: Row(
-                          //           crossAxisAlignment: CrossAxisAlignment.center,
-                          //           mainAxisSize: MainAxisSize.min,
-                          //           children: [
-                          //             TextWidget.paraText(
-                          //                 text: ,
-                          //                 theme: false,
-                          //                 color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight : theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          //                 fw: isSelected ? 2 : 3),
-                          //           ],
-                          //         ),
-                          //       );
-                          //     },
+
+                        // Search bar and refresh button on the right
+                        const SizedBox(width: 16),
+                        Container(
+                          width: 300,
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: theme.isDarkMode
+                                ? colors.searchBgDark
+                                : colors.searchBg,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: theme.isDarkMode
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: Icon(
+                                  Icons.search,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  size: 20,
+                                ),
+                              ),
+                              Expanded(
+                                child: TextWidget.paraText(
+                                  text: "Search on holdings",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  theme: theme.isDarkMode,
+                                  fw: 0,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 45,
+                          height: 45,
+                          // decoration: BoxDecoration(
+                          //   color: theme.isDarkMode
+                          //       ? colors.searchBgDark
+                          //       : colors.searchBg,
+                          //   borderRadius: BorderRadius.circular(8),
+                          //   border: Border.all(
+                          //     color: theme.isDarkMode
+                          //         ? colors.darkColorDivider
+                          //         : colors.colorDivider,
+                          //     width: 1,
                           //   ),
-                          );
-                        }).toList(),
-                      ),
+                          // ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: Icon(
+                              Icons.refresh,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              if (_tabController.index == 0) {
+                                // Refresh Holdings
+                                await mforderbook.fetchmfholdingnew();
+                              } else {
+                                // Refresh Orders
+                                await mforderbook.fetchMfOrderbook(context);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(
@@ -147,282 +223,667 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
 
   Widget _buildOrdersTab(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
-        if (mforderbook.mfOrderbookfilter == "All" &&
-                  mforderbook.mflumpsumorderbook?.data != null &&
-                  mforderbook.mflumpsumorderbook?.stat != "Not Ok"){
-    return TransparentLoaderScreen(
-      isLoading: mforderbook.mforderloader,
-      child: RefreshIndicator(
-        onRefresh: () async {
-          await mforderbook.fetchMfOrderbook(context);
+    if (mforderbook.mfOrderbookfilter == "All" &&
+        mforderbook.mflumpsumorderbook?.data != null &&
+        mforderbook.mflumpsumorderbook?.stat != "Not Ok") {
+      final orders = mforderbook.mflumpsumorderbook?.data ?? [];
+
+      if (orders.isEmpty) {
+        return const Center(
+          child: NoDataFound(
+            title: "No Orders Found",
+            subtitle: "There's nothing here yet. Buy some funds to see them here.",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
+        );
+      }
+
+      return TransparentLoaderScreen(
+        isLoading: mforderbook.mforderloader,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await mforderbook.fetchMfOrderbook(context);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: _buildOrdersTable(context, theme, mforderbook, orders),
+          ),
+        ),
+      );
+    }
+
+    return const Center(
+      child: NoDataFound(
+        title: "No Orders Found",
+        subtitle: "There's nothing here yet. Buy some funds to see them here.",
+        primaryEnabled: false,
+        secondaryEnabled: false,
+      ),
+    );
+  }
+
+  // Helper method to get appropriate text style for table cells
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  // Helper method for header text style
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
+  Widget _buildOrdersTable(
+    BuildContext context,
+    ThemesProvider theme,
+    MFProvider mforderbook,
+    List orders,
+  ) {
+    // Sort orders if sort is active
+    final sortedOrders = _sortColumnIndex != null ? _getSortedOrders(orders) : orders;
+
+    return shadcn.OutlinedContainer(
+      backgroundColor: Colors.transparent,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate minimum widths dynamically based on actual content
+          final minWidths = _calculateMinWidths(sortedOrders, context);
+
+          // Available width
+          final availableWidth = constraints.maxWidth;
+
+          // Step 1: Start with minimum widths
+          final columnWidths = <int, double>{};
+          for (int i = 0; i < 6; i++) {
+            columnWidths[i] = minWidths[i] ?? 100.0;
+          }
+
+          // Step 2: Calculate total minimum width needed
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
+          // Step 3: If there's extra space, distribute it proportionally
+          if (totalMinWidth < availableWidth) {
+            final extraSpace = availableWidth - totalMinWidth;
+
+            // Define growth factors
+            const fundNameGrowthFactor = 2.5;
+            const numericGrowthFactor = 1.0;
+
+            final growthFactors = <int, double>{};
+            double totalGrowthFactor = 0.0;
+
+            for (int i = 0; i < 6; i++) {
+              if (i == 1) {
+                // Fund name column
+                growthFactors[i] = fundNameGrowthFactor;
+                totalGrowthFactor += fundNameGrowthFactor;
+              } else {
+                // Other columns
+                growthFactors[i] = numericGrowthFactor;
+                totalGrowthFactor += numericGrowthFactor;
+              }
+            }
+
+            // Distribute extra space proportionally
+            if (totalGrowthFactor > 0) {
+              for (int i = 0; i < 6; i++) {
+                if (growthFactors[i]! > 0) {
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                }
+              }
+            }
+          }
+
+          // Calculate total required width
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
+          // If total width exceeds available width, enable horizontal scrolling
+          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+
+          // Build table content
+          Widget buildTableContent() {
+            return Column(
+              children: [
+                // Fixed Header
+                shadcn.Table(
+                  columnWidths: {
+                    0: shadcn.FixedTableSize(columnWidths[0]!),
+                    1: shadcn.FixedTableSize(columnWidths[1]!),
+                    2: shadcn.FixedTableSize(columnWidths[2]!),
+                    3: shadcn.FixedTableSize(columnWidths[3]!),
+                    4: shadcn.FixedTableSize(columnWidths[4]!),
+                    5: shadcn.FixedTableSize(columnWidths[5]!),
+                  },
+                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        buildHeaderCell('Date', 0),
+                        buildHeaderCell('Fund name', 1),
+                        buildHeaderCell('Transaction Type', 2),
+                        buildHeaderCell('Invest amt', 3, true),
+                        buildHeaderCell('Folio no.', 4),
+                        buildHeaderCell('Status', 5),
+                      ],
+                    ),
+                  ],
+                ),
+
+                // Scrollable Body
+                Expanded(
+                  child: RawScrollbar(
+                    controller: _ordersVerticalScrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    trackColor: Colors.grey.withValues(alpha: 0.1),
+                    thumbColor: Colors.grey.withValues(alpha: 0.3),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
+                    interactive: true,
+                    child: SingleChildScrollView(
+                      controller: _ordersVerticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: shadcn.Table(
+                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        columnWidths: {
+                          0: shadcn.FixedTableSize(columnWidths[0]!),
+                          1: shadcn.FixedTableSize(columnWidths[1]!),
+                          2: shadcn.FixedTableSize(columnWidths[2]!),
+                          3: shadcn.FixedTableSize(columnWidths[3]!),
+                          4: shadcn.FixedTableSize(columnWidths[4]!),
+                          5: shadcn.FixedTableSize(columnWidths[5]!),
+                        },
+                        defaultRowHeight: const shadcn.FixedTableSize(75),
+                        rows: [
+                          // Data Rows
+                          ...sortedOrders.asMap().entries.map((entry) {
+                            final rowIndex = entry.key;
+                            final orderData = entry.value;
+
+                            return shadcn.TableRow(
+                              cells: [
+                                // Date
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 0,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Text(
+                                    _formatDate(orderData.datetime ?? "-"),
+                                    style: _getTextStyle(context),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
+                                ),
+                                // Fund name (with Lumpsum tag)
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 1,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        orderData.name ?? "Unknown Fund",
+                                        style: _getTextStyle(context),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        "Lumpsum",
+                                        style: MyntWebTextStyles.bodySmall(
+                                          context,
+                                          color: theme.isDarkMode
+                                              ? MyntColors.textSecondaryDark
+                                              : MyntColors.textSecondary,
+                                          fontWeight: MyntFonts.regular,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Transaction Type (P badge)
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 2,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: orderData.buySell == "P"
+                                          ? theme.isDarkMode
+                                              ? colors.profitDark.withValues(alpha: 0.1)
+                                              : colors.profitLight.withValues(alpha: 0.1)
+                                          : theme.isDarkMode
+                                              ? colors.lossDark.withValues(alpha: 0.1)
+                                              : colors.lossLight.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      orderData.buySell ?? "-",
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        color: orderData.buySell == "P"
+                                            ? theme.isDarkMode
+                                                ? colors.profitDark
+                                                : colors.profitLight
+                                            : theme.isDarkMode
+                                                ? colors.lossDark
+                                                : colors.lossLight,
+                                        fontWeight: MyntFonts.medium,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Invest amt
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 3,
+                                  alignRight: true,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Text(
+                                    "₹${_formatAmount(orderData.orderVal)}",
+                                    style: _getTextStyle(context),
+                                  ),
+                                ),
+                                // Folio no.
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 4,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Text(
+                                    orderData.foliono ?? "-",
+                                    style: _getTextStyle(context),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                                // Status
+                                buildCellWithHover(
+                                  rowIndex: rowIndex,
+                                  columnIndex: 5,
+                                  onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: _getStatusColor(orderData.status, theme)
+                                          .withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      _getListStatusText(orderData.status).toUpperCase(),
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        color: _getStatusColor(orderData.status, theme),
+                                        fontWeight: MyntFonts.medium,
+                                      ),
+                                      overflow: TextOverflow.visible,
+                                      softWrap: false,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // Horizontal scroll wrapper (if needed)
+          if (needsHorizontalScroll) {
+            return RawScrollbar(
+              controller: _ordersHorizontalScrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              trackColor: Colors.grey.withValues(alpha: 0.1),
+              thumbColor: Colors.grey.withValues(alpha: 0.3),
+              thickness: 6,
+              radius: const Radius.circular(3),
+              interactive: true,
+              child: SingleChildScrollView(
+                controller: _ordersHorizontalScrollController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: totalRequiredWidth,
+                  child: buildTableContent(),
+                ),
+              ),
+            );
+          }
+
+          return buildTableContent();
         },
-        child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: Column(
+      ),
+    );
+  }
+
+  // Build cell with hover
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+    VoidCallback? onTap,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 6, 10, 6);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(10, 6, 16, 6);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 10, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          padding: cellPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  // Build header cell
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
-              
-                _buildOrderList(mforderbook, theme, context)
-               
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: MyntColors.textSecondaryDark,
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              Text(
+                label,
+                style: _getHeaderStyle(context),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: MyntColors.textSecondaryDark,
+                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  // Calculate minimum column widths
+  Map<int, double> _calculateMinWidths(List orders, BuildContext context) {
+    final textStyle = const TextStyle(fontSize: 14);
+    const padding = 24.0;
+    const sortIconWidth = 24.0;
+
+    final headers = [
+      'Date',
+      'Fund name',
+      'Transaction Type',
+      'Invest amt',
+      'Folio no.',
+      'Status',
+    ];
+
+    final minWidths = <int, double>{};
+
+    for (int col = 0; col < headers.length; col++) {
+      double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
+
+      for (final order in orders.take(5)) {
+        String cellText = '';
+        switch (col) {
+          case 0:
+            cellText = _formatDate(order.datetime ?? '-');
+            break;
+          case 1:
+            cellText = order.name ?? 'Unknown Fund';
+            break;
+          case 2:
+            cellText = order.buySell ?? '-';
+            break;
+          case 3:
+            cellText = "₹${_formatAmount(order.orderVal)}";
+            break;
+          case 4:
+            cellText = order.foliono ?? '-';
+            break;
+          case 5:
+            cellText = _getListStatusText(order.status);
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, textStyle);
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      minWidths[col] = maxWidth + padding;
     }
 
-   return const Center(child: NoDataFound(
-                  title: "No Orders Found",
-                  subtitle: "There's nothing here yet. Buy some funds to see them here.",
-                  primaryEnabled: false,
-                  secondaryEnabled: false,
-                ));
+    return minWidths;
   }
 
-  Widget _buildOrderList(
-      MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
-    return ListView.separated(
-      padding: EdgeInsets.zero,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      separatorBuilder: (_, __) => const ListDivider(),
-      itemCount: mforderbook.mflumpsumorderbook?.data?.length ?? 0,
-      itemBuilder: (context, index) {
-        final orderData = mforderbook.mflumpsumorderbook?.data?[index];
-        if (orderData == null) return const SizedBox();
-
-        return InkWell(
-            onTap: () async {
-              mforderbook.loaderfun();
-              await mforderbook.fetchorderdetails(orderData.orderId ?? ""
-                  // orderData.buySell ?? "",
-                  // orderData.ordertype ?? "",
-                  // orderData.status ?? "",
-                  // orderData.sipregnno ?? "",
-                  // orderData.orderremarks ?? "",
-                  );
-
-              if (mforderbook.mforderdet?.stat == "Ok") {
-                showModalBottomSheet(
-                 isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
-        isDismissible: true,
-        enableDrag: false,
-        useSafeArea: true,
-        context: context,
-        builder: (context) => Container(
-          decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? colors.colorBlack
-                            : colors.colorWhite,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                        ),
-                        border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-                      ),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-                    child: const mforderdetscreen()),
-                );
-                // Navigator.pushNamed(context, Routes.mforderdetscreen);
-              } else {
-                warningMessage(
-                    context,
-                    mforderbook.mforderdet?.emsg ??
-                        'Error loading order details');
-              }
-            },
-            child: ListTile(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                title: Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 8.0,
-                  ),
-                  child: Container(
-                    margin: EdgeInsets.only(
-                      right: MediaQuery.of(context).size.width * 0.1,
-                    ),
-                    child: TextWidget.subText(
-                        align: TextAlign.start,
-                        text: orderData.name ?? "Unknown Fund",
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        theme: theme.isDarkMode,
-                        fw: 0),
-                  ),
-                ),
-                subtitle: Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: orderData.buySell == "P"
-                            ? theme.isDarkMode
-                                ? colors.profitDark.withOpacity(0.1)
-                                : colors.profitLight.withOpacity(0.1)
-                            : theme.isDarkMode
-                                ? colors.lossDark.withOpacity(0.1)
-                                : colors.lossLight.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 2),
-                      child: TextWidget.paraText(
-                        // align: TextAlign.start,
-                        theme: theme.isDarkMode,
-                        text: orderData.buySell ?? "-",
-                        color: orderData.buySell == "P"
-                            ? theme.isDarkMode
-                                ? colors.profitDark
-                                : colors.profitLight
-                            : theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight,
-                        fw: 0,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    TextWidget.paraText(
-                        // align: TextAlign.start,
-                        text:
-                            orderData.orderType == 'NRM' ? 'One-Time' : 'SIP',
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 0),
-                    const SizedBox(width: 8),
-
-                    TextWidget.paraText(
-                        // align: TextAlign.start,
-                        text: orderData.datetime ?? "-",
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 0),
-                    // Text(
-                    //   orderData.dateTime ?? "-",
-                    //   style: textStyle(
-                    //       theme.isDarkMode
-                    //           ? colors.colorWhite
-                    //           : colors.colorBlack,
-                    //       10,
-                    //       FontWeight.w400),
-                    // ),
-                  ],
-                ),
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // SvgPicture.asset(
-                    //   _getStatusIcon(orderData.status),
-                    //   width: 20,
-                    // ),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: orderData.status == "ALLOCATED"
-                            ? theme.isDarkMode
-                                ? colors.profitDark.withOpacity(0.1)
-                                : colors.profitLight.withOpacity(0.1)
-                            : orderData.status == "REJECTED" ||
-                                    orderData.status == "CANCELLED" ||
-                                    orderData.status == "PAYMENT DECLINED"
-                                ? theme.isDarkMode
-                                    ? colors.lossDark.withOpacity(0.1)
-                                    : colors.lossLight.withOpacity(0.1)
-                                : orderData.status ==
-                                        inProgressStatuses
-                                            .contains(orderData.status)
-                                    ? colors.pending.withOpacity(0.1)
-                                    : colors.pending
-                                        .withOpacity(0.1), // default fallback
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: TextWidget.paraText(
-                          text: _getListStatusText(orderData.status),
-                          theme: false,
-                          color: orderData.status == "ALLOCATED"
-                              ? theme.isDarkMode
-                                  ? colors.profitDark
-                                  : colors.profitLight
-                              : orderData.status == "REJECTED" ||
-                                      orderData.status == "CANCELLED" ||
-                                      orderData.status == "PAYMENT DECLINED"
-                                  ? theme.isDarkMode
-                                      ? colors.lossDark
-                                      : colors.lossLight
-                                  : orderData.status ==
-                                          inProgressStatuses
-                                              .contains(orderData.status)
-                                      ? colors.pending
-                                      : colors.pending,
-                                      fw: 0),
-                    ),
-                    // TextWidget.paraText(
-                    //     // align: TextAlign.start,
-
-                    //     color: theme.isDarkMode
-                    //         ? colors.textPrimaryDark
-                    //         : colors.textPrimaryLight,
-                    //     textOverflow: TextOverflow.ellipsis,
-                    //     theme: theme.isDarkMode,
-                    //     fw: 3),
-
-                    const SizedBox(height: 12),
-
-                    TextWidget.paraText(
-                        align: TextAlign.right,
-                        text: _formatAmount(orderData.orderVal),
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 0),
-                  ],
-                )));
-      },
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
     );
+    textPainter.layout();
+    return textPainter.width;
   }
 
-  String _getStatusIcon(String? status) {
-    if (status == "PLACED") return assets.completedIcon;
-    if (status == "NOT PLACED") return assets.cancelledIcon;
-    return assets.warningIcon;
+  List _getSortedOrders(List orders) {
+    if (_sortColumnIndex == null) return orders;
+
+    final sorted = List.from(orders);
+    sorted.sort((a, b) {
+      int comparison = 0;
+
+      switch (_sortColumnIndex!) {
+        case 0: // Date
+          comparison = (a.datetime ?? '').compareTo(b.datetime ?? '');
+          break;
+        case 1: // Fund name
+          comparison = (a.name ?? '').compareTo(b.name ?? '');
+          break;
+        case 2: // Transaction Type
+          comparison = (a.buySell ?? '').compareTo(b.buySell ?? '');
+          break;
+        case 3: // Invest amt
+          comparison = (double.tryParse(a.orderVal ?? '0') ?? 0.0)
+              .compareTo(double.tryParse(b.orderVal ?? '0') ?? 0.0);
+          break;
+        case 4: // Folio no.
+          comparison = (a.foliono ?? '').compareTo(b.foliono ?? '');
+          break;
+        case 5: // Status
+          comparison = (a.status ?? '').compareTo(b.status ?? '');
+          break;
+      }
+
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    return sorted;
+  }
+
+  void _showOrderDetail(MFProvider mforderbook, dynamic orderData, ThemesProvider theme, BuildContext context) async {
+    mforderbook.loaderfun();
+    await mforderbook.fetchorderdetails(orderData.orderId ?? "");
+
+    if (mforderbook.mforderdet?.stat == "Ok") {
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: 'Dismiss',
+        barrierColor: Colors.transparent,
+        transitionDuration: const Duration(milliseconds: 300),
+        pageBuilder: (dialogContext, animation, secondaryAnimation) {
+          return Align(
+            alignment: Alignment.centerRight,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: MediaQuery.of(dialogContext).size.width >= 1100
+                    ? MediaQuery.of(dialogContext).size.width * 0.25
+                    : MediaQuery.of(dialogContext).size.width * 0.90,
+                height: MediaQuery.of(dialogContext).size.height,
+                decoration: BoxDecoration(
+                  color: Theme.of(dialogContext).scaffoldBackgroundColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(-2, 0),
+                    ),
+                  ],
+                ),
+                child: const mforderdetscreen(),
+              ),
+            ),
+          );
+        },
+        transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            )),
+            child: child,
+          );
+        },
+      );
+    } else {
+      warningMessage(
+        context,
+        mforderbook.mforderdet?.emsg ?? 'Error loading order details',
+      );
+    }
+  }
+
+  String _formatDate(String datetime) {
+    if (datetime.isEmpty || datetime == "-") return "-";
+    // Expected format: "09/10/2025 00:25:57"
+    try {
+      final parts = datetime.split(' ');
+      if (parts.isNotEmpty) {
+        return parts[0]; // Return just the date part
+      }
+      return datetime;
+    } catch (e) {
+      return datetime;
+    }
+  }
+
+  Color _getStatusColor(String? status, ThemesProvider theme) {
+    if (status == "ALLOCATED") {
+      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    } else if (status == "REJECTED" ||
+        status == "CANCELLED" ||
+        status == "PAYMENT DECLINED") {
+      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    } else if (inProgressStatuses.contains(status)) {
+      return colors.pending;
+    }
+    return colors.pending;
   }
 
   String _getListStatusText(String? status) {

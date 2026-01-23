@@ -1,12 +1,9 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -19,9 +16,10 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import 'single_page_web.dart';
+import '../../../../sharedWidget/hover_actions_web.dart';
 import '../../../Mobile/ipo/preclose_ipo/preclose_ipo_screen.dart';
 import '../IPO_order_screen/ipo_order_screen_web.dart';
+import '../ipo_details_sheet_web.dart';
 
 class MainSmeListCard extends ConsumerStatefulWidget {
   const MainSmeListCard({super.key});
@@ -186,11 +184,11 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        // Allocation: Name (40%), Date (20%), Price (20%), Min (20%)
-        final nameWidth = width * 0.40;
-        final dateWidth = width * 0.20;
-        final priceWidth = width * 0.20;
-        final minWidth = width * 0.20;
+        // Allocation: All columns 25%
+        final nameWidth = width * 0.35;
+        final dateWidth = width * 0.25;
+        final priceWidth = width * 0.15;
+        final minWidth = width * 0.25;
 
         final columnWidths = {
           0: shadcn.FixedTableSize(nameWidth),
@@ -208,12 +206,22 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                 rows: [
                   shadcn.TableHeader(
                     cells: [
-                      _buildHeaderCell("Stock name", 0, theme),
+                      _buildHeaderCell("Stock name", 0, theme,
+                          padding: const EdgeInsets.only(
+                              left: 15.0,
+                              right: 12.0,
+                              top: 12.0,
+                              bottom: 12.0)),
                       _buildHeaderCell("IPO date", 1, theme),
                       _buildHeaderCell("Price range", -1, theme,
                           alignRight: true),
                       _buildHeaderCell("Min. amount", -1, theme,
-                          alignRight: true),
+                          alignRight: true,
+                          padding: const EdgeInsets.only(
+                              left: 12.0,
+                              right: 24.0,
+                              top: 12.0,
+                              bottom: 12.0)),
                     ],
                   ),
                 ],
@@ -251,7 +259,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   shadcn.TableCell _buildHeaderCell(
       String text, int sortIndex, ThemesProvider theme,
-      {bool alignRight = false}) {
+      {bool alignRight = false, EdgeInsets? padding}) {
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -269,7 +277,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
             : null,
         child: Container(
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: 12.0),
           decoration: BoxDecoration(
             color: theme.isDarkMode
                 ? Colors.white.withOpacity(0.04)
@@ -305,6 +313,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           uniqueId: uniqueId,
           rowIsHovered: rowIsHovered,
           theme: theme,
+          padding: const EdgeInsets.only(
+              left: 15.0, right: 8.0, top: 8.0, bottom: 8.0),
           onTap: () => _onIPOTap(context, ipo, ipoProvider),
           child: Row(
             children: [
@@ -373,21 +383,20 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                 ),
               ),
               // Apply button on hover
-              IgnorePointer(
-                ignoring: !rowIsHovered,
-                child: AnimatedOpacity(
-                  opacity: rowIsHovered ? 1 : 0,
-                  duration: const Duration(milliseconds: 140),
-                  child: _buildHoverButton(
+              HoverActionsContainer(
+                isVisible: rowIsHovered,
+                actions: [
+                  HoverActionButton(
                     label: isPreOpen ? 'Pre Apply' : 'Apply',
                     color: Colors.white,
                     backgroundColor: resolveThemeColor(context,
                         dark: MyntColors.primary, light: MyntColors.primary),
                     onPressed: () =>
                         _onApplyPressed(context, ipo, ipoProvider, upiProvider),
-                    theme: theme,
+                    width: isPreOpen ? 75 : 55,
+                    height: 26,
                   ),
-                ),
+                ],
               ),
             ],
           ),
@@ -435,6 +444,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           rowIsHovered: rowIsHovered,
           theme: theme,
           alignRight: true,
+          padding: const EdgeInsets.only(
+              left: 8.0, right: 24.0, top: 8.0, bottom: 8.0),
           onTap: () => _onIPOTap(context, ipo, ipoProvider),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -480,6 +491,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     required ThemesProvider theme,
     VoidCallback? onTap,
     bool alignRight = false,
+    EdgeInsets? padding,
   }) {
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
@@ -504,72 +516,14 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                         dark: MyntColors.primary, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            padding: padding ??
+                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             width: double.infinity,
             height: double.infinity,
             child: Align(
               alignment:
                   alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    double? iconWeight,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: isLongLabel ? null : 25,
-      height: 25,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding:
-                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1.3,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 16,
-                      color: color,
-                      weight: iconWeight ?? 400,
-                    )
-                  : Text(
-                      label ?? "",
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        color: color,
-                        fontWeight: MyntFonts.bold,
-                      ),
-                    ),
             ),
           ),
         ),
@@ -764,307 +718,29 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
 
     if (context.mounted) {
-      _showIPODetailsDialog(
-        context,
-        ipo,
-        ipoProvider,
-      );
-    }
-  }
-
-  void _showIPODetailsDialog(
-    BuildContext context,
-    dynamic ipo,
-    IPOProvider ipoProvider,
-  ) {
-    final overlay = Overlay.of(context, rootOverlay: true);
-    late OverlayEntry dialogOverlayEntry;
-
-    dialogOverlayEntry = OverlayEntry(
-      builder: (overlayContext) {
-        return Consumer(
-          builder: (context, ref, _) {
-            final currentTheme = ref.watch(themeProvider);
-            return Stack(
-              children: [
-                // Backdrop
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () {
-                      dialogOverlayEntry.remove();
-                    },
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-                // Dialog centered
-                Center(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      width: 700,
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.85,
-                      ),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.backgroundColorDark,
-                            light: MyntColors.backgroundColor),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.85,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            // Header with Company Info
-                            Consumer(
-                              builder: (context, ref, _) {
-                                final ipoProvider = ref.watch(ipoProvide);
-                                final singlePageData =
-                                    ipoProvider.iposinglepage?.data;
-
-                                // Safely access the data - check if it's a Map
-                                String companyName = ipo.name ?? '';
-                                String? imageLink = ipo.imageLink;
-
-                                if (singlePageData != null &&
-                                    singlePageData is Map) {
-                                  try {
-                                    final name = singlePageData['Company Name'];
-                                    if (name != null) {
-                                      companyName = name.toString();
-                                    }
-                                  } catch (e) {
-                                    // If access fails, use ipo.name
-                                  }
-
-                                  try {
-                                    final imgLink =
-                                        singlePageData['image_link'];
-                                    if (imgLink != null) {
-                                      imageLink = imgLink.toString();
-                                    }
-                                  } catch (e) {
-                                    // If access fails, use ipo.imageLink
-                                  }
-                                }
-                                final status = ipostartdate(
-                                  ipo.biddingStartDate ?? '',
-                                  ipo.biddingEndDate ?? '',
-                                );
-                                final isOpen = status == "Open";
-
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: resolveThemeColor(context,
-                                            dark: MyntColors.dividerDark,
-                                            light: MyntColors.divider),
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      // Company Logo
-                                      if (imageLink != null &&
-                                          imageLink.isNotEmpty)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 12),
-                                          child: ClipOval(
-                                            child: Container(
-                                              color: resolveThemeColor(context,
-                                                  dark: MyntColors.dividerDark,
-                                                  light: MyntColors.divider),
-                                              width: 50,
-                                              height: 50,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(8),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: imageLink,
-                                                  memCacheWidth: 100,
-                                                  memCacheHeight: 100,
-                                                  placeholder: (context, url) =>
-                                                      const Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                            strokeWidth: 2),
-                                                  ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          const SizedBox(),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      // Company Name and Status
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              companyName,
-                                              style: MyntWebTextStyles.titlesub(
-                                                context,
-                                                color: resolveThemeColor(
-                                                    context,
-                                                    dark: MyntColors
-                                                        .textPrimaryDark,
-                                                    light:
-                                                        MyntColors.textPrimary),
-                                                fontWeight: MyntFonts.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  ipo.key ?? '',
-                                                  style: MyntWebTextStyles
-                                                      .bodySmall(
-                                                    context,
-                                                    color: resolveThemeColor(
-                                                        context,
-                                                        dark: MyntColors
-                                                            .textSecondaryDark,
-                                                        light: MyntColors
-                                                            .textSecondary),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Container(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 4,
-                                                      vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                    color: isOpen
-                                                        ? resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .profit,
-                                                                light:
-                                                                    MyntColors
-                                                                        .profit)
-                                                            .withOpacity(0.2)
-                                                        : resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .loss,
-                                                                light:
-                                                                    MyntColors
-                                                                        .loss)
-                                                            .withOpacity(0.2),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            4),
-                                                  ),
-                                                  child: Text(
-                                                    status.toUpperCase(),
-                                                    style: MyntWebTextStyles
-                                                        .bodySmall(
-                                                      context,
-                                                      color: isOpen
-                                                          ? resolveThemeColor(
-                                                              context,
-                                                              dark: MyntColors
-                                                                  .profit,
-                                                              light: MyntColors
-                                                                  .profit)
-                                                          : resolveThemeColor(
-                                                              context,
-                                                              dark: MyntColors
-                                                                  .loss,
-                                                              light: MyntColors
-                                                                  .loss),
-                                                      fontWeight:
-                                                          MyntFonts.semiBold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Close Button
-                                      Material(
-                                        color: Colors.transparent,
-                                        shape: const CircleBorder(),
-                                        child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          splashColor: currentTheme.isDarkMode
-                                              ? Colors.white.withOpacity(.15)
-                                              : Colors.black.withOpacity(.15),
-                                          highlightColor: currentTheme
-                                                  .isDarkMode
-                                              ? Colors.white.withOpacity(.08)
-                                              : Colors.black.withOpacity(.08),
-                                          onTap: () {
-                                            dialogOverlayEntry.remove();
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(4.0),
-                                            child: Icon(
-                                              Icons.close,
-                                              size: 18,
-                                              color: resolveThemeColor(context,
-                                                  dark: MyntColors.iconDark,
-                                                  light: MyntColors.icon),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                            // Content
-                            Flexible(
-                              child: MainSmeSinglePage(
-                                pricerange:
-                                    "${double.parse(ipo.minPrice ?? "0").toInt()} - ${double.parse(ipo.maxPrice ?? "0").toInt()}",
-                                mininv: convertCurrencyINRStandard(mininv(
-                                        double.parse(ipo.minPrice ?? "0")
-                                            .toDouble(),
-                                        int.parse(ipo.minBidQuantity ?? "0")
-                                            .toInt())
-                                    .toInt()),
-                                enddate: "${ipo.biddingEndDate ?? ""}",
-                                startdate: "${ipo.biddingStartDate ?? ""}",
-                                ipotype: "${ipo.key ?? ""}",
-                                ipodetails: jsonEncode(ipo),
-                                isDialog:
-                                    true, // Mark as dialog to skip DraggableScrollableSheet
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+      shadcn.openSheet(
+        context: context,
+        position: shadcn.OverlayPosition.end,
+        barrierColor: Colors.transparent,
+        builder: (sheetContext) {
+          return Container(
+            width: 480,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
                 ),
               ],
-            );
-          },
-        );
-      },
-    );
-
-    overlay.insert(dialogOverlayEntry);
+            ),
+            child: IpoDetailsSheetWeb(ipo: ipo, parentContext: context),
+          );
+        },
+      );
+    }
   }
 
   Future<void> _onApplyPressed(BuildContext context, dynamic ipo,
@@ -1072,12 +748,27 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     ipoProvider.setisSMEPlaceOrderBtnActiveValue = false;
     ipoProvider.setisMainIPOPlaceOrderBtnActiveValue = false;
 
-    await upiProvider.fetchupiIdView(
-      upiProvider.bankdetails?.dATA?[upiProvider.indexss][1] ?? "",
-      upiProvider.bankdetails?.dATA?[upiProvider.indexss][2] ?? "",
-    );
+    // Ensure bank details are available
+    if (upiProvider.bankdetails == null ||
+        upiProvider.bankdetails?.dATA == null ||
+        upiProvider.bankdetails!.dATA!.isEmpty) {
+      await upiProvider.fetchfundbank(context);
+    }
 
-    if (ipo.key == "SME") {
+    // Fetch UPI ID if bank details are now available
+    if (upiProvider.bankdetails?.dATA != null &&
+        upiProvider.bankdetails!.dATA!.isNotEmpty) {
+      final bankData = upiProvider.bankdetails!.dATA![upiProvider.indexss];
+      if (bankData.length >= 3) {
+        // Start fetching but don't strictly await if it takes too long
+        upiProvider.fetchupiIdView(
+          bankData[1] ?? "",
+          bankData[2] ?? "",
+        );
+      }
+    }
+
+    if (ipo is SMEIPO) {
       await ipoProvider.smeipocategory();
       if (context.mounted) {
         UnifiedIpoOrderScreen.showDraggable(

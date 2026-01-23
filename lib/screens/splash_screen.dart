@@ -76,19 +76,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (pref.clientSession!.isEmpty) {
         pref.setLogout(true);
 
-        pref.clientId!.isNotEmpty
-            ? Navigator.pushNamedAndRemoveUntil(
-                context, Routes.loginScreen, (route) => false)
-            : Navigator.pushNamedAndRemoveUntil(
-                context, Routes.loginScreenBanner, (route) => false);
-      } else {
-        pref.setMobileLogin(true);
+        // For web, always go directly to login screen (skip banner)
         if (kIsWeb) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
+        } else {
           pref.clientId!.isNotEmpty
               ? Navigator.pushNamedAndRemoveUntil(
                   context, Routes.loginScreen, (route) => false)
               : Navigator.pushNamedAndRemoveUntil(
                   context, Routes.loginScreenBanner, (route) => false);
+        }
+      } else {
+        pref.setMobileLogin(true);
+        if (kIsWeb) {
+          // For web, always go directly to login screen (skip banner)
+          Navigator.pushNamedAndRemoveUntil(
+              context, Routes.loginScreen, (route) => false);
         } else {
           await ref.read(authProvider).fetchMobileLogin(
               context, "", pref.clientId!, "", pref.imei!, true);

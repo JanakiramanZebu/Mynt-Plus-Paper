@@ -232,29 +232,36 @@ class WebAuthProvider extends ChangeNotifier {
       if (_mobileLogin?.stat == 'Ok') {
         // Store the client ID for OTP verification
         pref.setImei(_deviceUuid);
-        
+
         // Check if login is complete (has token) or needs OTP
         if (_mobileLogin?.apitoken != null && _mobileLogin?.token != null) {
           // Direct login success - no OTP needed
           await _handleLoginSuccess(context);
           return true;
         }
-        
+
         // OTP/TOTP flow needed
         otpController.clear();
         _setLoading(false);
-        
-        if (!_isTotp) {
+
+        if (!_isTotp && context.mounted) {
           ResponsiveSnackBar.showSuccess(context, 'OTP sent to your registered mobile and email');
         }
-        
+
         return true;
-      } else if (_mobileLogin?.emsg != null) {
-        ResponsiveSnackBar.showWarning(context, _mobileLogin!.emsg!);
+      } else {
+        // Error case - the API layer shows the specific error message
+        // This is a fallback only if both emsg and msg are null
+        final errorMsg = _mobileLogin?.emsg ?? _mobileLogin?.msg;
+        if (errorMsg == null && _mobileLogin != null && context.mounted) {
+          ResponsiveSnackBar.showWarning(context, 'Login failed. Please check your credentials.');
+        }
       }
     } catch (e) {
       debugPrint('Web login error: $e');
-      ResponsiveSnackBar.showWarning(context, 'Login failed. Please try again.');
+      if (context.mounted) {
+        ResponsiveSnackBar.showWarning(context, 'Login failed. Please try again.');
+      }
     } finally {
       _setLoading(false);
     }
@@ -274,15 +281,19 @@ class WebAuthProvider extends ChangeNotifier {
       );
 
       if (result != null && (result['stat'] == 'Ok' || (result['msg'] != null && result['msg'].toString().toLowerCase().contains('otp')))) {
-        ResponsiveSnackBar.showSuccess(context, 'OTP sent successfully');
+        if (context.mounted) {
+          ResponsiveSnackBar.showSuccess(context, 'OTP sent successfully');
+        }
         _setLoading(false);
         return true;
-      } else if (result != null && result['emsg'] != null) {
+      } else if (result != null && result['emsg'] != null && context.mounted) {
         ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
       }
     } catch (e) {
       debugPrint('Send OTP error: $e');
-      ResponsiveSnackBar.showWarning(context, 'Failed to send OTP');
+      if (context.mounted) {
+        ResponsiveSnackBar.showWarning(context, 'Failed to send OTP');
+      }
     } finally {
       _setLoading(false);
     }
@@ -323,7 +334,7 @@ class WebAuthProvider extends ChangeNotifier {
       if (_mobileOtp?.stat == 'Ok' && _mobileOtp?.apitoken != null) {
         // Store session for TOTP generation if needed
         _apiSession = _mobileOtp!.apitoken;
-        
+
         // Check if this is "Generate TOTP" flow (Vue.js topfloww logic)
         // If topflow is true, user clicked "Generate TOTP" - show TOTP setup screen
         if (_topflow) {
@@ -332,20 +343,42 @@ class WebAuthProvider extends ChangeNotifier {
           notifyListeners();
           return true; // Don't navigate, stay on TOTP setup screen
         }
-        
+
         await _handleOtpSuccess(context);
         return true;
-      } else if (_mobileOtp?.emsg == 'otp not valid') {
-        _otpError = 'Invalid ${_isTotp ? 'TOTP' : 'OTP'}';
-        otpController.clear();
-        notifyListeners();
       } else if (_mobileOtp?.emsg != null) {
-        ResponsiveSnackBar.showWarning(context, _mobileOtp!.emsg!);
-        otpController.clear();
+        // Handle OTP/TOTP validation errors with proper distinction
+        final errorMsg = _mobileOtp!.emsg!.toLowerCase();
+        final otpTypeLabel = _isTotp ? 'TOTP' : 'OTP';
+
+        if (errorMsg.contains('otp not valid') || errorMsg.contains('invalid otp') || errorMsg.contains('invalid input')) {
+          _otpError = 'Invalid $otpTypeLabel';
+          // Check context validity before showing toast
+          if (context.mounted) {
+            ResponsiveSnackBar.showWarning(context, 'Invalid $otpTypeLabel. Please try again.');
+          }
+        } else {
+          // Show original error message for other errors
+          _otpError = _mobileOtp!.emsg;
+          if (context.mounted) {
+            ResponsiveSnackBar.showWarning(context, _mobileOtp!.emsg!);
+          }
+        }
+        notifyListeners();
+      } else if (_mobileOtp != null) {
+        // Fallback error message
+        final otpTypeLabel = _isTotp ? 'TOTP' : 'OTP';
+        _otpError = 'Invalid $otpTypeLabel';
+        if (context.mounted) {
+          ResponsiveSnackBar.showWarning(context, 'Verification failed. Please try again.');
+        }
+        notifyListeners();
       }
     } catch (e) {
       debugPrint('Verify OTP error: $e');
-      ResponsiveSnackBar.showWarning(context, 'Verification failed');
+      if (context.mounted) {
+        ResponsiveSnackBar.showWarning(context, 'Verification failed. Please try again.');
+      }
     } finally {
       _setLoading(false);
     }
@@ -358,6 +391,7 @@ class WebAuthProvider extends ChangeNotifier {
     _topflow = true;
     _isTotp = false; // Switch to OTP mode for verification
     otpController.clear();
+    _otpError = null; // Clear any existing error
     notifyListeners();
   }
 
@@ -369,6 +403,7 @@ class WebAuthProvider extends ChangeNotifier {
     _totpData = null;
     _apiSession = null;
     otpController.clear();
+    _otpError = null; // Clear any existing error
     stopTotpTimer();
     notifyListeners();
   }
@@ -458,7 +493,19 @@ class WebAuthProvider extends ChangeNotifier {
     _qrPollTimer?.cancel();
     _qrPollTimer = null;
     _qrLoginImageUrl = null;
-    notifyListeners(); // Optionally notify to clear UI
+    // Clear mobileOtp to prevent stale data from triggering navigation
+    // Only clear if we're just cancelling (not after successful login)
+    // _mobileOtp = null; // Don't clear here - it breaks successful QR login
+    notifyListeners();
+  }
+
+  /// Cancel QR Login and clear all related state (called when user clicks "back to login")
+  void cancelQrLogin() {
+    _qrPollTimer?.cancel();
+    _qrPollTimer = null;
+    _qrLoginImageUrl = null;
+    _mobileOtp = null; // Clear to prevent stale login data
+    notifyListeners();
   }
   
   /// Poll QR Status
@@ -547,15 +594,19 @@ class WebAuthProvider extends ChangeNotifier {
       );
 
       if (result != null && result['stat'] == 'Ok') {
-        ResponsiveSnackBar.showSuccess(context, 'New password sent to your registered email and mobile');
+        if (context.mounted) {
+          ResponsiveSnackBar.showSuccess(context, 'New password sent to your registered email and mobile');
+        }
         _setLoading(false);
         return true;
-      } else if (result != null && result['emsg'] != null) {
+      } else if (result != null && result['emsg'] != null && context.mounted) {
         ResponsiveSnackBar.showWarning(context, result['emsg'].toString());
       }
     } catch (e) {
       debugPrint('Forgot password error: $e');
-      ResponsiveSnackBar.showWarning(context, 'Failed to process request');
+      if (context.mounted) {
+        ResponsiveSnackBar.showWarning(context, 'Failed to process request');
+      }
     } finally {
       _setLoading(false);
     }

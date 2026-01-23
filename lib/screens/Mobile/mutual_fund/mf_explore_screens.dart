@@ -11,15 +11,29 @@ import '../../../../sharedWidget/loader_ui.dart';
 // import '../../provider/mf_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../res/global_state_text.dart';
 import 'mf_sip_screen.dart';
-import 'mf_watchlist.dart';
 import 'mutual_fund_screen_new.dart';
 
+
 class MFExploreScreens extends ConsumerStatefulWidget {
-  final ThemesProvider theme;
+  final ThemesProvider? theme;
   final Function(bool)? onBoundaryReached; // Callback for boundary detection
-  const MFExploreScreens({super.key, required this.theme, this.onBoundaryReached});
+  final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
+  final Function(String)? onCollectionTap; // Callback when collection is tapped
+  final Function(String)? onCategoryTap; // Callback when category is tapped
+  final VoidCallback? onSipCalculatorTap;
+  final VoidCallback? onCagrCalculatorTap;
+
+  const MFExploreScreens({
+    super.key,
+    this.theme,
+    this.onBoundaryReached,
+    this.onNfoTap,
+    this.onCollectionTap,
+    this.onCategoryTap,
+    this.onSipCalculatorTap,
+    this.onCagrCalculatorTap,
+  });
 
   @override
   ConsumerState<MFExploreScreens> createState() => _ExploreScreensState();
@@ -38,18 +52,13 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     },
     {
       "imgpath": "assets.bookmarkLineIcon",
-      "title": "Watchlist",
+      "title": "Portfolio",
       "index": 1,
     },
     {
       "imgpath": "assets.bookmarkLineIcon",
-      "title": "Portfolio",
-      "index": 2,
-    },
-    {
-      "imgpath": "assets.bookmarkLineIcon",
       "title": "SIP",
-      "index": 3,
+      "index": 2,
     }
   ];
 
@@ -84,7 +93,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   void initState() {
     super.initState();
     _tabController = TabController(
-        length: 4,
+        length: 3,
         vsync: this,
         initialIndex: ref.read(mfProvider).activeTab ?? 0);
     selectedTab = ref.read(mfProvider).activeTab ?? 0;
@@ -124,48 +133,39 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
             // const SizedBox(height: 150),
             // const CustomDragHandler(),
             Padding(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.only(top: 8),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: theme.isDarkMode
                           ? colors.darkColorDivider
                           : colors.colorDivider,
-                      width: 0,
+                      width: 1,
                     ),
                   ),
                 ),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: List.generate(
-                      tablistitems.length,
-                      (tab) => Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(0.05)
-                              : Colors.black.withOpacity(0.05),
-                          highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(0.01)
-                              : Colors.black.withOpacity(0.01),
-                          onTap: () {
-                            setState(() {
-                              selectedTab = tab;
-                            });
-                            _tabController.animateTo(tab);
-                            // Also update the page controller to jump directly
-                            if (_tabController.index != tab) {
-                              _tabController.index = tab;
-                            }
-                          },
-                          child: _tabConstruct(
-                              tablistitems[tab]['title'].toString(), theme, tab),
-                        ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(
+                    tablistitems.length,
+                    (tab) => Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () {
+                          setState(() {
+                            selectedTab = tab;
+                          });
+                          _tabController.animateTo(tab);
+                          if (_tabController.index != tab) {
+                            _tabController.index = tab;
+                          }
+                        },
+                        child: _tabConstruct(
+                            tablistitems[tab]['title'].toString(), theme, tab),
                       ),
                     ),
                   ),
@@ -177,11 +177,15 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                child: _CustomTabBarView(
                  controller: _tabController,
                  onBoundaryReached: widget.onBoundaryReached,
-                 children: [
-                   MutualFundNewScreen(
-                     tabController: _tabController,
-                   ),
-                   const MFWatchlistScreen(),
+                  children: [
+                    MutualFundNewScreen(
+                      tabController: _tabController,
+                      onNfoTap: widget.onNfoTap,
+                      onCollectionTap: widget.onCollectionTap,
+                      onCategoryTap: widget.onCategoryTap,
+                      onSipCalculatorTap: widget.onSipCalculatorTap,
+                      onCagrCalculatorTap: widget.onCagrCalculatorTap,
+                    ),
                    const MfOrderBookScreen(),
                    const MFSipdetScreen()
                  ],
@@ -195,41 +199,28 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
 
   Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
     final isActive = selectedTab == tab;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: MediaQuery.of(context).size.width * 0.25,
-          // width: 100,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: TextWidget.subText(
-            text: title,
-            color: isActive
-                ? theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight
-                : theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            theme: theme.isDarkMode,
-            fw: isActive ? 2 : 2,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isActive ? colors.colorBlue : Colors.transparent,
+            width: 2,
           ),
         ),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          height: 2,
-          width: isActive ? 82 : 0,
-          margin: const EdgeInsets.only(top: 1),
-          decoration: BoxDecoration(
-            color: colors.colorBlue,
-            borderRadius: BorderRadius.circular(2),
-          ),
+      ),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: isActive
+              ? colors.colorBlue
+              : theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
         ),
-      ],
+      ),
     );
   }
 

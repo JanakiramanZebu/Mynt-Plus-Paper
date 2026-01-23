@@ -55,6 +55,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           await indexProvider.getTopIndicesForDashboard(context);
         }
 
+        // Fetch MF holdings for the dashboard portfolio tab
+        ref.read(portfolioProvider).fetchMFHoldings(context);
+
         // Trade action data is fetched by _handleDashboardTap() before this screen is shown
         // No need to fetch here to avoid duplicate TopList API calls
 
@@ -78,7 +81,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     // disposed when widget disposes, only the widget's ref access becomes invalid
     final portfolio = ref.read(portfolioProvider);
 
-    _positionSocketSubscription = websocket.socketDataStream.listen((socketDatas) {
+    _positionSocketSubscription =
+        websocket.socketDataStream.listen((socketDatas) {
       // Check if widget is disposed before processing
       if (_isDisposed) return;
 
@@ -175,11 +179,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildTopIndicesSection(context, indexProvider),
+              const SizedBox(height: 32),
               // Dashboard cards section (Holdings, Position, Orders, Margins)
               _buildDashboardCardsSection(context),
-              const SizedBox(height: 32),
-              // Top indices section
-              _buildTopIndicesSection(context, indexProvider),
               const SizedBox(height: 32),
               // Today's trade action section
               _buildTodaysTradeActionSection(context),
@@ -191,569 +194,487 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   }
 
   Widget _buildDashboardCardsSection(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return _buildPortfolioCard(context, constraints.maxWidth);
+      },
+    );
+  }
+
+  Widget _buildPortfolioCard(BuildContext context, double width) {
     return Consumer(
       builder: (context, ref, _) {
         final portfolio = ref.watch(portfolioProvider);
         final orders = ref.watch(orderProvider);
         final fund = ref.watch(fundProvider);
-        // Watch websocket to rebuild when price data updates (triggers rebuild on any socket data change)
+        // Watch websocket for price updates
         ref.watch(websocketProvider);
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            // Responsive grid configuration based on available width
-            final width = constraints.maxWidth;
-            int crossAxisCount;
-
-            if (width >= 800) {
-              // Large and medium screens: 2 columns
-              crossAxisCount = 2;
-            } else {
-              // Small screens: 1 column
-              crossAxisCount = 1;
-            }
-
-            // Calculate card width based on columns
-            final cardWidth = crossAxisCount == 2
-                ? (width - 12) / 2 // bodytract spacing and divide by 2
-                : width;
-
-            // Use Wrap instead of GridView to allow natural card heights
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                SizedBox(
-                  width: cardWidth,
-                  child: _buildHoldingsCard(context, portfolio),
-                ),
-                SizedBox(
-                  width: cardWidth,
-                  child: _buildPositionCard(context, portfolio),
-                ),
-                SizedBox(
-                  width: cardWidth,
-                  child: _buildOrdersCard(context, orders),
-                ),
-                SizedBox(
-                  width: cardWidth,
-                  child: _buildMarginsCard(context, fund),
-                ),
-              ],
-            );
-          },
+        return Container(
+          width: width,
+          // padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: shadcn.Theme.of(context).colorScheme.card,
+            // boxShadow: [
+            //   BoxShadow(
+            //     color: Colors.black.withOpacity(0.02),
+            //     blurRadius: 10,
+            //     offset: const Offset(0, 4),
+            //   ),
+            // ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPortfolioHeader(context),
+              const SizedBox(height: 14),
+              _buildPortfolioContent(context, portfolio, orders, fund),
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildHoldingsCard(BuildContext context, PortfolioProvider portfolio) {
+  Widget _buildPortfolioHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Portfolio',
+              style: MyntWebTextStyles.head(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.bold,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortfolioContent(
+    BuildContext context,
+    PortfolioProvider portfolio,
+    OrderProvider orders,
+    FundProvider fund,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _buildPortfolioSection(
+            context,
+            'Equity',
+            _getEquityMetrics(context, portfolio),
+            onTap: () {
+              if (WebNavigationHelper.isAvailable) {
+                WebNavigationHelper.navigateTo(Routes.holdingscreen);
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildPortfolioSection(
+            context,
+            'Mutual Fund',
+            _getMutualFundMetrics(context, portfolio),
+            onTap: () {
+              if (WebNavigationHelper.isAvailable) {
+                WebNavigationHelper.navigateTo(Routes.mfmainscreen);
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildPortfolioSection(
+            context,
+            'Position',
+            _getPositionMetrics(context, portfolio),
+            onTap: () {
+              if (WebNavigationHelper.isAvailable) {
+                WebNavigationHelper.navigateTo(Routes.positionscreen);
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildPortfolioSection(
+            context,
+            'Funds',
+            _getFundsMetrics(context, fund),
+            onTap: () {
+              if (WebNavigationHelper.isAvailable) {
+                WebNavigationHelper.navigateTo(Routes.fundscreen);
+              }
+            },
+            trailing: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  if (WebNavigationHelper.isAvailable) {
+                    WebNavigationHelper.navigateTo(Routes.fundscreen);
+                  }
+                },
+                child: Text(
+                  'Add Money',
+                  style: MyntWebTextStyles.body(
+                    context,
+                    darkColor: MyntColors.primaryDark,
+                    lightColor: MyntColors.primary,
+                    fontWeight: MyntFonts.bold,
+                  ).copyWith(fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortfolioSection(
+    BuildContext context,
+    String title,
+    List<Map<String, dynamic>> metrics, {
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    return _buildMetricsGrid(context, title, metrics,
+        trailing: trailing, onTap: onTap);
+  }
+
+  Widget _buildMetricsGrid(
+    BuildContext context,
+    String title,
+    List<Map<String, dynamic>> metrics, {
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    // We want a 2x2 grid layout inside a single border with the title at the top
+    return MouseRegion(
+      cursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: shadcn.Theme.of(context).colorScheme.border,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, top: 16, bottom: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      title,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.bold,
+                      ).copyWith(fontSize: 14),
+                    ),
+                    if (trailing != null) trailing,
+                  ],
+                ),
+              ),
+              // Divider(
+              //   height: 1,
+              //   color: shadcn.Theme.of(context).colorScheme.border.withOpacity(0.5),
+              // ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 16, right: 16, bottom: 16, top: 6),
+                child: Column(
+                  children: [
+                    // Row 1
+                    Row(
+                      children: [
+                        Expanded(child: _buildMetricItem(context, metrics, 0)),
+                        const SizedBox(width: 12),
+                        Expanded(child: _buildMetricItem(context, metrics, 1)),
+                      ],
+                    ),
+                    if (metrics.length > 2) ...[
+                      const SizedBox(height: 12),
+                      Divider(
+                        height: 1,
+                        color: shadcn.Theme.of(context)
+                            .colorScheme
+                            .border
+                            .withOpacity(0.6),
+                      ),
+                      const SizedBox(height: 10),
+                      // Row 2
+                      Row(
+                        children: [
+                          Expanded(
+                              child: _buildMetricItem(context, metrics, 2)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: _buildMetricItem(context, metrics, 3)),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetricItem(
+    BuildContext context,
+    List<Map<String, dynamic>> metrics,
+    int index,
+  ) {
+    if (index >= metrics.length) {
+      return const SizedBox.shrink();
+    }
+
+    final metric = metrics[index];
+    final double value =
+        double.tryParse((metric['value'] as String).replaceAll('₹', '')) ?? 0.0;
+    final bool isPnl = metric['isPnl'] ?? false;
+    final Color valueColor = (isPnl && value != 0)
+        ? (value > 0
+            ? (shadcn.Theme.of(context).brightness == Brightness.dark
+                ? MyntColors.profitDark
+                : MyntColors.profit)
+            : (shadcn.Theme.of(context).brightness == Brightness.dark
+                ? MyntColors.lossDark
+                : MyntColors.loss))
+        : (shadcn.Theme.of(context).brightness == Brightness.dark
+            ? MyntColors.textPrimaryDark
+            : MyntColors.textPrimary);
+
+    final bool isLeftAligned = index % 2 == 0;
+    final alignment =
+        isLeftAligned ? CrossAxisAlignment.start : CrossAxisAlignment.end;
+    final rowAlignment =
+        isLeftAligned ? MainAxisAlignment.start : MainAxisAlignment.end;
+
+    return Column(
+      crossAxisAlignment: alignment,
+      children: [
+        Text(
+          metric['label'],
+          style: MyntWebTextStyles.caption(
+            context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
+          ).copyWith(fontSize: 14),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: isLeftAligned ? TextAlign.left : TextAlign.right,
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: rowAlignment,
+          children: [
+            Text(
+              metric['value'],
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: valueColor,
+              ).copyWith(fontSize: 14),
+            ),
+            if (metric['subValue'] != null) ...[
+              const SizedBox(width: 4),
+              Text(
+                metric['subValue'],
+                style: MyntWebTextStyles.caption(
+                  context,
+                  color: valueColor,
+                ).copyWith(fontSize: 12),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  List<Map<String, dynamic>> _getEquityMetrics(
+      BuildContext context, PortfolioProvider portfolio) {
     final holdings = portfolio.holdingsModel ?? [];
-    final holdingsCount = holdings.length;
-
-    // Use provider's pre-calculated values from pnlHoldCal()
-    final invested = portfolio.totInvesHold;
-    final current = portfolio.totalCurrentVal.toStringAsFixed(2);
-    final totalPnL = portfolio.totalPnlHolding.toStringAsFixed(2);
-    final totalPnLPercent = portfolio.totPnlPercHolding;
-    final todayPnL = portfolio.oneDayChng.toStringAsFixed(2);
-    final todayPnLPercent = portfolio.oneDayChngPer.toStringAsFixed(2);
-
-    // Count positive/negative holdings
-    int positiveCount = 0;
-    int negativeCount = 0;
+    double totalPnlHolding = 0.0;
+    double oneDayChng = 0.0;
+    double invest = 0.0;
+    double totalCurrentVal = 0.0;
 
     for (var holding in holdings) {
       if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
         final exchTsym = holding.exchTsym![0];
         final pnl = double.tryParse(exchTsym.profitNloss ?? '0') ?? 0.0;
+        final rpnl = double.tryParse(holding.rpnl ?? '0') ?? 0.0;
+        final oneDayChgVal = double.tryParse(exchTsym.oneDayChg ?? '0') ?? 0.0;
+        final investedVal = double.tryParse(holding.invested ?? '0') ?? 0.0;
+        final currentVal = double.tryParse(holding.currentValue ?? '0') ?? 0.0;
 
-        if (pnl > 0) {
-          positiveCount++;
-        } else if (pnl < 0) {
-          negativeCount++;
-        }
+        totalPnlHolding += pnl + rpnl;
+        oneDayChng += oneDayChgVal;
+        invest += investedVal;
+        totalCurrentVal += currentVal;
       }
     }
 
-    return _buildCard(
-      context: context,
-      title: 'Holdings',
-      icon: Icons.work_outline,
-      iconColor: resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit),
-      metrics: [
-        {'label': 'Invested', 'value': '₹$invested'},
-        {'label': 'Current', 'value': '₹$current'},
-        {
-          'label': 'Total P&L',
-          'value': '₹$totalPnL',
-          'percent': '$totalPnLPercent%'
-        },
-        {
-          'label': 'Today P&L',
-          'value': '₹$todayPnL',
-          'percent': '$todayPnLPercent%'
-        },
-      ],
-      summary: 'No of holdings - $holdingsCount',
-      positiveCount: positiveCount,
-      negativeCount: negativeCount,
-      onViewDetails: () {
-        if (WebNavigationHelper.isAvailable) {
-          WebNavigationHelper.navigateTo(Routes.holdingscreen);
-        }
+    final oneDayChngPer =
+        totalCurrentVal > 0 ? (oneDayChng / totalCurrentVal) * 100 : 0.0;
+    final totPnlPercHolding =
+        invest > 0 ? (totalPnlHolding / invest) * 100 : 0.0;
+
+    return [
+      {'label': 'Invested', 'value': '₹${invest.toStringAsFixed(2)}'},
+      {'label': 'Current', 'value': '₹${totalCurrentVal.toStringAsFixed(2)}'},
+      {
+        'label': 'Total P&L',
+        'value': '₹${totalPnlHolding.toStringAsFixed(2)}',
+        'subValue': '${totPnlPercHolding.toStringAsFixed(2)}%',
+        'isPnl': true
       },
-    );
+      {
+        'label': 'Today P&L',
+        'value': '₹${oneDayChng.toStringAsFixed(2)}',
+        'subValue': '${oneDayChngPer.toStringAsFixed(2)}%',
+        'isPnl': true
+      },
+    ];
   }
 
-  Widget _buildPositionCard(BuildContext context, PortfolioProvider portfolio) {
-    // Use postionBookModel for all positions (both open and closed)
-    final positions = portfolio.postionBookModel ?? [];
-    final positionsCount = positions.length;
-    final openPositionsCount = positions.where((p) => p.netqty != "0").length;
+  List<Map<String, dynamic>> _getMutualFundMetrics(
+      BuildContext context, PortfolioProvider portfolio) {
+    final invest = portfolio.mfTotInveest;
+    final current = portfolio.mfTotCurrentVal;
+    final totalPnL = portfolio.mfTotalPnl;
+    final totalPnLPer = portfolio.mfTotalPnlPerchng;
 
-    // Use provider's calculated totals (updated by positionCal() on WebSocket updates)
-    // These are the same values shown in position screen stats
-    final mtm = portfolio.totMtM;
+    return [
+      {'label': 'Invested', 'value': '₹${invest.toStringAsFixed(2)}'},
+      {'label': 'Current', 'value': '₹${current.toStringAsFixed(2)}'},
+      {
+        'label': 'Total P&L',
+        'value': '₹${totalPnL.toStringAsFixed(2)}',
+        'subValue': '${totalPnLPer.toStringAsFixed(2)}%',
+        'isPnl': true
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> _getPositionMetrics(
+      BuildContext context, PortfolioProvider portfolio) {
+    final positions = portfolio.postionBookModel ?? [];
     final totalPnL = portfolio.totPnL;
+    final mtm = portfolio.totMtM;
     final openPnL = portfolio.totUnRealMtm;
 
-    // Calculate trade value and counts locally
     double totBuyAmts = 0.0;
-    int positiveCount = 0;
-    int negativeCount = 0;
-
     for (var position in positions) {
-      final buyAmt = double.tryParse(position.totbuyamt ?? '0') ?? 0.0;
-      final pnlVal = double.tryParse(position.profitNloss ?? '0') ?? 0.0;
-
-      totBuyAmts += buyAmt;
-
-      // Count positive/negative based on P&L for ALL positions
-      if (pnlVal > 0) {
-        positiveCount++;
-      } else if (pnlVal < 0) {
-        negativeCount++;
-      }
+      totBuyAmts += double.tryParse(position.totbuyamt ?? '0') ?? 0;
     }
 
-    final tradeValue = totBuyAmts.toStringAsFixed(2);
-
-    return _buildCard(
-      context: context,
-      title: 'Position',
-      icon: Icons.trending_up,
-      iconColor: resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit),
-      metrics: [
-        {'label': 'Trade value', 'value': '₹$tradeValue'},
-        {'label': 'MTM', 'value': '₹$mtm'},
-        {'label': 'Total P&L', 'value': '₹$totalPnL'},
-        {'label': 'Open P&L', 'value': '₹$openPnL'},
-      ],
-      summary:
-          'No of positions - $positionsCount / Open positions - $openPositionsCount',
-      positiveCount: positiveCount,
-      negativeCount: negativeCount,
-      onViewDetails: () {
-        if (WebNavigationHelper.isAvailable) {
-          WebNavigationHelper.navigateTo(Routes.positionscreen);
-        }
-      },
-    );
+    return [
+      {'label': 'Trade value', 'value': '₹${totBuyAmts.toStringAsFixed(2)}'},
+      {'label': 'MTM', 'value': '₹$mtm', 'isPnl': true},
+      {'label': 'Total P&L', 'value': '₹$totalPnL', 'isPnl': true},
+      {'label': 'Open P&L', 'value': '₹$openPnL', 'isPnl': true},
+    ];
   }
 
-  Widget _buildOrdersCard(BuildContext context, OrderProvider orders) {
-    final orderList = orders.orderBookModel ?? [];
-    final openOrders = orderList
-        .where((o) => o.status == 'OPEN' || o.status == 'PENDING')
-        .length;
-    final executedOrders =
-        orderList.where((o) => o.status == 'COMPLETE').length;
-    final rejectedOrders = orderList
-        .where((o) => o.status == 'REJECTED' || o.status == 'CANCELED')
-        .length;
-
-    return _buildCard(
-      context: context,
-      title: 'Orders',
-      icon: Icons.shopping_bag_outlined,
-      iconColor: resolveThemeColor(context,
-          dark: MyntColors.primaryDark, light: MyntColors.primary),
-      metrics: [
-        {'label': 'Open Orders', 'value': '$openOrders'},
-        {'label': 'Execute Orders', 'value': '$executedOrders'},
-        {'label': 'Rejected', 'value': '$rejectedOrders'},
-      ],
-      showPositiveNegative: false,
-      onViewDetails: () {
-        if (WebNavigationHelper.isAvailable) {
-          WebNavigationHelper.navigateTo(Routes.orderBook);
-        }
-      },
-    );
-  }
-
-  Widget _buildMarginsCard(BuildContext context, FundProvider fund) {
+  List<Map<String, dynamic>> _getFundsMetrics(
+      BuildContext context, FundProvider fund) {
     final fundDetail = fund.fundDetailModel;
     final availableBalance =
         fundDetail?.avlMrg ?? fundDetail?.totCredit ?? '0.00';
     final totalCredits = fundDetail?.totCredit ?? '0.00';
     final marginUsed = fundDetail?.marginused ?? '0.00';
 
-    return _buildCard(
-      context: context,
-      title: 'Margins',
-      icon: Icons.account_balance_wallet_outlined,
-      iconColor: resolveThemeColor(context,
-          dark: MyntColors.primaryDark, light: MyntColors.primary),
-      metrics: [
-        {'label': 'Available balance', 'value': '₹$availableBalance'},
-        {'label': 'Total credits', 'value': '₹$totalCredits'},
-        {'label': 'Margin used', 'value': '₹$marginUsed'},
-      ],
-      showPositiveNegative: false,
-      onViewDetails: () {
-        if (WebNavigationHelper.isAvailable) {
-          WebNavigationHelper.navigateTo(Routes.fundscreen);
-        }
-      },
-    );
+    return [
+      {'label': 'Available Margin', 'value': '₹$availableBalance'},
+      {'label': 'Capital', 'value': '₹$totalCredits'},
+      {'label': 'Used', 'value': '₹$marginUsed'},
+    ];
   }
 
-  Widget _buildCard({
-    required BuildContext context,
-    required String title,
-    required IconData icon,
-    required Color iconColor,
-    required List<Map<String, String>> metrics,
-    String? summary,
-    int positiveCount = 0,
-    int negativeCount = 0,
-    bool showPositiveNegative = true,
-    required VoidCallback onViewDetails,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.card,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header with title and icon
-          Row(
-            children: [
-              Row(
-                children: [
-                  Text(
-                    title,
-                    style: MyntWebTextStyles.head(
-                      context,
-                      darkColor: MyntColors.textPrimaryDark,
-                      lightColor: MyntColors.textPrimary,
-                      fontWeight: MyntFonts.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Metrics grid - responsive based on card width, no fixed aspect ratio
-          LayoutBuilder(
-            builder: (ctx, constraints) {
-              // Calculate responsive metrics grid columns
-              final cardWidth = constraints.maxWidth;
-              int metricsColumns;
-
-              if (cardWidth >= 600) {
-                // Wide cards: 4 columns (original)
-                metricsColumns = 4;
-              } else if (cardWidth >= 400) {
-                // Medium cards: 2 columns, 2 rows
-                metricsColumns = 2;
-              } else {
-                // Narrow cards: 2 columns
-                metricsColumns = 2;
-              }
-
-              // Use Wrap instead of GridView to allow natural sizing
-              return Wrap(
-                spacing: 8,
-                runSpacing: 12,
-                children: List.generate(
-                  metrics.length,
-                  (index) {
-                    final metric = metrics[index];
-                    return SizedBox(
-                      width: (cardWidth - (8 * (metricsColumns - 1))) /
-                          metricsColumns,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            metric['label'] ?? '',
-                            style: MyntWebTextStyles.para(
-                              context,
-                              darkColor: MyntColors.textSecondaryDark,
-                              lightColor: MyntColors.textSecondary,
-                              fontWeight: MyntFonts.semiBold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  metric['value'] ?? '0.00',
-                                  style: MyntWebTextStyles.bodySmall(
-                                    context,
-                                    darkColor: MyntColors.textPrimaryDark,
-                                    lightColor: MyntColors.textPrimary,
-                                    fontWeight: MyntFonts.semiBold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              if (metric['percent'] != null) ...[
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    metric['percent']!,
-                                    style: MyntWebTextStyles.bodySmall(
-                                      context,
-                                      darkColor: MyntColors.textSecondaryDark,
-                                      lightColor: MyntColors.textSecondary,
-                                      fontWeight: MyntFonts.semiBold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-          // Summary and buttons
-          if (summary != null || showPositiveNegative) ...[
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (summary != null)
-                  Expanded(
-                    child: Text(
-                      summary,
-                      style: MyntWebTextStyles.para(
-                        context,
-                        darkColor: MyntColors.textSecondaryDark,
-                        lightColor: MyntColors.textSecondary,
-                        fontWeight: MyntFonts.semiBold,
-                      ),
-                    ),
-                  ),
-                if (showPositiveNegative) ...[
-                  if (summary != null) const SizedBox(width: 12),
-                  _buildPillButton(
-                    context,
-                    '$positiveCount Positive',
-                    Icons.arrow_upward,
-                    resolveThemeColor(context,
-                        dark: MyntColors.profitDark, light: MyntColors.profit),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildPillButton(
-                    context,
-                    '$negativeCount Negative',
-                    Icons.arrow_downward,
-                    resolveThemeColor(context,
-                        dark: MyntColors.lossDark, light: MyntColors.loss),
-                  ),
-                ],
-              ],
-            ),
-          ],
-          // View details link
-          const SizedBox(height: 10),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: onViewDetails,
-              child: Text(
-                'View details',
-                style: MyntWebTextStyles.para(
-                  context,
-                  darkColor: MyntColors.primaryDark,
-                  lightColor: MyntColors.primary,
-                  fontWeight: MyntFonts.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPillButton(
-      BuildContext context, String label, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: MyntWebTextStyles.para(
-              context,
-              color: color,
-              fontWeight: MyntFonts.semiBold,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(icon, size: 14, color: color),
-        ],
-      ),
-    );
+  Widget _buildPortfolioFooter(BuildContext context) {
+    return const SizedBox.shrink();
   }
 
   Widget _buildTopIndicesSection(
       BuildContext context, IndexListProvider indexProvider) {
     // Use topIndicesForDashboard (8 specific indices for dashboard)
-    final indexValues = indexProvider.topIndicesForDashboard?.indValues;
-    final hasIndices = indexValues != null && indexValues.isNotEmpty;
+    final allIndexValues =
+        indexProvider.topIndicesForDashboard?.indValues ?? [];
+    final indexValues = allIndexValues.take(5).toList();
+    final hasIndices = indexValues.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header with title and navigation arrows
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Title with icons
-            Row(
-              children: [
-                Text(
-                  'Top indices',
-                  style: MyntWebTextStyles.head(
-                    context,
-                    darkColor: MyntColors.textPrimaryDark,
-                    lightColor: MyntColors.textPrimary,
-                    fontWeight: MyntFonts.bold,
-                  ),
-                ),
-              ],
+            Text(
+              'Indices',
+              style: MyntWebTextStyles.head(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.bold,
+              ),
             ),
-            // Navigation arrows
-            Row(
-              children: [
-                // Left arrow button
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        _scrollIndices(-200);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: shadcn.Theme.of(context).colorScheme.card,
-                          border: Border.all(
-                            color: shadcn.Theme.of(context).colorScheme.border,
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.arrow_back_ios,
-                            size: 14,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                    ),
+            const SizedBox(width: 12),
+            // "See all indices" link moved near the title
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () async {
+                  await _showAllIndicesBottomSheet(context, indexProvider);
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: shadcn.Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withOpacity(0.0),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary),
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Right arrow button
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        _scrollIndices(200);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: shadcn.Theme.of(context).colorScheme.card,
-                          border: Border.all(
-                            color: shadcn.Theme.of(context).colorScheme.border,
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 14,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         // Index cards - horizontal scrollable
         if (hasIndices)
           SizedBox(
-            height: 140, // Fixed height for index cards
+            height: 100, // Fixed height for index cards
             child: SingleChildScrollView(
               controller: _indexScrollController,
               scrollDirection: Axis.horizontal,
@@ -788,25 +709,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               ),
             ),
           ),
-        const SizedBox(height: 12),
-        // "See all indices" link
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-            onTap: () async {
-              await _showAllIndicesBottomSheet(context, indexProvider);
-            },
-            child: Text(
-              'See all indices',
-              style: MyntWebTextStyles.para(
-                context,
-                darkColor: MyntColors.primaryDark,
-                lightColor: MyntColors.primary,
-                fontWeight: MyntFonts.bold,
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -1151,7 +1053,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                       }
                     },
                     child: Text(
-                      'See all',
+                      // 'See all',
+                      '',
                       style: MyntWebTextStyles.para(
                         context,
                         darkColor: MyntColors.primaryDark,
@@ -1450,44 +1353,30 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
         },
         child: Container(
           width: 180, // Fixed width for all cards
-          height: 125, // Fixed height for all cards
-          padding: const EdgeInsets.all(16),
+          height: 100, // Fixed height for all cards
+          padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
             color: _isHovered
                 ? shadcn.Theme.of(context).colorScheme.muted
                 : shadcn.Theme.of(context).colorScheme.card,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: shadcn.Theme.of(context).colorScheme.border,
-              width: 1,
-            ),
+            borderRadius: BorderRadius.circular(4),
+            // border: Border.all(
+            //   color: shadcn.Theme.of(context).colorScheme.border,
+            //   width: 1,
+            // ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Index name with underline
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.indexItem.idxname?.toUpperCase() ?? "",
-                    style: MyntWebTextStyles.body(
-                      context,
-                      darkColor: MyntColors.textPrimaryDark,
-                      lightColor: MyntColors.textPrimary,
-                      fontWeight: MyntFonts.bold,
-                    ),
-                  ),
-                  Container(
-                    margin: const EdgeInsets.only(top: 4, bottom: 8),
-                    height: 1,
-                    width: 30,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                  ),
-                ],
+              Text(
+                widget.indexItem.idxname?.toUpperCase() ?? "",
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                  fontWeight: MyntFonts.semiBold,
+                ),
               ),
               // Price and change section
               Column(
@@ -1499,10 +1388,10 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                     style: MyntWebTextStyles.body(
                       context,
                       color: changeColor, // Profit/loss color for LTP
-                      fontWeight: MyntFonts.semiBold,
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   // Change and percentage - textPrimary color
                   Row(
                     children: [
@@ -1512,7 +1401,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                           context,
                           darkColor: MyntColors.textPrimaryDark,
                           lightColor: MyntColors.textPrimary,
-                          fontWeight: MyntFonts.semiBold,
+                          fontWeight: MyntFonts.medium,
                         ),
                       ),
                       Text(
@@ -1521,7 +1410,7 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
                           context,
                           darkColor: MyntColors.textPrimaryDark,
                           lightColor: MyntColors.textPrimary,
-                          fontWeight: MyntFonts.semiBold,
+                          fontWeight: MyntFonts.medium,
                         ),
                       ),
                     ],

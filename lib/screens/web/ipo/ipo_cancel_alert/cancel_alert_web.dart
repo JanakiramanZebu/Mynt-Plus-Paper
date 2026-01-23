@@ -1,15 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
-
 import '../../../../models/ipo_model/ipo_order_book_model.dart';
 import '../../../../models/ipo_model/ipo_place_order_model.dart';
 import '../../../../provider/iop_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 
 class IpoCancelAlert extends ConsumerStatefulWidget {
   final IpoOrderBookModel ipocancel;
@@ -25,141 +21,97 @@ class _IpoCancelAlertState extends ConsumerState<IpoCancelAlert> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
-    final symbol = widget.ipocancel.symbol ?? '';
-
     return Dialog(
-      backgroundColor:
-          theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: SizedBox(
+      backgroundColor: Colors.transparent,
+      child: Container(
         width: 400,
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+            // Close button (Top Right)
+            Align(
+              alignment: Alignment.topRight,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.of(context).pop(false),
+                  child: Icon(
+                    Icons.close,
+                    size: 24,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
                   ),
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+
+            // Text Content
+            const SizedBox(height: 12),
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                text: 'Are you sure you want to \ncancel this ',
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                ).copyWith(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 18,
+                ),
                 children: [
-                  Text(
-                    'Cancel Order',
-                    style: WebTextStyles.dialogTitle(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.15)
-                          : Colors.black.withOpacity(.15),
-                      highlightColor: theme.isDarkMode
-                          ? Colors.white.withOpacity(.08)
-                          : Colors.black.withOpacity(.08),
-                      onTap: () => Navigator.of(context).pop(false),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          Icons.close,
-                          size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
-                        ),
-                      ),
+                  TextSpan(
+                    text: 'IPO order?',
+                    style: MyntWebTextStyles.title(
+                      context,
+                    ).copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
                     ),
                   ),
                 ],
               ),
             ),
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                    top: 0, bottom: 20, left: 20, right: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(
-                        child: Text(
-                          'Are you sure you want to cancel the (${symbol.toUpperCase()} order)?',
-                          textAlign: TextAlign.center,
-                          style: WebTextStyles.dialogContent(
-                            isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textPrimary
-                                : WebColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.error
-                              : WebColors.error,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(5),
-                            splashColor: Colors.white.withOpacity(0.2),
-                            highlightColor: Colors.white.withOpacity(0.1),
-                            onTap: _isCancelling
-                                ? null
-                                : () => _handleCancelOrder(context),
-                            child: Center(
-                              child: _isCancelling
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Cancel',
-                                      style: WebTextStyles.buttonMd(
-                                        isDarkTheme: theme.isDarkMode,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+
+            // Button
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: TextButton(
+                onPressed:
+                    _isCancelling ? null : () => _handleCancelOrder(context),
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF0037B7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
+                child: _isCancelling
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Delete',
+                        style: MyntWebTextStyles.buttonMd(
+                          context,
+                          color: Colors.white,
+                        ).copyWith(fontSize: 16),
+                      ),
               ),
             ),
           ],

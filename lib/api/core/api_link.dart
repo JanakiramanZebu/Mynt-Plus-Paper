@@ -123,6 +123,7 @@ class ApiLinks {
 // Logout
 
   String get logout => '$goMyntURL/Logout';
+  String get deskLogout => 'https://rekycbe.mynt.in/autho/desklogout';
 
 // Local Server ---------
 

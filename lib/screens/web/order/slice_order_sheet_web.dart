@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 
 import '../../../models/marketwatch_model/scrip_info.dart';
+import '../market_watch/tv_chart/chart_iframe_guard.dart';
 import '../../../models/order_book_model/place_order_model.dart';
 import '../../../provider/order_input_provider.dart';
 import '../../../provider/order_provider.dart';
@@ -29,6 +33,7 @@ class SliceOrderSheetWeb extends StatefulWidget {
   final TextEditingController mktProtCtrl;
   final int lotSize;
   final bool isBracketOrderEnabled;
+  final VoidCallback? onClose;
 
   const SliceOrderSheetWeb({
     super.key,
@@ -49,13 +54,148 @@ class SliceOrderSheetWeb extends StatefulWidget {
     required this.mktProtCtrl,
     required this.lotSize,
     required this.isBracketOrderEnabled,
+    this.onClose,
   });
+
+  // Static overlay entry to track current slice order overlay
+  static OverlayEntry? _currentOverlayEntry;
+
+  /// Shows the slice order sheet as an overlay (above place order screen)
+  static void showAsOverlay({
+    required BuildContext context,
+    required ScripInfoModel scripInfo,
+    required bool isBuy,
+    required int quantity,
+    required int frezQty,
+    required int reminder,
+    required bool isAmo,
+    required String orderType,
+    required String priceType,
+    required String ordPrice,
+    required String validityType,
+    required TextEditingController stopLossCtrl,
+    required TextEditingController targetCtrl,
+    required TextEditingController discQtyCtrl,
+    required TextEditingController triggerPriceCtrl,
+    required TextEditingController mktProtCtrl,
+    required int lotSize,
+    required bool isBracketOrderEnabled,
+  }) {
+    // Close existing slice order overlay if one is already open
+    if (_currentOverlayEntry != null) {
+      try {
+        _currentOverlayEntry!.remove();
+      } catch (e) {
+        // Entry might already be removed
+      }
+      _currentOverlayEntry = null;
+    }
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+
+    late OverlayEntry overlayEntry;
+    overlayEntry = OverlayEntry(
+      builder: (overlayContext) => Material(
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            // Semi-transparent barrier
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {}, // Prevent tap from dismissing
+                child: Container(color: const Color(0x80000000)),
+              ),
+            ),
+            // Dialog content centered
+            Center(
+              child: SliceOrderSheetWeb(
+                scripInfo: scripInfo,
+                isBuy: isBuy,
+                quantity: quantity,
+                frezQty: frezQty,
+                reminder: reminder,
+                isAmo: isAmo,
+                orderType: orderType,
+                priceType: priceType,
+                ordPrice: ordPrice,
+                validityType: validityType,
+                stopLossCtrl: stopLossCtrl,
+                targetCtrl: targetCtrl,
+                discQtyCtrl: discQtyCtrl,
+                triggerPriceCtrl: triggerPriceCtrl,
+                mktProtCtrl: mktProtCtrl,
+                lotSize: lotSize,
+                isBracketOrderEnabled: isBracketOrderEnabled,
+                onClose: () {
+                  overlayEntry.remove();
+                  _currentOverlayEntry = null;
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    _currentOverlayEntry = overlayEntry;
+    overlay.insert(overlayEntry);
+  }
+
+  /// Closes the current slice order overlay if open
+  static void closeOverlay() {
+    if (_currentOverlayEntry != null) {
+      try {
+        _currentOverlayEntry!.remove();
+      } catch (e) {
+        // Entry might already be removed
+      }
+      _currentOverlayEntry = null;
+    }
+  }
 
   @override
   State<SliceOrderSheetWeb> createState() => _SliceOrderSheetWebState();
 }
 
 class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
+  // Disable all chart iframes to prevent cursor bleeding
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
@@ -64,20 +204,40 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
       final orderInput = ref.watch(ordInputProvider);
 
       return Dialog(
-        backgroundColor: theme.isDarkMode 
-            ? WebDarkColors.surface 
+        backgroundColor: theme.isDarkMode
+            ? WebDarkColors.surface
             : WebColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
-        child: PopScope(
-          canPop: !orders.orderloader,
-          onPopInvoked: (didPop) {
-            if (!didPop && orders.orderloader) {
-              return;
-            }
-          },
-          child: Container(
+        child: PointerInterceptor(
+          child: MouseRegion(
+            cursor: SystemMouseCursors.basic,
+            onEnter: (_) {
+              ChartIframeGuard.acquire();
+              _disableAllChartIframes();
+            },
+            onHover: (_) {
+              _disableAllChartIframes();
+            },
+            onExit: (_) {
+              ChartIframeGuard.release();
+              _enableAllChartIframes();
+            },
+            child: Listener(
+              onPointerMove: (_) {
+                _disableAllChartIframes();
+              },
+              child: GestureDetector(
+                onTap: () {},
+                child: PopScope(
+                  canPop: !orders.orderloader,
+                  onPopInvoked: (didPop) {
+                    if (!didPop && orders.orderloader) {
+                      return;
+                    }
+                  },
+                  child: Container(
             width: 450,
             constraints: const BoxConstraints(maxHeight: 600),
             child: Column(
@@ -123,7 +283,13 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                               : Colors.black.withOpacity(.08),
                           onTap: orders.orderloader
                               ? null
-                              : () => Navigator.of(context).pop(),
+                              : () {
+                                  if (widget.onClose != null) {
+                                    widget.onClose!();
+                                  } else {
+                                    Navigator.of(context).pop();
+                                  }
+                                },
                           child: Padding(
                             padding: const EdgeInsets.all(6),
                             child: Icon(
@@ -273,6 +439,10 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                   ),
                 ),
               ],
+            ),
+          ),
+                ),
+              ),
             ),
           ),
         ),

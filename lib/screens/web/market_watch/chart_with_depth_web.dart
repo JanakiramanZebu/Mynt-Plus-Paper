@@ -96,14 +96,18 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
 
     if (oldWidget.wlValue.token != widget.wlValue.token ||
         oldWidget.wlValue.exch != widget.wlValue.exch) {
+      // Clear fundamental data immediately when scrip changes to prevent stale data
+      ref.read(marketWatchProvider).clearFundamentalData();
+
       // Reset depth subscription for new scrip when scrip changes
       // Delay provider modification until after build phase completes
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final mw = ref.read(marketWatchProvider);
-          // If on Overview tab, re-subscribe to depth for the new scrip
+          // Only show depth on Overview tab (index 0), hide on all other tabs
           final isOverviewTab = (_tabController?.index ?? 0) == 0;
-          if (isOverviewTab || mw.isDepthVisible) {
+          if (isOverviewTab) {
+            // Overview tab: show depth with new scrip data
             mw.setIsDepthVisibleWeb(
               true,
               context: context,
@@ -111,6 +115,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
               token: widget.wlValue.token,
               tsym: widget.wlValue.tsym,
             );
+          } else {
+            // Chart/Options/Stock Report tabs: hide depth
+            mw.setIsDepthVisibleWeb(false, context: context);
           }
         }
       });
@@ -853,43 +860,43 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 );
                               },
                             ),
-                            const Spacer(),
-                            // Basket mode icon
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.rippleDark,
-                                  light: MyntColors.rippleLight,
-                                ),
-                                highlightColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.highlightDark,
-                                  light: MyntColors.highlightLight,
-                                ),
-                                onTap: () {
-                                  _toggleBasketModeCallback?.call();
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(
-                                    _isBasketMode
-                                        ? Icons.shopping_basket
-                                        : Icons.shopping_basket_outlined,
-                                    size: 18,
-                                    color: _isBasketMode
-                                        ? MyntColors.primary
-                                        : resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.iconDark,
-                                            light: MyntColors.icon,
-                                          ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                            // const Spacer(),
+                            // // Basket mode icon
+                            // Material(
+                            //   color: Colors.transparent,
+                            //   child: InkWell(
+                            //     customBorder: const CircleBorder(),
+                            //     splashColor: resolveThemeColor(
+                            //       context,
+                            //       dark: MyntColors.rippleDark,
+                            //       light: MyntColors.rippleLight,
+                            //     ),
+                            //     highlightColor: resolveThemeColor(
+                            //       context,
+                            //       dark: MyntColors.highlightDark,
+                            //       light: MyntColors.highlightLight,
+                            //     ),
+                            //     onTap: () {
+                            //       _toggleBasketModeCallback?.call();
+                            //     },
+                            //     child: Padding(
+                            //       padding: const EdgeInsets.all(8.0),
+                            //       child: Icon(
+                            //         _isBasketMode
+                            //             ? Icons.shopping_basket
+                            //             : Icons.shopping_basket_outlined,
+                            //         size: 18,
+                            //         color: _isBasketMode
+                            //             ? MyntColors.primary
+                            //             : resolveThemeColor(
+                            //                 context,
+                            //                 dark: MyntColors.iconDark,
+                            //                 light: MyntColors.icon,
+                            //               ),
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
                             // const SizedBox(width: 4),
                             // // Search icon
                             // Material(

@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/screens/web/order/order_confirmation_screen_web.dart';
+import 'package:mynt_plus/screens/web/order/slice_order_sheet_web.dart';
 import 'package:public_ip_address/public_ip_address.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -1119,8 +1120,14 @@ class OrderProvider extends DefaultChangeNotifier {
         // Update order book
         fetchOrderBook(context, true);
 
-        Navigator.pop(context);
-        Navigator.pop(context);
+        // Close the slice order dialog/overlay
+        if (kIsWeb) {
+          // On web, slice order uses Overlay, so close it using the static method
+          SliceOrderSheetWeb.closeOverlay();
+        } else {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        }
 
         // Navigate to order confirmation screen with all sliced orders
         if (context.mounted) {
