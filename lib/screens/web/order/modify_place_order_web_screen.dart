@@ -2464,7 +2464,10 @@ class _ModifyPlaceOrderScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 2),
+          Row(children: [
           headerTitleText("Trigger", theme),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          ],),
           const SizedBox(height: 10),
           SizedBox(
               height: 40,
@@ -2526,11 +2529,14 @@ class _ModifyPlaceOrderScreenState
           prcType == "SL-LMT" ? const SizedBox(height: 10) : Container(),
           if (widget.modifyOrderArgs.sPrdtAli == "BO" &&
               widget.modifyOrderArgs.bpprc != null) ...[
+            Row(children: [
             headerTitleText("Target", theme),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          ],),
             const SizedBox(height: 10),
             SizedBox(
                 height: 40,
-                width: 150,
+                width: 200,
                 child: CustomTextFormField(
                     fillColor: theme.isDarkMode
                         ? colors.darkGrey
@@ -2583,11 +2589,14 @@ class _ModifyPlaceOrderScreenState
           if ((widget.modifyOrderArgs.sPrdtAli == "CO" ||
                   widget.modifyOrderArgs.sPrdtAli == "BO") &&
               widget.modifyOrderArgs.blprc != null) ...[
+            Row(children: [
             headerTitleText("Stoploss", theme),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          ],),
             const SizedBox(height: 10),
             SizedBox(
                 height: 40,
-                width: 150,
+                width: 200,
                 child: CustomTextFormField(
                     fillColor: theme.isDarkMode
                         ? colors.darkGrey
