@@ -12,7 +12,8 @@ import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 
 class MFCAGRCAL extends StatefulWidget {
-  const MFCAGRCAL({super.key});
+  final VoidCallback? onBack;
+  const MFCAGRCAL({super.key, this.onBack});
 
   @override
   State<MFCAGRCAL> createState() => _MFCAGRCALState();
@@ -120,7 +121,17 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            leading: const CustomBackBtn(),
+            leading: widget.onBack != null
+                ? IconButton(
+                    onPressed: widget.onBack,
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode
+                          ? colors.darkiconcolor
+                          : colors.iconColor,
+                    ),
+                  )
+                : const CustomBackBtn(),
             title: TextWidget.titleText(
               text: "CAGR Calculator",
               theme: isDarkMode,

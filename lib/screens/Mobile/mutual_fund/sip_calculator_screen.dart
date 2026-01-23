@@ -12,7 +12,8 @@ import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 
 class MFSIPSCREEN extends StatefulWidget {
-  const MFSIPSCREEN({super.key});
+  final VoidCallback? onBack;
+  const MFSIPSCREEN({super.key, this.onBack});
 
   @override
   State<MFSIPSCREEN> createState() => _MFSIPSCREENState();
@@ -120,7 +121,17 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            leading: const CustomBackBtn(),
+            leading: widget.onBack != null
+                ? IconButton(
+                    onPressed: widget.onBack,
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: theme.isDarkMode
+                          ? colors.darkiconcolor
+                          : colors.iconColor,
+                    ),
+                  )
+                : const CustomBackBtn(),
             title: TextWidget.titleText(
               text: "SIP Calculator",
               color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,

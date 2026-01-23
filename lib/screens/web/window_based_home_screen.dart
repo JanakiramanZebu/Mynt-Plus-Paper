@@ -46,12 +46,17 @@ import 'trade_action_screen_web.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 import '../Mobile/mutual_fund/mf_main_screen.dart';
+import '../Mobile/mutual_fund/mf_all_best_funds.dart';
+import '../Mobile/mutual_fund/mf_top_category_list.dart';
+import '../Mobile/mutual_fund/mf_nfo_screen.dart';
 import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
 import 'customizable_split_home_screen.dart' show ScreenType;
 
 /// Window-based home screen using WindowNavigator from shadcn_flutter
@@ -376,6 +381,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const MfmainScreen();
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
+      case ScreenType.mfNfo:
+        return const MFNFOScreen();
       case ScreenType.bond:
         return const BondsScreen(isBonds: true);
       case ScreenType.scripDepthInfo:
@@ -418,6 +425,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return TradeActionScreenWeb(
           key: const ValueKey('tradeAction'),
         );
+      case ScreenType.mfCollection:
+        return const SaveTaxesScreen(title: "Collections");
+      case ScreenType.mfCategory:
+        return const MFCategoryListScreen(title: "Categories");
+      case ScreenType.sipCalculator:
+        return const MFSIPSCREEN();
+      case ScreenType.cagrCalculator:
+        return const MFCAGRCAL();
     }
   }
 
@@ -439,6 +454,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Mutual Fund';
       case ScreenType.ipo:
         return 'IPO';
+      case ScreenType.mfNfo:
+        return 'New Fund Offerings';
       case ScreenType.bond:
         return 'Bonds';
       case ScreenType.scripDepthInfo:
@@ -455,6 +472,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Settings';
       case ScreenType.tradeAction:
         return 'Trade Action';
+      case ScreenType.mfCollection:
+        return 'Collections';
+      case ScreenType.mfCategory:
+        return 'Categories';
+      case ScreenType.sipCalculator:
+        return 'SIP Calculator';
+      case ScreenType.cagrCalculator:
+        return 'CAGR Calculator';
     }
   }
 

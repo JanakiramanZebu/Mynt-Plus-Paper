@@ -1,21 +1,14 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/custom_drag_handler.dart';
 // import '../../sharedWidget/loader_ui.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
-import '../../../routes/route_names.dart';
-import '../../../sharedWidget/snack_bar.dart';
-import '../../../models/mf_model/mutual_fundmodel.dart';
-import 'mf_stock_detail_screen.dart';
+import 'redeem_new_bottomsheet.dart';
 
 class mfholdsinlepage extends StatefulWidget {
   const mfholdsinlepage({super.key});
@@ -36,21 +29,6 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
   }
 
-  MutualFundList _convertHoldingToMutualFundList(dynamic holdingData) {
-    return MutualFundList(
-      iSIN: holdingData.iSIN,
-      schemeCode: holdingData.sCHEMECODE,
-      schemeName: holdingData.name,
-      name: holdingData.name,
-      mfsearchnamename: holdingData.name,
-      aMCCode: holdingData.iSIN?.substring(0, 4), // Extract AMC code from ISIN
-      type: "Equity", // Default type
-      subtype: "Growth", // Default subtype
-      aUM: "0", // Default AUM
-      nETASSETVALUE: holdingData.curNav,
-      minimumRedemptionQty: holdingData.minRedemptionQty,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,51 +41,57 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           mfdata.holssinglelist!.isNotEmpty &&
           mfdata.holssinglelist![0] != null;
 
-      return SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-            border: Border(
-              top: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-              left: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-              right: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-            ),
-          ),
-          child: DraggableScrollableSheet(
-            expand: false,
-            initialChildSize: 0.88,
-            maxChildSize: 0.88,
-            builder: (context, scrollController) {
-              return Scaffold(
-                backgroundColor: Colors.transparent,
-                body: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  controller: scrollController,
-                  child: hasData
-                      ? _buildHoldingDetails(context, theme, mfdata)
-                      : const Center(child: NoDataFound(
-                          secondaryEnabled: false,
-                        )),
+      return Scaffold(
+        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        body: Column(
+          children: [
+            // Header with close button and title
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: theme.isDarkMode 
+                        ? colors.darkColorDivider 
+                        : colors.colorDivider,
+                    width: 1,
+                  ),
                 ),
-              );
-            },
-          ),
+              ),
+              child: Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Icon(
+                      Icons.close,
+                      size: 24,
+                      color: theme.isDarkMode 
+                          ? colors.textPrimaryDark 
+                          : colors.textPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  TextWidget.titleText(
+                    text: "Holding Details",
+                    color: theme.isDarkMode 
+                        ? colors.textPrimaryDark 
+                        : colors.textPrimaryLight,
+                    fw: 1,
+                    theme: theme.isDarkMode,
+                  ),
+                ],
+              ),
+            ),
+            
+            // Content
+            Expanded(
+              child: hasData
+                  ? _buildHoldingDetails(context, theme, mfdata)
+                  : const Center(child: NoDataFound(
+                      secondaryEnabled: false,
+                    )),
+            ),
+          ],
         ),
       );
     });
@@ -118,280 +102,168 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
       BuildContext context, ThemesProvider theme, MFProvider mfdata) {
     final data = mfdata.holssinglelist![0];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // const SizedBox(width: 0),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const CustomDragHandler(),
-                              Material(
-                                color: Colors.transparent,
-                                // shape: const CircleBorder(),
-                                child: InkWell(
-                                  splashColor: theme.isDarkMode
-                                      ? colors.splashColorDark
-                                      : colors.splashColorLight,
-                                  highlightColor: theme.isDarkMode
-                                      ? colors.highlightDark
-                                      : colors.highlightLight,
-                                  onTap: () async {
-                                    await Future.delayed(
-                                        const Duration(milliseconds: 150));
-                                    try {
-                                      final isin = data.iSIN;
-                                      if (isin != null) {
-                                        mfdata.loaderfun();
-                                        await mfdata.fetchFactSheet(isin);
-                                        mfdata.fetchmatchisan(isin);
-
-                                        showModalBottomSheet(
-                                          isScrollControlled: true,
-                                          shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(16),
-                                              topRight: Radius.circular(16),
-                                            ),
-                                          ),
-                                          isDismissible: true,
-                                          enableDrag: false,
-                                          useSafeArea: true,
-                                          context: context,
-                                          builder: (context) => Container(
-                                              padding: EdgeInsets.only(
-                                                bottom: MediaQuery.of(context)
-                                                    .viewInsets
-                                                    .bottom,
-                                              ),
-                                              child: MFStockDetailScreen(
-                                                  mfStockData:
-                                                      _convertHoldingToMutualFundList(
-                                                          data))),
-                                        );
-                                      } else {
-                                        successMessage(
-                                                context,
-                                                "Missing fund information");
-                                      }
-                                    } catch (e) {
-                                      successMessage(context,
-                                              "Error loading fund details: ${e.toString()}");
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.7,
-                                          child: TextWidget.titleText(
-                                              // align: TextAlign.start,
-                                              text: data.name ?? "Unknown Fund",
-                                              color: theme.isDarkMode
-                                                  ? colors.textPrimaryDark
-                                                  : colors.textPrimaryLight,
-                                              textOverflow:
-                                                  TextOverflow.ellipsis,
-                                              theme: theme.isDarkMode,
-                                              maxLines: 2,
-                                              fw: 1),
-                                        ),
-                                        SvgPicture.asset(
-                                          assets.rightarrowcur,
-                                          width: 20,
-                                          height: 20,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                  ],
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fund name with logo
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Fund logo
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(
+                    "https://v3.mynt.in/mfapi/static/images/mf/${data.iSIN?.substring(0, 4) ?? 'default'}.png",
+                  ),
+                  backgroundColor: Colors.grey.shade200,
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          Row(
-            children: [
-              Expanded(
-                flex: 6,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      mfdata.recdemevalu();
-                      Navigator.pushNamed(
-                        context,
-                        Routes.redeemNewBottomSheet,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      backgroundColor: theme.isDarkMode
-                          ? colors.textSecondaryDark.withOpacity(0.6)
-                          : colors.btnBg,
-                      // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                      side: theme.isDarkMode
-                          ? null
-                          : BorderSide(
-                              color: colors.primaryLight,
-                              width: 1,
-                            ),
-                      minimumSize: const Size(double.infinity, 45), // height: 48
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: TextWidget.subText(
-                        align: TextAlign.right,
-                        text: "Redeem",
-                        color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.primaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 2),
+                const SizedBox(width: 12),
+                // Fund name
+                Expanded(
+                  child: TextWidget.subText(
+                    text: data.name ?? "Unknown Fund",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    maxLines: 2,
+                    fw: 1,
                   ),
                 ),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
+
+            // Redeem button (outlined)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  mfdata.recdemevalu();
+                  Navigator.of(context, rootNavigator: true).pop();
+                  
+                  // Show redeem screen as 30% width right-side panel
+                  showGeneralDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    barrierLabel: 'Dismiss',
+                    barrierColor: Colors.transparent,
+                    transitionDuration: const Duration(milliseconds: 300),
+                    pageBuilder: (dialogContext, animation, secondaryAnimation) {
+                      return Align(
+                        alignment: Alignment.centerRight,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Container(
+                            width: MediaQuery.of(dialogContext).size.width * 0.3, // 30% width
+                            height: MediaQuery.of(dialogContext).size.height,
+                            decoration: BoxDecoration(
+                              color: Theme.of(dialogContext).scaffoldBackgroundColor,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(-2, 0),
+                                ),
+                              ],
+                            ),
+                            child: const RedemptionBottomScreenNew(),
+                          ),
+                        ),
+                      );
+                    },
+                    transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(1, 0),
+                          end: Offset.zero,
+                        ).animate(CurvedAnimation(
+                          parent: animation,
+                          curve: Curves.easeOutCubic,
+                        )),
+                        child: child,
+                      );
+                    },
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(
+                    color: theme.isDarkMode 
+                        ? colors.primaryDark 
+                        : colors.primaryLight,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                child: TextWidget.subText(
+                  text: "Redeem",
+                  color: theme.isDarkMode 
+                      ? colors.primaryDark 
+                      : colors.primaryLight,
+                  fw: 2,
+                  theme: theme.isDarkMode,
+                ),
               ),
-            ],
-          ),
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          rowOfInfoData(
-            "Returns",
-            "${_formatValue(data.profitLoss)} (${(double.tryParse(data.changeprofitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
-            theme,
-            valueColor: _getColorBasedOnValue(data.profitLoss, theme),
-          ),
+            rowOfInfoData(
+              "Returns",
+              "${_formatValue(data.profitLoss)} (${(double.tryParse(data.changeprofitLoss ?? '0') ?? 0).toStringAsFixed(2)}%)",
+              theme,
+              valueColor: _getColorBasedOnValue(data.profitLoss, theme),
+            ),
 
-          // Units and Avg Price
-          rowOfInfoData(
-            "Units",
-            "${data.avgQty ?? '0'}",
-            theme,
-          ),
+            // Units and Avg Price
+            rowOfInfoData(
+              "Units",
+              "${data.avgQty ?? '0'}",
+              theme,
+            ),
 
-          rowOfInfoData(
-            "Avg Price",
-            "${data.avgNav ?? '0'}",
-            theme,
-          ),
+            rowOfInfoData(
+              "Avg Price",
+              "${data.avgNav ?? '0'}",
+              theme,
+            ),
 
-          rowOfInfoData(
-            "NAV",
-            "${data.curNav ?? '0'}",
-            theme,
-          ),
+            rowOfInfoData(
+              "NAV",
+              "${data.curNav ?? '0'}",
+              theme,
+            ),
 
-          // Pledged Units and Current NAV
-          rowOfInfoData(
-            "Pledged Units",
-            // "${data.pLEDGEQTY ?? '0'}",
-            "0",
+            // Pledged Units and Current NAV
+            rowOfInfoData(
+              "Pledged Units",
+              "0",
+              theme,
+            ),
 
-            theme,
-          ),
+            rowOfInfoData(
+              "Current",
+              "${data.currentValue ?? '0'}",
+              theme,
+            ),
 
-          rowOfInfoData(
-            "Current",
-            "${data.currentValue ?? '0'}",
-            theme,
-          ),
-
-          // Invested and Current Value
-          rowOfInfoData(
-            "Invested",
-            "${data.investedValue ?? '0'}",
-            theme,
-          ),
-
-          // const SizedBox(height: 12),
-          // Divider(
-          //   color: theme.isDarkMode
-          //       ? colors.darkColorDivider
-          //       : colors.colorDivider,
-          //   thickness: 1.0,
-          // ),
-
-          // const Spacer(),
-
-          // Redeem button
-          // SafeArea(
-          //   child: Row(
-          //     children: [
-          //       Expanded(
-          //         flex: 6,
-          //         child: SizedBox(
-          //           width: double.infinity,
-          //           child: ElevatedButton(
-          //             onPressed: () {
-          //               _showBottomSheet(
-          //                 context,
-          //                 RedemptionBottomScreenNew(),
-          //               );
-          //               mfdata.recdemevalu();
-          //             },
-          //             style: ElevatedButton.styleFrom(
-          //               backgroundColor: Colors.white,
-          //               foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-          //               side: const BorderSide(
-          //                 color: Color.fromARGB(255, 0, 0, 0),
-          //                 width: 1,
-          //               ),
-          //               shape: RoundedRectangleBorder(
-          //                 borderRadius: BorderRadius.circular(20),
-          //               ),
-          //             ),
-          //             child: const Text(
-          //               "Redeem",
-          //               style: TextStyle(
-          //                 color: Color.fromARGB(255, 0, 0, 0),
-          //                 fontSize: 14,
-          //                 fontWeight: FontWeight.w600,
-          //               ),
-          //             ),
-          //           ),
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // ),
-        ],
+            // Invested and Current Value
+            rowOfInfoData(
+              "Invested",
+              "${data.investedValue ?? '0'}",
+              theme,
+            ),
+          ],
+        ),
       ),
     );
   }

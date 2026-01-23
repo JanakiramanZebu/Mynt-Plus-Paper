@@ -1,22 +1,30 @@
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+
 import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/transcation_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
-import '../../../sharedWidget/list_divider.dart';
 import 'mf_stock_detail_screen.dart';
+import 'mf_order_screen.dart';
+
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+
 
 class MFCategoryListScreen extends ConsumerStatefulWidget {
   final String title;
-  const MFCategoryListScreen({super.key, required this.title});
+  final VoidCallback? onBack;
+  const MFCategoryListScreen({super.key, required this.title, this.onBack});
 
   @override
   ConsumerState<MFCategoryListScreen> createState() =>
@@ -27,9 +35,16 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late ScrollController _scrollController;
+  late ScrollController _horizontalScrollController;
   int selectedTab = 0;
   List<String> tabTitles = [];
-  String selectedReturn = '3Y Returns'; // Track selected return period
+  // String selectedReturn = '3Y Returns'; // Removed
+
+  // Sorting state
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
 
   @override
   void initState() {
@@ -62,7 +77,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
       _tabController =
           TabController(length: tabTitles.length, vsync: this, initialIndex: 0);
       _scrollController = ScrollController();
+      _horizontalScrollController = ScrollController();
       selectedTab = 0;
+
 
       _tabController.animation!.addListener(() {
         final newIndex = _tabController.animation!.value.round();
@@ -95,6 +112,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _horizontalScrollController.dispose();
+    _hoveredRowIndex.dispose();
+
     super.dispose();
   }
 
@@ -147,7 +167,7 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         leadingWidth: 41,
         centerTitle: false,
         titleSpacing: 6,
-        leading: const CustomBackBtn(),
+        leading: CustomBackBtn(onBack: widget.onBack),
         shadowColor: const Color(0xffECEFF3),
         title: TextWidget.titleText(
           text: widget.title,
@@ -165,239 +185,206 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
               ? const Center(child: NoDataFound(
                 secondaryEnabled: false,
               ))
-              : Column(
-                  children: [
-                    // Custom tabs section
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: theme.isDarkMode
-                                ? colors.darkColorDivider
-                                : colors.colorDivider,
-                            width: 0,
-                          ),
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        physics: const ClampingScrollPhysics(),
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: List.generate(
-                            tabTitles.length,
-                            (tab) => Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                splashColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.05),
-                                highlightColor: theme.isDarkMode
-                                    ? Colors.white.withOpacity(0.01)
-                                    : Colors.black.withOpacity(0.01),
-                                onTap: () {
-                                  setState(() {
-                                    selectedTab = tab;
-                                  });
-                                  _tabController.animateTo(tab);
-                                  // Update the selected chip in your provider
-                                  mfData.changetitle(tabTitles[tab]);
-                                  mfData.fetchcatdatanew(
-                                      widget.title, tabTitles[tab]);
-                                  // Scroll to center the active tab
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    _scrollToActiveTab(tab);
-                                  });
-                                },
-                                child: _tabConstruct(
-                                  tabTitles[tab],
-                                  theme,
-                                  tab,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Header row for "Funds" and "3Y Returns"
-                    Container(
-                      padding: const EdgeInsets.only(
-                          left: 12, bottom: 8, top: 12, right: 8),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextWidget.paraText(
-                            align: TextAlign.right,
-                            text: 'Funds',
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            fw: 0,
-                          ),
-                          PopupMenuButton<String>(
-                            color: theme.isDarkMode
-                                ? colors.searchBgDark
-                                : colors.searchBg,
-                            onSelected: (value) {
-                              setState(() {
-                                selectedReturn = value;
-                              });
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                  value: '1Y Returns',
-                                  child: TextWidget.paraText(
-                                    text: '1Y Returns',
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  )),
-                              PopupMenuItem(
-                                  value: '3Y Returns',
-                                  child: TextWidget.paraText(
-                                    text: '3Y Returns',
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  )),
-                              PopupMenuItem(
-                                  value: '5Y Returns',
-                                  child: TextWidget.paraText(
-                                    text: '5Y Returns',
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  )),
-                            ],
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                        splashColor: theme.isDarkMode
-                                            ? Colors.white.withOpacity(0.15)
-                                            : Colors.black.withOpacity(0.15),
-                                        highlightColor: theme.isDarkMode
-                                            ? Colors.white.withOpacity(0.08)
-                                            : Colors.black.withOpacity(0.08),
-                                        borderRadius: BorderRadius.circular(8),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: TextWidget.paraText(
-                                    align: TextAlign.right,
-                                    text: selectedReturn,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    // TabBarView with fund lists
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: tabTitles.map((tabTitle) {
-                          return _buildFundList(
-                              tabTitle, mfData, theme, context, selectedReturn);
-                        }).toList(),
-                      ),
-                    ),
-                  ],
+              : _buildFundList(
+                  tabTitles.isNotEmpty ? tabTitles[selectedTab] : '', 
+                  mfData, 
+                  theme, 
+                  context
                 ),
         ),
       ),
     );
   }
 
-  Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
-    final isActive = selectedTab == tab;
-    final double tabWidth = _calculateTabWidth(title);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: tabWidth,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          child: TextWidget.subText(
-            text: title,
-            color: isActive
-                ? theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight
-                : colors.textSecondaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            theme: theme.isDarkMode,
-            fw: isActive ? 2 : 2,  
-          ),
-        ),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          height: 2,
-          width: isActive ? (tabWidth - 12) : 0, // Dynamic underline width
-          margin: const EdgeInsets.only(top: 6),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? colors.secondaryDark
-                : colors.secondaryLight,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-      ],
+  // Standardized text style helpers
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
     );
   }
 
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
+  // Builds a cell with hover detection
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    VoidCallback? onTap, // Added onTap
+    bool alignRight = false,
+  }) {
+    // Add extra horizontal padding for first and last columns
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 4;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 12, 12, 12);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(12, 12, 16, 12);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 12);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            // final isRowHovered = hoveredIndex == rowIndex;
+
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: cellPadding,
+                color: null,
+                alignment: alignRight ? Alignment.topRight : null,
+                child: child,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 4;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+               if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex)
+               const SizedBox(width: 4),
+              Text(
+                label,
+                style: _getHeaderStyle(context),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
   Widget _buildFundList(String selectedTab, dynamic mfData,
-      ThemesProvider theme, BuildContext context, String selectedReturn) {
+      ThemesProvider theme, BuildContext context) {
     // Sort the list based on selected return period
     final sortedList = mfData.catnewlist?.toList();
 
-    if (sortedList != null) {
-      sortedList.sort((a, b) {
-        String? aValue, bValue;
-
-        switch (selectedReturn) {
-          case '1Y Returns':
-            aValue = a.s1Year;
-            bValue = b.s1Year;
-            break;
-          case '3Y Returns':
-            aValue = a.s3Year;
-            bValue = b.s3Year;
-            break;
-          case '5Y Returns':
-            aValue = a.s5Year;
-            bValue = b.s5Year;
-            break;
-          default:
-            aValue = a.s3Year;
-            bValue = b.s3Year;
-        }
-
-         return (double.tryParse(bValue ?? "0") ?? 0)
-            .compareTo(double.tryParse(aValue ?? "0") ?? 0);// Sort in descending order
-      });
+    if (sortedList != null && sortedList.isNotEmpty) {
+      if (_sortColumnIndex != null) {
+        sortedList.sort((a, b) {
+            if (a == null || b == null) return 0;
+          int compareResult = 0;
+          switch (_sortColumnIndex) {
+            case 0: // Name
+              compareResult = (a.name ?? '').compareTo(b.name ?? '');
+              break;
+            case 1: // AUM
+              compareResult = (double.tryParse(a.aUM ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.aUM ?? '0') ?? 0);
+              break;
+            case 2: // 1Y
+              compareResult = (double.tryParse(a.s1Year ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.s1Year ?? '0') ?? 0);
+              break;
+            case 3: // 3Y
+              compareResult = (double.tryParse(a.s3Year ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.s3Year ?? '0') ?? 0);
+              break;
+            case 4: // Min Invest
+              compareResult = (double.tryParse(a.minimumPurchaseAmount ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.minimumPurchaseAmount ?? '0') ?? 0);
+              break;
+          }
+          return _sortAscending ? compareResult : -compareResult;
+        });
+      }
     }
 
     if (sortedList == null || sortedList.isEmpty) {
@@ -406,167 +393,391 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
       ));
     }
 
-    return ListView.separated(
-      physics: const ClampingScrollPhysics(),
-      itemCount: sortedList.length,
-      separatorBuilder: (_, __) => const ListDivider(),
-      itemBuilder: (BuildContext context, int index) {
-        final item = sortedList[index];
-        if (item == null) return const SizedBox.shrink();
+    // Calculate widths - use equal spacing for data columns
+    const double dataColumnWidth = 160.0; // Increased width for all data columns to reduce fund name space
 
-        return _buildListItem(context, item, theme, mfData, selectedReturn);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate Fund name column width = screen width - other columns (4 data columns)
+        final fixedColumnsWidth = dataColumnWidth * 4;
+        final fundNameWidth = (constraints.maxWidth - 32 - fixedColumnsWidth).clamp(300.0, double.infinity);
+        
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Scrollbar(
+            controller: _horizontalScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController,
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth - 32),
+                 child: shadcn.Table(
+                  defaultRowHeight: const shadcn.FixedTableSize(80),
+                  columnWidths: {
+                    0: shadcn.FixedTableSize(fundNameWidth),
+                    1: const shadcn.FixedTableSize(dataColumnWidth), // AUM
+                    2: const shadcn.FixedTableSize(dataColumnWidth), // 1yr CAGR
+                    3: const shadcn.FixedTableSize(dataColumnWidth), // 3yr CAGR
+                    4: const shadcn.FixedTableSize(dataColumnWidth), // Min. Invest
+                  },
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                         buildHeaderCell('Fund name', 0),
+                         buildHeaderCell('AUM', 1, true),
+                         buildHeaderCell('1yr CAGR', 2, true),
+                         buildHeaderCell('3yr CAGR', 3, true),
+                         buildHeaderCell('Min. Invest', 4, true),
+                      ],
+                    ),
+                    ...sortedList.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final item = entry.value;
+                       if (item == null) return const shadcn.TableRow(cells: []);
+                       final amcCode = item.aMCCode ?? "default";
+
+                       // Define onTap function
+                       void onTap() async {
+                          try {
+                            mfData.loaderfun();
+                            if (item.iSIN != null) {
+                              await mfData.fetchFactSheet(item.iSIN);
+
+                              if (mfData.factSheetDataModel?.stat != "Not Ok") {
+                                Map<String, dynamic> jsonData = item.toJson();
+                                MutualFundList bInstance = MutualFundList.fromJson(jsonData);
+
+                                // Show as right side sheet
+                                showGeneralDialog(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  barrierLabel: 'Dismiss',
+                                  barrierColor: Colors.transparent,
+                                  transitionDuration: const Duration(milliseconds: 300),
+                                  pageBuilder: (context, animation, secondaryAnimation) {
+                                    return Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: Container(
+                                          width: MediaQuery.of(context).size.width * 0.25,
+                                          height: MediaQuery.of(context).size.height,
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).scaffoldBackgroundColor,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.2),
+                                                blurRadius: 10,
+                                                offset: const Offset(-2, 0),
+                                              ),
+                                            ],
+                                          ),
+                                          child: MFStockDetailScreen(mfStockData: bInstance),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  transitionBuilder: (context, animation, secondaryAnimation, child) {
+                                    return SlideTransition(
+                                      position: Tween<Offset>(
+                                        begin: const Offset(1, 0),
+                                        end: Offset.zero,
+                                      ).animate(CurvedAnimation(
+                                        parent: animation,
+                                        curve: Curves.easeOutCubic,
+                                      )),
+                                      child: child,
+                                    );
+                                  },
+                                );
+                              } else {
+                                    successMessage(context, "No Single Page Data");
+                                final jsondata = MutualFundList.fromJson(item.toJson());
+                                Navigator.pushNamed(context, Routes.mforderScreen,
+                                    arguments: jsondata);
+                                mfData.orderchangetitle("One-time");
+                                mfData.chngOrderType("One-time");
+                              }
+                            } else {
+                                  successMessage(context, "Missing fund information");
+                            }
+                          } catch (e) {
+                               // Error handling
+                          }
+                       }
+
+                      return shadcn.TableRow(
+                        cells: [
+                          // Fund name column with tags and hover buttons
+                          buildCellWithHover(
+                            rowIndex: index,
+                            columnIndex: 0,
+                            onTap: onTap,
+                            child: ValueListenableBuilder<int?>(
+                              valueListenable: _hoveredRowIndex,
+                              builder: (context, hoveredIndex, _) {
+                                final isHovered = hoveredIndex == index;
+                                return Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 14,
+                                      backgroundImage: NetworkImage(
+                                        "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            item.name ?? '--',
+                                            style: _getTextStyle(context),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  item.type ?? 'Equity',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: resolveThemeColor(context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.withOpacity(0.1),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  item.subType ?? item.schemeType ?? '',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: resolveThemeColor(context,
+                                                        dark: MyntColors.textSecondaryDark,
+                                                        light: MyntColors.textSecondary),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Buy/SIP buttons on hover
+                                    if (isHovered) ...[
+                                      _buildActionButton('Buy', MyntColors.primary, () => _handleOrder(item, 'One-time', mfData), filled: true),
+                                      const SizedBox(width: 6),
+                                      _buildActionButton('SIP', MyntColors.primary, () => _handleOrder(item, 'SIP', mfData), filled: false),
+                                    ],
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          // AUM column
+                          buildCellWithHover(
+                            rowIndex: index,
+                            columnIndex: 1,
+                            alignRight: true,
+                            onTap: onTap,
+                            child: Text(
+                              _formatAUM(item.aUM),
+                              style: _getTextStyle(context),
+                            ),
+                          ),
+                          // 1yr CAGR column
+                          buildCellWithHover(
+                            rowIndex: index,
+                            columnIndex: 2,
+                            alignRight: true,
+                            onTap: onTap,
+                            child: Text(_formatReturns(item.s1Year),
+                                style: _getTextStyle(context)),
+                          ),
+                          // 3yr CAGR column
+                          buildCellWithHover(
+                            rowIndex: index,
+                            columnIndex: 3,
+                            alignRight: true,
+                            onTap: onTap,
+                            child: Text(
+                              _formatCAGR(item.s3Year),
+                              style: _getTextStyle(context,
+                                  color: _getReturnColor(context, item.s3Year)),
+                            ),
+                          ),
+                          // Min. Invest column
+                          buildCellWithHover(
+                            rowIndex: index,
+                            columnIndex: 4,
+                            alignRight: true,
+                            onTap: onTap,
+                            child: Text(
+                              '₹${item.minimumPurchaseAmount ?? '500.00'}',
+                              style: _getTextStyle(context),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+
+            ),
+          ),
+        ),
+      );
       },
     );
   }
 
-  Widget _buildListItem(BuildContext context, dynamic item,
-      ThemesProvider theme, dynamic mfData, String selectedReturn) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-          splashColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.15)
-              : Colors.black.withOpacity(0.15),
-          highlightColor: theme.isDarkMode
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.08),
-          onLongPress: () async {
-            try {
-              if (item.iSIN != null) {
-                await mfData.fetchMFWatchlist(
-                  item.iSIN,
-                  item.isAdd ?? false ? "delete" : "add",
-                  context,
-                  false,
-                  "watch",
-                );
-              }
-            } catch (e) {
-              successMessage(
-                  context, "Error updating watchlist: ${e.toString()}");
-            }
-          },
-          onTap: () async {
-            try {
-              mfData.loaderfun();
-              if (item.iSIN != null) {
-                await mfData.fetchFactSheet(item.iSIN);
-
-                if (mfData.factSheetDataModel?.stat != "Not Ok") {
-                  Map<String, dynamic> jsonData = item.toJson();
-                  MutualFundList bInstance = MutualFundList.fromJson(jsonData);
-
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                    ),
-                    isDismissible: true,
-                    enableDrag: false,
-                    useSafeArea: true,
-                    context: context,
-                    builder: (context) => Container(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        child: MFStockDetailScreen(mfStockData: bInstance)),
-                  );
-                  // Navigator.pushNamed(
-                  //   context,
-                  //   Routes.mfStockDetail,
-                  //   arguments: bInstance,
-                  // );
-                } else {
-                      successMessage(context, "No Single Page Data");
-                  final jsondata = MutualFundList.fromJson(item.toJson());
-                  Navigator.pushNamed(context, Routes.mforderScreen,
-                      arguments: jsondata);
-                  mfData.orderchangetitle("One-time");
-                  mfData.chngOrderType("One-time");
-                }
-              } else {
-                    successMessage(context, "Missing fund information");
-              }
-            } catch (e) {
-              // successMessage(
-              //     context, "Error loading fund details: ${e.toString()}");
-            }
-          },
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-            dense: false,
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(
-                "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
-              ),
-            ),
-            title: Container(
-              margin: EdgeInsets.only(
-                right: MediaQuery.of(context).size.width * 0.1,
-              ),
-              child: TextWidget.subText(
-                text: item.name ?? "Unknown Scheme",
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 0,
-              ),
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: TextWidget.paraText(
-                text: "${item.type ?? "Unknown"}",
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                theme: theme.isDarkMode,
-                fw: 0,
-              ),
-            ),
-            trailing: TextWidget.subText(
-              text: _formatReturns(_getReturnValue(item, selectedReturn)),
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 0,
-            ),
-          )),
+  Widget _buildActionButton(String label, Color color, VoidCallback onTap, {bool filled = true}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: filled ? color : Colors.transparent,
+          border: filled ? null : Border.all(color: color, width: 1.5),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: filled ? Colors.white : color,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 
-  String _getReturnValue(dynamic item, String selectedReturn) {
-    switch (selectedReturn) {
-      case '1Y Returns':
-        return item.s1Year ?? "0.00";
-      case '3Y Returns':
-        return item.s3Year ?? "0.00";
-      case '5Y Returns':
-        return item.s5Year ?? "0.00";
-      default:
-        return item.s3Year ?? "0.00";
+  Future<void> _handleOrder(dynamic item, String orderType, dynamic mfData) async {
+    // Show loader while fetching dependencies
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Fetch bank details
+      await ref.read(transcationProvider).fetchfundbank(context);
+
+      if (!context.mounted) return;
+      Navigator.pop(context); // Dismiss loader
+
+      final isin = item.iSIN;
+      final schemeCode = item.schemeCode;
+
+      // Set up SIP if applicable
+      if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
+        mfData.invertfun(isin, schemeCode, context);
+      }
+
+      // Pre-fill amount based on order type
+      if (orderType == "One-time") {
+        String amt = item.minimumPurchaseAmount ?? "0";
+        mfData.invAmt.text = amt.split('.').first;
+      } else {
+        String amt = item.minimumPurchaseAmount ?? "0";
+        mfData.installmentAmt.text = amt.split('.').first;
+      }
+
+      // Convert item to MutualFundList
+      Map<String, dynamic> jsonData = item.toJson();
+      // Ensure fSchemeName is set from name if not present
+      if (jsonData['f_scheme_name'] == null && jsonData['name'] != null) {
+        jsonData['f_scheme_name'] = jsonData['name'];
+      }
+      MutualFundList mfItem = MutualFundList.fromJson(jsonData);
+
+      if (context.mounted) {
+        mfData.chngOrderType(orderType);
+        mfData.orderchangetitle(orderType);
+        
+        // Get screen dimensions
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = screenSize.width * 0.30; // 30% width
+        final dialogHeight = screenSize.height * 0.60; // 60% height
+        
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: MFOrderScreen(mfData: mfItem),
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Dismiss loader if still showing
+        successMessage(context, "Error: ${e.toString()}");
+      }
     }
   }
 
   String _formatReturns(String? returns) {
-    if (returns == null || returns.isEmpty) {
+    if (returns == null || returns.isEmpty || returns == "0.0") {
       return "0.00%";
     }
     return "$returns%";
   }
 
-  Color _getReturnColor(String? returns) {
+  String _formatCAGR(String? returns) {
+    return _formatReturns(returns);
+  }
+
+  String _formatAUM(String? aum) {
+    if (aum == null || aum.isEmpty) return "--";
+    try {
+      double value = double.tryParse(aum) ?? 0;
+      return value.toStringAsFixed(2);
+    } catch (e) {
+      return aum;
+    }
+  }
+
+  Color _getReturnColor(BuildContext context, String? returns) {
     if (returns == null || returns.isEmpty) {
       return Colors.grey;
     }
 
     try {
       final value = double.parse(returns);
-      return value >= 0 ? Colors.green : Colors.red;
+      if (value > 0) {
+        return resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit);
+      }
+      if (value < 0) {
+        return resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
+      }
+      return Colors.grey;
     } catch (e) {
       // If parsing fails, return a neutral color
       return Colors.grey;

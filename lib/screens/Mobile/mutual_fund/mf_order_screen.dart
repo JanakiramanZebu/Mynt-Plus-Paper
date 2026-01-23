@@ -1405,23 +1405,27 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                     // } else if (mfOrder.paymentName != "UPI") {
                                     // mfPlaceorder(widget.mfData, mfOrder, context);
                                     // }
-                                    showModalBottomSheet(
+                                    showDialog(
                                       context: context,
-                                      isScrollControlled: true,
-                                      isDismissible:
+                                      barrierDismissible:
                                           mfOrder.ispaymentcalled != true,
-                                      enableDrag: false,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(15),
-                                        ),
-                                      ),
                                       builder: (context) => WillPopScope(
                                         onWillPop: () async =>
                                             mfOrder.ispaymentcalled != true,
-                                        child: MfOrderBottomsheet(
-                                          data: widget.mfData,
-                                          condval : 'reinit',
+                                        child: Dialog(
+                                          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                          child: SizedBox(
+                                            width: MediaQuery.of(context).size.width >= 1100
+                                                ? MediaQuery.of(context).size.width * 0.40
+                                                : MediaQuery.of(context).size.width * 0.90,
+                                            child: MfOrderBottomsheet(
+                                              data: widget.mfData,
+                                              condval: 'reinit',
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -1748,61 +1752,41 @@ void CallUpiNetbanking(BuildContext context, MFProvider mfOrder,
 }
 
 _showBottomSheet(BuildContext context, Widget bottomSheet) {
-  showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      useSafeArea: true,
-      isDismissible: true,
-      backgroundColor: Colors.white,
+  showDialog(
       context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: bottomSheet));
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
+          child: Container(
+              width: MediaQuery.of(context).size.width * 0.3,
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: bottomSheet)));
 }
 
 void _showCalendarDialog(
     BuildContext context, dynamic theme, MFProvider mfOrder) {
-  showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      useSafeArea: true,
-      isDismissible: true,
-      backgroundColor: Colors.white,
+  showDialog(
       context: context,
-      isScrollControlled: true,
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return SafeArea(
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
           child: Container(
             decoration: BoxDecoration(
               color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-               border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark.withOpacity(0.5)
+                      : colors.colorWhite),
             ),
+            width: MediaQuery.of(context).size.width * 0.3,
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,

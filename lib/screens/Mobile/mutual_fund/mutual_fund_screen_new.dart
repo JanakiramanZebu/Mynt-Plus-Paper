@@ -11,7 +11,21 @@ import '../../../sharedWidget/list_divider.dart';
 
 class MutualFundNewScreen extends ConsumerStatefulWidget {
   final TabController tabController;
-  const MutualFundNewScreen({super.key, required this.tabController});
+  final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
+  final Function(String)? onCollectionTap; // Callback when collection is tapped
+  final Function(String)? onCategoryTap; // Callback when category is tapped
+  final VoidCallback? onSipCalculatorTap;
+  final VoidCallback? onCagrCalculatorTap;
+
+  const MutualFundNewScreen({
+    super.key,
+    required this.tabController,
+    this.onNfoTap,
+    this.onCollectionTap,
+    this.onCategoryTap,
+    this.onSipCalculatorTap,
+    this.onCagrCalculatorTap,
+  });
 
   @override
   ConsumerState<MutualFundNewScreen> createState() =>
@@ -190,89 +204,336 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           // buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData, theme),
           // const SizedBox(height: 16),
 
-          Container(
-            padding: const EdgeInsets.only(left: 8, right: 8,  bottom: 8),
-            height: 35,
-            child: TabBar(
-              // physics: const NeverScrollableScrollPhysics(),
-              controller: _tabController, 
-              tabAlignment: TabAlignment.start,
-              isScrollable: true,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicatorColor: colors.colorWhite,
-              indicator: BoxDecoration(
-                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(5),
-              ),
-              unselectedLabelColor:  theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-               labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 2, color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
-               unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 2,
-                            
-                            letterSpacing: -0.28),
-              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-            tabs: const [
-                Tab(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 0, bottom: 0),
-                    child: Text("Collections"),
-                  ),
-                ),
-                Tab(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        left: 10, right: 10, top: 0, bottom: 0),
-                    child: Text("Categories"),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Tab Bar View
-          SizedBox(
-            height: 450 ,
-            child: TabBarView(
-              physics: const NeverScrollableScrollPhysics(),
-              controller: _tabController,
+          // Two-column layout for Collections and Categories
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                buildCollectionsTab(mfData, theme),
-                buildCategoriesTab(mfData, theme),
+                // Left column - Collections
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Collections Header
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: TextWidget.subText(
+                          text: "Collections",
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 0,
+                          theme: theme.isDarkMode,
+                        ),
+                      ),
+                      // Collections List
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : const Color(0xFFECEDEE),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: mfData.bestMFListStaticnew
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            return Column(
+                              children: [
+                                _buildCollectionRow(
+                                  icon: item['image'] ??
+                                      'assets/explore/default.svg',
+                                  title: item['title'] ?? '',
+                                  subtitle: item['subtitle'] ?? '',
+                                  theme: theme,
+                                  onTap: () {
+                                    mfData.changetitle(item['title']);
+                                    if (widget.onCollectionTap != null) {
+                                      widget.onCollectionTap!(item['title']);
+                                    } else {
+                                      Navigator.pushNamed(
+                                        context,
+                                        Routes.bestMfScreen,
+                                        arguments: item['title'],
+                                      );
+                                    }
+                                  },
+                                ),
+                                if (index !=
+                                    mfData.bestMFListStaticnew.length - 1)
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark.withOpacity(0.3)
+                                        : const Color(0xFFECEDEE),
+                                  ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(width: 32),
+                
+                // Right column - Categories
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Categories Header
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: TextWidget.subText(
+                          text: "Collections",
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                          fw: 0,
+                          theme: theme.isDarkMode,
+                        ),
+                      ),
+                      // Categories List
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : const Color(0xFFECEDEE),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: mfData.mFCategoryTypesStatic
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+                            return Column(
+                              children: [
+                                _buildCategoryRow(
+                                  icon: item['dataIcon'] ?? '',
+                                  title: item['title'] ?? '',
+                                  subtitle: item['description'] ?? '',
+                                  theme: theme,
+                                  onTap: () {
+                                    final chips = item['sub'] as List<dynamic>?;
+                                    if (chips?.isNotEmpty ?? false) {
+                                      final firstChip =
+                                          chips?[0]?.toString() ?? "";
+                                      mfData.fetchcatdatanew(
+                                          item['title'], firstChip);
+                                      mfData.changetitle(firstChip);
+                                      if (widget.onCategoryTap != null) {
+                                        widget.onCategoryTap!(item['title']);
+                                      } else {
+                                        Navigator.pushNamed(
+                                            context, Routes.mfCategoryList,
+                                            arguments: item['title']);
+                                      }
+                                    }
+                                  },
+                                ),
+                                if (index !=
+                                    mfData.mFCategoryTypesStatic.length - 1)
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: theme.isDarkMode
+                                        ? colors.textSecondaryDark.withOpacity(0.3)
+                                        : const Color(0xFFECEDEE),
+                                  ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.titleText(
-                    // align: TextAlign.right,
-                    text: 'Calculator',
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-                const SizedBox(height: 10),
-                sipcaltor(context, mfData, theme),
-                const ListDivider(),
-                cargrcalss(context, mfData, theme),
-                const ListDivider(),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget.titleText(
+                        text: 'Calculator',
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 1,
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : const Color(0xFFECEDEE),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            sipcaltor(context, mfData, theme),
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark.withOpacity(0.3)
+                                  : const Color(0xFFECEDEE),
+                            ),
+                            cargrcalss(context, mfData, theme),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                const Expanded(child: SizedBox()), // Empty column to match the 2-column layout spacing
               ],
             ),
           ),
           // const SizedBox(height: 80),
         ],
+      ),
+    );
+  }
+
+  // Collection item row widget
+  Widget _buildCollectionRow({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required ThemesProvider theme,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      // borderRadius: BorderRadius.circular(10), // Removed as it is inside a card
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SvgPicture.asset(
+              icon,
+              height: 24,
+              width: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: title,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                  const SizedBox(height: 4),
+                  TextWidget.captionText(
+                    text: subtitle,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    maxLines: 2,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Category item row widget
+  Widget _buildCategoryRow({
+    required String icon,
+    required String title,
+    required String subtitle,
+    required ThemesProvider theme,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      // borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (icon.isNotEmpty)
+              Image.asset(
+                icon,
+                height: 24,
+                width: 24,
+              ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: title,
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                  const SizedBox(height: 4),
+                  TextWidget.captionText(
+                    text: subtitle,
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    maxLines: 2,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -454,7 +715,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           final firstChip = chips?[0]?.toString() ?? "";
           mfData.fetchcatdatanew(title, firstChip);
           mfData.changetitle(firstChip);
-          Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
+          if (widget.onCategoryTap != null) {
+            widget.onCategoryTap!(title); // Pass the main category title
+          } else {
+            Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
+          }
         }
       },
       child: ListTile(
@@ -497,7 +762,12 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   Widget nfoCard(BuildContext context, MFProvider mf, ThemesProvider theme) {
     return GestureDetector(
       onTap: () async {
-        Navigator.pushNamed(context, Routes.mfnfoscreen);
+        // If callback is provided (web), use it to open in panel 2
+        if (widget.onNfoTap != null) {
+          widget.onNfoTap!();
+        } else {
+          Navigator.pushNamed(context, Routes.mfnfoscreen);
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16.0),
@@ -540,7 +810,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        TextWidget.subText(
+                        TextWidget.paraText(
                             align: TextAlign.left,
                             text: "New Fund Offerings",
                             color: theme.isDarkMode
@@ -611,7 +881,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   Widget sipcaltor(BuildContext context, MFProvider mf, ThemesProvider theme) {
     return InkWell(
       onTap: () async {
-        Navigator.pushNamed(context, Routes.mfsipcalscreen);
+        if (widget.onSipCalculatorTap != null) {
+          widget.onSipCalculatorTap!();
+        } else {
+          Navigator.pushNamed(context, Routes.mfsipcalscreen);
+        }
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -639,7 +913,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   Widget cargrcalss(BuildContext context, MFProvider mf, ThemesProvider theme) {
     return InkWell(
       onTap: () async {
-        Navigator.pushNamed(context, Routes.mfcagrcalss);
+        if (widget.onCagrCalculatorTap != null) {
+          widget.onCagrCalculatorTap!();
+        } else {
+          Navigator.pushNamed(context, Routes.mfcagrcalss);
+        }
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -714,14 +992,18 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
                         return InkWell(
                           onTap: () async {
-                            mfData.changetitle(
-                                mfData.bestMFListStaticnew[index]['title']);
-                            Navigator.pushNamed(
-                              context,
-                              Routes.bestMfScreen,
-                              arguments: mfData.bestMFListStaticnew[index]
-                                  ['title'],
-                            );
+                            final title = mfData.bestMFListStaticnew[index]['title'];
+                            mfData.changetitle(title);
+                            
+                            if (widget.onCollectionTap != null) {
+                              widget.onCollectionTap!(title);
+                            } else {
+                              Navigator.pushNamed(
+                                context,
+                                Routes.bestMfScreen,
+                                arguments: title,
+                              );
+                            }
                           },
                           child: ListTile(
                             minLeadingWidth: 25,

@@ -9,7 +9,7 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
-import '../../../sharedWidget/custom_drag_handler.dart';
+// import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
@@ -135,10 +135,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
             child: Container(
                decoration: BoxDecoration(
                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
+                  borderRadius: BorderRadius.circular(16),
             
                    border: Border(
                                     top: BorderSide(
@@ -266,17 +263,22 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     InkWell(
                                       onTap: () {
                                         // Navigate to mandate selection screen
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                MandateSelectionScreen(
-                                              currentMandateId: mfOrder.mandateId,
-                                              onMandateSelected:
-                                                  (String mandateId) {
-                                                mfOrder.chngMandate(mandateId);
-                                                Navigator.pop(context);
-                                              },
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => Dialog(
+                                            insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                            child: SizedBox(
+                                              width: MediaQuery.of(context).size.width >= 1100
+                                                  ? MediaQuery.of(context).size.width * 0.25
+                                                  : MediaQuery.of(context).size.width * 0.9,
+                                              child: MandateSelectionScreen(
+                                                currentMandateId: mfOrder.mandateId,
+                                                onMandateSelected: (String mandateId) {
+                                                  mfOrder.chngMandate(mandateId);
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
                                             ),
                                           ),
                                         );
@@ -385,12 +387,18 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       width: double.infinity,
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          showModalBottomSheet(
+                                          showDialog(
                                             context: context,
-                                            isScrollControlled: true,
-                                            backgroundColor: Colors.transparent,
                                             builder: (BuildContext context) {
-                                              return const CreateMandateDialogue();
+                                              return Dialog(
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                child: SizedBox(
+                                                  width: MediaQuery.of(context).size.width >= 1100
+                                                      ? MediaQuery.of(context).size.width * 0.25
+                                                      : MediaQuery.of(context).size.width * 0.9,
+                                                  child: const CreateMandateDialogue()
+                                                ),
+                                              );
                                             },
                                           );
                                         },
@@ -891,29 +899,23 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 }
                                               } else {
                                                 // ❌ Failure Case – show error bottom sheet
-                                                showModalBottomSheet(
+                                                showDialog(
                                                   context: context,
-                                                  isScrollControlled: true,
-                                                  isDismissible: false,
-                                                  enableDrag: false,
-                                                  shape:
-                                                      const RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.vertical(
-                                                            top: Radius.circular(
-                                                                15)),
-                                                  ),
+                                                  barrierDismissible: false,
                                                   builder: (context) =>
-                                                      WillPopScope(
-                                                    onWillPop: () async =>
-                                                        !mfOrder.ispaymentcalled,
-                                                    child: MfPaymentRespAlert(
-                                                      upiData: upiResponse.data!
-                                                          .toJson(),
-                                                      conditionval:
-                                                          'reinitiateerror',
-                                                    ),
-                                                  ),
+                                                      Dialog(
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                                        child: SizedBox(
+                                                          width: 400,
+                                                          child: WillPopScope(
+                                                            onWillPop: () async => !mfOrder.ispaymentcalled,
+                                                            child: MfPaymentRespAlert(
+                                                              upiData: upiResponse.data!.toJson(),
+                                                              conditionval: 'reinitiateerror',
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
                                                 );
                                               }
                                             }
@@ -940,22 +942,20 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     "Ok" ||
                                                 mfOrder.xsipOrderResponces?.stat ==
                                                     "Not_Ok") {
-                                              showModalBottomSheet(
+                                              showDialog(
                                                 context: context,
-                                                isScrollControlled: true,
-                                                enableDrag: false,
-                                                shape: const RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.vertical(
-                                                    top: Radius.circular(15),
-                                                  ),
-                                                ),
+                                                barrierDismissible: false,
                                                 builder: (context) =>
-                                                    MfPaymentRespAlert(
-                                                        upiData: mfOrder
-                                                            .xsipOrderResponces
-                                                            ?.toJson(),
-                                                        conditionval: ''),
+                                                    Dialog(
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                                      child: SizedBox(
+                                                        width: 400,
+                                                        child: MfPaymentRespAlert(
+                                                          upiData: mfOrder.xsipOrderResponces?.toJson(),
+                                                          conditionval: ''
+                                                        ),
+                                                      ),
+                                                    ),
                                               );
                                             }
                                           }
@@ -1017,92 +1017,66 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
   }
 
   showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
-    showModalBottomSheet(
-      enableDrag: false,
-      useSafeArea: true,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      backgroundColor: const Color(0xffffffff),
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-           decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-
-         
-        ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CustomDragHandler(),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(left: 16, bottom: 10),
-                child: TextWidget.titleText(
-                  text: 'Choose an bank:',
-                  theme: false,
-                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.3,
+            decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(16),
+             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+             border: Border.all(color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : Colors.transparent),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, bottom: 10),
+                  child: TextWidget.titleText(
+                    text: 'Choose an bank:',
+                    theme: false,
+                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    fw: 1,
+                  ),
                 ),
-              ),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: fund.bankdetails!.dATA!.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return InkWell(
-                    onTap: () {
-                      fund.bankselection(index);
-                      fund.setAccountslist(
-                          fund.bankdetails!.dATA![index][2].toString());
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: fund.bankdetails!.dATA!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return InkWell(
+                      onTap: () {
+                        fund.bankselection(index);
+                        fund.setAccountslist(
+                            fund.bankdetails!.dATA![index][2].toString());
 
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 15),
-                      color: fund.bankdetails!.dATA![index][1] == fund.bankname
-                          ? const Color(0xff999999).withOpacity(0.2)
-                          : Colors.transparent,
-                      child: TextWidget.subText(
-                        text:
-                            '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
-                        theme: theme.isDarkMode,
-                        fw: 0,
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 15),
+                        color: fund.bankdetails!.dATA![index][1] == fund.bankname
+                            ? const Color(0xff999999).withOpacity(0.2)
+                            : Colors.transparent,
+                        child: TextWidget.subText(
+                          text:
+                              '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                          theme: theme.isDarkMode,
+                          fw: 0,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: 10,
-              )
-            ],
+                    );
+                  },
+                ),
+                const SizedBox(
+                  height: 10,
+                )
+              ],
+            ),
           ),
         );
       },

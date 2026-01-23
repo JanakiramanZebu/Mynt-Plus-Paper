@@ -8,9 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
-import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_top_category_list.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
 
-import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
+
+
 // import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
@@ -32,15 +37,18 @@ import '../../../provider/iop_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/ledger_provider.dart';
 import '../../../provider/stocks_provider.dart';
+import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
+import '../../../res/global_state_text.dart';
+import '../../../sharedWidget/functions.dart';
 // import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
-import 'profile/profile_main_screen.dart';
+
 // import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
 // import '../Mobile/market_watch/tv_chart/webview_chart.dart';
@@ -53,7 +61,8 @@ import 'trade_action_screen_web.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
-import '../Mobile/mutual_fund/mf_main_screen.dart';
+
+import '../Mobile/mutual_fund/mf_nfo_screen.dart';
 import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
@@ -85,6 +94,8 @@ class _CustomizableSplitHomeScreenState
   // Arguments storage for panel-specific screens that require constructor params
   DepthInputArgs? _optionChainArgs;
   DepthInputArgs? _currentDepthArgs;
+  String? _currentCollectionTitle; // Title for MF Collection screen
+  String? _currentCategoryTitle; // Title for MF Category screen
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
 
@@ -93,6 +104,9 @@ class _CustomizableSplitHomeScreenState
 
   // Store initial tab index for trade action screen
   int? _tradeActionTabIndex;
+
+  // Track previous screen for each panel (for back navigation)
+  final Map<int, ScreenType?> _panelScreenHistory = {};
 
   // Cooldown for portfolio data fetching to prevent excessive API calls
   DateTime? _lastPortfolioFetch;
@@ -833,7 +847,7 @@ class _CustomizableSplitHomeScreenState
       child: Container(
         padding: const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             // Logo section
             RepaintBoundary(
@@ -844,6 +858,17 @@ class _CustomizableSplitHomeScreenState
                 fit: BoxFit.contain,
               ),
             ),
+            const SizedBox(width: 24),
+            // Primary actions
+            _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
+                () => _handleMutualFundTap()),
+            const SizedBox(width: 12),
+            _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
+                () => _handleIPOTap()),
+            const SizedBox(width: 12),
+            _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
+                () => _handleOptionZTap()),
+            
             const Spacer(),
             // Navigation screens
             _buildNavigationScreens(isDarkMode),
@@ -890,7 +915,7 @@ class _CustomizableSplitHomeScreenState
             padding:
                 const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 // Logo section
                 RepaintBoundary(
@@ -901,7 +926,45 @@ class _CustomizableSplitHomeScreenState
                     fit: BoxFit.contain,
                   ),
                 ),
+                const SizedBox(width: 24),
+                // Primary actions
+                _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
+                    () => _handleMutualFundTap()),
+                const SizedBox(width: 12),
+                _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
+                    () => _handleIPOTap()),
+                const SizedBox(width: 12),
+                _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
+                    () => _handleOptionZTap()),
+
                 const Spacer(),
+
+                // Balance / Funds
+                Consumer(builder: (context, ref, _) {
+                  final funds = ref.watch(fundProvider);
+                  final balance = funds.fundDetailModel?.avlMrg ?? "0.00";
+                  return InkWell(
+                    onTap: () => _handleFundsTap(),
+                    child: Row(
+                      children: [
+                        TextWidget.captionText(
+                          text: "Balance: ",
+                          theme: isDarkMode,
+                          color: isDarkMode ? Colors.grey : Colors.grey[600],
+                          fw: 0,
+                        ),
+                        TextWidget.subText(
+                          text: "₹${getFormatter(value: double.parse(balance), v4d: false, noDecimal: false)}",
+                          theme: isDarkMode,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fw: 1,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(width: 24),
+                
                 // Right side items: Navigation → Profile (contains swap, theme, switch account in dropdown) → Index slots
                 _buildNavigationScreens(isDarkMode),
                 const SizedBox(width: 20),
@@ -1238,6 +1301,12 @@ class _CustomizableSplitHomeScreenState
 
   // Build logo section for app bar
 
+  void _handleOptionZTap() async {
+    final funds = ref.read(fundProvider);
+    await funds.fetchHstoken(context);
+    await funds.openOptionZInNewTab();
+  }
+
   // Build navigation screens for app bar
   Widget _buildNavigationScreens(bool isDarkMode) {
     return Row(
@@ -1254,11 +1323,6 @@ class _CustomizableSplitHomeScreenState
         const SizedBox(width: 8),
         _buildNavItem('Orders', isDarkMode, ScreenType.orderBook,
             () => _handleOrderBookTap()),
-        const SizedBox(width: 8),
-        _buildNavItem(
-            'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
-        const SizedBox(width: 8),
-        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -1460,9 +1524,30 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.funds:
         return const _LazyFundScreen();
       case ScreenType.mutualFund:
-        return const MfmainScreen();
+        return MFExploreScreens(
+          onNfoTap: () {
+            // Show NFO screen in right panel (panel 2)
+            _showScreenInRightPanel(ScreenType.mfNfo);
+          },
+          onCollectionTap: (title) {
+            _showMfCollectionInPanel(title);
+          },
+          onCategoryTap: (title) {
+            _showMfCategoryInPanel(title);
+          },
+          onSipCalculatorTap: () {
+            _showScreenInRightPanel(ScreenType.sipCalculator);
+          },
+          onCagrCalculatorTap: () {
+            _showScreenInRightPanel(ScreenType.cagrCalculator);
+          },
+        );
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
+      case ScreenType.mfNfo:
+        return MFNFOScreen(
+          onBack: _goBackInRightPanel,
+        );
       case ScreenType.bond:
         return const BondsScreen(isBonds: true);
       case ScreenType.scripDepthInfo:
@@ -1512,6 +1597,24 @@ class _CustomizableSplitHomeScreenState
           key: ValueKey('tradeAction_$tabIndex'),
           initialTabIndex: tabIndex,
         );
+      case ScreenType.mfCollection:
+        return SaveTaxesScreen(
+          title: _currentCollectionTitle ?? "Collection",
+          onBack: _handleMfCollectionBack,
+        );
+      case ScreenType.mfCategory:
+        return MFCategoryListScreen(
+          title: _currentCategoryTitle ?? "Category",
+          onBack: _handleMfCategoryBack,
+        );
+      case ScreenType.sipCalculator:
+        return MFSIPSCREEN(
+          onBack: _goBackInRightPanel,
+        );
+      case ScreenType.cagrCalculator:
+        return MFCAGRCAL(
+          onBack: _goBackInRightPanel,
+        );
       // caEvent and cpAction removed
     }
   }
@@ -1534,6 +1637,8 @@ class _CustomizableSplitHomeScreenState
         return 'Mutual Fund';
       case ScreenType.ipo:
         return 'IPO';
+      case ScreenType.mfNfo:
+        return 'New Fund Offerings';
       case ScreenType.bond:
         return 'Bonds';
       case ScreenType.scripDepthInfo:
@@ -1550,6 +1655,15 @@ class _CustomizableSplitHomeScreenState
         return 'Settings';
       case ScreenType.tradeAction:
         return 'Trade Action';
+      case ScreenType.mfCollection:
+        return 'Collections';
+
+      case ScreenType.mfCategory:
+        return 'Categories';
+      case ScreenType.sipCalculator:
+        return 'SIP Calculator';
+      case ScreenType.cagrCalculator:
+        return 'CAGR Calculator';
       // caEvent and cpAction removed
     }
   }
@@ -1572,6 +1686,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.trending_up;
       case ScreenType.ipo:
         return Icons.public;
+      case ScreenType.mfNfo:
+        return Icons.card_giftcard;
       case ScreenType.bond:
         return Icons.account_balance;
       case ScreenType.scripDepthInfo:
@@ -1588,6 +1704,15 @@ class _CustomizableSplitHomeScreenState
         return Icons.settings;
       case ScreenType.tradeAction:
         return Icons.trending_up;
+      case ScreenType.mfCollection:
+        return Icons.collections_bookmark;
+
+      case ScreenType.mfCategory:
+        return Icons.category;
+      case ScreenType.sipCalculator:
+        return Icons.calculate;
+      case ScreenType.cagrCalculator:
+        return Icons.calculate;
       // caEvent and cpAction removed
     }
   }
@@ -1933,6 +2058,8 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.ipo:
         _handleIPOTap();
         break;
+      case ScreenType.mfNfo:
+        break;
       case ScreenType.bond:
         _handleBondTap();
         break;
@@ -1957,6 +2084,11 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.tradeAction:
         _handleTradeActionTap();
+        break;
+      case ScreenType.mfCollection:
+      case ScreenType.mfCategory:
+      case ScreenType.sipCalculator:
+      case ScreenType.cagrCalculator:
         break;
       // caEvent and cpAction removed
     }
@@ -2538,11 +2670,27 @@ class _CustomizableSplitHomeScreenState
   }
 
   void _handleMutualFundTap() {
-    final portfolio = ref.read(portfolioProvider);
-    portfolio.cancelTimer();
+    // Replace screen immediately for instant UI response
+    _replaceScreenInPanel(ScreenType.mutualFund);
 
-    // Unsubscribe positions when leaving dashboard/positions (non-blocking)
-    portfolio.requestWSPosition(context: context, isSubscribe: false);
+    // Allow UI to update first, then do background work
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.microtask(() {
+        if (!mounted) return;
+
+        final portfolio = ref.read(portfolioProvider);
+        portfolio.cancelTimer();
+
+        // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+        portfolio.requestWSPosition(context: context, isSubscribe: false);
+
+        // Call MF API methods to fetch data
+        ref.read(mfProvider).fetchnewMFBestList();
+        ref.read(mfProvider).fetchMFCategoryList("Z", "Z");
+        ref.read(mfProvider).fetchmfallcatnew();
+        ref.read(mfProvider).fetchmfNFO(context);
+      });
+    });
   }
 
   // Check if there are any screens available to add to a panel
@@ -3089,6 +3237,9 @@ class _CustomizableSplitHomeScreenState
       targetPanelIndex = 1;
     }
 
+    // Save current screen type for back navigation
+    _panelScreenHistory[targetPanelIndex] = _panels[targetPanelIndex].screenType;
+
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
       _panels[targetPanelIndex].screens = [screenType];
@@ -3096,6 +3247,64 @@ class _CustomizableSplitHomeScreenState
     });
 
     _saveLayout();
+  }
+
+  // Go back to previous screen in the right panel
+  void _goBackInRightPanel() {
+    if (_panels.length < 2) return;
+
+    // Find the non-watchlist panel
+    int targetPanelIndex = -1;
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+          (panel.screens.isNotEmpty &&
+              panel.screens.contains(ScreenType.watchlist));
+
+      if (!hasWatchlist) {
+        targetPanelIndex = i;
+        break;
+      }
+    }
+
+    if (targetPanelIndex == -1) {
+      targetPanelIndex = 1;
+    }
+
+    // Get the previous screen type
+    final previousScreen = _panelScreenHistory[targetPanelIndex];
+    if (previousScreen != null) {
+      setState(() {
+        _panels[targetPanelIndex].screenType = previousScreen;
+        _panels[targetPanelIndex].screens = [previousScreen];
+        _panels[targetPanelIndex].activeScreenIndex = 0;
+      });
+      // Clear history after going back
+      _panelScreenHistory.remove(targetPanelIndex);
+      _saveLayout();
+    }
+  }
+
+  // Show MF Collection in right panel
+  void _showMfCollectionInPanel(String title) {
+    _currentCollectionTitle = title;
+    _showScreenInRightPanel(ScreenType.mfCollection);
+  }
+
+  // Handle back navigation from MF Collection
+  void _handleMfCollectionBack() {
+    _goBackInRightPanel();
+  }
+
+  // Show MF Category in right panel
+  void _showMfCategoryInPanel(String title) {
+    _currentCategoryTitle = title;
+    _showScreenInRightPanel(ScreenType.mfCategory);
+  }
+
+  // Handle back navigation from MF Category
+  void _handleMfCategoryBack() {
+    _goBackInRightPanel();
   }
 
   void _showScreenInLeftPanel(ScreenType screenType) {
@@ -3469,6 +3678,12 @@ enum ScreenType {
   reports,
   settings,
   tradeAction,
+  mfNfo,
+  mfCollection,
+
+  mfCategory,
+  sipCalculator,
+  cagrCalculator,
 }
 
 // Hoverable navigation item widget

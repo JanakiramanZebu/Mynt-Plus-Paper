@@ -130,8 +130,13 @@ class MfSipCancelalert extends ConsumerWidget {
           ),
         ],
       ),
-      content: Column(
-        children: [
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width >= 1100
+            ? MediaQuery.of(context).size.width * 0.30
+            : MediaQuery.of(context).size.width * 0.90,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
           // Conditional UI based on action type
           if (message == 'sip') ...[
             Align(
@@ -184,6 +189,7 @@ class MfSipCancelalert extends ConsumerWidget {
             ),
           ]
         ],
+      ),
       ),
       actions: [
         Row(

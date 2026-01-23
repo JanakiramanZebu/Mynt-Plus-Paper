@@ -5,7 +5,8 @@ import '../../provider/thems.dart';
 import '../../res/res.dart';
 
 class CustomBackBtn extends ConsumerWidget {
-  const CustomBackBtn({super.key});
+  final VoidCallback? onBack;
+  const CustomBackBtn({this.onBack, super.key});
 
   @override
   Widget build(BuildContext context,WidgetRef ref) {
@@ -22,8 +23,12 @@ class CustomBackBtn extends ConsumerWidget {
                                               highlightColor: theme.isDarkMode
                                                   ? colors.highlightDark
                                                   : colors.highlightLight,
-                  onTap: () {                  
-                    Navigator.pop(context);
+                  onTap: () {
+                    if (onBack != null) {
+                      onBack!();
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                   child: Container(
                     width: 44, // Increased touch area
