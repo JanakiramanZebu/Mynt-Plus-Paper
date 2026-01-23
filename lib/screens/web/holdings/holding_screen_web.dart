@@ -53,6 +53,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
+  // WebSocket subscription for live holdings updates
+  StreamSubscription? _holdingsSocketSubscription;
+  DateTime _lastUpdate = DateTime.now();
+  static const Duration _updateInterval = Duration(milliseconds: 300);
+
   @override
   void initState() {
     super.initState();
@@ -69,10 +74,53 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         _mfSearchQuery.value = _mfSearchController.text;
       }
     });
+
+    // Set up WebSocket subscription for live holdings updates
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _setupHoldingsSocketSubscription();
+      }
+    });
+  }
+
+  void _setupHoldingsSocketSubscription() {
+    final websocket = ref.read(websocketProvider);
+    final portfolio = ref.read(portfolioProvider);
+
+    _holdingsSocketSubscription = websocket.socketDataStream.listen((socketDatas) {
+      if (!mounted || socketDatas.isEmpty) return;
+
+      final holdings = portfolio.holdingsModel ?? [];
+      if (holdings.isEmpty) return;
+
+      // Throttle updates
+      final now = DateTime.now();
+      if (now.difference(_lastUpdate) < _updateInterval) return;
+
+      bool needsUpdate = false;
+
+      // Check if any holdings tokens have updates
+      for (var holding in holdings) {
+        if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
+          final token = holding.exchTsym![0].token;
+          if (token != null && socketDatas.containsKey(token)) {
+            needsUpdate = true;
+            break;
+          }
+        }
+      }
+
+      // Call pnlHoldCal() which calculates all totals and calls notifyListeners()
+      if (needsUpdate) {
+        _lastUpdate = now;
+        portfolio.pnlHoldCal();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _holdingsSocketSubscription?.cancel();
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
     _searchQuery.dispose();
@@ -93,7 +141,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
       return Center(child: MyntLoader.simple());
     }
 
-    final portfolioData = ref.read(portfolioProvider);
+    // Use ref.watch to rebuild when provider values update (from pnlHoldCal)
+    final portfolioData = ref.watch(portfolioProvider);
 
     return SizedBox.expand(
       child: Container(
@@ -149,12 +198,20 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
   Widget _buildStocksSummaryCards(BuildContext context, ThemesProvider theme,
       PortfolioProvider portfolioData) {
+    // Use provider's pre-calculated values from pnlHoldCal()
+    final invested = portfolioData.totInvesHold;
+    final currentValue = portfolioData.totalCurrentVal.toStringAsFixed(2);
+    final totalPnL = portfolioData.totalPnlHolding.toStringAsFixed(2);
+    final totalPnLPercent = portfolioData.totPnlPercHolding;
+    final dayChange = portfolioData.oneDayChng.toStringAsFixed(2);
+    final dayChangePercent = portfolioData.oneDayChngPer.toStringAsFixed(2);
+
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             label: 'Invested',
-            value: _calculateInvested(portfolioData),
+            value: invested,
             valueColor: resolveThemeColor(
               context,
               dark: MyntColors.textPrimaryDark,
@@ -167,7 +224,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Current Value',
-            value: _calculateStocksValue(portfolioData),
+            value: currentValue,
             valueColor: resolveThemeColor(
               context,
               dark: MyntColors.textPrimaryDark,
@@ -180,10 +237,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Profit/Loss',
-            value: _calculateProfitLoss(portfolioData),
-            percentage: _calculateProfitLossPercent(portfolioData),
-            valueColor:
-                getValueColor(context, _calculateProfitLoss(portfolioData)),
+            value: totalPnL,
+            percentage: totalPnLPercent,
+            valueColor: getValueColor(context, totalPnL),
             theme: theme,
           ),
         ),
@@ -191,10 +247,9 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Day Change',
-            value: _calculateDayChange(portfolioData),
-            percentage: _calculateDayChangePercent(portfolioData),
-            valueColor:
-                getValueColor(context, _calculateDayChange(portfolioData)),
+            value: dayChange,
+            percentage: dayChangePercent,
+            valueColor: getValueColor(context, dayChange),
             theme: theme,
           ),
         ),
@@ -863,97 +918,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     );
   }
 
-  // Helper methods
-  String _calculateStocksValue(PortfolioProvider portfolioData) {
-    double totalValue = 0.0;
-    for (var holding in widget.listofHolding) {
-      if (holding.currentValue != null) {
-        totalValue += double.tryParse(holding.currentValue) ?? 0.0;
-      }
-    }
-    return totalValue.toStringAsFixed(2);
-  }
-
-  String _calculateDayChange(PortfolioProvider portfolioData) {
-    double totalChange = 0.0;
-    for (var holding in widget.listofHolding) {
-      if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final exchTsym = holding.exchTsym![0];
-        if (exchTsym.oneDayChg != null) {
-          totalChange += double.tryParse(exchTsym.oneDayChg) ?? 0.0;
-        }
-      }
-    }
-    return totalChange.toStringAsFixed(2);
-  }
-
-  String _calculateDayChangePercent(PortfolioProvider portfolioData) {
-    double totalValue = 0.0;
-    double totalChange = 0.0;
-
-    for (var holding in widget.listofHolding) {
-      if (holding.currentValue != null) {
-        totalValue += double.tryParse(holding.currentValue) ?? 0.0;
-      }
-      if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final exchTsym = holding.exchTsym![0];
-        if (exchTsym.oneDayChg != null) {
-          totalChange += double.tryParse(exchTsym.oneDayChg) ?? 0.0;
-        }
-      }
-    }
-
-    if (totalValue > 0) {
-      return ((totalChange / totalValue) * 100).toStringAsFixed(2);
-    }
-    return '0.00';
-  }
-
-  String _calculateInvested(PortfolioProvider portfolioData) {
-    double totalInvested = 0.0;
-    for (var holding in widget.listofHolding) {
-      if (holding.invested != null) {
-        totalInvested += double.tryParse(holding.invested) ?? 0.0;
-      }
-    }
-    return totalInvested.toStringAsFixed(2);
-  }
-
-  String _calculateProfitLoss(PortfolioProvider portfolioData) {
-    double totalPnL = 0.0;
-    for (var holding in widget.listofHolding) {
-      if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final exchTsym = holding.exchTsym![0];
-        if (exchTsym.profitNloss != null) {
-          totalPnL += double.tryParse(exchTsym.profitNloss) ?? 0.0;
-        }
-      }
-    }
-    return totalPnL.toStringAsFixed(2);
-  }
-
-  String _calculateProfitLossPercent(PortfolioProvider portfolioData) {
-    double totalInvested = 0.0;
-    double totalPnL = 0.0;
-
-    for (var holding in widget.listofHolding) {
-      if (holding.invested != null) {
-        totalInvested += double.tryParse(holding.invested) ?? 0.0;
-      }
-      if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-        final exchTsym = holding.exchTsym![0];
-        if (exchTsym.profitNloss != null) {
-          totalPnL += double.tryParse(exchTsym.profitNloss) ?? 0.0;
-        }
-      }
-    }
-
-    if (totalInvested > 0) {
-      return ((totalPnL / totalInvested) * 100).toStringAsFixed(2);
-    }
-    return '0.00';
-  }
-
+  // Helper method for value color
   Color getValueColor(BuildContext context, String value) {
     final numValue = double.tryParse(value) ?? 0.0;
 

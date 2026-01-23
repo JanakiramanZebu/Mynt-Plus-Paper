@@ -172,7 +172,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
       // Initialize the first tab (Open Orders) immediately to set up WebSocket
       if (mounted) {
-        ref.read(orderProvider).changeTabIndex(0, context);
+        final orderProviderRef = ref.read(orderProvider);
+        orderProviderRef.changeTabIndex(0, context);
+        // Force WebSocket subscription for order tokens
+        // (changeTabIndex may skip if already on tab 0, so call directly)
+        orderProviderRef.requestWSOrderBook(isSubscribe: true, context: context);
       }
 
       if (mounted) {
