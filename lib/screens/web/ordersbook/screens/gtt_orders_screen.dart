@@ -636,7 +636,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
             final symbolWidth = _measureTextWidth(symbol, textStyle);
             final exchangeStyle =
-                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+                const TextStyle(fontSize: 10, fontFamily: 'Geist');
             final exchangeWidth = exchangeText.isNotEmpty
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
@@ -787,7 +787,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                         text: displayText,
                         style: _getTextStyle(context),
                       ),
-                      // Exchange (12px, 500, muted color)
+                      // Exchange (10px, 500, muted color) - matching positions table style
                       if (gttOrder.exch != null && gttOrder.exch!.isNotEmpty)
                         TextSpan(
                           text: ' ${gttOrder.exch}',
@@ -796,7 +796,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                             darkColor: MyntColors.textSecondaryDark,
                             lightColor: MyntColors.textSecondary,
                             fontWeight: MyntFonts.medium,
-                          ),
+                          ).copyWith(fontSize: 10),
                         ),
                     ],
                   ),

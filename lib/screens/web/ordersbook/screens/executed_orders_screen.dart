@@ -362,7 +362,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                                     _getTextStyle(
                                                                         context),
                                                               ),
-                                                              // Exchange (12px, 500, muted color)
+                                                              // Exchange (10px, 500, muted color) - matching positions table style
                                                               if (order.exch !=
                                                                       null &&
                                                                   order.exch!
@@ -370,9 +370,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                                 TextSpan(
                                                                   text:
                                                                       ' ${order.exch}',
-                                                                  style:
-                                                                      MyntWebTextStyles
-                                                                          .para(
+                                                                  style: MyntWebTextStyles
+                                                                      .para(
                                                                     context,
                                                                     darkColor:
                                                                         MyntColors
@@ -383,7 +382,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                                     fontWeight:
                                                                         MyntFonts
                                                                             .medium,
-                                                                  ),
+                                                                  ).copyWith(
+                                                                      fontSize:
+                                                                          10),
                                                                 ),
                                                             ],
                                                           ),
@@ -577,28 +578,36 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         columnIndex: 10,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(
-                                                    _getStatusText(order),
-                                                    context)
-                                                .withOpacity(0.12),
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            _getStatusText(order).toUpperCase(),
-                                            style: MyntWebTextStyles.bodySmall(
-                                              context,
+                                        child: Tooltip(
+                                          message: (order.rejreason != null &&
+                                                  order.rejreason!.isNotEmpty)
+                                              ? order.rejreason!
+                                              : _getStatusText(order),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
                                               color: _getStatusColor(
-                                                  _getStatusText(order),
-                                                  context),
-                                              fontWeight: MyntFonts.medium,
+                                                      _getStatusText(order),
+                                                      context)
+                                                  .withOpacity(0.12),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
-                                            overflow: TextOverflow.visible,
-                                            softWrap: false,
+                                            child: Text(
+                                              _getStatusText(order)
+                                                  .toUpperCase(),
+                                              style:
+                                                  MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: _getStatusColor(
+                                                    _getStatusText(order),
+                                                    context),
+                                                fontWeight: MyntFonts.medium,
+                                              ),
+                                              overflow: TextOverflow.visible,
+                                              softWrap: false,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -845,9 +854,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(symbol, textStyle);
 
-            // Measure exchange with smaller font (fixed 12px, matches rendering)
+            // Measure exchange with smaller font (fixed 10px, matches rendering)
             final exchangeStyle =
-                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+                const TextStyle(fontSize: 10, fontFamily: 'Geist');
             final exchangeWidth = exchangeText.isNotEmpty
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;

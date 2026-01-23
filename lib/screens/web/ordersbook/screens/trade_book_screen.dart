@@ -616,9 +616,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             // Measure symbol with normal font
             final symbolWidth = _measureTextWidth(displayText, textStyle);
 
-            // Measure exchange with smaller font
+            // Measure exchange with smaller font (10px, matches rendering)
             final exchangeStyle =
-                const TextStyle(fontSize: 12, fontFamily: 'Geist');
+                const TextStyle(fontSize: 10, fontFamily: 'Geist');
             final exchangeWidth = exchangeText.isNotEmpty
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
@@ -754,7 +754,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             text: displayText.isNotEmpty ? displayText : 'N/A',
             style: _getTextStyle(context),
           ),
-          // Exchange (mutedForeground color, smaller font, fixed 12px)
+          // Exchange (mutedForeground color, smaller font, fixed 10px) - matching positions table style
           if (exchange.isNotEmpty)
             TextSpan(
               text: ' $exchange',
@@ -763,7 +763,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                 darkColor: MyntColors.textSecondaryDark,
                 lightColor: MyntColors.textSecondary,
                 fontWeight: MyntFonts.medium,
-              ),
+              ).copyWith(fontSize: 10),
             ),
         ],
       ),

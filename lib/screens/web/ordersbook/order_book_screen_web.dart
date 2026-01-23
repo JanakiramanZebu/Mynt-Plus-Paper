@@ -8,7 +8,6 @@ import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/splash_loader.dart';
 // import 'mf/mf_order_book_screen_web.dart';
@@ -18,8 +17,7 @@ import 'screens/open_orders_screen.dart';
 import 'screens/executed_orders_screen.dart';
 import 'screens/trade_book_screen.dart';
 import 'screens/gtt_orders_screen.dart';
-// import '../../../sharedWidget/common_search_fields_web.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
 
 /// Main Order Book Screen - Now just a coordinator
 /// All table logic is in separate screen widgets
@@ -440,80 +438,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
               ),
               // Gap between tabs and search
               const SizedBox(width: 16),
-              // Search Bar with shadcn TextField
+              // Search Bar with MyntSearchTextField matching positions page styling
               SizedBox(
                 height: 40,
                 width: searchWidth,
-                child: DefaultTextStyle(
-                  style: const TextStyle(fontFamily: 'Geist'),
-                  child: ValueListenableBuilder<TextEditingValue>(
-                    valueListenable: orderBook.orderSearchCtrl,
-                    builder: (context, value, child) {
-                      final features = <shadcn.InputFeature>[
-                        shadcn.InputFeature.leading(
-                          SvgPicture.asset(
-                            assets.searchIcon,
-                            color: shadcn.Theme.of(context)
-                                .colorScheme
-                                .mutedForeground,
-                            fit: BoxFit.scaleDown,
-                            width: 18,
-                          ),
-                        ),
-                      ];
-
-                      // Add clear button if there's text (like holdings screen)
-                      if (value.text.isNotEmpty) {
-                        features.add(
-                          shadcn.InputFeature.trailing(
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: () {
-                                    FocusScope.of(context).unfocus();
-                                    orderBook.clearOrderSearch();
-                                  },
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 16,
-                                      color: shadcn.Theme.of(context)
-                                          .colorScheme
-                                          .mutedForeground,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-
-                      return shadcn.Theme(
-                        data: shadcn.Theme.of(context).copyWith(
-                          radius: () => 0.2,
-                          colorScheme: () =>
-                              shadcn.Theme.of(context).colorScheme.copyWith(
-                                    border: () => Colors.transparent,
-                                    ring: () => Colors.transparent,
-                                  ),
-                        ),
-                        child: shadcn.TextField(
-                          controller: orderBook.orderSearchCtrl,
-                          placeholder: const Text(
-                            'Search orders',
-                            style: TextStyle(fontFamily: 'Geist'),
-                          ),
-                          features: features,
-                        ),
-                      );
-                    },
-                  ),
+                child: MyntSearchTextField.withSmartClear(
+                  controller: orderBook.orderSearchCtrl,
+                  placeholder: 'Search orders',
+                  leadingIcon: assets.searchIcon,
+                  onClear: () {
+                    FocusScope.of(context).unfocus();
+                    orderBook.clearOrderSearch();
+                  },
                 ),
               ),
             ],
