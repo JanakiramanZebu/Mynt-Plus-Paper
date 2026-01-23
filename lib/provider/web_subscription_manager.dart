@@ -100,21 +100,33 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   /// Update active screen for a panel (with debouncing to prevent rapid calls)
   void updateActiveScreen(int panelIndex, ScreenType? screenType) {
     final previousScreen = _activeScreens[panelIndex];
-    
+
     // Early return if no actual change
     if (previousScreen == screenType) {
       return; // No change - skip unnecessary processing
     }
-    
+
     // Cancel any pending debounce timer
     _updateDebounceTimer?.cancel();
-    
+
     // Debounce the update to prevent rapid screen changes
     _updateDebounceTimer = Timer(_updateDebounceDelay, () {
       _performScreenUpdate(panelIndex, previousScreen, screenType);
     });
   }
-  
+
+  /// Refresh subscriptions for the current screen (when data becomes available after initial load)
+  /// This bypasses the "no change" check and re-subscribes with fresh data
+  void refreshCurrentScreen(int panelIndex, ScreenType? screenType) {
+    if (screenType == null) return;
+
+    print('\n🔄 [WebSubscriptionManager] Refreshing panel $panelIndex subscriptions for: $screenType');
+    log('WebSubscriptionManager: Refreshing subscriptions for $screenType');
+
+    // Re-subscribe to get fresh symbols (data may have been fetched since initial load)
+    _subscribeToScreen(screenType);
+  }
+
   /// Actually perform the screen update (called after debounce)
   void _performScreenUpdate(int panelIndex, ScreenType? previousScreen, ScreenType? screenType) {
     print('\n🔄 [WebSubscriptionManager] Panel $panelIndex screen change:');
@@ -268,9 +280,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       switch (subscriptionType) {
         case SubscriptionType.marketWatch:
           if (screenType == ScreenType.dashboard) {
-            // Dashboard needs top indices and default indices, not watchlist
+            // Dashboard needs top indices, default indices, and trade action stocks
             final indexProvider = ref.read(indexListProvider);
-            
+
             // Get top indices tokens (8 specific indices for dashboard)
             indexProvider.requestTopIndicesToken();
             final topIndicesToken = indexProvider.topIndicesToken;
@@ -279,7 +291,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
               final tokens = topIndicesToken.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
               symbols.addAll(tokens);
             }
-            
+
             // Get default indices tokens (Nifty, Sensex, etc.)
             indexProvider.requestdefaultIndex();
             final defaultTokens = indexProvider.indexToken;
@@ -287,6 +299,37 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
               // Parse tokens from string format "exch|token#exch|token#..."
               final tokens = defaultTokens.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
               symbols.addAll(tokens);
+            }
+
+            // Add trade action stocks for "Today's trade action" section
+            final stocksProvider = ref.read(stocksProvide);
+
+            // Top gainers (first 5 shown in dashboard)
+            for (var stock in stocksProvider.topGainers.take(5)) {
+              if (stock.exch != null && stock.token != null) {
+                symbols.add('${stock.exch}|${stock.token}');
+              }
+            }
+
+            // Top losers (first 5 shown in dashboard)
+            for (var stock in stocksProvider.topLosers.take(5)) {
+              if (stock.exch != null && stock.token != null) {
+                symbols.add('${stock.exch}|${stock.token}');
+              }
+            }
+
+            // Volume breakout (first 5 shown in dashboard)
+            for (var stock in stocksProvider.byVolume.take(5)) {
+              if (stock.exch != null && stock.token != null) {
+                symbols.add('${stock.exch}|${stock.token}');
+              }
+            }
+
+            // Most active (first 5 shown in dashboard)
+            for (var stock in stocksProvider.byValue.take(5)) {
+              if (stock.exch != null && stock.token != null) {
+                symbols.add('${stock.exch}|${stock.token}');
+              }
             }
           } else if (screenType == ScreenType.tradeAction) {
             // Trade action needs all trade action stocks (all tabs combined)

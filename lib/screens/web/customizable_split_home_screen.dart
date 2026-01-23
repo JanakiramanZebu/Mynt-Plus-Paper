@@ -11,7 +11,7 @@ import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/holddeetsshadcn.dart';
 
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
-import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart';
+// import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
@@ -135,7 +135,7 @@ class _CustomizableSplitHomeScreenState
     // Load saved layout
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedLayout();
-      _addDefaultScreens();
+      // Panels already initialized with defaults in initState(), no need to call _addDefaultScreens()
       // Mark initial load as complete after setup and initialize default screens
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
@@ -298,15 +298,24 @@ class _CustomizableSplitHomeScreenState
 
     _panels.clear();
     for (int i = 0; i < count; i++) {
-      // Preserve existing screen if available, otherwise null
-      ScreenType? existingScreen =
-          i < existingScreens.length ? existingScreens[i] : null;
+      // Preserve existing screen if available, otherwise use default for each panel
+      ScreenType? screenType;
+      if (i < existingScreens.length && existingScreens[i] != null) {
+        screenType = existingScreens[i];
+      } else {
+        // Set default screens: panel 0 = watchlist (left), panel 1 = dashboard (right)
+        if (i == 0) {
+          screenType = ScreenType.watchlist;
+        } else if (i == 1) {
+          screenType = ScreenType.dashboard;
+        }
+      }
 
       _panels.add(
         PanelConfig(
           id: 'panel_${i + 1}',
-          screenType: existingScreen, // Preserve existing screen or null
-          screens: existingScreen != null ? [existingScreen] : [],
+          screenType: screenType,
+          screens: screenType != null ? [screenType] : [],
           activeScreenIndex: 0,
           width: 1.0, // Equal width for all panels
           height: 1.0, // Equal height for all panels
@@ -325,9 +334,8 @@ class _CustomizableSplitHomeScreenState
   }
 
   Future<void> _loadSavedLayout() async {
-    // Always initialize with default panels and show dashboard screen
-    // This ensures the app always starts with dashboard screen, not the saved state
-    _initializeDefaultPanels();
+    // Panels are already initialized with defaults in initState()
+    // No need to reinitialize here - this ensures no flickering on first render
   }
 
   Future<void> _saveLayout() async {
@@ -526,7 +534,7 @@ class _CustomizableSplitHomeScreenState
         body: Stack(
           children: [
             _buildMainScaffold(),
-            const WebChartOverlay(), // New simplified chart overlay
+            // const WebChartOverlay(), // Commented out - using panel chart only
           ],
         ),
       ),
@@ -1225,7 +1233,7 @@ class _CustomizableSplitHomeScreenState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildNavItem('Dashboard', isDarkMode, ScreenType.dashboard,
+        _buildNavItem('Home', isDarkMode, ScreenType.dashboard,
             () => _handleDashboardTap()),
         const SizedBox(width: 8),
         _buildNavItem('Positions', isDarkMode, ScreenType.positions,
@@ -1240,7 +1248,7 @@ class _CustomizableSplitHomeScreenState
         _buildNavItem(
             'Fund', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
         const SizedBox(width: 8),
-        _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
+        // _buildNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
       ],
     );
   }
@@ -2319,44 +2327,46 @@ class _CustomizableSplitHomeScreenState
   // Initialize default screen data after initial load
   void _initializeDefaultScreenData() {
     if (_panels.length >= 2) {
-      // Right panel should only have watchlist - move any other screens to left panel
-      if (_panels[1].screenType != null &&
-          _panels[1].screenType != ScreenType.watchlist) {
-        // Move the screen from right panel to left panel
-        _panels[0].screenType = _panels[1].screenType;
-        _panels[0].screens = List<ScreenType>.from(_panels[1].screens);
-        _panels[0].activeScreenIndex = _panels[1].activeScreenIndex;
+      // Left panel should have watchlist - move any other screens to right panel
+      if (_panels[0].screenType != null &&
+          _panels[0].screenType != ScreenType.watchlist) {
+        // Move the screen from left panel to right panel
+        _panels[1].screenType = _panels[0].screenType;
+        _panels[1].screens = List<ScreenType>.from(_panels[0].screens);
+        _panels[1].activeScreenIndex = _panels[0].activeScreenIndex;
 
-        // Clear right panel and set watchlist
-        _panels[1].screenType = ScreenType.watchlist;
-        _panels[1].screens = [ScreenType.watchlist];
-        _panels[1].activeScreenIndex = 0;
+        // Clear left panel and set watchlist
+        _panels[0].screenType = ScreenType.watchlist;
+        _panels[0].screens = [ScreenType.watchlist];
+        _panels[0].activeScreenIndex = 0;
       }
 
-      // Initialize the screen on the left panel (which is now the primary content panel)
-      if (_panels[0].screenType != null) {
-        if (_panels[0].screenType == ScreenType.dashboard) {
+      // Initialize watchlist on left panel if it exists
+      if (_panels[0].screenType == ScreenType.watchlist) {
+        _handleWatchlistTap();
+      }
+
+      // Initialize the screen on the right panel (which is now the primary content panel)
+      if (_panels[1].screenType != null) {
+        if (_panels[1].screenType == ScreenType.dashboard) {
           _handleDashboardTap();
-        } else if (_panels[0].screenType == ScreenType.watchlist) {
+        } else if (_panels[1].screenType == ScreenType.watchlist) {
           _handleWatchlistTap();
-        } else if (_panels[0].screenType == ScreenType.holdings) {
+        } else if (_panels[1].screenType == ScreenType.holdings) {
           _handleHoldingsTap();
-        } else if (_panels[0].screenType == ScreenType.positions) {
+        } else if (_panels[1].screenType == ScreenType.positions) {
           _handlePositionsTap();
-        } else if (_panels[0].screenType == ScreenType.orderBook) {
+        } else if (_panels[1].screenType == ScreenType.orderBook) {
           _handleOrderBookTap();
-        } else if (_panels[0].screenType == ScreenType.funds) {
+        } else if (_panels[1].screenType == ScreenType.funds) {
           _handleFundsTap();
         }
       }
 
-      // Initialize watchlist on right panel if it exists
-      if (_panels[1].screenType == ScreenType.watchlist) {
-        _handleWatchlistTap();
-      }
-
-      // Update subscription manager with initial screens
-      _updateSubscriptionManagerForPanels();
+      // NOTE: Don't call _updateSubscriptionManagerForPanels() here
+      // Each screen handler (dashboard, holdings, etc.) calls it AFTER their async
+      // data fetching completes. Calling it here causes a race condition where
+      // subscriptions happen before data is ready (e.g., trade action stocks empty).
 
       // Ensure websocket connections are established for real-time data
       if (mounted &&
@@ -2376,19 +2386,29 @@ class _CustomizableSplitHomeScreenState
   Map<int, ScreenType?> _lastSubscriptionUpdate = {};
 
   // Update subscription manager based on current active panels (with debouncing)
-  void _updateSubscriptionManagerForPanels() {
+  // Set forceRefresh=true to refresh subscriptions even if screen hasn't changed
+  // (useful when data becomes available after initial load)
+  void _updateSubscriptionManagerForPanels({bool forceRefresh = false}) {
+    // For forceRefresh calls, execute immediately to avoid race conditions
+    // where multiple handlers might cancel each other's debounced timers
+    if (forceRefresh) {
+      _performSubscriptionManagerUpdate(forceRefresh: true);
+      return;
+    }
+
     // Cancel any pending debounce timer
     _subscriptionUpdateDebounceTimer?.cancel();
 
     // Debounce the update to prevent rapid calls
     _subscriptionUpdateDebounceTimer =
         Timer(_subscriptionUpdateDebounceDelay, () {
-      _performSubscriptionManagerUpdate();
+      _performSubscriptionManagerUpdate(forceRefresh: forceRefresh);
     });
   }
 
   /// Actually perform the subscription manager update (called after debounce)
-  void _performSubscriptionManagerUpdate() {
+  /// Set forceRefresh=true to refresh subscriptions even if screen hasn't changed
+  void _performSubscriptionManagerUpdate({bool forceRefresh = false}) {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
 
     // Update subscription manager for each panel
@@ -2404,10 +2424,15 @@ class _CustomizableSplitHomeScreenState
         activeScreen = panel.screenType;
       }
 
-      // Only update if the screen actually changed
+      // Only update if the screen actually changed, OR if forceRefresh is true
       final lastScreen = _lastSubscriptionUpdate[i];
-      if (lastScreen != activeScreen) {
-        subscriptionManager.updateActiveScreen(i, activeScreen);
+      if (forceRefresh || lastScreen != activeScreen) {
+        // For force refresh, pass null as previous to trigger fresh subscription
+        if (forceRefresh && lastScreen == activeScreen) {
+          subscriptionManager.refreshCurrentScreen(i, activeScreen);
+        } else {
+          subscriptionManager.updateActiveScreen(i, activeScreen);
+        }
         _lastSubscriptionUpdate[i] = activeScreen;
       }
     }
@@ -2449,25 +2474,65 @@ class _CustomizableSplitHomeScreenState
       // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
       await portfolio.fetchHoldings(context, "Refresh");
 
-      // Update subscription manager AFTER data is fetched
-      // This ensures tokens are available for subscription
+      // Fetch positions for dashboard stats and subscribe to WebSocket for live updates
+      await portfolio.fetchPositionBook(context, false);
+      // Subscribe position tokens to WebSocket for real-time price updates
       if (mounted) {
-        _updateSubscriptionManagerForPanels();
+        portfolio.requestWSPosition(context: context, isSubscribe: true);
+      }
+
+      // Update subscription manager AFTER data is fetched
+      // Use forceRefresh=true to ensure subscriptions are updated even if
+      // the screen was already set (e.g., initial load where data wasn't ready)
+      if (mounted) {
+        _updateSubscriptionManagerForPanels(forceRefresh: true);
       }
     });
   }
 
   void _handleWatchlistTap() async {
-    // Update subscription manager
-    _updateSubscriptionManagerForPanels();
-
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
+
+    // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+    portfolio.requestWSPosition(context: context, isSubscribe: false);
+
+    // Ensure watchlist data is loaded before subscribing
+    // This prevents the timing issue where subscription happens before data is ready
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      final marketWatch = ref.read(marketWatchProvider);
+
+      // Fetch watchlist list if not available
+      if (marketWatch.marketWatchlist == null ||
+          (marketWatch.marketWatchlist?.values?.isEmpty ?? true)) {
+        await marketWatch.fetchMWList(context, true);
+      }
+
+      // Fetch current watchlist scrips if not available
+      final scrips = marketWatch.marketWatchScrip?.values;
+      if (scrips == null || scrips.isEmpty) {
+        final currentWL = marketWatch.wlName;
+        if (currentWL.isNotEmpty) {
+          await marketWatch.fetchMWScrip(currentWL, context);
+        }
+      }
+
+      // Update subscription manager AFTER data is fetched
+      // Use forceRefresh=true to ensure subscriptions are updated
+      if (mounted) {
+        _updateSubscriptionManagerForPanels(forceRefresh: true);
+      }
+    });
   }
 
   void _handleMutualFundTap() {
     final portfolio = ref.read(portfolioProvider);
     portfolio.cancelTimer();
+
+    // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+    portfolio.requestWSPosition(context: context, isSubscribe: false);
   }
 
   // Check if there are any screens available to add to a panel
@@ -2552,6 +2617,9 @@ class _CustomizableSplitHomeScreenState
 
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
+
+      // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
 
       final orderProviderRef = ref.read(orderProvider);
 
@@ -2674,6 +2742,9 @@ class _CustomizableSplitHomeScreenState
       final portfolio = ref.read(portfolioProvider);
       portfolio.cancelTimer();
 
+      // Unsubscribe positions when leaving dashboard/positions (non-blocking)
+      portfolio.requestWSPosition(context: context, isSubscribe: false);
+
       // Check if request is already in progress (prevents duplicate calls on rapid clicks)
       if (_isRequestInProgress('holdings')) {
         debugPrint('⏭️ Skipping Holdings fetch - request already in progress');
@@ -2696,8 +2767,9 @@ class _CustomizableSplitHomeScreenState
 
         // Update subscription manager AFTER data is fetched
         // This ensures tokens are available for subscription
+        // Use forceRefresh=true to ensure subscriptions update even on initial load
         if (mounted) {
-          _updateSubscriptionManagerForPanels();
+          _updateSubscriptionManagerForPanels(forceRefresh: true);
 
           // Clear loading state after data is fetched
           setState(() {
@@ -2753,7 +2825,8 @@ class _CustomizableSplitHomeScreenState
 
           // Update subscription manager AFTER data is fetched
           // This ensures tokens are available for subscription
-          _updateSubscriptionManagerForPanels();
+          // Use forceRefresh=true to ensure subscriptions update even on initial load
+          _updateSubscriptionManagerForPanels(forceRefresh: true);
 
           // Clear loading state after data is fetched
           setState(() {
@@ -3094,29 +3167,6 @@ class _CustomizableSplitHomeScreenState
     return !alreadyExistsInPanel && !alreadyExistsInOtherPanel;
   }
 
-  // Add default screens to empty panels
-  void _addDefaultScreens() {
-    // Always set up default panels: dashboard screen on left panel, watchlist on right panel
-    if (_panels.length >= 2) {
-      // Right panel - watchlist only (fixed, cannot be replaced)
-      _panels[1] = _panels[1].copyWith(
-        screenType: ScreenType.watchlist,
-        screens: [ScreenType.watchlist],
-        activeScreenIndex: 0,
-      );
-
-      // Left panel - always set dashboard screen as default
-      _panels[0] = _panels[0].copyWith(
-        screenType: ScreenType.dashboard,
-        screens: [ScreenType.dashboard],
-        activeScreenIndex: 0,
-      );
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
-  }
 
   void _handleReconnectionSuccess() {
     if (!mounted) return;
@@ -3823,18 +3873,29 @@ class _AppBarLivePriceWidgetState
   }
 
   Color _getChangeColor(String change, String perChange) {
-    if (change.startsWith("-") || perChange.startsWith('-')) {
+    if (change == "null" || perChange == "null") {
       return resolveThemeColor(
         context,
-        dark: MyntColors.lossDark,
-        light: MyntColors.loss,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary,
       );
-    } else if ((change == "null" || perChange == "null") ||
-        (change == "0.00" || perChange == "0.00")) {
+    }
+
+    final double changeVal = double.tryParse(change.replaceAll(',', '')) ?? 0.0;
+    final double perChangeVal =
+        double.tryParse(perChange.replaceAll(',', '')) ?? 0.0;
+
+    if (changeVal > 0 || perChangeVal > 0) {
       return resolveThemeColor(
         context,
         dark: MyntColors.profitDark,
         light: MyntColors.profit,
+      );
+    } else if (changeVal < 0 || perChangeVal < 0) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.lossDark,
+        light: MyntColors.loss,
       );
     } else {
       return resolveThemeColor(
@@ -3850,12 +3911,15 @@ class _AppBarLivePriceWidgetState
     final changeColor = _getChangeColor(_change, _perChange);
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
       children: [
         Text(
           "$_ltp  ",
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,
+            fontWeight: MyntFonts.medium,
           ),
         ),
         Text(

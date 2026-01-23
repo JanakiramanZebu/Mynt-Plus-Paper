@@ -8,6 +8,7 @@ import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
@@ -66,14 +67,14 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   final List<String> _columns = [
     'Time',
     'Instrument',
-    'Product/Type',
+    'Product',
     'Type',
+    'Side',
     'Qty',
     'Avg price',
     'LTP',
     'Price',
     'Trigger price',
-    'Order value',
     'Status',
   ];
 
@@ -230,20 +231,20 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                           9: shadcn.FixedTableSize(columnWidths[9]!),
                           10: shadcn.FixedTableSize(columnWidths[10]!),
                         },
-                        defaultRowHeight: const shadcn.FixedTableSize(40),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
                           shadcn.TableHeader(
                             cells: [
                               buildHeaderCell('Time', 0),
                               buildHeaderCell('Instrument', 1),
-                              buildHeaderCell('Product/Type', 2),
+                              buildHeaderCell('Product', 2),
                               buildHeaderCell('Type', 3),
-                              buildHeaderCell('Qty', 4, true),
-                              buildHeaderCell('Avg price', 5, true),
-                              buildHeaderCell('LTP', 6, true),
-                              buildHeaderCell('Price', 7, true),
-                              buildHeaderCell('Trigger price', 8, true),
-                              buildHeaderCell('Order value', 9, true),
+                              buildHeaderCell('Side', 4),
+                              buildHeaderCell('Qty', 5, true),
+                              buildHeaderCell('Avg price', 6, true),
+                              buildHeaderCell('LTP', 7, true),
+                              buildHeaderCell('Price', 8, true),
+                              buildHeaderCell('Trigger price', 9, true),
                               buildHeaderCell('Status', 10),
                             ],
                           ),
@@ -283,7 +284,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                 9: shadcn.FixedTableSize(columnWidths[9]!),
                                 10: shadcn.FixedTableSize(columnWidths[10]!),
                               },
-                              defaultRowHeight: const shadcn.FixedTableSize(40),
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: [
                                 // Data Rows
                                 ...sortedOrders.asMap().entries.map((entry) {
@@ -300,366 +301,302 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
 
                                   return shadcn.TableRow(
                                     cells: [
-                                      // Time - Make clickable for row tap
+                                      // Time
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 0,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              _formatTime(
-                                                  order.norentm ?? '0.00'),
-                                              style: _getTextStyle(context),
-                                              overflow: TextOverflow.visible,
-                                              softWrap: false,
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          _formatTime(order.norentm ?? '0.00'),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.visible,
+                                          softWrap: false,
                                         ),
                                       ),
                                       // Instrument with action buttons on hover - Make clickable for row tap
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 1,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            child: Stack(
-                                              clipBehavior: Clip.hardEdge,
-                                              children: [
-                                                // Instrument name - full width, can be partially covered by buttons
-                                                // Only truncate when hovered (buttons visible), otherwise show full text
-                                                Positioned.fill(
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Tooltip(
-                                                      message:
-                                                          '${_formatInstrumentText(order)}${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                right:
-                                                                    isRowHovered
-                                                                        ? 90.0
-                                                                        : 0.0),
-                                                        child: RichText(
-                                                          overflow: isRowHovered
-                                                              ? TextOverflow
-                                                                  .ellipsis
-                                                              : TextOverflow
-                                                                  .visible,
-                                                          maxLines: 1,
-                                                          softWrap: false,
-                                                          text: TextSpan(
-                                                            children: [
-                                                              // Symbol (14px, 500)
-                                                              TextSpan(
-                                                                text:
-                                                                    _formatInstrumentText(
-                                                                        order),
-                                                                style:
-                                                                    _getTextStyle(
-                                                                        context),
-                                                              ),
-                                                              // Exchange (12px, 500, muted color)
-                                                              if (order.exch !=
-                                                                      null &&
-                                                                  order.exch!
-                                                                      .isNotEmpty)
-                                                                TextSpan(
-                                                                  text:
-                                                                      ' ${order.exch}',
-                                                                  style:
-                                                                      MyntWebTextStyles
-                                                                          .para(
-                                                                    context,
-                                                                    darkColor:
-                                                                        MyntColors
-                                                                            .textSecondaryDark,
-                                                                    lightColor:
-                                                                        MyntColors
-                                                                            .textSecondary,
-                                                                    fontWeight:
-                                                                        MyntFonts
-                                                                            .medium,
-                                                                  ),
-                                                                ),
-                                                            ],
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Stack(
+                                          clipBehavior: Clip.hardEdge,
+                                          children: [
+                                            // Instrument name - full width, can be partially covered by buttons
+                                            // Only truncate when hovered (buttons visible), otherwise show full text
+                                            Positioned.fill(
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Tooltip(
+                                                  message:
+                                                      '${_formatInstrumentText(order)}${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
+                                                  child: Padding(
+                                                    padding: EdgeInsets.only(
+                                                        right: isRowHovered
+                                                            ? 90.0
+                                                            : 0.0),
+                                                    child: RichText(
+                                                      overflow: isRowHovered
+                                                          ? TextOverflow
+                                                              .ellipsis
+                                                          : TextOverflow
+                                                              .visible,
+                                                      maxLines: 1,
+                                                      softWrap: false,
+                                                      text: TextSpan(
+                                                        children: [
+                                                          // Symbol (14px, 500)
+                                                          TextSpan(
+                                                            text:
+                                                                _formatInstrumentText(
+                                                                    order),
+                                                            style:
+                                                                _getTextStyle(
+                                                                    context),
                                                           ),
-                                                        ),
+                                                          // Exchange (12px, 500, muted color)
+                                                          if (order.exch !=
+                                                                  null &&
+                                                              order.exch!
+                                                                  .isNotEmpty)
+                                                            TextSpan(
+                                                              text:
+                                                                  ' ${order.exch}',
+                                                              style:
+                                                                  MyntWebTextStyles
+                                                                      .para(
+                                                                context,
+                                                                darkColor:
+                                                                    MyntColors
+                                                                        .textSecondaryDark,
+                                                                lightColor:
+                                                                    MyntColors
+                                                                        .textSecondary,
+                                                                fontWeight:
+                                                                    MyntFonts
+                                                                        .medium,
+                                                              ),
+                                                            ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-                                                // Action buttons - positioned at the right edge
-                                                if (isRowHovered)
-                                                  Positioned(
-                                                    right: 0,
-                                                    top: 0,
-                                                    bottom: 0,
-                                                    child: GestureDetector(
-                                                      onTap:
-                                                          () {}, // Empty handler to stop propagation
-                                                      behavior: HitTestBehavior
-                                                          .opaque,
-                                                      child: Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          // Subtle background gradient for better button visibility
-                                                          gradient:
-                                                              LinearGradient(
-                                                            begin: Alignment
-                                                                .centerLeft,
-                                                            end: Alignment
-                                                                .centerRight,
-                                                            colors: [
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withOpacity(
-                                                                      0.0),
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withOpacity(
-                                                                      0.95),
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background,
-                                                            ],
-                                                            stops: const [
-                                                              0.0,
-                                                              0.3,
-                                                              0.5
-                                                            ],
+                                              ),
+                                            ),
+                                            // Action buttons - positioned at the right edge
+                                            if (isRowHovered)
+                                              Positioned(
+                                                right: 0,
+                                                top: 0,
+                                                bottom: 0,
+                                                child: GestureDetector(
+                                                  onTap:
+                                                      () {}, // Empty handler to stop propagation
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      // Subtle background gradient for better button visibility
+                                                      gradient: LinearGradient(
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                        colors: [
+                                                          shadcn.Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .background
+                                                              .withOpacity(0.0),
+                                                          shadcn.Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .background
+                                                              .withOpacity(
+                                                                  0.95),
+                                                          shadcn.Theme.of(
+                                                                  context)
+                                                              .colorScheme
+                                                              .background,
+                                                        ],
+                                                        stops: const [
+                                                          0.0,
+                                                          0.3,
+                                                          0.5
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 16),
+                                                    child: Center(
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          ..._buildActionButtons(
+                                                            order,
+                                                            uniqueId,
+                                                            isRowHovered,
+                                                            actionHandler,
+                                                            theme,
+                                                            context,
+                                                            6.0,
                                                           ),
-                                                        ),
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 16),
-                                                        child: Center(
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              ..._buildActionButtons(
-                                                                order,
-                                                                uniqueId,
-                                                                isRowHovered,
-                                                                actionHandler,
-                                                                theme,
-                                                                context,
-                                                                6.0,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
-                                              ],
-                                            ),
-                                          ),
+                                                ),
+                                              ),
+                                          ],
                                         ),
                                       ),
-                                      // Product - Make clickable for row tap
+                                      // Product
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 2,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              _formatProductType(order),
-                                              style: _getTextStyle(context),
-                                              overflow: TextOverflow.visible,
-                                              softWrap: false,
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.sPrdtAli ?? order.prd ?? '',
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.visible,
+                                          softWrap: false,
                                         ),
                                       ),
-                                      // Type - Make clickable for row tap
+                                      // Type (Price type)
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 3,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              order.trantype == "S"
-                                                  ? "SELL"
-                                                  : "BUY",
-                                              style: _getTextStyle(
-                                                context,
-                                                color: order.trantype == "S"
-                                                    ? resolveThemeColor(context,
-                                                        dark:
-                                                            MyntColors.lossDark,
-                                                        light: MyntColors.loss)
-                                                    : resolveThemeColor(context,
-                                                        dark: MyntColors
-                                                            .profitDark,
-                                                        light:
-                                                            MyntColors.profit),
-                                              ),
-                                              overflow: TextOverflow.visible,
-                                              softWrap: false,
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.prctyp ?? '',
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.visible,
+                                          softWrap: false,
                                         ),
                                       ),
-                                      // Qty - Make clickable for row tap
+                                      // Side
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 4,
-                                        alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Text(
-                                              order.qty?.toString() ?? '0',
-                                              style: _getTextStyle(context),
-                                            ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.trantype == "S"
+                                              ? "SELL"
+                                              : "BUY",
+                                          style: _getTextStyle(
+                                            context,
+                                            color: order.trantype == "S"
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.lossDark,
+                                                    light: MyntColors.loss)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.profitDark,
+                                                    light: MyntColors.profit),
                                           ),
+                                          overflow: TextOverflow.visible,
+                                          softWrap: false,
                                         ),
                                       ),
-                                      // Avg price - Make clickable for row tap
+                                      // Qty
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 5,
                                         alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Text(
-                                              order.avgprc ?? '0.00',
-                                              style: _getTextStyle(context),
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.qty?.toString() ?? '0',
+                                          style: _getTextStyle(context),
                                         ),
                                       ),
-                                      // LTP - Make clickable for row tap
+                                      // Avg price
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 6,
                                         alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: _OrderBookLTPCell(
-                                              token: order.token ?? '',
-                                              initialLtp: _getValidLTP(order),
-                                              order: order,
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.avgprc ?? '0.00',
+                                          style: _getTextStyle(context),
                                         ),
                                       ),
-                                      // Price - Make clickable for row tap
+                                      // LTP
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 7,
                                         alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Text(
-                                              _getValidPrice(order),
-                                              style: _getTextStyle(context),
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: _OrderBookLTPCell(
+                                          token: order.token ?? '',
+                                          initialLtp: _getValidLTP(order),
+                                          order: order,
                                         ),
                                       ),
-                                      // Trigger price - Make clickable for row tap
+                                      // Price
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 8,
                                         alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Text(
-                                              (order.trgprc != null &&
-                                                      order.trgprc != '0' &&
-                                                      order.trgprc != '0.00')
-                                                  ? order.trgprc!
-                                                  : '0.00',
-                                              style: _getTextStyle(context),
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          _getValidPrice(order),
+                                          style: _getTextStyle(context),
                                         ),
                                       ),
-                                      // Order value - Make clickable for row tap
+                                      // Trigger price
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 9,
                                         alignRight: true,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerRight,
-                                            child: Text(
-                                              _calculateOrderValue(order),
-                                              style: _getTextStyle(context),
-                                            ),
-                                          ),
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          (order.trgprc != null &&
+                                                  order.trgprc != '0' &&
+                                                  order.trgprc != '0.00')
+                                              ? order.trgprc!
+                                              : '0.00',
+                                          style: _getTextStyle(context),
                                         ),
                                       ),
-                                      // Status - Make clickable for row tap
+                                      // Status
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 10,
-                                        child: GestureDetector(
-                                          onTap: () => actionHandler
-                                              .openOrderDetail(order),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Text(
-                                              _getStatusText(order),
-                                              style: _getTextStyle(
-                                                context,
-                                                color: _getStatusColor(
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(
                                                     _getStatusText(order),
-                                                    context),
-                                              ),
-                                              overflow: TextOverflow.visible,
-                                              softWrap: false,
+                                                    context)
+                                                .withOpacity(0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            _getStatusText(order).toUpperCase(),
+                                            style: MyntWebTextStyles.bodySmall(
+                                              context,
+                                              color: _getStatusColor(
+                                                  _getStatusText(order),
+                                                  context),
+                                              fontWeight: MyntFonts.medium,
                                             ),
+                                            overflow: TextOverflow.visible,
+                                            softWrap: false,
                                           ),
                                         ),
                                       ),
@@ -716,25 +653,22 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
+    VoidCallback? onTap,
   }) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 1; // Instrument column
     final isLastColumn = columnIndex == 10; // Status column
+    final isRowHovered = _hoveredRowIndex == rowIndex;
 
-    // Match the cell padding logic - Instrument column has more left, minimal right
-    // Last column mirrors this - minimal left, more right
+    // Match the cell padding logic
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      // First column - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
     } else if (isInstrumentColumn) {
-      // Instrument column - more left, minimal right (for overlay buttons)
       cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
     } else if (isLastColumn) {
-      // Last column - minimal left, more right
       cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
     } else {
-      // Other columns - symmetric padding
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
 
@@ -752,10 +686,26 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       child: MouseRegion(
         onEnter: (_) => setState(() => _hoveredRowIndex = rowIndex),
         onExit: (_) => setState(() => _hoveredRowIndex = null),
-        child: Container(
-          padding: cellPadding,
-          alignment: alignRight ? Alignment.topRight : null,
-          child: child,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            padding: cellPadding,
+            alignment:
+                alignRight ? Alignment.centerRight : Alignment.centerLeft,
+            decoration: BoxDecoration(
+              color: isRowHovered
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.listItemBgDark.withValues(alpha: 0.5),
+                      light: MyntColors.listItemBg.withValues(alpha: 0.5),
+                    )
+                  : Colors.transparent,
+            ),
+            child: child,
+          ),
         ),
       ),
     );
@@ -799,6 +749,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       child: InkWell(
         onTap: () => _onSort(columnIndex),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
@@ -896,32 +848,32 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
             // Skip normal cellWidth calculation for Instrument - already handled above
             continue;
           case 2: // Product
-            cellText = _formatProductType(order);
+            cellText = order.sPrdtAli ?? order.prd ?? '';
             break;
-          case 3: // Type
+          case 3: // Type (Price type)
+            cellText = order.prctyp ?? '';
+            break;
+          case 4: // Side
             cellText = order.trantype == "S" ? "SELL" : "BUY";
             break;
-          case 4: // Qty
+          case 5: // Qty
             cellText = order.qty?.toString() ?? '0';
             break;
-          case 5: // Avg price
+          case 6: // Avg price
             cellText = order.avgprc ?? '0.00';
             break;
-          case 6: // LTP
+          case 7: // LTP
             cellText = _getValidLTP(order);
             break;
-          case 7: // Price
+          case 8: // Price
             cellText = _getValidPrice(order);
             break;
-          case 8: // Trigger price
+          case 9: // Trigger price
             cellText = (order.trgprc != null &&
                     order.trgprc != '0' &&
                     order.trgprc != '0.00')
                 ? order.trgprc!
                 : '0.00';
-            break;
-          case 9: // Order value
-            cellText = _calculateOrderValue(order);
             break;
           case 10: // Status
             cellText = _getStatusText(order);
@@ -978,9 +930,12 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
 
     if (isPending) {
       return [
-        _buildHoverButton(
+        HoverActionButton(
           label: 'Cancel',
+          color: Colors.white,
           backgroundColor: MyntColors.tertiary,
+          borderColor: MyntColors.tertiary,
+          borderRadius: 4,
           onPressed: isProcessing && _isProcessingCancel
               ? null
               : () async {
@@ -997,16 +952,22 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                     },
                   );
                 },
-          context: context,
         ),
         SizedBox(width: buttonSpacing),
-        _buildHoverButton(
+        HoverActionButton(
           label: 'Modify',
+          color: Colors.white,
           backgroundColor: resolveThemeColor(
             context,
             dark: MyntColors.primaryDark,
             light: MyntColors.primary,
           ),
+          borderColor: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark,
+            light: MyntColors.primary,
+          ),
+          borderRadius: 4,
           onPressed: isProcessing && _isProcessingModify
               ? null
               : () async {
@@ -1027,30 +988,54 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                     },
                   );
                 },
-          context: context,
         ),
       ];
     } else {
       return [
-        _buildHoverButton(
-          label: 'Repeat',
-          backgroundColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
+        // Custom Repeat button with pill-shaped design
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => actionHandler.repeatOrder(order),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Repeat',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Geist',
+                ),
+              ),
+            ),
           ),
-          onPressed: () => actionHandler.repeatOrder(order),
-          context: context,
         ),
         if (order.status == "OPEN") ...[
           SizedBox(width: buttonSpacing),
-          _buildHoverButton(
+          HoverActionButton(
             label: 'Cancel',
+            color: Colors.white,
             backgroundColor: resolveThemeColor(
               context,
               dark: MyntColors.lossDark,
               light: MyntColors.loss,
             ),
+            borderColor: resolveThemeColor(
+              context,
+              dark: MyntColors.lossDark,
+              light: MyntColors.loss,
+            ),
+            borderRadius: 4,
             onPressed: isProcessing && _isProcessingCancel
                 ? null
                 : () async {
@@ -1067,53 +1052,10 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                       },
                     );
                   },
-            context: context,
           ),
         ],
       ];
     }
-  }
-
-  Widget _buildHoverButton({
-    required String label,
-    required Color backgroundColor,
-    required VoidCallback? onPressed,
-    required BuildContext context,
-  }) {
-    // Determine button type based on color
-    final isTertiary = backgroundColor == MyntColors.tertiary ||
-        backgroundColor == MyntColors.lossDark ||
-        backgroundColor == MyntColors.loss;
-
-    final bgColor = isTertiary ? MyntColors.tertiary : backgroundColor;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          height: 26,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Geist',
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   List<OrderBookModel> _getSortedOrders(List<OrderBookModel> orders) {
@@ -1133,37 +1075,36 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
               (_formatInstrumentText(a)).compareTo(_formatInstrumentText(b));
           break;
         case 2: // Product
-          comparison = _formatProductType(a).compareTo(_formatProductType(b));
+          comparison =
+              (a.sPrdtAli ?? a.prd ?? '').compareTo(b.sPrdtAli ?? b.prd ?? '');
           break;
-        case 3: // Type
+        case 3: // Type (Price type)
+          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
+          break;
+        case 4: // Side
           comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
           break;
-        case 4: // Qty
+        case 5: // Qty
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 5: // Avg price
+        case 6: // Avg price
           comparison = (double.tryParse(a.avgprc ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0.0);
           break;
-        case 6: // LTP
+        case 7: // LTP
           comparison = (double.tryParse(a.ltp ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.ltp ?? '0') ?? 0.0);
           break;
-        case 7: // Price
+        case 8: // Price
           final priceA = double.tryParse(a.prc ?? '0') ?? 0.0;
           final priceB = double.tryParse(b.prc ?? '0') ?? 0.0;
           comparison = priceA.compareTo(priceB);
           break;
-        case 8: // Trigger price
+        case 9: // Trigger price
           final triggerA = double.tryParse(a.trgprc ?? '0') ?? 0.0;
           final triggerB = double.tryParse(b.trgprc ?? '0') ?? 0.0;
           comparison = triggerA.compareTo(triggerB);
-          break;
-        case 9: // Order value
-          final valueA = _calculateOrderValueDouble(a);
-          final valueB = _calculateOrderValueDouble(b);
-          comparison = valueA.compareTo(valueB);
           break;
         case 10: // Status
           comparison = (a.status ?? '').compareTo(b.status ?? '');
@@ -1186,21 +1127,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     return 'N/A';
   }
 
-  String _formatProductType(OrderBookModel order) {
-    final product = order.sPrdtAli ?? order.prd ?? '';
-    final priceType = order.prctyp ?? '';
-
-    if (product.isEmpty && priceType.isEmpty) {
-      return 'N/A';
-    } else if (product.isEmpty) {
-      return priceType;
-    } else if (priceType.isEmpty) {
-      return product;
-    } else {
-      return '$product / $priceType';
-    }
-  }
-
   String _getValidLTP(OrderBookModel order) {
     if (order.ltp != null && order.ltp != '0' && order.ltp != '0.00') {
       return order.ltp!;
@@ -1213,19 +1139,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       return order.prc!;
     }
     return '0.00';
-  }
-
-  String _calculateOrderValue(OrderBookModel order) {
-    final qty = int.tryParse(order.qty ?? '0') ?? 0;
-    final avgPrice = double.tryParse(order.avgprc ?? '0') ?? 0.0;
-    final value = qty * avgPrice;
-    return value.toStringAsFixed(2);
-  }
-
-  double _calculateOrderValueDouble(OrderBookModel order) {
-    final qty = int.tryParse(order.qty ?? '0') ?? 0;
-    final avgPrice = double.tryParse(order.avgprc ?? '0') ?? 0.0;
-    return qty * avgPrice;
   }
 
   String _getStatusText(OrderBookModel order) {

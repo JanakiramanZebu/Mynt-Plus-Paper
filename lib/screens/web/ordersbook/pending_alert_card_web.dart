@@ -62,6 +62,7 @@ import 'package:flutter/material.dart'
         RichText,
         TextAlign;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../res/mynt_web_color_styles.dart' as styles;
@@ -74,8 +75,6 @@ import '../../../provider/notification_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../utils/responsive_snackbar.dart';
 import 'pending_alert_detail_screen_web.dart';
@@ -550,7 +549,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       4: shadcn.FixedTableSize(columnWidths[4]!),
                       5: shadcn.FixedTableSize(columnWidths[5]!),
                     },
-                    defaultRowHeight: const shadcn.FixedTableSize(40),
+                    defaultRowHeight: const shadcn.FixedTableSize(50),
                     rows: [
                       shadcn.TableHeader(
                         cells: [
@@ -593,7 +592,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                             4: shadcn.FixedTableSize(columnWidths[4]!),
                             5: shadcn.FixedTableSize(columnWidths[5]!),
                           },
-                          defaultRowHeight: const shadcn.FixedTableSize(40),
+                          defaultRowHeight: const shadcn.FixedTableSize(50),
                           rows: sortedAlerts.asMap().entries.map((entry) {
                             final index = entry.key;
                             final alert = entry.value;
@@ -696,6 +695,16 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     ).copyWith(fontSize: fontSize);
   }
 
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
   // Builds a cell with hover detection
   shadcn.TableCell buildCellWithHover({
     required Widget child,
@@ -782,9 +791,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                 const SizedBox(width: 4),
               Text(
                 label,
-                style: _geistTextStyle(
-                  color: shadcn.Theme.of(context).colorScheme.foreground,
-                ),
+                style: _getHeaderStyle(context),
               ),
               if (!alignRight && _alertSortColumnIndex == columnIndex)
                 const SizedBox(width: 4),
@@ -1043,9 +1050,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     _buildAlertHoverButton(
                       label: 'Modify',
                       color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.primary
-                          : WebColors.primary,
+                      backgroundColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.primary,
+                        light: MyntColors.primary,
+                      ),
                       onPressed: isProcessing && _isProcessingModify
                           ? null
                           : () => _handleModifyAlert(alert),
@@ -1055,9 +1064,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                     _buildAlertHoverButton(
                       label: 'Cancel',
                       color: Colors.white,
-                      backgroundColor: theme.isDarkMode
-                          ? WebDarkColors.error
-                          : WebColors.error,
+                      backgroundColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.errorDark,
+                        light: MyntColors.error,
+                      ),
                       onPressed: isProcessing && _isProcessingCancel
                           ? null
                           : () => _handleCancelAlert(alert),
@@ -1175,17 +1186,40 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   Widget _buildStatusCell(dynamic alert, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     final status = alert is BrokerMessage ? 'TRIGGERED' : 'PENDING';
-    final statusColor = _getAlertStatusColor(status, theme);
 
-    return Text(
-      status,
-      style: _geistTextStyle(
-        color: statusColor,
+    // Use MyntColors for status (matching GTT orders)
+    Color statusColor;
+    if (status == 'TRIGGERED') {
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
+    } else if (status == 'PENDING') {
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.warning, light: MyntColors.warning);
+    } else {
+      statusColor = resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+    }
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: statusColor.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          status.toUpperCase(),
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: statusColor,
+            fontWeight: MyntFonts.medium,
+          ),
+          overflow: TextOverflow.visible,
+          softWrap: false,
+        ),
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -1239,8 +1273,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                   )
                 : Text(
                     label ?? "",
-                    style: WebTextStyles.buttonXs(
-                      isDarkTheme: theme.isDarkMode,
+                    style: MyntWebTextStyles.buttonSm(
+                      context,
                       color: color,
                     ),
                     softWrap: false,
@@ -1264,18 +1298,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         height: 25,
         child: button,
       );
-    }
-  }
-
-  Color _getAlertStatusColor(String status, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    switch (status.toUpperCase()) {
-      case 'TRIGGERED':
-        return colorScheme.chart2; // Green/success
-      case 'PENDING':
-        return colorScheme.chart1; // Orange/warning
-      default:
-        return colorScheme.mutedForeground;
     }
   }
 

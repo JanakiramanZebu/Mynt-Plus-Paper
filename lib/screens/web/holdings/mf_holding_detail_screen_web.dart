@@ -26,9 +26,7 @@ class _MfHoldingDetailScreenWebState
     final theme = ref.read(themeProvider);
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 400),
-      color: resolveThemeColor(context,
-          dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
+      color: Colors.transparent,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,17 +115,30 @@ class _MfHoldingDetailScreenWebState
         // Returns item
         _rowOfInfoData(
           "Returns",
-          Text(
-            "$pnlValue ($pnlPer %)",
-            style: MyntWebTextStyles.body(context,
-                color: pnlColor, fontWeight: MyntFonts.medium),
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: "$pnlValue ",
+                  style: MyntWebTextStyles.body(context,
+                      color: pnlColor, fontWeight: MyntFonts.medium),
+                ),
+                TextSpan(
+                  text: "($pnlPer%)",
+                  style: MyntWebTextStyles.body(context,
+                          color: pnlColor, fontWeight: MyntFonts.medium)
+                      .copyWith(fontSize: 10),
+                ),
+              ],
+            ),
           ),
           theme,
         ),
         _rowOfInfoData(
           "Units",
           Text(
-            "${widget.holding.avgQty ?? '0'}",
+            (double.tryParse(widget.holding.avgQty ?? '0') ?? 0.0)
+                .toStringAsFixed(4),
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
@@ -136,7 +147,8 @@ class _MfHoldingDetailScreenWebState
         _rowOfInfoData(
           "Avg Price",
           Text(
-            "${widget.holding.avgNav ?? '0.00'}",
+            (double.tryParse(widget.holding.avgNav ?? '0') ?? 0.0)
+                .toStringAsFixed(4),
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
@@ -145,7 +157,8 @@ class _MfHoldingDetailScreenWebState
         _rowOfInfoData(
           "NAV",
           Text(
-            "${widget.holding.curNav ?? '0.00'}",
+            (double.tryParse(widget.holding.curNav ?? '0') ?? 0.0)
+                .toStringAsFixed(4),
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
@@ -172,7 +185,8 @@ class _MfHoldingDetailScreenWebState
         _rowOfInfoData(
           "Invested",
           Text(
-            "${widget.holding.investedValue ?? '0.00'}",
+            (double.tryParse(widget.holding.investedValue ?? '0.00') ?? 0.0)
+                .toStringAsFixed(2),
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),

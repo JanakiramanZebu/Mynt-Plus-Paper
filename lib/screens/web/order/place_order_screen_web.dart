@@ -46,6 +46,7 @@ import 'package:mynt_plus/res/res.dart';
 import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/utils/url_utils.dart';
+import 'package:mynt_plus/utils/safe_parse.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:mynt_plus/utils/overlay_manager.dart';
 
@@ -275,6 +276,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   // Debounce timer for validation warnings
   Timer? _warningDebounceTimer;
 
+  // Debounce timer for margin and brokerage API calls
+  Timer? _marginUpdateDebounceTimer;
+
   int frezQty = 0;
   int reminder = 0;
   int maxQty = 0;
@@ -329,7 +333,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       isUserOrderPreferenceAvailable = true;
     }
 
-    tik = double.parse(widget.scripInfo.ti.toString());
+    tik = double.tryParse(widget.scripInfo.ti.toString())?? 0.00;
     bool checkRawValue = widget.orderArg.raw.isNotEmpty;
     Map orderRawValue = widget.orderArg.raw;
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
@@ -491,7 +495,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       ref
           .read(ordInputProvider)
           .chngPriceType(priceType, widget.orderArg.exchange);
-      marginUpdate();
+      _debouncedMarginUpdate();
       if (orderType != "Delivery" &&
           orderType != "Intraday" &&
           orderType != "MTF") {
@@ -523,7 +527,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           ? _addValidityAndDisclosedQty
           : isAdvancedOptionClicked;
 
-      lotSize = int.parse("${widget.scripInfo.ls ?? 0}");
+      lotSize = SafeParse.toInt(widget.scripInfo.ls);
 
       frezQty = sfq > 1
           ? widget.orderArg.exchange == "MCX"
@@ -544,19 +548,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   : widget.orderArg.lotSize!.replaceAll("-", ""));
 
       if (widget.orderArg.isExit && widget.orderArg.exchange == "MCX") {
-        qtyCtrl.text = (int.parse(qtyCtrl.text) ~/ lotSize).toString();
+        qtyCtrl.text = ((int.tryParse(qtyCtrl.text)?? 0) ~/ lotSize).toString();
       } else if (!widget.orderArg.isExit && isUserOrderPreferenceAvailable) {
         qtyCtrl.text =
-            (int.parse(qtyCtrl.text) * int.parse(userOrderPreference['qty']))
+            (SafeParse.toInt(qtyCtrl.text) * SafeParse.toInt(userOrderPreference['qty']))
                 .toString();
       }
 
-      multiplayer = int.parse((widget.orderArg.exchange == "MCX"
+      multiplayer = SafeParse.toInt(widget.orderArg.exchange == "MCX"
               ? "1"
               : widget.orderArg.isExit
                   ? widget.scripInfo.ls
-                  : widget.orderArg.lotSize)
-          .toString());
+                  : widget.orderArg.lotSize);
 
       mktProtCtrl = TextEditingController(
           text: isUserOrderPreferenceAvailable
@@ -564,29 +567,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               : "5");
       discQtyCtrl = TextEditingController(text: "0");
 
-      if (ref
-          .read(websocketProvider)
-          .socketDatas
-          .containsKey(widget.scripInfo.token)) {
-        ordPrice =
-            "${ref.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}";
-
-        priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
-            ? "Market"
-            : ordPrice;
-      } else {
-        // Fallback to LTP from orderArg when websocket data is not available
-        // Handle both null and "null" string
-        final rawLtp = widget.orderArg.ltp;
-        if (rawLtp == null || rawLtp == "null" || rawLtp == "0" || rawLtp == "0.00" || rawLtp.trim().isEmpty) {
-          ordPrice = "0.00";
-        } else {
-          ordPrice = rawLtp;
-        }
-        priceCtrl.text = priceType == "Market" || priceType == "SL MKT"
-            ? "Market"
-            : ordPrice;
+      // Try websocket data first, then fallback to orderArg.ltp
+      double currentLTP = 0.0;
+      if (ref.read(websocketProvider).socketDatas.containsKey(widget.scripInfo.token)) {
+        currentLTP = SafeParse.toDouble("${ref.read(websocketProvider).socketDatas["${widget.scripInfo.token}"]['lp']}");
       }
+      if (currentLTP <= 0) {
+        currentLTP = SafeParse.toDouble(widget.orderArg.ltp);
+      }
+      ordPrice = currentLTP > 0 ? currentLTP.toString() : "0.00";
+      priceCtrl.text = priceType == "Market" || priceType == "SL MKT" ? "Market" : ordPrice;
     });
 
     final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
@@ -610,21 +600,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       _addValidityAndDisclosedQty =
           orderRawValue['ret']?.toUpperCase() == 'IOC' ||
                   (orderRawValue['dscqty'] != null &&
-                      int.parse(orderRawValue['dscqty']) > 0)
+                      SafeParse.toInt(orderRawValue['dscqty']) > 0)
               ? true
               : false;
       _afterMarketOrder = orderRawValue['amo'] == "Yes" ? true : false;
       // Use orderRawValue price if available and not "0", otherwise fallback to LTP
       final rawPrice = orderRawValue['prc'];
       String fallbackPrice;
-      if (rawPrice == null || rawPrice == "0" || rawPrice == "0.00" || rawPrice == "null" || rawPrice.toString().trim().isEmpty) {
+      if (SafeParse.toDouble(rawPrice) <= 0) {
         // Fallback to LTP, but sanitize it too
         final ltpValue = widget.orderArg.ltp;
-        if (ltpValue == null || ltpValue == "null" || ltpValue == "0" || ltpValue == "0.00" || ltpValue.trim().isEmpty) {
-          fallbackPrice = "0.00";
-        } else {
-          fallbackPrice = ltpValue;
-        }
+        fallbackPrice = SafeParse.toDouble(ltpValue) > 0 ? ltpValue! : "0.00";
       } else {
         fallbackPrice = rawPrice;
       }
@@ -636,7 +622,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           ? ordPrice
           : fallbackPrice;
       qtyCtrl.text = widget.scripInfo.exch == 'MCX'
-          ? (int.parse(orderRawValue['qty'] ?? lotSize) / lotSize)
+          ? (SafeParse.toInt(orderRawValue['qty'], defaultValue: lotSize) / lotSize)
               .toStringAsFixed(0)
           : orderRawValue['qty'] ?? "1";
 
@@ -665,7 +651,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         // Auto-expand for IOC validity or disclosed quantity
         if (orderRawValue['ret']?.toUpperCase() == 'IOC' ||
             (orderRawValue['dscqty'] != null &&
-                int.parse(orderRawValue['dscqty']) > 0)) {
+                SafeParse.toInt(orderRawValue['dscqty']) > 0)) {
           isAdvancedOptionClicked = true;
           _addValidityAndDisclosedQty = true;
         }
@@ -746,6 +732,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   @override
   void dispose() {
     _warningDebounceTimer?.cancel();
+    _marginUpdateDebounceTimer?.cancel();
     anibuildctrl.dispose();
     super.dispose();
   }
@@ -1044,7 +1031,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           .disableCondGTT(false);
                                                     }
                                                   });
-                                                  marginUpdate();
+                                                  _debouncedMarginUpdate();
                                                 },
                                                 borderRadius:
                                                     BorderRadius.circular(5),
@@ -1091,7 +1078,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           .disableCondGTT(false);
                                                     }
                                                   });
-                                                  marginUpdate();
+                                                  _debouncedMarginUpdate();
                                                 },
                                                 child: Container(
                                                   width: 42,
@@ -1141,7 +1128,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   setState(() {
                                                     isBuy = false;
                                                   });
-                                                  marginUpdate();
+                                                  _debouncedMarginUpdate();
                                                 },
                                                 borderRadius:
                                                     BorderRadius.circular(5),
@@ -1219,7 +1206,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             //         //           setState(() {
                             //         //             isBuy = value;
                             //         //           });
-                            //         //           marginUpdate();
+                            //         //           _debouncedMarginUpdate();
                             //         //         },
                             //         //         value: isBuy!),
                             //         //     const SizedBox(width: 6),
@@ -1306,7 +1293,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             }
                                             if (orderType != "GTT") {
                                               isOco = false;
-                                              marginUpdate();
+                                              _debouncedMarginUpdate();
                                             } else {
                                               // ref.read(ordInputProvider)
                                               //     .chngInvesType(
@@ -1483,7 +1470,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     //           multiplayer) {
                                                                     //         sipqtyctrl.text = (int.parse(sipqtyctrl.text) - multiplayer).toString();
                                                                     //         double inputValue = double.tryParse(sipqtyctrl.text) ?? 0.00;
-                                                                    //         double ltpsip = double.parse("${widget.orderArg.ltp}");
+                                                                    //         double ltpsip = SafeParse.toDouble(widget.orderArg.ltp);
                                                                     //         resultsip = inputValue * ltpsip;
                                                                     //       }
                                                                     //     } else {
@@ -1510,7 +1497,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               (sipQty - multiplayer).toString();
                                                                           double
                                                                               ltpsip =
-                                                                              double.parse("${widget.orderArg.ltp}");
+                                                                              SafeParse.toDouble(widget.orderArg.ltp);
                                                                           int inputValue =
                                                                               int.tryParse(sipqtyctrl.text) ?? 0;
                                                                           resultsip =
@@ -1539,7 +1526,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     //           double.tryParse(sipqtyctrl.text) ?? 0.00;
                                                                     //       double
                                                                     //           ltpsip =
-                                                                    //           double.parse("${widget.orderArg.ltp}");
+                                                                    //           SafeParse.toDouble(widget.orderArg.ltp);
                                                                     //       resultsip =
                                                                     //           inputValue * ltpsip;
                                                                     //     } else {
@@ -1569,7 +1556,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               (sipQty + multiplayer).toString();
                                                                           double
                                                                               ltpsip =
-                                                                              double.parse("${widget.orderArg.ltp}");
+                                                                              SafeParse.toDouble(widget.orderArg.ltp);
                                                                           int inputValue =
                                                                               int.tryParse(sipqtyctrl.text) ?? 0;
                                                                           resultsip =
@@ -1606,8 +1593,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       0;
 
                                                               double ltpsip =
-                                                                  double.parse(
-                                                                      "${widget.orderArg.ltp}");
+                                                                  SafeParse.toDouble(widget.orderArg.ltp);
                                                               resultsip =
                                                                   inputValue *
                                                                       ltpsip;
@@ -3286,7 +3272,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   //                       orderInput.chngInvesType(
                                   //                           value!, "PlcOrder");
                                   //                       if (orderType != "GTT") {
-                                  //                         marginUpdate();
+                                  //                         _debouncedMarginUpdate();
                                   //                       }
                                   //                     }),
                                   //                 Text('Intraday',
@@ -3336,7 +3322,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   //                     orderInput.chngInvesType(
                                   //                         value!, "PlcOrder");
                                   //                     if (orderType != "GTT") {
-                                  //                       marginUpdate();
+                                  //                       _debouncedMarginUpdate();
                                   //                     }
                                   //                   }),
                                   //               Text(
@@ -3439,7 +3425,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     //                         priceCtrl.text =
                                     //                             "Market";
 
-                                    //                         double ltp = (double.parse("${widget.orderArg.ltp}") *
+                                    //                         double ltp = (SafeParse.toDouble(widget.orderArg.ltp) *
                                     //                                 double.parse(mktProtCtrl.text.isEmpty? "0": mktProtCtrl.text)) /100;
 
                                     //                         if (isBuy!) {
@@ -3479,7 +3465,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     //                                   widget.orderArg
                                     //                                       .exchange);
                                     //                       });
-                                    //                       marginUpdate();
+                                    //                       _debouncedMarginUpdate();
                                     //                       FocusScope.of(context)
                                     //                           .unfocus();
                                     //                       },
@@ -3774,7 +3760,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           // if (qtyCtrl.text == "0") qtyCtrl.text = "1";
                                                                         }
                                                                       }
-                                                                      marginUpdate();
+                                                                      _debouncedMarginUpdate();
                                                                     });
                                                                   },
                                                                   child:
@@ -3916,7 +3902,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               "1";
                                                                         }
                                                                       }
-                                                                      marginUpdate();
+                                                                      _debouncedMarginUpdate();
                                                                     });
                                                                   },
                                                                   child:
@@ -4025,7 +4011,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                                         }
                                                                       }
-                                                                      marginUpdate();
+                                                                      _debouncedMarginUpdate();
                                                                     });
                                                                   },
                                                                   child: SvgPicture.asset(
@@ -4119,7 +4105,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .length),
                                                               );
                                                             }
-                                                            marginUpdate();
+                                                            _debouncedMarginUpdate();
                                                           }
                                                         },
                                                       ),
@@ -4280,7 +4266,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         () {
                                                                       ordPrice =
                                                                           value;
-                                                                      marginUpdate();
+                                                                      _debouncedMarginUpdate();
                                                                     });
                                                                   }
                                                                 },
@@ -4367,7 +4353,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         orderInput.chngPriceType(
                                                                             priceType,
                                                                             widget.orderArg.exchange);
-                                                                        marginUpdate();
+                                                                        _debouncedMarginUpdate();
                                                                       });
                                                                     },
                                                                     child:
@@ -4582,7 +4568,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       widget
                                                                           .orderArg
                                                                           .exchange);
-                                                                  marginUpdate();
+                                                                  _debouncedMarginUpdate();
                                                                 });
                                                               },
                                                               activeColor: colors
@@ -4845,7 +4831,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 _isCoverOrderEnabled,
                                                                 _isBracketOrderEnabled,
                                                               );
-                                                              marginUpdate();
+                                                              _debouncedMarginUpdate();
                                                             });
                                                           },
                                                           activeColor:
@@ -4901,7 +4887,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 _isCoverOrderEnabled,
                                                                 _isBracketOrderEnabled,
                                                               );
-                                                              marginUpdate();
+                                                              _debouncedMarginUpdate();
                                                             });
                                                           },
                                                           activeColor:
@@ -5142,7 +5128,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .none
                                                                   ? () {}
                                                                   : () {
-                                                                      marginUpdate();
+                                                                      _debouncedMarginUpdate();
                                                                       BrokerageInput brokerageInput = BrokerageInput(
                                                                           exch:
                                                                               "${widget.scripInfo.exch}",
@@ -5416,7 +5402,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .none
                                                                 ? null
                                                                 : () {
-                                                                    marginUpdate();
+                                                                    _debouncedMarginUpdate();
                                                                   },
                                                             icon: SvgPicture
                                                                 .asset(assets
@@ -5619,16 +5605,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       // else {
                                                                       double
                                                                           ltp =
-                                                                          double.parse(widget.orderArg.ltp ??
-                                                                              "0.00");
+                                                                          SafeParse.toDouble(widget.orderArg.ltp);
                                                                       double
                                                                           val1 =
-                                                                          double.parse(orderInput
+                                                                          SafeParse.toDouble(orderInput
                                                                               .val1Ctrl
                                                                               .text);
                                                                       double
                                                                           val2 =
-                                                                          double.parse(orderInput
+                                                                          SafeParse.toDouble(orderInput
                                                                               .val2Ctrl
                                                                               .text);
 
@@ -5656,7 +5641,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Target trigger price cannot be empty");
-                                                                      } else if (double.parse(orderInput.val1Ctrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.val1Ctrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5668,7 +5653,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Quantity cannot be empty");
-                                                                      } else if (double.parse(orderInput.qtyCtrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.qtyCtrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5683,7 +5668,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       } else if (orderInput.priceCtrl.text != "Market" &&
                                                                           double.tryParse(orderInput.priceCtrl.text) !=
                                                                               null &&
-                                                                          double.parse(orderInput.priceCtrl.text) <=
+                                                                          SafeParse.toDouble(orderInput.priceCtrl.text) <=
                                                                               0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5695,7 +5680,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Stoploss trigger price cannot be empty");
-                                                                      } else if (double.parse(orderInput.val2Ctrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.val2Ctrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5707,7 +5692,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "OCO quantity cannot be empty");
-                                                                      } else if (double.parse(orderInput
+                                                                      } else if (SafeParse.toDouble(orderInput
                                                                               .ocoQtyCtrl
                                                                               .text) <=
                                                                           0) {
@@ -5753,13 +5738,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                             .qtyCtrl
                                                                             .text
                                                                             .isNotEmpty &&
-                                                                        double.parse(orderInput.val1Ctrl.text) >
+                                                                        SafeParse.toDouble(orderInput.val1Ctrl.text) >
                                                                             0 &&
-                                                                        double.parse(orderInput.qtyCtrl.text) >
+                                                                        SafeParse.toDouble(orderInput.qtyCtrl.text) >
                                                                             0 &&
                                                                         (orderInput.priceCtrl.text ==
                                                                                 "Market" ||
-                                                                            double.parse(orderInput.priceCtrl.text) >
+                                                                            SafeParse.toDouble(orderInput.priceCtrl.text) >
                                                                                 0)) {
                                                                       // if (orderInput
                                                                       //             .actPrcType == "SL Limit" ||
@@ -5781,14 +5766,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
                                                                       double
                                                                           ltp =
-                                                                          double.parse(widget.orderArg.ltp ??
-                                                                              "0.00");
+                                                                          SafeParse.toDouble(widget.orderArg.ltp);
                                                                       double
                                                                           val1 =
-                                                                          double.parse(orderInput
+                                                                          SafeParse.toDouble(orderInput
                                                                               .val1Ctrl
                                                                               .text);
-                                                                      // double val2 = double.parse(orderInput.val2Ctrl.text);
+                                                                      // double val2 = SafeParse.toDouble(orderInput.val2Ctrl.text);
 
                                                                       if (val1 >
                                                                           ltp) {
@@ -5820,7 +5804,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Target trigger price cannot be empty");
-                                                                      } else if (double.parse(orderInput.val1Ctrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.val1Ctrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5832,7 +5816,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Quantity cannot be empty");
-                                                                      } else if (double.parse(orderInput.qtyCtrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.qtyCtrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5844,7 +5828,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Price cannot be empty");
-                                                                      } else if (double.parse(orderInput.priceCtrl.text) <=
+                                                                      } else if (SafeParse.toDouble(orderInput.priceCtrl.text) <=
                                                                           0) {
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
@@ -5856,7 +5840,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "Stoploss trigger price cannot be empty");
-                                                                      } else if (double.parse(orderInput
+                                                                      } else if (SafeParse.toDouble(orderInput
                                                                               .val2Ctrl
                                                                               .text) <=
                                                                           0) {
@@ -5870,7 +5854,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "OCO quantity cannot be empty");
-                                                                      } else if (double.parse(orderInput
+                                                                      } else if (SafeParse.toDouble(orderInput
                                                                               .ocoQtyCtrl
                                                                               .text) <=
                                                                           0) {
@@ -5884,7 +5868,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
                                                                             "OCO price cannot be empty");
-                                                                      } else if (double.parse(orderInput
+                                                                      } else if (SafeParse.toDouble(orderInput
                                                                               .ocoPriceCtrl
                                                                               .text) <=
                                                                           0) {
@@ -5902,22 +5886,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   setState(() {
                                                                     if (frezQty ==
                                                                         0) {
-                                                                      quantity = int.parse(getFinalQuantity(qtyCtrl.text)
-                                                                              .isEmpty
-                                                                          ? "0"
-                                                                          : getFinalQuantity(
-                                                                              qtyCtrl.text));
+                                                                      quantity = SafeParse.toInt(getFinalQuantity(qtyCtrl.text));
                                                                       // frezQty;
                                                                     } else {
-                                                                      quantity = int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
-                                                                              ? "0"
-                                                                              : getFinalQuantity(qtyCtrl.text)) ~/
+                                                                      quantity = SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) ~/
                                                                           frezQty;
                                                                     }
-                                                                    reminder = int.parse(getFinalQuantity(qtyCtrl.text).isEmpty
-                                                                            ? "0"
-                                                                            : getFinalQuantity(qtyCtrl
-                                                                                .text)) -
+                                                                    reminder = SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) -
                                                                         (frezQty *
                                                                             quantity);
                                                                     maxQty =
@@ -5960,7 +5935,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                                 : "$fieldName cannot be 0"
                                                                             : "Price cannot be 0");
                                                                   } else if (frezQty > lotSize &&
-                                                                      int.parse(getFinalQuantity(qtyCtrl.text).trim()) >
+                                                                      SafeParse.toInt(getFinalQuantity(qtyCtrl.text).trim()) >
                                                                           frezQtyOrderSliceMaxLimit *
                                                                               frezQty) {
                                                                     ResponsiveSnackBar.showWarning(
@@ -5968,14 +5943,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                                   } else if ((priceType == "Limit" || priceType == "SL Limit") &&
                                                                       _hasValidCircuitBreakerValues &&
-                                                                      ((double.parse(ordPrice) < double.parse(widget.scripInfo.lc!)) ||
-                                                                          (double.parse(ordPrice) >
-                                                                              double.parse(widget
-                                                                                  .scripInfo.uc!)))) {
+                                                                      ((SafeParse.toDouble(ordPrice) < SafeParse.toDouble(widget.scripInfo.lc)) ||
+                                                                          (SafeParse.toDouble(ordPrice) >
+                                                                              SafeParse.toDouble(widget
+                                                                                  .scripInfo.uc)))) {
                                                                     ResponsiveSnackBar.showWarning(
                                                                         context,
-                                                                        double.parse(ordPrice) <
-                                                                                double.parse(widget.scripInfo.lc!)
+                                                                        SafeParse.toDouble(ordPrice) <
+                                                                                SafeParse.toDouble(widget.scripInfo.lc)
                                                                             ? "Price cannot be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
                                                                             : "Price cannot be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
                                                                   } else if ((orderType == "Delivery" || orderType == "Intraday") &&
@@ -5996,17 +5971,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       if (isBuy!) {
                                                                         if (priceType ==
                                                                             "SL MKT") {
-                                                                          if (double.parse(triggerPriceCtrl.text) <
-                                                                              double.parse(widget.orderArg.ltp ??
-                                                                                  "0.00")) {
+                                                                          if (SafeParse.toDouble(triggerPriceCtrl.text) <
+                                                                              SafeParse.toDouble(widget.orderArg.ltp)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger should be greater than LTP");
                                                                           } else if (_hasValidCircuitBreakerValues &&
-                                                                              double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                              SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                           } else {
-                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                            if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                                 widget.scripInfo.frzqty != null)) {
                                                                               placeOrder(orderInput, true, theme);
                                                                             } else {
@@ -6015,17 +5989,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           }
                                                                         } else {
                                                                           if (_hasValidCircuitBreakerValues &&
-                                                                              double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                              SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc}");
-                                                                          } else if (double.parse(ordPrice) < double.parse(triggerPriceCtrl.text)) {
+                                                                          } else if (SafeParse.toDouble(ordPrice) < SafeParse.toDouble(triggerPriceCtrl.text)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger should be less than price");
-                                                                          } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                          } else if (_hasValidCircuitBreakerValues && SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                           } else {
-                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                            if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                                 widget.scripInfo.frzqty != null)) {
                                                                               placeOrder(orderInput, true, theme);
                                                                             } else {
@@ -6036,17 +6010,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       } else {
                                                                         if (priceType ==
                                                                             "SL MKT") {
-                                                                          if (double.parse(triggerPriceCtrl.text) >
-                                                                              double.parse(widget.orderArg.ltp ??
-                                                                                  "0.00")) {
+                                                                          if (SafeParse.toDouble(triggerPriceCtrl.text) >
+                                                                              SafeParse.toDouble(widget.orderArg.ltp)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger should be lesser than LTP");
                                                                           } else if (_hasValidCircuitBreakerValues &&
-                                                                              double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                              SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                           } else {
-                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                            if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                                 widget.scripInfo.frzqty != null)) {
                                                                               placeOrder(orderInput, true, theme);
                                                                             } else {
@@ -6055,17 +6028,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           }
                                                                         } else {
                                                                           if (_hasValidCircuitBreakerValues &&
-                                                                              double.parse(triggerPriceCtrl.text) > double.parse(widget.scripInfo.uc!)) {
+                                                                              SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
-                                                                          } else if (double.parse(ordPrice) > double.parse(triggerPriceCtrl.text)) {
+                                                                          } else if (SafeParse.toDouble(ordPrice) > SafeParse.toDouble(triggerPriceCtrl.text)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger should be greater than price");
-                                                                          } else if (_hasValidCircuitBreakerValues && double.parse(triggerPriceCtrl.text) < double.parse(widget.scripInfo.lc!)) {
+                                                                          } else if (_hasValidCircuitBreakerValues && SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                             ResponsiveSnackBar.showWarning(context,
                                                                                 "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                           } else {
-                                                                            if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                            if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                                 widget.scripInfo.frzqty != null)) {
                                                                               placeOrder(orderInput, true, theme);
                                                                             } else {
@@ -6091,13 +6064,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     } else {
                                                                       if (isBuy!) {
                                                                         if (_hasValidCircuitBreakerValues &&
-                                                                            (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
-                                                                                double.parse(widget.scripInfo.lc!)) {
+                                                                            (SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)) <
+                                                                                SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
+                                                                              "Price(Order price - Stoploss = ${(SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
                                                                         } else {
-                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null)) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6112,13 +6085,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         }
                                                                       } else {
                                                                         if (_hasValidCircuitBreakerValues &&
-                                                                            (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
-                                                                                double.parse(widget.scripInfo.uc!)) {
+                                                                            (SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text)) >
+                                                                                SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
+                                                                              "Price(Order price + Stoploss = ${(SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
                                                                         } else {
-                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null)) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6171,14 +6144,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                             lc) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
+                                                                          "Price(Order price - Stoploss = ${(SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
                                                                     } else if (!isBuy! &&
                                                                         (userOrderPrice +
                                                                                 userStopLoss) >
                                                                             uc) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
+                                                                          "Price(Order price + Stoploss = ${(SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
                                                                     } else if ((triggerPriceCtrl.text.isEmpty ||
                                                                             triggerPriceCtrl.text ==
                                                                                 "0") &&
@@ -6207,7 +6180,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               context,
                                                                               "Trigger cannot be greater than upper circuit limit of $uc");
                                                                         } else {
-                                                                          if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if (SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6237,7 +6210,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               context,
                                                                               "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                         } else {
-                                                                          if (int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if (SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6255,10 +6228,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   } else if (_isBracketOrderEnabled && orderType == "CO - BO" && (priceType == "Limit" || priceType == "Market")) {
                                                                     double
                                                                         tickSize =
-                                                                        double.parse(widget
+                                                                        SafeParse.toDouble(widget
                                                                             .scripInfo
-                                                                            .ti
-                                                                            .toString());
+                                                                            .ti);
                                                                     double
                                                                         enteredValue =
                                                                         double.tryParse(trailingTicksCtrl.text) ??
@@ -6282,28 +6254,28 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
                                                                           "${targetCtrl.text.isEmpty ? "Target" : "Stoploss"} cannot be empty");
-                                                                    } else if (double.parse(stopLossCtrl.text) <= 0 ||
-                                                                        double.parse(targetCtrl.text) <=
+                                                                    } else if (SafeParse.toDouble(stopLossCtrl.text) <= 0 ||
+                                                                        SafeParse.toDouble(targetCtrl.text) <=
                                                                             0) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "${double.parse(targetCtrl.text) <= 0 ? "Target" : "Stoploss"} cannot be 0");
+                                                                          "${SafeParse.toDouble(targetCtrl.text) <= 0 ? "Target" : "Stoploss"} cannot be 0");
                                                                     } else if (isBuy! &&
                                                                         _hasValidCircuitBreakerValues &&
-                                                                        (double.parse(ordPrice) - double.parse(stopLossCtrl.text)) <
-                                                                            double.parse(widget
-                                                                                .scripInfo.lc!)) {
+                                                                        (SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)) <
+                                                                            SafeParse.toDouble(widget
+                                                                                .scripInfo.lc)) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
+                                                                          "Price(Order price - Stoploss = ${(SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc}");
                                                                     } else if (!isBuy! &&
                                                                         _hasValidCircuitBreakerValues &&
-                                                                        (double.parse(ordPrice) + double.parse(stopLossCtrl.text)) >
-                                                                            double.parse(widget
-                                                                                .scripInfo.uc!)) {
+                                                                        (SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text)) >
+                                                                            SafeParse.toDouble(widget
+                                                                                .scripInfo.uc)) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
+                                                                          "Price(Order price + Stoploss = ${(SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc}");
                                                                     } else if (trailingTicksCtrl
                                                                             .text
                                                                             .isNotEmpty &&
@@ -6321,7 +6293,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           context,
                                                                           "Trailing SL should be positive value");
                                                                     } else {
-                                                                      if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) >
+                                                                      if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) >
                                                                               frezQty &&
                                                                           widget.scripInfo.frzqty !=
                                                                               null)) {
@@ -6373,14 +6345,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                             lc) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price - Stoploss = ${(double.parse(ordPrice) - double.parse(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
+                                                                          "Price(Order price - Stoploss = ${(SafeParse.toDouble(ordPrice) - SafeParse.toDouble(stopLossCtrl.text)).toStringAsFixed(2)}) Stoploss cannot be lower than ${widget.scripInfo.lc ?? 0.00}");
                                                                     } else if (!isBuy! &&
                                                                         (userOrderPrice +
                                                                                 userStopLoss) >
                                                                             uc) {
                                                                       ResponsiveSnackBar.showWarning(
                                                                           context,
-                                                                          "Price(Order price + Stoploss = ${(double.parse(ordPrice) + double.parse(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
+                                                                          "Price(Order price + Stoploss = ${(SafeParse.toDouble(ordPrice) + SafeParse.toDouble(stopLossCtrl.text))}) Stoploss cannot be greater than ${widget.scripInfo.uc ?? 0.00}");
                                                                     } else if (triggerPriceCtrl
                                                                             .text
                                                                             .isEmpty &&
@@ -6407,7 +6379,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               context,
                                                                               "Trigger cannot be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
                                                                         } else {
-                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null)) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6437,7 +6409,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               context,
                                                                               "Trigger cannot be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
                                                                         } else {
-                                                                          if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) > frezQty &&
+                                                                          if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) > frezQty &&
                                                                               widget.scripInfo.frzqty != null)) {
                                                                             placeOrder(
                                                                                 orderInput,
@@ -6453,7 +6425,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       }
                                                                     }
                                                                   } else {
-                                                                    if ((int.parse(getFinalQuantity(qtyCtrl.text).isEmpty ? "0" : getFinalQuantity(qtyCtrl.text)) >
+                                                                    if ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) >
                                                                             frezQty &&
                                                                         widget.scripInfo.frzqty !=
                                                                             null)) {
@@ -6767,7 +6739,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               : WebColors.textSecondary).withValues(alpha: 0.5),
                         ),
                         onChanged: (value) {
-                          if (value.isNotEmpty && double.parse(value) > 0) {
+                          if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
                             final regex = RegExp(
                                 r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
                             if (!regex.hasMatch(value)) {
@@ -6783,7 +6755,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           }
 
                           if (value.isNotEmpty && value != "0") {
-                            marginUpdate();
+                            _debouncedMarginUpdate();
                           } else if (value == "0") {
                             ResponsiveSnackBar.showWarning(
                                 context, "Trigger cannot be 0");
@@ -6839,7 +6811,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         : const Color(0xffF1F3F8),
                     hintText: "0.00",
                     onChanged: (value) {
-                      if (value.isNotEmpty && double.parse(value) > 0) {
+                      if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
                         final regex = RegExp(
                             r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
                         if (!regex.hasMatch(value)) {
@@ -6856,7 +6828,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       if (value.isEmpty) {
                         ResponsiveSnackBar.showWarning(
                             context, "Target cannot be empty");
-                      } else if (value.isNotEmpty && double.parse(value) <= 0) {
+                      } else if (value.isNotEmpty && SafeParse.toDouble(value) <= 0) {
                         ResponsiveSnackBar.showWarning(
                             context, "Target cannot be 0");
                       }
@@ -6912,7 +6884,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
                     onChanged: (value) {
-                      if (value.isNotEmpty && double.parse(value) > 0) {
+                      if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
                         final regex = RegExp(
                             r'^(\d+)?(\.\d{0,2})?$'); // Allows numbers with up to 2 decimal places
                         if (!regex.hasMatch(value)) {
@@ -6928,7 +6900,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       if (value.isEmpty) {
                         ResponsiveSnackBar.showWarning(
                             context, "Stoploss cannot be empty");
-                      } else if (value.isNotEmpty && double.parse(value) <= 0) {
+                      } else if (value.isNotEmpty && SafeParse.toDouble(value) <= 0) {
                         ResponsiveSnackBar.showWarning(
                             context, "Stoploss cannot be 0");
                       }
@@ -6987,7 +6959,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     hintText: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty) {
-                        double tickSize = double.parse(scripInfo.ti.toString());
+                        double tickSize = SafeParse.toDouble(scripInfo.ti);
                         double enteredValue =
                             (double.tryParse(value) ?? 0).abs();
 
@@ -7376,9 +7348,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       if (!isSliceOrd) {
         bool placeorder = true;
         if (priceType == "Limit" || priceType == "SL Limit") {
-          String r = roundOffWithInterval(double.parse(priceCtrl.text), tik)
+          String r = roundOffWithInterval(SafeParse.toDouble(priceCtrl.text), tik)
               .toStringAsFixed(2);
-          if (double.parse(priceCtrl.text) != double.parse(r)) {
+          if (SafeParse.toDouble(priceCtrl.text) != SafeParse.toDouble(r)) {
             placeorder = false;
             ResponsiveSnackBar.showWarning(
                 context, "Price should be multiple of tick size $tik => $r");
@@ -7386,17 +7358,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         }
         if (placeorder && (priceType == "SL Limit" || priceType == "SL MKT")) {
           String r =
-              roundOffWithInterval(double.parse(triggerPriceCtrl.text), tik)
+              roundOffWithInterval(SafeParse.toDouble(triggerPriceCtrl.text), tik)
                   .toStringAsFixed(2);
-          if (double.parse(triggerPriceCtrl.text) != double.parse(r)) {
+          if (SafeParse.toDouble(triggerPriceCtrl.text) != SafeParse.toDouble(r)) {
             placeorder = false;
             ResponsiveSnackBar.showWarning(
                 context, "Trigger should be multiple of tick size $tik => $r");
           }
         }
-        int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() *
+        int q = ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) / lotSize).round() *
             lotSize);
-        if (int.parse(getFinalQuantity(qtyCtrl.text)) != q &&
+        if (SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) != q &&
             widget.scripInfo.exch != 'MCX') {
           placeorder = false;
           ResponsiveSnackBar.showWarning(context,
@@ -7405,8 +7377,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
         if ((priceType == "Market" || priceType == "SL MKT") &&
             (mktProtCtrl.text.isEmpty ||
-                double.parse(mktProtCtrl.text.toString()) > 20 ||
-                double.parse(mktProtCtrl.text.toString()) < 1)) {
+                SafeParse.toDouble(mktProtCtrl.text.toString()) > 20 ||
+                SafeParse.toDouble(mktProtCtrl.text.toString()) < 1)) {
           placeorder = false;
           ResponsiveSnackBar.showWarning(
               context, "Market Protection between 1% to 20%");
@@ -7431,7 +7403,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
               qty: widget.scripInfo.exch == 'MCX'
-                  ? (int.parse(getFinalQuantity(qtyCtrl.text)) * lotSize)
+                  ? (SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) * lotSize)
                       .toString()
                   : getFinalQuantity(qtyCtrl.text),
               ret: validityType,
@@ -7464,9 +7436,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           }
         }
       } else {
-        int q = ((int.parse(getFinalQuantity(qtyCtrl.text)) / lotSize).round() *
+        int q = ((SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) / lotSize).round() *
             lotSize);
-        if (int.parse(getFinalQuantity(qtyCtrl.text)) != q &&
+        if (SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) != q &&
             widget.scripInfo.exch != 'MCX') {
           ResponsiveSnackBar.showWarning(context,
               "Quantity should be multiple of lot size $lotSize => $q");
@@ -7515,6 +7487,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     );
   }
 
+  /// Debounced version of marginUpdate to reduce API calls
+  /// Delays the API call by 500ms and cancels any pending calls
+  void _debouncedMarginUpdate() {
+    _marginUpdateDebounceTimer?.cancel();
+    _marginUpdateDebounceTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        marginUpdate();
+      }
+    });
+  }
+
   void marginUpdate() {
     OrderMarginInput input = OrderMarginInput(
         exch: "${widget.scripInfo.exch}",
@@ -7522,7 +7505,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         prctyp: ref.read(ordInputProvider).prcType,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (double.parse(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize)
+            ? (SafeParse.toDouble(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize)
                 .toString()
             : getFinalQuantity(qtyCtrl.text),
         rorgprc: '0',
@@ -7540,7 +7523,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
-            ? (double.parse(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize)
+            ? (SafeParse.toDouble(getFinalQuantity(qtyCtrl.text)).toInt() * lotSize)
                 .toString()
             : getFinalQuantity(qtyCtrl.text),
         trantype: isBuy! ? "B" : "S",
@@ -7911,7 +7894,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     String curDate = convDateWithTime();
 
     // Validate quantity is multiple of lot size for basket orders
-    final quantity = int.parse(qtyCtrl.text);
+    final quantity = SafeParse.toInt(qtyCtrl.text);
     final lotSizeVal = lotSize;
 
     if (quantity % lotSizeVal != 0) {
@@ -8083,25 +8066,25 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     // Update price controller based on type
     if (priceType == "Market" || priceType == "SL MKT") {
       priceCtrl.text = "Market";
-      double ltp = (double.parse("${widget.orderArg.ltp}") *
-              double.parse(mktProtCtrl.text.isEmpty ? "0" : mktProtCtrl.text)) /
+      double ltp = (SafeParse.toDouble(widget.orderArg.ltp) *
+              SafeParse.toDouble(mktProtCtrl.text)) /
           100;
 
       if (isBuy!) {
-        ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") + ltp)
+        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) + ltp)
             .toStringAsFixed(2);
       } else {
-        ordPrice = (double.parse("${widget.orderArg.ltp ?? 0.00}") - ltp)
+        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) - ltp)
             .toStringAsFixed(2);
       }
       double result =
-          double.parse(ordPrice) + (double.parse("${widget.scripInfo.ti}") / 2);
-      result -= result % double.parse("${widget.scripInfo.ti}");
+          SafeParse.toDouble(ordPrice) + (SafeParse.toDouble(widget.scripInfo.ti) / 2);
+      result -= result % SafeParse.toDouble(widget.scripInfo.ti);
 
       if (_hasValidCircuitBreakerValues) {
-        if (result >= double.parse(widget.scripInfo.uc!)) {
+        if (result >= SafeParse.toDouble(widget.scripInfo.uc)) {
           ordPrice = widget.scripInfo.uc!;
-        } else if (result <= double.parse(widget.scripInfo.lc!)) {
+        } else if (result <= SafeParse.toDouble(widget.scripInfo.lc)) {
           ordPrice = widget.scripInfo.lc!;
         } else {
           ordPrice = result.toStringAsFixed(2);

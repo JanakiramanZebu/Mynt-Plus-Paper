@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/material.dart'
-    hide MenuController, TextButton, AlertDialog, showDialog, DropdownMenu;
+    hide MenuController, TextButton, AlertDialog, DropdownMenu, showDialog;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
+import 'dart:html' as html;
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
@@ -11,12 +13,15 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/web_colors.dart' as web_colors;
+import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/web/profile/logged_user_list_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide Colors;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../customizable_split_home_screen.dart' show ScreenType;
+import '../../../market_watch/tv_chart/chart_iframe_guard.dart';
 
 // Profile dropdown widget using shadcn
 class ProfileDropdown extends ConsumerStatefulWidget {
@@ -97,7 +102,7 @@ class _ProfileDropdownState extends ConsumerState<ProfileDropdown> {
 }
 
 // Profile dropdown menu content using shadcn DropdownMenu
-class ProfileDropdownMenu extends ConsumerWidget {
+class ProfileDropdownMenu extends ConsumerStatefulWidget {
   final bool isDarkMode;
   final String clientId;
   final Function(dynamic)? onNavigateToScreen;
@@ -116,28 +121,98 @@ class ProfileDropdownMenu extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileDropdownMenu> createState() => _ProfileDropdownMenuState();
+}
+
+class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
+  @override
+  void initState() {
+    super.initState();
+    // Acquire chart iframe guard on init to prevent cursor bleed
+    ChartIframeGuard.acquire();
+    _disableAllChartIframes();
+  }
+
+  // Directly disable all chart iframes and reset cursor
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    // Release chart iframe guard and re-enable iframes
+    ChartIframeGuard.release();
+    _enableAllChartIframes();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userProfile = ref.watch(userProfileProvider);
     final theme = ref.watch(themeProvider);
     final funds = ref.watch(fundProvider);
     final Preferences pref = locator<Preferences>();
     final String reflink = "https://oa.mynt.in/?ref=${pref.clientId}";
 
-    final userName = userProfile.userDetailModel?.uname ?? clientId;
+    final userName = userProfile.userDetailModel?.uname ?? widget.clientId;
     final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
 
     final textColor = resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
     final subtitleColor = resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     final iconColor = resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon);
 
-    return SizedBox(
-      width: 300,
-      child: DropdownMenu(
+    return PointerInterceptor(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.basic,
+        onEnter: (_) {
+          ChartIframeGuard.acquire();
+          _disableAllChartIframes();
+        },
+        onHover: (_) {
+          _disableAllChartIframes();
+        },
+        onExit: (_) {
+          ChartIframeGuard.release();
+          _enableAllChartIframes();
+        },
+        child: Listener(
+          onPointerMove: (_) {
+            _disableAllChartIframes();
+          },
+          child: SizedBox(
+            width: 300,
+            child: DropdownMenu(
         children: [
           // User Profile Header
           MenuButton(
             onPressed: (ctx) {
-              Navigator.pushNamed(parentContext, Routes.myAcc);
+              Navigator.pushNamed(widget.parentContext, Routes.myAcc);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -181,7 +256,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          clientId,
+                          widget.clientId,
                           style: MyntWebTextStyles.para(
                             context,
                             color: subtitleColor,
@@ -206,7 +281,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(parentContext);
+                await funds.fetchHstoken(widget.parentContext);
                 final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
@@ -222,7 +297,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(parentContext);
+                await funds.fetchHstoken(widget.parentContext);
                 final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
@@ -238,7 +313,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(parentContext);
+                await funds.fetchHstoken(widget.parentContext);
                 final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
@@ -254,7 +329,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(parentContext);
+                await funds.fetchHstoken(widget.parentContext);
                 final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
@@ -286,7 +361,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                await funds.fetchHstoken(parentContext);
+                await funds.fetchHstoken(widget.parentContext);
                 final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
@@ -302,11 +377,11 @@ class ProfileDropdownMenu extends ConsumerWidget {
               textColor: textColor,
               subtitleColor: subtitleColor,
               onPressed: (ctx) async {
-                if (onNavigateToScreen != null) {
-                  onNavigateToScreen!(ScreenType.settings);
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.settings);
                 } else {
                   await ref.read(userProfileProvider).fetchsetting();
-                  Navigator.pushNamed(parentContext, Routes.profilesettingscreen);
+                  Navigator.pushNamed(widget.parentContext, Routes.profilesettingscreen);
                 }
               },
             ),
@@ -314,7 +389,7 @@ class ProfileDropdownMenu extends ConsumerWidget {
           const MenuDivider(),
 
           // Swap Panels
-          if (onSwapPanels != null)
+          if (widget.onSwapPanels != null)
             _buildSimpleMenuItem(
               context,
               icon: Icons.swap_horiz,
@@ -322,68 +397,71 @@ class ProfileDropdownMenu extends ConsumerWidget {
               iconColor: iconColor,
               textColor: textColor,
               onPressed: (ctx) {
-                onSwapPanels!();
+                widget.onSwapPanels!();
               },
             ),
 
           // Theme Toggle
-          if (onThemeToggle != null)
+          if (widget.onThemeToggle != null)
             _buildSimpleMenuItem(
               context,
-              icon: isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              title: isDarkMode ? 'Light Mode' : 'Dark Mode',
+              icon: widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              title: widget.isDarkMode ? 'Light Mode' : 'Dark Mode',
               iconColor: iconColor,
               textColor: textColor,
               onPressed: (ctx) {
-                onThemeToggle!();
+                widget.onThemeToggle!();
               },
             ),
 
           // Switch Account
-          _buildSimpleMenuItem(
-            context,
-            icon: Icons.switch_account_outlined,
-            title: 'Switch Account',
-            iconColor: iconColor,
-            textColor: textColor,
-            onPressed: (ctx) {
-              material.showDialog(
-                context: parentContext,
-                builder: (context) => const LoggedUserListWeb(initRoute: ''),
-              );
-            },
-          ),
+          // _buildSimpleMenuItem(
+          //   context,
+          //   icon: Icons.switch_account_outlined,
+          //   title: 'Switch Account',
+          //   iconColor: iconColor,
+          //   textColor: textColor,
+          //   onPressed: (ctx) {
+          //     material.showDialog(
+          //       context: widget.parentContext,
+          //       builder: (context) => const LoggedUserListWeb(initRoute: ''),
+          //     );
+          //   },
+          // ),
 
-          const MenuDivider(),
+          // const MenuDivider(),
 
           // Logout
-          MenuButton(
-            onPressed: (ctx) {
-              _showLogoutDialog(parentContext, ref, theme);
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.logout,
-                    size: 22,
-                    color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
-                  ),
-                  const SizedBox(width: 14),
-                  Text(
-                    'Logout',
-                    style: MyntWebTextStyles.body(
-                      context,
-                      fontWeight: MyntFonts.medium,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // MenuButton(
+          //   onPressed: (ctx) {
+          //     _showLogoutDialog(widget.parentContext, ref, theme);
+          //   },
+          //   child: Padding(
+          //     padding: const EdgeInsets.symmetric(vertical: 4),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.logout,
+          //           size: 22,
+          //           color: resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon),
+          //         ),
+          //         const SizedBox(width: 14),
+          //         Text(
+          //           'Logout',
+          //           style: MyntWebTextStyles.body(
+          //             context,
+          //             fontWeight: MyntFonts.medium,
+          //             color: textColor,
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
         ],
+      ),
+          ),
+        ),
       ),
     );
   }
@@ -480,79 +558,144 @@ class ProfileDropdownMenu extends ConsumerWidget {
 
   void _showLogoutDialog(
       BuildContext context, WidgetRef ref, ThemesProvider theme) {
+    // Store the parent context for use in the logout callback
+    final parentContext = context;
     material.showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return material.AlertDialog(
-          backgroundColor: resolveThemeColor(
-            dialogContext,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor,
+        return Dialog(
+          backgroundColor: theme.isDarkMode
+              ? web_colors.WebDarkColors.surface
+              : web_colors.WebColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
           ),
-          titleTextStyle: MyntWebTextStyles.head(dialogContext),
-          contentTextStyle: MyntWebTextStyles.body(dialogContext),
-          titlePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(14))),
-          scrollable: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40),
-          title: Text(
-            "Confirmation",
-            style: MyntWebTextStyles.titlesub(dialogContext),
-          ),
-          content: SizedBox(
-            width: MediaQuery.of(dialogContext).size.width,
+          child: SizedBox(
+            width: 400,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "Are you sure you want to logout?",
-                  style: MyntWebTextStyles.body(dialogContext),
+                // Header with close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: theme.isDarkMode
+                            ? web_colors.WebDarkColors.divider
+                            : web_colors.WebColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Logout',
+                        style: WebTextStyles.dialogTitle(
+                          isDarkTheme: theme.isDarkMode,
+                          color: theme.isDarkMode
+                              ? web_colors.WebDarkColors.textPrimary
+                              : web_colors.WebColors.textPrimary,
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? web_colors.WebDarkColors.iconSecondary
+                                  : web_colors.WebColors.iconSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16, right: 16, bottom: 16, top: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Are you sure you want to logout?",
+                            style: WebTextStyles.dialogContent(
+                              isDarkTheme: theme.isDarkMode,
+                              color: theme.isDarkMode
+                                  ? web_colors.WebDarkColors.textPrimary
+                                  : web_colors.WebColors.textPrimary,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: Container(
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: theme.isDarkMode
+                                    ? web_colors.WebDarkColors.primary
+                                    : web_colors.WebColors.primary,
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(5),
+                                  splashColor: Colors.white.withOpacity(0.2),
+                                  highlightColor: Colors.white.withOpacity(0.1),
+                                  onTap: () async {
+                                    Navigator.of(dialogContext).pop();
+                                    await ref
+                                        .read(authProvider)
+                                        .fetchLogout(parentContext);
+                                  },
+                                  child: Center(
+                                    child: Text(
+                                      'Logout',
+                                      style: WebTextStyles.buttonMd(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          actions: [
-            material.TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(
-                "No",
-                style: MyntWebTextStyles.bodyMedium(
-                  dialogContext,
-                  color: resolveThemeColor(
-                    dialogContext,
-                    dark: MyntColors.primary,
-                    light: MyntColors.primaryDark,
-                  ),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                ref.read(authProvider).fetchLogout(dialogContext);
-              },
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                backgroundColor: resolveThemeColor(
-                  dialogContext,
-                  dark: MyntColors.dividerDark,
-                  light: MyntColors.textBlack,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-              ),
-              child: Text(
-                "Yes",
-                style: MyntWebTextStyles.bodyMedium(
-                  dialogContext,
-                  color: MyntColors.textWhite,
-                ),
-              ),
-            ),
-          ],
         );
       },
     );
