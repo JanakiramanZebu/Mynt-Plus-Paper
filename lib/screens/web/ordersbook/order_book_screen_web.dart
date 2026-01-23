@@ -216,15 +216,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     final theme = ref.watch(themeProvider);
 
     // Always show the UI structure immediately for better UX
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
-      child: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: _isInitialized
-            ? _buildInitializedContent(theme)
-            : _buildLoadingContent(theme),
+    // Wrap with DrawerOverlay to enable shadcn openSheet functionality
+    return shadcn.DrawerOverlay(
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: _isInitialized
+              ? _buildInitializedContent(theme)
+              : _buildLoadingContent(theme),
+        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../../provider/stocks_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/fund_provider.dart';
+import '../../../provider/mf_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/explore_model/stocks_model/toplist_stocks.dart';
 import 'dart:async';
@@ -55,8 +56,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           await indexProvider.getTopIndicesForDashboard(context);
         }
 
-        // Fetch MF holdings for the dashboard portfolio tab
-        ref.read(portfolioProvider).fetchMFHoldings(context);
+        // Fetch MF holdings for the dashboard portfolio tab using the same API as holdings tab
+        // This avoids race condition with the old fetchMFHoldings API which can cause double data
+        await ref.read(mfProvider).fetchmfholdingnew();
 
         // Trade action data is fetched by _handleDashboardTap() before this screen is shown
         // No need to fetch here to avoid duplicate TopList API calls
@@ -207,6 +209,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         final portfolio = ref.watch(portfolioProvider);
         final orders = ref.watch(orderProvider);
         final fund = ref.watch(fundProvider);
+        final mfData = ref.watch(mfProvider);
         // Watch websocket for price updates
         ref.watch(websocketProvider);
 
@@ -228,7 +231,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             children: [
               _buildPortfolioHeader(context),
               const SizedBox(height: 14),
-              _buildPortfolioContent(context, portfolio, orders, fund),
+              _buildPortfolioContent(context, portfolio, orders, fund, mfData),
             ],
           ),
         );
@@ -262,6 +265,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     PortfolioProvider portfolio,
     OrderProvider orders,
     FundProvider fund,
+    MFProvider mfData,
   ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +287,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           child: _buildPortfolioSection(
             context,
             'Mutual Fund',
-            _getMutualFundMetrics(context, portfolio),
+            _getMutualFundMetrics(context, mfData),
             onTap: () {
               if (WebNavigationHelper.isAvailable) {
                 WebNavigationHelper.navigateTo(Routes.mfmainscreen);
@@ -561,11 +565,14 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   }
 
   List<Map<String, dynamic>> _getMutualFundMetrics(
-      BuildContext context, PortfolioProvider portfolio) {
-    final invest = portfolio.mfTotInveest;
-    final current = portfolio.mfTotCurrentVal;
-    final totalPnL = portfolio.mfTotalPnl;
-    final totalPnLPer = portfolio.mfTotalPnlPerchng;
+      BuildContext context, MFProvider mfData) {
+    // Use the same data source as holdings tab (mfholdingnew.summary)
+    // This ensures consistency and avoids race condition with the old API
+    final summary = mfData.mfholdingnew?.summary;
+    final invest = double.tryParse(summary?.invested ?? '0') ?? 0.0;
+    final current = double.tryParse(summary?.currentValue ?? '0') ?? 0.0;
+    final totalPnL = double.tryParse(summary?.absReturnValue ?? '0') ?? 0.0;
+    final totalPnLPer = double.tryParse(summary?.absReturnPercent ?? '0') ?? 0.0;
 
     return [
       {'label': 'Invested', 'value': '₹${invest.toStringAsFixed(2)}'},
