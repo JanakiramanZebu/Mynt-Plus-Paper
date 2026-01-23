@@ -9,8 +9,8 @@ import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../sharedWidget/functions.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
-import '../ipo_orderbook_details/open_order_details_web.dart';
 import '../../ipo_cancel_alert/cancel_alert_web.dart';
+import '../ipo_orderbook_details/ipo_order_details_sheet_web.dart';
 
 class OpenOrdersTable extends ConsumerStatefulWidget {
   final List<dynamic>? filteredOrders;
@@ -53,17 +53,17 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        // Allocation: Name (40%), Date (20%), Status (20%), Amount (20%)
-        final nameWidth = width * 0.40;
-        final dateWidth = width * 0.20;
-        final statusWidth = width * 0.20;
-        final amountWidth = width * 0.20;
+        // Allocation: Name (25%), Date (25%), Amount (25%), Status (25%)
+        final nameWidth = width * 0.25;
+        final dateWidth = width * 0.25;
+        final amountWidth = width * 0.25;
+        final statusWidth = width * 0.25;
 
         final columnWidths = {
           0: shadcn.FixedTableSize(nameWidth),
           1: shadcn.FixedTableSize(dateWidth),
-          2: shadcn.FixedTableSize(statusWidth),
-          3: shadcn.FixedTableSize(amountWidth),
+          2: shadcn.FixedTableSize(amountWidth),
+          3: shadcn.FixedTableSize(statusWidth),
         };
 
         return Padding(
@@ -100,13 +100,12 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                       rows: [
                         shadcn.TableHeader(
                           cells: [
-                            _buildHeaderCell("Stock name", 0, theme),
-                            _buildHeaderCell("Date", 1, theme,
-                                alignRight: true),
-                            _buildHeaderCell("Status", 2, theme,
+                            _buildHeaderCell("Date", 0, theme),
+                            _buildHeaderCell("Stock name", 1, theme),
+                            _buildHeaderCell("Amount", 2, theme,
                                 centered: true),
-                            _buildHeaderCell("Amount", 3, theme,
-                                alignRight: true),
+                            _buildHeaderCell("Status", 3, theme,
+                                centered: true),
                           ],
                         ),
                       ],
@@ -117,7 +116,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                     child: SingleChildScrollView(
                       child: shadcn.Table(
                         columnWidths: columnWidths,
-                        defaultRowHeight: const shadcn.FixedTableSize(60),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: sortedOrders.asMap().entries.map((entry) {
                           return _buildShadcnRow(entry.value, entry.key, theme);
                         }).toList(),
@@ -142,25 +141,25 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     sorted.sort((a, b) {
       int comparison = 0;
       switch (_sortColumnIndex) {
-        case 0: // Company Name
-          final nameA = a.companyName?.toString() ?? '';
-          final nameB = b.companyName?.toString() ?? '';
-          comparison = nameA.compareTo(nameB);
-          break;
-        case 1: // Date
+        case 0: // Date
           final dateA = a.responseDatetime?.toString() ?? '';
           final dateB = b.responseDatetime?.toString() ?? '';
           comparison = dateA.compareTo(dateB);
           break;
-        case 2: // Status
-          final statusA = a.reponseStatus?.toString() ?? '';
-          final statusB = b.reponseStatus?.toString() ?? '';
-          comparison = statusA.compareTo(statusB);
+        case 1: // Company Name
+          final nameA = a.companyName?.toString() ?? '';
+          final nameB = b.companyName?.toString() ?? '';
+          comparison = nameA.compareTo(nameB);
           break;
-        case 3: // Amount
+        case 2: // Amount
           final amountA = _getInvestedAmount(a);
           final amountB = _getInvestedAmount(b);
           comparison = amountA.compareTo(amountB);
+          break;
+        case 3: // Status
+          final statusA = a.reponseStatus?.toString() ?? '';
+          final statusB = b.reponseStatus?.toString() ?? '';
+          comparison = statusA.compareTo(statusB);
           break;
       }
       return _sortAscending ? comparison : -comparison;
@@ -193,7 +192,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
 
   shadcn.TableCell _buildHeaderCell(
       String text, int sortIndex, ThemesProvider theme,
-      {bool alignRight = false, bool centered = false}) {
+      {bool alignRight = false, bool centered = false, EdgeInsets? padding}) {
     Alignment alignment;
     if (centered) {
       alignment = Alignment.center;
@@ -218,7 +217,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
             : null,
         child: Container(
           alignment: alignment,
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -241,6 +240,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     VoidCallback? onTap,
     bool alignRight = false,
     bool centered = false,
+    EdgeInsets? padding,
   }) {
     Alignment alignment;
     if (centered) {
@@ -267,8 +267,12 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         child: GestureDetector(
           onTap: onTap,
           child: Container(
-            color: Colors.transparent,
-            padding:
+            color: rowIsHovered
+                ? resolveThemeColor(context,
+                        dark: MyntColors.primary, light: MyntColors.primary)
+                    .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
+                : Colors.transparent,
+            padding: padding ??
                 const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
             width: double.infinity,
             height: double.infinity,
@@ -283,118 +287,33 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
   }
 
   void _showOrderDetailsDialog(dynamic order) {
-    final overlay = Overlay.of(context, rootOverlay: true);
-    late OverlayEntry dialogOverlayEntry;
-
-    dialogOverlayEntry = OverlayEntry(
-      builder: (overlayContext) => Consumer(
-        builder: (context, ref, _) {
-          final currentTheme = ref.watch(themeProvider);
-          return Stack(
-            children: [
-              // Backdrop
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: () {
-                    dialogOverlayEntry.remove();
-                  },
-                  child: Container(
-                    color: Colors.black.withOpacity(0.5),
-                  ),
-                ),
-              ),
-              // Dialog centered
-              Center(
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: 600,
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: currentTheme.isDarkMode
-                          ? Theme.of(context).colorScheme.background
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Header
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.dividerDark,
-                                  light: MyntColors.divider,
-                                ),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${order.companyName} ${order.symbol}',
-                                style: MyntWebTextStyles.bodySmall(
-                                  context,
-                                  color: resolveThemeColor(
-                                    context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary,
-                                  ),
-                                  fontWeight: MyntFonts.bold,
-                                ),
-                              ),
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: () {
-                                    dialogOverlayEntry.remove();
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 18,
-                                      color: resolveThemeColor(
-                                        context,
-                                        dark: MyntColors.iconDark,
-                                        light: MyntColors.icon,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Content
-                        Flexible(
-                          child: SingleChildScrollView(
-                            child: IpoOpenOrderDetails(ipodetails: order),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+    shadcn.openSheet(
+      context: context,
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(-2, 0),
               ),
             ],
-          );
-        },
-      ),
+          ),
+          child: IpoOrderDetailsSheetWeb(order: order),
+        );
+      },
+      position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
     );
-
-    overlay.insert(dialogOverlayEntry);
   }
 
   Widget _buildHoverButton({
@@ -442,11 +361,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
   /// Only Pending orders can be cancelled (not Success orders).
   /// The order must also have the IPO bidding period still "Open".
   bool _canCancelOrder(dynamic order) {
-    // Only allow cancellation for Pending orders, not Success orders
-    final orderStatus = order.reponseStatus?.toString().trim();
-    if (orderStatus == "new success") {
-      return false;
+    final orderStatus = order.reponseStatus?.toString().toLowerCase().trim();
+    if (orderStatus != "new success") {
+      // For any status other than "new success" (e.g., Pending), always allow cancellation.
+      return true;
     }
+
+    // For "new success" orders, we only allow cancellation if the bidding period is still open.
+    // We proceed to the date/status check below.
 
     // Check if bidding start date exists and is not empty/null string
     final startDate = order.biddingstartdate?.toString().trim();
@@ -497,6 +419,28 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
 
     return shadcn.TableRow(
       cells: [
+        // Date
+        _buildShadcnCell(
+          uniqueId: uniqueId,
+          rowIsHovered: isHovered,
+          theme: theme,
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Text(
+            order.responseDatetime?.toString() == "" ||
+                    order.responseDatetime == null
+                ? "----"
+                : ipodateres(order.responseDatetime.toString()),
+            style: MyntWebTextStyles.body(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+        ),
         // Stock Name
         _buildShadcnCell(
           uniqueId: uniqueId,
@@ -554,18 +498,15 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
             ],
           ),
         ),
-        // Date
+        // Amount
         _buildShadcnCell(
           uniqueId: uniqueId,
           rowIsHovered: isHovered,
           theme: theme,
-          alignRight: true,
+          centered: true,
           onTap: () => _showOrderDetailsDialog(order),
           child: Text(
-            order.responseDatetime?.toString() == "" ||
-                    order.responseDatetime == null
-                ? "----"
-                : ipodateres(order.responseDatetime.toString()),
+            _getInvestedAmount(order),
             style: MyntWebTextStyles.body(
               context,
               color: resolveThemeColor(
@@ -611,26 +552,6 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                     : MyntColors.pending,
                 fontWeight: MyntFonts.medium,
               ),
-            ),
-          ),
-        ),
-        // Amount
-        _buildShadcnCell(
-          uniqueId: uniqueId,
-          rowIsHovered: isHovered,
-          theme: theme,
-          alignRight: true,
-          onTap: () => _showOrderDetailsDialog(order),
-          child: Text(
-            _getInvestedAmount(order),
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary,
-              ),
-              fontWeight: MyntFonts.medium,
             ),
           ),
         ),

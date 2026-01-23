@@ -85,14 +85,14 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     return TransparentLoaderScreen(
       isLoading: explore.loading,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             // Tabs and Search Bar Section
             _buildTabsAndSearchBar(theme, ipo),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             // Content based on selected tab
             Expanded(
               child: _CustomTabBarView(
@@ -113,7 +113,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
 
   Widget _buildTabsAndSearchBar(ThemesProvider theme, IPOProvider ipo) {
     return Container(
-      padding: const EdgeInsets.only(bottom: 8, left: 0, right: 16, top: 8),
+      padding: const EdgeInsets.only(bottom: 4, left: 0, right: 16, top: 0),
       decoration: const BoxDecoration(
           // border: Border(
           //   bottom: BorderSide(
