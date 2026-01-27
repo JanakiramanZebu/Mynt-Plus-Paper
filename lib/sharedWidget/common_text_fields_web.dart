@@ -67,6 +67,8 @@ class MyntTextField extends StatefulWidget {
   final int? maxLength;
   final bool obscureText;
   final TextInputAction? textInputAction;
+  final TextAlign textAlign;
+  final bool readOnly;
 
   const MyntTextField({
     super.key,
@@ -98,6 +100,8 @@ class MyntTextField extends StatefulWidget {
     this.maxLength,
     this.obscureText = false,
     this.textInputAction,
+    this.textAlign = TextAlign.start,
+    this.readOnly = false,
   }) : assert(
           placeholder != null || placeholderWidget != null,
           'Either placeholder or placeholderWidget must be provided',
@@ -223,6 +227,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
       maxLength: widget.maxLength,
       obscureText: widget.obscureText,
       textInputAction: widget.textInputAction,
+      textAlign: widget.textAlign,
+      readOnly: widget.readOnly,
       style: effectiveTextStyle,
       decoration: InputDecoration(
         hintText: widget.placeholder,
@@ -330,5 +336,12 @@ class MyntFormTextField extends MyntTextField {
     super.maxLength,
     super.obscureText = false,
     super.textInputAction,
+    super.textAlign = TextAlign.start,
+    super.readOnly = false,
+    super.leadingWidget,
+    super.trailingWidget,
+    super.backgroundColor,
+    super.textStyle,
+    super.placeholderStyle,
   });
 }

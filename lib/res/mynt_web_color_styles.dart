@@ -36,6 +36,8 @@ class WebColors {
   static const Color textSecondary = Color(0xFF4A4A4A);
   static const Color textSecondaryDark = Color(0xFF8A8A8A);
 
+  static const Color card = Color(0xFF171717);
+
   // ---------------- BUSINESS / STATUS ----------------
 
   static const Color profit = Color(0xFF00B14F);

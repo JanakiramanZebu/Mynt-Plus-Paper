@@ -20,13 +20,28 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 
 class SecureFundWeb extends ConsumerStatefulWidget {
-  const SecureFundWeb({super.key});
+  final String? initialAction;
+  const SecureFundWeb({super.key, this.initialAction});
 
   @override
   ConsumerState<SecureFundWeb> createState() => _SecureFundWebState();
 }
 
 class _SecureFundWebState extends ConsumerState<SecureFundWeb> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialAction != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.initialAction == 'addMoney') {
+          openFunds('fund', context);
+        } else if (widget.initialAction == 'withdraw') {
+          openFunds('withdraw', context);
+        }
+      });
+    }
+  }
+
   /// Opens the fund management page in a new window
   /// Similar to Vue.js function: openFunds(pageis)
   ///

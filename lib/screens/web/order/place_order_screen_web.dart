@@ -33,7 +33,7 @@ import 'package:mynt_plus/screens/web/funds/fund_screen_web.dart';
 import 'orderscreen_header_web.dart';
 import 'slice_order_sheet_web.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/profile_main_screen.dart';
-import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
+import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/custom_widget_button.dart';
 import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
@@ -49,6 +49,7 @@ import '../../../models/order_book_model/place_gtt_order.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/utils/url_utils.dart';
 import 'package:mynt_plus/utils/safe_parse.dart';
+import 'package:mynt_plus/models/marketwatch_model/linked_scrips.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:mynt_plus/utils/overlay_manager.dart';
 
@@ -205,8 +206,8 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
 
     final position = initialPosition ??
         Offset(
-          MediaQuery.of(context).size.width * 0.1,
-          MediaQuery.of(context).size.height * 0.05,
+          MediaQuery.of(context).size.width * 0.35,
+          MediaQuery.of(context).size.height * 0.2,
         );
 
     late OverlayEntry overlayEntry;
@@ -249,6 +250,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   bool isAvbSecu = false;
   bool isSecu = false;
   Future<void> Function()? _pendingSurveillanceAction;
+
+  // Stock exchange selection variables
+  List<Equls> _stockExchangesList = [];
+  Equls stockExchangeSelected = Equls();
+  OrderScreenArgs selectedStockSubscribe = OrderScreenArgs(exchange:"",token:"",tSym:"",prd:"",transType:true,perChange:"",lotSize:"",ltp:"",isExit:false,orderTpye:"",isModify:false,raw:{},holdQty:"");
 
   late AnimationController anibuildctrl;
   // late Animation<double> _shakeAnimation;
@@ -325,10 +331,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   // bool _GTTOCOPriceTypeIsMarket = false;
 
   bool _hasValidCircuitBreakerValues = false;
+  bool _isMarketClosed = false;
 
   @override
   void initState() {
     ref.read(fundProvider).fetchFunds(context);
+    _stockExchangesList = ref.read(marketWatchProvider).equls ?? [];
 
     userOrderPreference = ref.read(authProvider).savedOrderPreference;
     if (userOrderPreference.isNotEmpty && !widget.orderArg.isModify) {
@@ -341,6 +349,21 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
 
     _isStock = widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE";
+    if(_isStock && _stockExchangesList.isNotEmpty){
+      // Filter the exchange list to find the matching exchange
+      final matchingExchange = _stockExchangesList.firstWhere(
+        (exchange) => exchange.exch == widget.scripInfo.exch,
+        orElse: () => _stockExchangesList[0],
+      );
+      stockExchangeSelected = matchingExchange;
+      selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
+      selectedStockSubscribe.token=stockExchangeSelected.token??"";
+      selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+      // Subscribe to websocket for initial stock exchange
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _subscribeSelectedStock(context);
+      });
+    }
 
     orderType = prdcheck // ① honour prd
         ? {"C": "Delivery", "I": "Intraday", "F": "MTF"}[widget.orderArg.prd] ??
@@ -700,6 +723,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         widget.scripInfo.lc!.isNotEmpty &&
         widget.scripInfo.uc!.isNotEmpty;
 
+    // Check if market is closed and auto-enable AMO
+    _isMarketClosed = _checkMarketClosed();
+    if (_isMarketClosed && !checkRawValue) {
+      _afterMarketOrder = true;
+      isAdvancedOptionClicked = true; // Auto-expand advanced section
+    }
+
     ref.read(orderProvider).setDOrderloader(false);
     super.initState();
     anibuildctrl = AnimationController(
@@ -737,6 +767,35 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     _marginUpdateDebounceTimer?.cancel();
     anibuildctrl.dispose();
     super.dispose();
+  }
+
+  // Check if market is closed based on exchange and current time
+  bool _checkMarketClosed() {
+    // Always use IST timezone since Indian markets operate in IST
+    final now = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+    final currentTime = TimeOfDay.fromDateTime(now);
+    final currentMinutes = currentTime.hour * 60 + currentTime.minute;
+
+    final exchange = widget.scripInfo.exch;
+
+    // MCX closes at 11:30 PM
+    if (exchange == "MCX" || exchange == "NCOM") {
+      const mcxCloseTime = 23 * 60 + 50; // 23:50 (11:50 PM)
+      return currentMinutes >= mcxCloseTime;
+    }
+
+    // All other exchanges (NSE, BSE, NFO, BFO, etc.) close at 4:00 PM
+    const marketCloseTime = 16 * 60; // 16:00 (4:00 PM)
+    return currentMinutes >= marketCloseTime;
+  }
+
+  void _subscribeSelectedStock(BuildContext context) {
+    if ((stockExchangeSelected.token?.isNotEmpty ?? false) && (stockExchangeSelected.exch?.isNotEmpty ?? false)) {
+      ref.read(websocketProvider).establishConnection(
+          channelInput: '${stockExchangeSelected.exch}|${stockExchangeSelected.token}',
+          task: 't',
+          context: context);
+    }
   }
 
   @override
@@ -868,9 +927,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xfffafbff),
+                                    color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
                                     // (isBuy ?? true)
                                     //     ? resolveThemeColor(context,
                                     //             dark: MyntColors.primary,
@@ -911,7 +968,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         theme.isDarkMode,
                                                     color: resolveThemeColor(context,
                                                         dark:
-                                                            MyntColors.textPrimary,
+                                                            MyntColors.textPrimaryDark,
                                                         light: MyntColors.textPrimary),
                                                     fontWeight: WebFonts.medium,
                                                   ),
@@ -992,7 +1049,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //     exch: " ${widget.scripInfo.exch}"),
 
                                                 Text(
-                                                  " ${widget.scripInfo.exch}",
+                                                  " ${stockExchangeSelected.exch ?? widget.scripInfo.exch}",
                                                   style: WebTextStyles.para(
                                                     isDarkTheme:
                                                         theme.isDarkMode,
@@ -1011,14 +1068,69 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             Row(
                                               children: [
                                                 OrderScreenHeaderWeb(
-                                                  headerData: widget.orderArg,
+                                                  headerData: stockExchangeSelected.exch == null ? widget.orderArg : selectedStockSubscribe,
                                                 ),
                                               ],
                                             ),
                                             
                                           ],
                                         ),
-
+                                           // NSE/BSE Exchange Switch
+                                            if (_isStock && _stockExchangesList.isNotEmpty && (orderType == "Delivery" || orderType == "Intraday" || orderType == "CO - BO")) ...[
+                                              const SizedBox(width: 4),
+                                              SizedBox(
+                                                width: 100,
+                                                child: Row(
+                                                  children: List.generate(
+                                                    _stockExchangesList.length,
+                                                    (index) {
+                                                      final isSelected = stockExchangeSelected.exch == _stockExchangesList[index].exch;
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(right: 6),
+                                                        child: MouseRegion(
+                                                          cursor: SystemMouseCursors.click,
+                                                          child: InkWell(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                stockExchangeSelected = _stockExchangesList[index];
+                                                                selectedStockSubscribe.exchange = stockExchangeSelected.exch ?? "";
+                                                                selectedStockSubscribe.token = stockExchangeSelected.token ?? "";
+                                                                selectedStockSubscribe.tSym = stockExchangeSelected.tsym ?? "";
+                                                                widget.scripInfo.exch = stockExchangeSelected.exch ?? "";
+                                                                widget.scripInfo.token = stockExchangeSelected.token ?? "";
+                                                                widget.scripInfo.tsym = stockExchangeSelected.tsym ?? "";
+                                                                _subscribeSelectedStock(context);
+                                                              });
+                                                              _debouncedMarginUpdate();
+                                                            },
+                                                            borderRadius: BorderRadius.circular(4),
+                                                            child: Container(
+                                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                              decoration: BoxDecoration(
+                                                                color: isSelected
+                                                                    ? (theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight)
+                                                                    : (theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8)),
+                                                                borderRadius: BorderRadius.circular(4),
+                                                              ),
+                                                              child: Text(
+                                                                _stockExchangesList[index].exch ?? "",
+                                                                style: WebTextStyles.para(
+                                                                  isDarkTheme: theme.isDarkMode,
+                                                                  color: isSelected
+                                                                      ? Colors.white
+                                                                      : (resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight)),
+                                                                  fontWeight: isSelected ? WebFonts.medium : WebFonts.regular,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                         const SizedBox(width: 12),
                                         // Buy/Sell Toggle
                                         Row(
@@ -1292,7 +1404,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                 border: Border(
                                   bottom: BorderSide(
                                     color: resolveThemeColor(context,
-                                        dark: MyntColors.divider,
+                                        dark: MyntColors.dividerDark,
                                         light: MyntColors.divider),
                                     width: 0.5,
                                   ),
@@ -1450,6 +1562,42 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   itemCount: orderTypes.length)),
                           // ]
                           const SizedBox(height: 10),
+                          // AMO Alert Banner - shown when market is closed
+                          if (_isMarketClosed && _afterMarketOrder && orderType != "CO - BO") ...[
+                            Container(
+                              margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: MyntColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: MyntColors.primary.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: MyntColors.primary,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Market is closed. Orders will be placed as AMO (After Market Order).',
+                                      style: WebTextStyles.para(
+                                        isDarkTheme: theme.isDarkMode,
+                                        color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                        fontWeight: WebFonts.regular,
+                                      ),
+                                      maxLines: 2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           Expanded(
                             child: SingleChildScrollView(
                               child: Column(children: [
@@ -1858,7 +2006,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ? "Target Trigger Price"
                                                     : "Trigger Price",
                                                 theme),
-                                                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+                                                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
                                           ]),
                                           const SizedBox(height: 10),
                                           SizedBox(
@@ -1867,13 +2017,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               child: Semantics(
                                                 identifier:
                                                     'trigger_price_input',
-                                                child: CustomTextFormField(
-                                                    inputFormate: [
+                                                child: MyntTextField(
+                                                    inputFormatters: [
                                                       FilteringTextInputFormatter
                                                           .allow(RegExp(
                                                               r'^\d*\.?\d{0,2}$'))
                                                     ],
-                                                    fillColor: theme.isDarkMode
+                                                    backgroundColor: theme.isDarkMode
                                                         ? colors.darkGrey
                                                         : const Color(
                                                             0xffF1F3F8),
@@ -1915,9 +2065,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         _cancelPendingWarning();
                                                       }
                                                     },
-                                                    hintText:
+                                                    placeholder:
                                                         "${widget.orderArg.ltp}",
-                                                    hintStyle:
+                                                    placeholderStyle:
                                                         WebTextStyles.formInput(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
@@ -1933,17 +2083,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         const TextInputType
                                                             .numberWithOptions(
                                                             decimal: true),
-                                                    style:
+                                                    textStyle:
                                                         WebTextStyles.formInput(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
                                                       color: theme.isDarkMode
                                                           ? MyntColors
-                                                              .textPrimary
+                                                              .textPrimaryDark
                                                           : MyntColors
                                                               .textPrimary,
                                                     ),
-                                                    textCtrl:
+                                                    controller:
                                                         orderInput.val1Ctrl,
                                                     textAlign: TextAlign.start),
                                               )),
@@ -1990,31 +2140,31 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       child: Semantics(
                                                         identifier:
                                                             "GTT Qty Input",
-                                                        child: CustomTextFormField(
-                                                            fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                                            hintText: "0", //orderInput.qtyCtrl.text,
-                                                            hintStyle: WebTextStyles.formInput(
+                                                        child: MyntTextField(
+                                                            backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                            placeholder: "0", //orderInput.qtyCtrl.text,
+                                                            placeholderStyle: WebTextStyles.formInput(
                                                               isDarkTheme: theme
                                                                   .isDarkMode,
                                                               color: resolveThemeColor(
                                                                   context,
                                                                   dark: MyntColors
-                                                                      .textSecondary,
+                                                                      .textSecondaryDark,
                                                                   light: MyntColors
                                                                       .textSecondary)
                                                                   .withValues(alpha: 0.5),
                                                             ),
-                                                            inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                                             keyboardType: TextInputType.number,
-                                                            style: WebTextStyles.formInput(
+                                                            textStyle: WebTextStyles.formInput(
                                                               isDarkTheme: theme
                                                                   .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? MyntColors
-                                                                      .textPrimary
-                                                                  : MyntColors
-                                                                      .textPrimary,
+                                                              color: resolveThemeColor(
+                                                                  context,
+                                                                  dark: MyntColors
+                                                                      .textPrimaryDark,
+                                                                  light: MyntColors
+                                                                      .textPrimary)
                                                             ),
                                                             // prefixIcon: InkWell(
                                                             //   onTap: () {
@@ -2136,7 +2286,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             //       fit:
                                                             //           BoxFit.scaleDown),
                                                             // ),
-                                                            textCtrl: orderInput.qtyCtrl,
+                                                            controller: orderInput.qtyCtrl,
                                                             textAlign: TextAlign.start,
                                                             onChanged: (value) {
                                                               if (value
@@ -2218,12 +2368,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               .formLabel(
                                                             isDarkTheme: theme
                                                                 .isDarkMode,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? MyntColors
-                                                                    .textPrimary
-                                                                : MyntColors
-                                                                    .textPrimary,
+                                                            color: resolveThemeColor(context,
+                                                                dark: MyntColors
+                                                                    .textPrimaryDark,
+                                                                light: MyntColors
+                                                                    .textPrimary),
                                                           ),
                                                         ),
                                                       ]),
@@ -2235,13 +2384,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         identifier:
                                                             "GTT Price Input",
                                                         child:
-                                                            CustomTextFormField(
-                                                                inputFormate: [
+                                                            MyntTextField(
+                                                                inputFormatters: [
                                                               FilteringTextInputFormatter
                                                                   .allow(RegExp(
                                                                       r'^\d*\.?\d{0,2}$'))
                                                             ],
-                                                                fillColor: theme
+                                                                backgroundColor: theme
                                                                         .isDarkMode
                                                                     ? colors
                                                                         .darkGrey
@@ -2299,16 +2448,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     });
                                                                   }
                                                                 },
-                                                                hintText:
+                                                                placeholder:
                                                                     "${widget.orderArg.ltp}",
-                                                                hintStyle: WebTextStyles
+                                                                placeholderStyle: WebTextStyles
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
                                                                   color: (theme
                                                                           .isDarkMode
                                                                       ? MyntColors
-                                                                          .textSecondary
+                                                                          .textSecondaryDark
                                                                       : MyntColors
                                                                           .textSecondary).withValues(alpha: 0.5),
                                                                 ),
@@ -2317,18 +2466,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .numberWithOptions(
                                                                         decimal:
                                                                             true),
-                                                                style: WebTextStyles
+                                                                textStyle: WebTextStyles
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
                                                                   color: theme
                                                                           .isDarkMode
                                                                       ? MyntColors
-                                                                          .textPrimary
+                                                                          .textPrimaryDark
                                                                       : MyntColors
                                                                           .textPrimary,
                                                                 ),
-                                                                isReadable: orderInput.actPrcType ==
+                                                                readOnly: orderInput.actPrcType ==
                                                                             "Limit" ||
                                                                         orderInput.actPrcType ==
                                                                             "SL Limit"
@@ -2343,7 +2492,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 //             BorderRadius.circular(20),
                                                                 //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                                 //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actPrcType == "Limit" || orderInput.actPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                                suffixIcon:
+                                                                trailingWidget:
                                                                     Material(
                                                                   color: Colors
                                                                       .transparent,
@@ -2402,7 +2551,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     ),
                                                                   ),
                                                                 ),
-                                                                textCtrl:
+                                                                controller:
                                                                     orderInput
                                                                         .priceCtrl,
                                                                 textAlign:
@@ -2603,7 +2752,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ? "Stoploss Trigger Price"
                                                       : "Trigger Price",
                                                   theme),
-                                                  Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+                                                  Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
                                             ]),
                                             const SizedBox(height: 10),
                                             SizedBox(
@@ -2612,13 +2763,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 child: Semantics(
                                                   identifier:
                                                       'stoploss_trigger_price',
-                                                  child: CustomTextFormField(
-                                                      inputFormate: [
+                                                  child: MyntTextField(
+                                                      inputFormatters: [
                                                         FilteringTextInputFormatter
                                                             .allow(RegExp(
                                                                 r'^\d*\.?\d{0,2}$'))
                                                       ],
-                                                      fillColor:
+                                                      backgroundColor:
                                                           theme.isDarkMode
                                                               ? colors.darkGrey
                                                               : const Color(
@@ -2661,9 +2812,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           _cancelPendingWarning();
                                                         }
                                                       },
-                                                      hintText:
+                                                      placeholder:
                                                           "${widget.orderArg.ltp}",
-                                                      hintStyle: WebTextStyles
+                                                      placeholderStyle: WebTextStyles
                                                           .formInput(
                                                         isDarkTheme:
                                                             theme.isDarkMode,
@@ -2677,17 +2828,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           const TextInputType
                                                               .numberWithOptions(
                                                               decimal: true),
-                                                      style: WebTextStyles
+                                                      textStyle: WebTextStyles
                                                           .formInput(
                                                         isDarkTheme:
                                                             theme.isDarkMode,
                                                         color: theme.isDarkMode
                                                             ? MyntColors
-                                                                .textPrimary
+                                                                .textPrimaryDark
                                                             : MyntColors
                                                                 .textPrimary,
                                                       ),
-                                                      textCtrl:
+                                                      controller:
                                                           orderInput.val2Ctrl,
                                                       textAlign:
                                                           TextAlign.start),
@@ -2718,10 +2869,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         child: Semantics(
                                                           identifier:
                                                               'oco_qty_input',
-                                                          child: CustomTextFormField(
-                                                              fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                                              hintText: "0", //orderInput.ocoQtyCtrl.text,
-                                                              hintStyle: WebTextStyles.formInput(
+                                                          child: MyntTextField(
+                                                              backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                                                              placeholder: "0", //orderInput.ocoQtyCtrl.text,
+                                                              placeholderStyle: WebTextStyles.formInput(
                                                                 isDarkTheme: theme
                                                                     .isDarkMode,
                                                                 color: (theme
@@ -2731,15 +2882,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     : MyntColors
                                                                         .textSecondary).withValues(alpha: 0.5),
                                                               ),
-                                                              inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                                                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                                               keyboardType: TextInputType.number,
-                                                              style: WebTextStyles.formInput(
+                                                              textStyle: WebTextStyles.formInput(
                                                                 isDarkTheme: theme
                                                                     .isDarkMode,
                                                                 color: theme
                                                                         .isDarkMode
                                                                     ? MyntColors
-                                                                        .textPrimary
+                                                                        .textPrimaryDark
                                                                     : MyntColors
                                                                         .textPrimary,
                                                               ),
@@ -2867,7 +3018,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               //       fit: BoxFit
                                                               //           .scaleDown),
                                                               // ),
-                                                              textCtrl: orderInput.ocoQtyCtrl,
+                                                              controller: orderInput.ocoQtyCtrl,
                                                               textAlign: TextAlign.start,
                                                               onChanged: (value) {
                                                                 if (value
@@ -2953,7 +3104,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               color: theme
                                                                       .isDarkMode
                                                                   ? MyntColors
-                                                                      .textPrimary
+                                                                      .textPrimaryDark
                                                                   : MyntColors
                                                                       .textPrimary,
                                                             ),
@@ -2967,13 +3118,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           identifier:
                                                               'oco_price_input',
                                                           child:
-                                                              CustomTextFormField(
-                                                                  inputFormate: [
+                                                              MyntTextField(
+                                                                  inputFormatters: [
                                                                 FilteringTextInputFormatter
                                                                     .allow(RegExp(
                                                                         r'^\d*\.?\d{0,2}$'))
                                                               ],
-                                                                  fillColor: theme.isDarkMode
+                                                                  backgroundColor: theme.isDarkMode
                                                                       ? colors
                                                                           .darkGrey
                                                                       : const Color(
@@ -3024,9 +3175,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       });
                                                                     }
                                                                   },
-                                                                  hintText:
+                                                                  placeholder:
                                                                       "${widget.orderArg.ltp}",
-                                                                  hintStyle:
+                                                                  placeholderStyle:
                                                                       WebTextStyles
                                                                           .formInput(
                                                                     isDarkTheme:
@@ -3042,18 +3193,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       .numberWithOptions(
                                                                       decimal:
                                                                           true),
-                                                                  style: WebTextStyles
+                                                                  textStyle: WebTextStyles
                                                                       .formInput(
                                                                     isDarkTheme:
                                                                         theme
                                                                             .isDarkMode,
                                                                     color: theme.isDarkMode
                                                                         ? MyntColors
-                                                                            .textPrimary
+                                                                            .textPrimaryDark
                                                                         : MyntColors
                                                                             .textPrimary,
                                                                   ),
-                                                                  isReadable: orderInput.actOcoPrcType ==
+                                                                  readOnly: orderInput.actOcoPrcType ==
                                                                               "Limit" ||
                                                                           orderInput
                                                                                   .actOcoPrcType ==
@@ -3069,7 +3220,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                                   //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, orderInput.actOcoPrcType == "Limit" || orderInput.actOcoPrcType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
 
-                                                                  suffixIcon:
+                                                                  trailingWidget:
                                                                       InkWell(
                                                                     onTap: () {
                                                                       setState(
@@ -3107,7 +3258,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               .contain),
                                                                     ),
                                                                   ),
-                                                                  textCtrl:
+                                                                  controller:
                                                                       orderInput
                                                                           .ocoPriceCtrl,
                                                                   textAlign:
@@ -3876,15 +4027,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     child: Semantics(
                                                       identifier: 'qty_input',
                                                       child:
-                                                          CustomTextFormField(
-                                                        fillColor: theme
+                                                          MyntTextField(
+                                                        backgroundColor: theme
                                                                 .isDarkMode
                                                             ? colors.darkGrey
                                                             : const Color(
                                                                 0xffF1F3F8),
-                                                        hintText:
+                                                        placeholder:
                                                             "0", //qtyCtrl.text,
-                                                        hintStyle: WebTextStyles
+                                                        placeholderStyle: WebTextStyles
                                                             .formInput(
                                                           isDarkTheme:
                                                               theme.isDarkMode,
@@ -3895,25 +4046,25 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               : MyntColors
                                                                   .textSecondary).withValues(alpha: 0.5),
                                                         ),
-                                                        inputFormate: [
+                                                        inputFormatters: [
                                                           FilteringTextInputFormatter
                                                               .digitsOnly
                                                         ],
                                                         keyboardType:
                                                             TextInputType
                                                                 .number,
-                                                        style: WebTextStyles
+                                                        textStyle: WebTextStyles
                                                             .formInput(
                                                           isDarkTheme:
                                                               theme.isDarkMode,
                                                           color: theme
                                                                   .isDarkMode
                                                               ? MyntColors
-                                                                  .textPrimary
+                                                                  .textPrimaryDark
                                                               : MyntColors
                                                                   .textPrimary,
                                                         ),
-                                                        prefixIcon: _isStock
+                                                        leadingWidget: _isStock
                                                             ? null
                                                             : Material(
                                                                 color: Colors
@@ -3993,7 +4144,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   ),
                                                                 )),
 
-                                                        suffixIcon: _isStock
+                                                        trailingWidget: _isStock
                                                             ? null
                                                             : Material(
                                                                 color: Colors
@@ -4100,7 +4251,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 ),
                                                               ),
 
-                                                        textCtrl: qtyCtrl,
+                                                        controller: qtyCtrl,
                                                         textAlign: _isStock
                                                             ? TextAlign.start
                                                             : TextAlign.center,
@@ -4270,7 +4421,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               color: theme
                                                                       .isDarkMode
                                                                   ? MyntColors
-                                                                      .textPrimary
+                                                                      .textPrimaryDark
                                                                   : MyntColors
                                                                       .textPrimary,
                                                             ))
@@ -4283,13 +4434,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         identifier:
                                                             'price_input',
                                                         child:
-                                                            CustomTextFormField(
-                                                                inputFormate: [
+                                                            MyntTextField(
+                                                                inputFormatters: [
                                                               FilteringTextInputFormatter
                                                                   .allow(RegExp(
                                                                       r'^\d*\.?\d{0,2}$'))
                                                             ],
-                                                                fillColor: theme
+                                                                backgroundColor: theme
                                                                         .isDarkMode
                                                                     ? colors
                                                                         .darkGrey
@@ -4345,9 +4496,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     });
                                                                   }
                                                                 },
-                                                                hintText:
+                                                                placeholder:
                                                                     "${widget.orderArg.ltp}",
-                                                                hintStyle: WebTextStyles
+                                                                placeholderStyle: WebTextStyles
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
@@ -4363,18 +4514,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .numberWithOptions(
                                                                         decimal:
                                                                             true),
-                                                                style: WebTextStyles
+                                                                textStyle: WebTextStyles
                                                                     .formInput(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
                                                                   color: theme
                                                                           .isDarkMode
                                                                       ? MyntColors
-                                                                          .textPrimary
+                                                                          .textPrimaryDark
                                                                       : MyntColors
                                                                           .textPrimary,
                                                                 ),
-                                                                isReadable: priceType ==
+                                                                readOnly: priceType ==
                                                                             "Limit" ||
                                                                         priceType ==
                                                                             "SL Limit"
@@ -4388,7 +4539,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 //         borderRadius: BorderRadius.circular(20),
                                                                 //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                                                                 //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                                suffixIcon:
+                                                                trailingWidget:
                                                                     Material(
                                                                   color: Colors
                                                                       .transparent,
@@ -4450,7 +4601,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     ),
                                                                   ),
                                                                 ),
-                                                                textCtrl:
+                                                                controller:
                                                                     priceCtrl,
                                                                 textAlign:
                                                                     TextAlign
@@ -4515,8 +4666,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   });
                                                 },
                                                 child: Container(
-                                                  color: Colors
-                                                      .transparent, // To make the full width tappable
+                                                  color: resolveThemeColor(context,
+                                                      dark: MyntColors.backgroundColorDark,
+                                                      light: MyntColors.backgroundColor), // To make the full width tappable
                                                   height: 40,
                                                   child: Center(
                                                     child: Row(
@@ -4610,12 +4762,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .sub(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
-                                                                  color: theme
-                                                                          .isDarkMode
-                                                                      ? MyntColors
-                                                                          .textSecondary
-                                                                      : MyntColors
-                                                                          .textSecondary,
+                                                                  color: resolveThemeColor(context,
+                                                                      dark: MyntColors.textSecondaryDark,
+                                                                      light: MyntColors.textSecondary),
                                                                 ),
                                                                 overflow:
                                                                     TextOverflow
@@ -4709,11 +4858,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     isDarkTheme:
                                                                         theme
                                                                             .isDarkMode,
-                                                                    color: theme.isDarkMode
-                                                                        ? MyntColors
-                                                                            .textSecondary
-                                                                        : MyntColors
-                                                                            .textSecondary,
+                                                                    color: resolveThemeColor(context,
+                                                                        dark: MyntColors.textSecondaryDark,
+                                                                        light: MyntColors.textSecondary),
                                                                   ),
                                                                   overflow:
                                                                       TextOverflow
@@ -4796,12 +4943,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 .sub(
                                                               isDarkTheme: theme
                                                                   .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? MyntColors
-                                                                      .textSecondary
-                                                                  : MyntColors
-                                                                      .textSecondary,
+                                                              color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  light: MyntColors.textSecondary),
                                                             ),
                                                           ),
                                                           // Text(
@@ -4883,12 +5027,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               WebTextStyles.sub(
                                                             isDarkTheme: theme
                                                                 .isDarkMode,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? MyntColors
-                                                                    .textPrimary
-                                                                : MyntColors
-                                                                    .textPrimary,
+                                                            color: resolveThemeColor(context,
+                                                                dark: MyntColors
+                                                                    .textSecondaryDark,
+                                                                light: MyntColors
+                                                                    .textSecondary),
                                                           ),
                                                         ),
                                                         // Text(
@@ -4948,12 +5091,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               WebTextStyles.sub(
                                                             isDarkTheme: theme
                                                                 .isDarkMode,
-                                                            color: theme
-                                                                    .isDarkMode
-                                                                ? MyntColors
-                                                                    .textPrimary
-                                                                : MyntColors
-                                                                    .textPrimary,
+                                                            color: resolveThemeColor(context,
+                                                                dark: MyntColors
+                                                                    .textSecondaryDark,
+                                                                light: MyntColors
+                                                                    .textSecondary),
                                                           ),
                                                         ),
                                                         // Text(
@@ -5066,9 +5208,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 .size
                                                 .width,
                                             decoration: BoxDecoration(
-                                                color: theme.isDarkMode
-                                                    ? colors.darkGrey
-                                                    : const Color(0xfffafbff),
+                                                color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
                                                 border: Border(
                                                     top: BorderSide(
                                                         color: theme.isDarkMode
@@ -5293,9 +5433,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .para(
                                                                         isDarkTheme:
                                                                             theme.isDarkMode,
-                                                                        color: theme.isDarkMode
-                                                                            ? MyntColors.textSecondary
-                                                                            : MyntColors.textSecondary,
+                                                                        color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  light: MyntColors.textSecondary),
                                                                       ),
                                                                     ),
 
@@ -5338,12 +5478,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .para(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
-                                                                  color: theme
-                                                                          .isDarkMode
-                                                                      ? MyntColors
-                                                                          .textSecondary
-                                                                      : MyntColors
-                                                                          .textSecondary,
+                                                                  color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  light: MyntColors.textSecondary),
                                                                 ),
                                                               ),
                                                               // const SizedBox(width: 4),
@@ -5354,12 +5491,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .para(
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
-                                                                  color: theme
-                                                                          .isDarkMode
-                                                                      ? MyntColors
-                                                                          .textPrimary
-                                                                      : MyntColors
-                                                                          .textPrimary,
+                                                                  color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary),
                                                                 ),
                                                               ),
                                                               const SizedBox(
@@ -6601,7 +6735,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         ? MyntColors
                                                                             .backgroundColorDark
                                                                         : MyntColors
-                                                                            .textPrimary
+                                                                            .backgroundColor
                                                                     : MyntColors
                                                                         .backgroundColor,
                                                               )),
@@ -6681,7 +6815,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               color: resolveThemeColor(context,
                                   dark:  validityType != validityTypes[index]
                                       ? MyntColors.textSecondaryDark
-                                      : MyntColors.textSecondary,
+                                      : MyntColors.backgroundColor,
                                   light: validityType != validityTypes[index]
                                       ? MyntColors.textSecondary
                                       : MyntColors.backgroundColor),
@@ -6716,23 +6850,23 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 width: 200,
                 child: Semantics(
                   identifier: "Disclosed Qty",
-                  child: CustomTextFormField(
-                      fillColor: theme.isDarkMode
+                  child: MyntTextField(
+                      backgroundColor: theme.isDarkMode
                           ? colors.darkGrey
                           : const Color(0xffF1F3F8),
-                      hintText: "0",
-                      hintStyle: WebTextStyles.formInput(
+                      placeholder: "0",
+                      placeholderStyle: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: (theme.isDarkMode
                             ? MyntColors.textSecondary
                             : MyntColors.textSecondary).withValues(alpha: 0.5),
                       ),
-                      inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
-                      style: WebTextStyles.formInput(
+                      textStyle: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
-                            ? MyntColors.textPrimary
+                            ? MyntColors.textPrimaryDark
                             : MyntColors.textPrimary,
                       ),
                       // prefixIcon: InkWell(
@@ -6803,7 +6937,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       //       fit: BoxFit
                       //           .scaleDown),
                       // ),
-                      textCtrl: discQtyCtrl,
+                      controller: discQtyCtrl,
                       textAlign: TextAlign.start),
                 ),
               ),
@@ -6825,7 +6959,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               const SizedBox(height: 2),
               Row(children: [
                 headerTitleText("Trigger", theme),
-                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
               ],),
               const SizedBox(height: 10),
               SizedBox(
@@ -6833,16 +6969,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   width: 200,
                   child: Semantics(
                     identifier: "Stoploss Trigger",
-                    child: CustomTextFormField(
-                        inputFormate: [
+                    child: MyntTextField(
+                        inputFormatters: [
                           FilteringTextInputFormatter.allow(
                               RegExp(r'^\d*\.?\d{0,2}$'))
                         ],
-                        fillColor: theme.isDarkMode
+                        backgroundColor: theme.isDarkMode
                             ? colors.darkGrey
                             : const Color(0xffF1F3F8),
-                        hintText: "0.00",
-                        hintStyle: WebTextStyles.formInput(
+                        placeholder: "0.00",
+                        placeholderStyle: WebTextStyles.formInput(
                           isDarkTheme: theme.isDarkMode,
                           color: (theme.isDarkMode
                               ? MyntColors.textSecondary
@@ -6876,17 +7012,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                         },
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
-                        style: WebTextStyles.formInput(
+                        textStyle: WebTextStyles.formInput(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
-                              ? MyntColors.textPrimary
+                              ? MyntColors.textPrimaryDark
                               : MyntColors.textPrimary,
                         ),
                         // prefixIcon: Container(
                         //     margin: const EdgeInsets.all(12),
                         //     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                         //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown)),
-                        textCtrl: triggerPriceCtrl,
+                        controller: triggerPriceCtrl,
                         textAlign: TextAlign.start),
                   )),
               // const SizedBox(height: 8),
@@ -6908,7 +7044,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             children: [
               
           headerTitleText("Target", theme),
-          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           
             ],
           ),
@@ -6918,15 +7056,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               width: 200,
               child: Semantics(
                 identifier: "Bracket Target Input",
-                child: CustomTextFormField(
-                    inputFormate: [
+                child: MyntTextField(
+                    inputFormatters: [
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
-                    fillColor: theme.isDarkMode
+                    backgroundColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
-                    hintText: "0.00",
+                    placeholder: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty && SafeParse.toDouble(value) > 0) {
                         final regex = RegExp(
@@ -6950,7 +7088,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             context, "Target cannot be 0");
                       }
                     },
-                    hintStyle: WebTextStyles.formInput(
+                    placeholderStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: (theme.isDarkMode
                           ? MyntColors.textSecondary
@@ -6958,10 +7096,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: WebTextStyles.formInput(
+                    textStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? MyntColors.textPrimary
+                          ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
@@ -6969,7 +7107,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                     //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
                     // ),
-                    textCtrl: targetCtrl,
+                    controller: targetCtrl,
                     textAlign: TextAlign.start),
               )),
           const SizedBox(height: 10)
@@ -6987,7 +7125,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         children: [
           Row(children: [
             headerTitleText("Stoploss", theme),
-            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
           SizedBox(
@@ -6995,12 +7135,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               width: 200,
               child: Semantics(
                 identifier: "Stoploss cover sl",
-                child: CustomTextFormField(
-                    inputFormate: [
+                child: MyntTextField(
+                    inputFormatters: [
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
-                    fillColor: theme.isDarkMode
+                    backgroundColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
                     onChanged: (value) {
@@ -7025,8 +7165,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             context, "Stoploss cannot be 0");
                       }
                     },
-                    hintText: "0.00",
-                    hintStyle: WebTextStyles.formInput(
+                    placeholder: "0.00",
+                    placeholderStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: (theme.isDarkMode
                           ? MyntColors.textSecondary
@@ -7034,10 +7174,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: WebTextStyles.formInput(
+                    textStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? MyntColors.textPrimary
+                          ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
@@ -7045,7 +7185,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                     //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
                     // ),
-                    textCtrl: stopLossCtrl,
+                    controller: stopLossCtrl,
                     textAlign: TextAlign.start),
               )),
           const SizedBox(height: 10)
@@ -7063,7 +7203,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         children: [
           Row(children: [
           headerTitleText("Trailing SL", theme),
-          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
           SizedBox(
@@ -7071,15 +7213,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               width: 200,
               child: Semantics(
                 identifier: "Trailing SL Input",
-                child: CustomTextFormField(
-                    inputFormate: [
+                child: MyntTextField(
+                    inputFormatters: [
                       FilteringTextInputFormatter.allow(
                           RegExp(r'^\d*\.?\d{0,2}$'))
                     ],
-                    fillColor: theme.isDarkMode
+                    backgroundColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
-                    hintText: "0.00",
+                    placeholder: "0.00",
                     onChanged: (value) {
                       if (value.isNotEmpty) {
                         double tickSize = SafeParse.toDouble(scripInfo.ti);
@@ -7106,7 +7248,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             context, "Trailing SL cannot be empty");
                       }
                     },
-                    hintStyle: WebTextStyles.formInput(
+                    placeholderStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: (theme.isDarkMode
                           ? MyntColors.textSecondary
@@ -7114,13 +7256,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: WebTextStyles.formInput(
+                    textStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? MyntColors.textPrimary
+                          ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
-                    textCtrl: trailingTicksCtrl,
+                    controller: trailingTicksCtrl,
                     textAlign: TextAlign.start),
               ))
         ],
@@ -7221,11 +7363,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   const SizedBox(height: 10),
                                   Semantics(
                                     identifier: "Market Protection % Input",
-                                    child: CustomTextFormField(
-                                      fillColor: theme.isDarkMode
+                                    child: MyntTextField(
+                                      backgroundColor: theme.isDarkMode
                                           ? colors.darkGrey
                                           : const Color(0xffF1F3F8),
-                                      inputFormate: [
+                                      inputFormatters: [
                                         FilteringTextInputFormatter.allow(
                                           RegExp(r'^(0|[1-9][0-9]{0,19})$'),
                                         ),
@@ -7260,14 +7402,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                         });
                                       },
                                       keyboardType: TextInputType.number,
-                                      style: WebTextStyles.title(
+                                      textStyle: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? MyntColors.textPrimary
+                                            ? MyntColors.textPrimaryDark
                                             : MyntColors.textPrimary,
                                       ),
-                                      textCtrl: mktProtDialogCtrl,
-                                      prefixIcon: Container(
+                                      controller: mktProtDialogCtrl,
+                                      leadingWidget: Container(
                                         margin: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                             borderRadius:
@@ -7283,8 +7425,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             fit: BoxFit.scaleDown),
                                       ),
                                       textAlign: TextAlign.start,
-                                      hintText: "Add Market Protection %",
-                                      hintStyle: WebTextStyles.formLabel(
+                                      placeholder: "Add Market Protection %",
+                                      placeholderStyle: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
                                         color: (theme.isDarkMode
                                                 ? MyntColors.textSecondary
@@ -7521,7 +7663,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                   ? targetCtrl.text
                   : '',
               dscqty: discQtyCtrl.text,
-              exch: widget.scripInfo.exch!,
+              exch: stockExchangeSelected.exch == null ? widget.scripInfo.exch! : stockExchangeSelected.exch??"",
               prc: ordPrice,
               prctype: orderInput.prcType,
               prd: orderInput.orderType,
@@ -7539,7 +7681,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               trgprc: priceType == "SL Limit" || priceType == "SL MKT"
                   ? triggerPriceCtrl.text
                   : "",
-              tsym: widget.scripInfo.tsym!,
+              tsym: stockExchangeSelected.tsym == null ? widget.scripInfo.tsym! : stockExchangeSelected.tsym??"",
               mktProt: priceType == "Market" || priceType == "SL MKT"
                   ? mktProtCtrl.text
                   : '',
@@ -7620,7 +7762,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   void marginUpdate() {
     OrderMarginInput input = OrderMarginInput(
-        exch: "${widget.scripInfo.exch}",
+        exch: stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prctyp: ref.read(ordInputProvider).prcType,
         prd: ref.read(ordInputProvider).orderType,
@@ -7631,7 +7773,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         rorgprc: '0',
         rorgqty: '0',
         trantype: isBuy! ? "B" : "S",
-        tsym: "${widget.scripInfo.tsym}",
+        tsym: stockExchangeSelected.tsym == null ? "${widget.scripInfo.tsym}" : stockExchangeSelected.tsym??"",
         blprc: orderType == "CO - BO" ? stopLossCtrl.text : '',
         bpprc: orderType == "CO - BO" ? targetCtrl.text : '',
         trgprc: priceType == "SL Limit" || priceType == "SL MKT"
@@ -7639,7 +7781,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             : "");
     ref.read(orderProvider).fetchOrderMargin(input, context);
     BrokerageInput brokerageInput = BrokerageInput(
-        exch: "${widget.scripInfo.exch}",
+        exch: stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         prc: (priceType == "Market" || priceType == "SL MKT") ? "0" : ordPrice,
         prd: ref.read(ordInputProvider).orderType,
         qty: widget.scripInfo.exch == 'MCX'
@@ -7647,7 +7789,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 .toString()
             : getFinalQuantity(qtyCtrl.text),
         trantype: isBuy! ? "B" : "S",
-        tsym: "${widget.scripInfo.tsym}");
+        tsym: stockExchangeSelected.tsym == null ? "${widget.scripInfo.tsym}" : stockExchangeSelected.tsym??"");
     ref.read(orderProvider).fetchGetBrokerage(brokerageInput, context);
   }
 
@@ -7912,9 +8054,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   prepareToPlaceGttOrder(OrderInputProvider orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
-        exch: '${widget.scripInfo.exch}',
+        exch: stockExchangeSelected.exch == null ? '${widget.scripInfo.exch}' : stockExchangeSelected.exch??"",
         qty: orderInput.qtyCtrl.text,
-        tsym: '${widget.scripInfo.tsym}',
+        tsym: stockExchangeSelected.tsym == null ? '${widget.scripInfo.tsym}' : stockExchangeSelected.tsym??"",
         validity: "GTT",
         prc: orderInput.actPrcType == "Market" ||
                 orderInput.actPrcType == "SL MKT"
@@ -7953,8 +8095,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
   prepareToPlaceOCOOrder(OrderInputProvider orderInput) async {
     PlaceOcoOrderInput input = PlaceOcoOrderInput(
-        exch: '${widget.scripInfo.exch}',
-        tsym: '${widget.scripInfo.tsym}',
+        exch: stockExchangeSelected.exch == null ? '${widget.scripInfo.exch}' : stockExchangeSelected.exch??"",
+        tsym: stockExchangeSelected.tsym == null ? '${widget.scripInfo.tsym}' : stockExchangeSelected.tsym??"",
         validity: "GTT",
         trantype: isBuy! ? 'B' : "S",
         ret: 'DAY',
@@ -8081,7 +8223,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? targetCtrl.text
             : '',
         "dscqty": discQtyCtrl.text,
-        "exch": widget.scripInfo.exch!,
+        "exch": stockExchangeSelected.exch == null ? "${widget.scripInfo.exch}" : stockExchangeSelected.exch??"",
         "prc": ordPrice,
         "prctype": orderInput.prcType,
         "prd": orderInput.orderType,
@@ -8106,9 +8248,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         "trgprc": priceType == "SL Limit" || priceType == "SL MKT"
             ? triggerPriceCtrl.text
             : "",
-        "tsym": widget.scripInfo.tsym != null
-            ? UrlUtils.encodeParameter(widget.scripInfo.tsym!)
-            : '',
+        "tsym": stockExchangeSelected.tsym == null ? UrlUtils.encodeParameter(widget.scripInfo.tsym!) : UrlUtils.encodeParameter(stockExchangeSelected.tsym?? ""),
         "mktProt": priceType == "Market" || priceType == "SL MKT"
             ? mktProtCtrl.text
             : ''

@@ -324,7 +324,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               child: GestureDetector(
                 onTap: () {
                   if (WebNavigationHelper.isAvailable) {
-                    WebNavigationHelper.navigateTo(Routes.fundscreen);
+                    WebNavigationHelper.navigateTo(Routes.fundscreen,
+                        arguments: 'addMoney');
                   }
                 },
                 child: Text(

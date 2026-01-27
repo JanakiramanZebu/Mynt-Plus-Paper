@@ -17,7 +17,9 @@ import '../../../../sharedWidget/mynt_loader.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
-  const HoldingScreenWeb({super.key, required this.listofHolding});
+  final int initialTabIndex;
+  const HoldingScreenWeb(
+      {super.key, required this.listofHolding, this.initialTabIndex = 0});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,13 +30,16 @@ class HoldingScreenWeb extends ConsumerWidget {
       return Center(child: MyntLoader.simple());
     }
 
-    return _HoldingScreenContent(listofHolding: listofHolding);
+    return _HoldingScreenContent(
+        listofHolding: listofHolding, initialTabIndex: initialTabIndex);
   }
 }
 
 class _HoldingScreenContent extends ConsumerStatefulWidget {
   final List<dynamic> listofHolding;
-  const _HoldingScreenContent({required this.listofHolding});
+  final int initialTabIndex;
+  const _HoldingScreenContent(
+      {required this.listofHolding, this.initialTabIndex = 0});
 
   @override
   ConsumerState<_HoldingScreenContent> createState() =>
@@ -42,7 +47,7 @@ class _HoldingScreenContent extends ConsumerStatefulWidget {
 }
 
 class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
-  int _selectedTabIndex = 0;
+  late int _selectedTabIndex;
   final ValueNotifier<String> _selectedFilter =
       ValueNotifier<String>('All'); // Filter options: All, Stocks, Bonds
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
@@ -61,6 +66,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   @override
   void initState() {
     super.initState();
+    _selectedTabIndex = widget.initialTabIndex;
 
     // Sync controllers with ValueNotifiers
     _stocksSearchController.addListener(() {
