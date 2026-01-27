@@ -290,6 +290,14 @@ class TranctionProvider extends DefaultChangeNotifier {
     _isUpiAppsBottomSheetShown = false;
     _isUpiIdBottomSheetShown = false;
 
+    // Guard clause - return early if required data is not available
+    if (bankdetails == null || bankdetails!.dATA == null || bankdetails!.dATA!.isEmpty) {
+      return;
+    }
+    if (decryptclientcheck == null || decryptclientcheck!.companyCode == null || decryptclientcheck!.companyCode!.isEmpty) {
+      return;
+    }
+
     // Initialize bank and account data
     _multipleAccno = _accno = bankdetails!.dATA![index][2];
     _ifsc = bankdetails!.dATA![indexss][3];

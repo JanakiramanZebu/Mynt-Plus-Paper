@@ -10,6 +10,8 @@ import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_top_category_list.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
@@ -101,7 +103,12 @@ class _CustomizableSplitHomeScreenState
   DepthInputArgs? _optionChainArgs;
   DepthInputArgs? _currentDepthArgs;
   String? _currentCollectionTitle; // Title for MF Collection screen
+  String? _currentCollectionSubtitle; // Subtitle for MF Collection screen
+  String? _currentCollectionIcon; // Icon for MF Collection screen
   String? _currentCategoryTitle; // Title for MF Category screen
+  String? _currentCategorySubtitle; // Subtitle for MF Category screen
+  String? _currentCategoryIcon; // Icon for MF Category screen
+  MutualFundList? _currentMfStockData; // Data for MF Stock Detail screen
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   int _holdingsInitialTabIndex = 0; // Track initial tab for holdings screen
@@ -149,8 +156,8 @@ class _CustomizableSplitHomeScreenState
   // Store initial tab index for trade action screen
   int? _tradeActionTabIndex;
 
-  // Track previous screen for each panel (for back navigation)
-  final Map<int, ScreenType?> _panelScreenHistory = {};
+  // Track previous screens for each panel (for back navigation) - using a stack
+  final Map<int, List<ScreenType>> _panelScreenHistory = {};
 
   // Cooldown for portfolio data fetching to prevent excessive API calls
   DateTime? _lastPortfolioFetch;
@@ -1715,11 +1722,11 @@ class _CustomizableSplitHomeScreenState
             // Show NFO screen in right panel (panel 2)
             _showScreenInRightPanel(ScreenType.mfNfo);
           },
-          onCollectionTap: (title) {
-            _showMfCollectionInPanel(title);
+          onCollectionTap: (title, subtitle, icon) {
+            _showMfCollectionInPanel(title, subtitle, icon);
           },
-          onCategoryTap: (title) {
-            _showMfCategoryInPanel(title);
+          onCategoryTap: (title, subtitle, icon) {
+            _showMfCategoryInPanel(title, subtitle, icon);
           },
           onSipCalculatorTap: () {
             _showScreenInRightPanel(ScreenType.sipCalculator);
@@ -1793,12 +1800,18 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.mfCollection:
         return SaveTaxesScreen(
           title: _currentCollectionTitle ?? "Collection",
+          subtitle: _currentCollectionSubtitle ?? "",
+          icon: _currentCollectionIcon ?? "",
           onBack: _handleMfCollectionBack,
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.mfCategory:
         return MFCategoryListScreen(
           title: _currentCategoryTitle ?? "Category",
+          subtitle: _currentCategorySubtitle ?? "",
+          icon: _currentCategoryIcon ?? "",
           onBack: _handleMfCategoryBack,
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.sipCalculator:
         return MFSIPSCREEN(
@@ -1808,6 +1821,14 @@ class _CustomizableSplitHomeScreenState
         return MFCAGRCAL(
           onBack: _goBackInRightPanel,
         );
+      case ScreenType.mfStockDetail:
+        if (_currentMfStockData != null) {
+          return MFStockDetailScreen(
+            mfStockData: _currentMfStockData!,
+            onBack: _goBackInRightPanel,
+          );
+        }
+        return const SizedBox.shrink();
       // caEvent and cpAction removed
     }
   }
@@ -1857,6 +1878,8 @@ class _CustomizableSplitHomeScreenState
         return 'SIP Calculator';
       case ScreenType.cagrCalculator:
         return 'CAGR Calculator';
+      case ScreenType.mfStockDetail:
+        return 'Fund Details';
       // caEvent and cpAction removed
     }
   }
@@ -1906,6 +1929,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.calculate;
       case ScreenType.cagrCalculator:
         return Icons.calculate;
+      case ScreenType.mfStockDetail:
+        return Icons.show_chart;
       // caEvent and cpAction removed
     }
   }
@@ -2282,6 +2307,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.mfCategory:
       case ScreenType.sipCalculator:
       case ScreenType.cagrCalculator:
+      case ScreenType.mfStockDetail:
         break;
       // caEvent and cpAction removed
     }
@@ -3424,29 +3450,37 @@ class _CustomizableSplitHomeScreenState
 
   // Show screen in right panel (for app bar navigation)
   void _showScreenInRightPanel(ScreenType screenType) {
-    if (_panels.length < 2) return;
+    if (_panels.isEmpty) return;
 
-    // Find the panel that doesn't have watchlist (prefer right panel for non-watchlist screens)
+    // Find the non-watchlist panel (prefer right panel for multi-panel layouts)
     int targetPanelIndex = -1;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
-          (panel.screens.isNotEmpty &&
-              panel.screens.contains(ScreenType.watchlist));
 
-      if (!hasWatchlist) {
-        targetPanelIndex = i;
-        break;
+    // For multi-panel layouts, search from the end (right panel first)
+    if (_panels.length >= 2) {
+      for (int i = _panels.length - 1; i >= 0; i--) {
+        final panel = _panels[i];
+        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+            (panel.screens.isNotEmpty &&
+                panel.screens.contains(ScreenType.watchlist));
+
+        if (!hasWatchlist) {
+          targetPanelIndex = i;
+          break;
+        }
       }
     }
 
-    // If no panel without watchlist found, use the right panel (index 1)
+    // For single panel or if no non-watchlist found, use first panel
     if (targetPanelIndex == -1) {
-      targetPanelIndex = 1;
+      targetPanelIndex = 0;
     }
 
-    // Save current screen type for back navigation
-    _panelScreenHistory[targetPanelIndex] = _panels[targetPanelIndex].screenType;
+    // Save current screen type for back navigation (push to stack)
+    final currentScreen = _panels[targetPanelIndex].screenType;
+    if (currentScreen != null) {
+      _panelScreenHistory[targetPanelIndex] ??= [];
+      _panelScreenHistory[targetPanelIndex]!.add(currentScreen);
+    }
 
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
@@ -3459,43 +3493,49 @@ class _CustomizableSplitHomeScreenState
 
   // Go back to previous screen in the right panel
   void _goBackInRightPanel() {
-    if (_panels.length < 2) return;
+    if (_panels.isEmpty) return;
 
-    // Find the non-watchlist panel
+    // Find the non-watchlist panel (prefer last panel for multi-panel, first for single)
     int targetPanelIndex = -1;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
-          (panel.screens.isNotEmpty &&
-              panel.screens.contains(ScreenType.watchlist));
 
-      if (!hasWatchlist) {
-        targetPanelIndex = i;
-        break;
+    // For multi-panel layouts, search from the end (right panel first)
+    if (_panels.length >= 2) {
+      for (int i = _panels.length - 1; i >= 0; i--) {
+        final panel = _panels[i];
+        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+            (panel.screens.isNotEmpty &&
+                panel.screens.contains(ScreenType.watchlist));
+
+        if (!hasWatchlist) {
+          targetPanelIndex = i;
+          break;
+        }
       }
     }
 
+    // For single panel or if no non-watchlist found, use first panel
     if (targetPanelIndex == -1) {
-      targetPanelIndex = 1;
+      targetPanelIndex = 0;
     }
 
-    // Get the previous screen type
-    final previousScreen = _panelScreenHistory[targetPanelIndex];
-    if (previousScreen != null) {
+    // Get the previous screen type from stack
+    final historyStack = _panelScreenHistory[targetPanelIndex];
+    if (historyStack != null && historyStack.isNotEmpty) {
+      final previousScreen = historyStack.removeLast(); // Pop from stack
       setState(() {
         _panels[targetPanelIndex].screenType = previousScreen;
         _panels[targetPanelIndex].screens = [previousScreen];
         _panels[targetPanelIndex].activeScreenIndex = 0;
       });
-      // Clear history after going back
-      _panelScreenHistory.remove(targetPanelIndex);
       _saveLayout();
     }
   }
 
   // Show MF Collection in right panel
-  void _showMfCollectionInPanel(String title) {
+  void _showMfCollectionInPanel(String title, String subtitle, String icon) {
     _currentCollectionTitle = title;
+    _currentCollectionSubtitle = subtitle;
+    _currentCollectionIcon = icon;
     _showScreenInRightPanel(ScreenType.mfCollection);
   }
 
@@ -3505,14 +3545,22 @@ class _CustomizableSplitHomeScreenState
   }
 
   // Show MF Category in right panel
-  void _showMfCategoryInPanel(String title) {
+  void _showMfCategoryInPanel(String title, String subtitle, String icon) {
     _currentCategoryTitle = title;
+    _currentCategorySubtitle = subtitle;
+    _currentCategoryIcon = icon;
     _showScreenInRightPanel(ScreenType.mfCategory);
   }
 
   // Handle back navigation from MF Category
   void _handleMfCategoryBack() {
     _goBackInRightPanel();
+  }
+
+  // Show MF Stock Detail in right panel
+  void showMfStockDetailInPanel(MutualFundList mfData) {
+    _currentMfStockData = mfData;
+    _showScreenInRightPanel(ScreenType.mfStockDetail);
   }
 
   void _showScreenInLeftPanel(ScreenType screenType) {
@@ -3892,6 +3940,7 @@ enum ScreenType {
   mfCategory,
   sipCalculator,
   cagrCalculator,
+  mfStockDetail,
 }
 
 // Hoverable navigation item widget

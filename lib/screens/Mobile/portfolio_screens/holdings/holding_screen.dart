@@ -18,6 +18,7 @@ import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_text_form_field.dart';
+import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../utils/no_emoji_inputformatter.dart';
 import 'filter_scrip_bottom_sheet.dart';
@@ -1271,8 +1272,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
         return const SizedBox.shrink();
       }
 
-      // Save theme reference to prevent repeated lookups
-      final theme = ref.read(themeProvider);
+
 
       return RepaintBoundary(
         child: Container(
@@ -1282,115 +1282,43 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
           ),
           child: SizedBox(
             height: 40,
-            child: TextFormField(
-                autofocus: true,
-                controller: holdingProvider.holdingSearchCtrl,
-                style: TextWidget.textStyle(
-                  fontSize: 16,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                ),
-                keyboardType: TextInputType.text,
-                textCapitalization: TextCapitalization.characters,
-                inputFormatters: [
+            child: MyntSearchTextField.withSmartClear(
+              controller: holdingProvider.holdingSearchCtrl,
+              autofocus: true,
+              placeholder: "Search",
+              textCapitalization: TextCapitalization.characters,
+              inputFormatters: [
                   UpperCaseTextFormatter(),
                   NoEmojiInputFormatter(),
                   FilteringTextInputFormatter.deny(RegExp('[π£•₹€℅™∆√¶/.,]'))
-                ],
-                decoration: InputDecoration(
-                    hintText: "Search",
-                    hintStyle: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: theme.isDarkMode,
-                      color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                      fw: 0,
-                    ),
-                    fillColor: theme.isDarkMode
-                        ? colors.searchBgDark
-                        : colors.searchBg,
-                    filled: true,
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SvgPicture.asset(assets.searchIcon,
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fit: BoxFit.scaleDown,
-                          width: 20),
-                    ),
-                    suffixIcon: Material(
-                      color: Colors.transparent,
-                      shape: const CircleBorder(),
-                      clipBehavior: Clip.hardEdge,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: theme.isDarkMode
-                            ? colors.splashColorDark
-                            : colors.splashColorLight,
-                        highlightColor: theme.isDarkMode
-                            ? colors.highlightDark
-                            : colors.highlightLight,
-                        onTap: () async {
-                          Future.delayed(const Duration(milliseconds: 150), () {
-                            holdingProvider.clearHoldSearch();
-                            if (holdingProvider
-                                .holdingSearchCtrl.text.isEmpty) {
-                              holdingProvider.showHoldSearch(false);
-                            }
-                            // Clear cached widgets when search is cleared
-                            setState(() {
-                              _cachedSummarySection = null;
-                              _cachedActionButtons = null;
-                              _cachedEmptyState = null;
-                              _cachedActionButtonsKey = null;
-                              _cachedSummaryKey = null;
-                            });
-                          });
-                        },
-                        child: SvgPicture.asset(assets.removeIcon,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fit: BoxFit.scaleDown,
-                            width: 20),
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20)),
-                    disabledBorder: InputBorder.none,
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20)),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                        borderRadius: BorderRadius.circular(20))),
-                onChanged: (value) {
+              ],
+              leadingIcon: assets.searchIcon,
+              onChanged: (value) {
                   // Enable search mode when user starts typing
                   if (value.isNotEmpty) {
                     holdingProvider.showHoldSearch(true);
-                  } else {
-                    // Disable search mode when field is empty
-                    // holdingProvider.showHoldSearch(false);
                   }
 
                   // Perform the search
                   holdingProvider.holdingSearch(value, context);
-
-                  // Clear cached widgets to force rebuild with new data
-                  // setState(() {
-                  //   _cachedSummarySection = null;
-                  //   _cachedActionButtons = null;
-                  //   _cachedEmptyState = null;
-                  //   _cachedActionButtonsKey = null;
-                  //   _cachedSummaryKey = null;
-                  // });
-                }),
+              },
+              onClear: () {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    holdingProvider.clearHoldSearch();
+                    if (holdingProvider.holdingSearchCtrl.text.isEmpty) {
+                      holdingProvider.showHoldSearch(false);
+                    }
+                    // Clear cached widgets when search is cleared
+                    setState(() {
+                      _cachedSummarySection = null;
+                      _cachedActionButtons = null;
+                      _cachedEmptyState = null;
+                      _cachedActionButtonsKey = null;
+                      _cachedSummaryKey = null;
+                    });
+                  });
+              },
+            ),
           ),
         ),
       );

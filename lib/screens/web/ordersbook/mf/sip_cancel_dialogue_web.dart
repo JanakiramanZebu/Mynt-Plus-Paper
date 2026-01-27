@@ -22,7 +22,7 @@ class SipCancelDialogueWeb extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.4,
+        width: MediaQuery.of(context).size.width * 0.35,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,

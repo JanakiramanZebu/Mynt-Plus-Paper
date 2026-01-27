@@ -482,7 +482,7 @@ class WebSocketProvider extends ChangeNotifier {
         "t": "c",
         "actid": clientId,
         "uid": clientId,
-        "source": "WEB",
+        "source": kIsWeb ? "WEB" : "MOBILE",
         "susertoken": clientSession,
       };
       
@@ -579,7 +579,8 @@ class WebSocketProvider extends ChangeNotifier {
     // PERFORMANCE FIX: Increased throttle from 330ms to 500ms for web performance
     // This reduces updates from 3/sec to 2/sec, lowering CPU usage by ~33%
     // For web apps with many widgets, less frequent updates = smoother experience
-    _throttleTimer = Timer(const Duration(milliseconds: 500), () {
+    final throttleDuration = kIsWeb ? const Duration(milliseconds: 500) : const Duration(milliseconds: 300);
+    _throttleTimer = Timer(throttleDuration, () {
       if (_hasPendingUpdates) {
         _hasPendingUpdates = false;
 
@@ -738,7 +739,11 @@ class WebSocketProvider extends ChangeNotifier {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      successMessage(_context!, res['dmsg'].toString());
+      if (kIsWeb) {
+        ResponsiveSnackBar.showSuccess(_context!, res['dmsg'].toString());
+      } else {
+        successMessage(_context!, res['dmsg'].toString());
+      }
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen

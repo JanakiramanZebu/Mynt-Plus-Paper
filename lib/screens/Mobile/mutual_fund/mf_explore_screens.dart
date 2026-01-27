@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/all.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_order_book_screen.dart';
 // import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/auth_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/loader_ui.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 // import '../../provider/mf_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import 'mf_sip_screen.dart';
 import 'mutual_fund_screen_new.dart';
+import 'mf_watchlist.dart';
 
 
 class MFExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider? theme;
   final Function(bool)? onBoundaryReached; // Callback for boundary detection
   final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
-  final Function(String)? onCollectionTap; // Callback when collection is tapped
-  final Function(String)? onCategoryTap; // Callback when category is tapped
+  final Function(String title, String subtitle, String icon)? onCollectionTap; // Callback when collection is tapped
+  final Function(String title, String subtitle, String icon)? onCategoryTap; // Callback when category is tapped
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
 
@@ -52,13 +55,18 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     },
     {
       "imgpath": "assets.bookmarkLineIcon",
-      "title": "Portfolio",
+      "title": "Watchlist",
       "index": 1,
     },
     {
       "imgpath": "assets.bookmarkLineIcon",
-      "title": "SIP",
+      "title": "Portfolio",
       "index": 2,
+    },
+    {
+      "imgpath": "assets.bookmarkLineIcon",
+      "title": "SIP",
+      "index": 3,
     }
   ];
 
@@ -93,7 +101,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   void initState() {
     super.initState();
     _tabController = TabController(
-        length: 3,
+        length: 4,
         vsync: this,
         initialIndex: ref.read(mfProvider).activeTab ?? 0);
     selectedTab = ref.read(mfProvider).activeTab ?? 0;
@@ -121,7 +129,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     final mfData = ref.watch(mfProvider);
     final portfolio = ref.watch(portfolioProvider);
 
-    return TransparentLoaderScreen(
+    return MyntLoaderOverlay(
       isLoading: explore.loading,
       child: GestureDetector(
         onTap: () {
@@ -186,6 +194,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                       onSipCalculatorTap: widget.onSipCalculatorTap,
                       onCagrCalculatorTap: widget.onCagrCalculatorTap,
                     ),
+                   const MFWatchlistScreen(),
                    const MfOrderBookScreen(),
                    const MFSipdetScreen()
                  ],
@@ -211,14 +220,14 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
       ),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+        style: MyntWebTextStyles.body(
+          context,
+          fontWeight: MyntFonts.medium,
           color: isActive
-              ? colors.colorBlue
+              ? MyntColors.primary
               : theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
+                  ? MyntColors.textSecondaryDark
+                  : MyntColors.textSecondary,
         ),
       ),
     );
@@ -237,8 +246,8 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         backgroundColor: theme.isDarkMode
             ? tab == mfData.activeTab
-                ? colors.colorbluegrey
-                : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
+                ? MyntColors.searchBgDark
+                : const Color.fromARGB(255, 255, 255, 255).withValues(alpha: .15)
             : tab == mfData.activeTab
                 ? const Color(0xff000000)
                 : const Color.fromARGB(255, 255, 255, 255),
@@ -265,9 +274,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+    return webText(
+          context,
+          weight: fWeight, color: color, size: fontSize);
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/mf_provider.dart';
@@ -77,15 +77,14 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
         ? (mfData.mfHoldingSearchItems ?? [])
         : (mfData.mfholdingnew?.data ?? []);
 
-    // Check if user has any holdings data at all
-    final hasHoldingsData = mfData.mfholdingnew?.data != null &&
-        mfData.mfholdingnew!.data!.isNotEmpty;
+    // Check if user has any holdings data at all (kept for reference or remove if strictly unused, but for now just fix the compilation error)
+    // final hasHoldingsData = mfData.mfholdingnew?.data != null && mfData.mfholdingnew!.data!.isNotEmpty;
 
     return Scaffold(
       // backgroundColor: theme.isDarkMode
       //     ? const Color(0xFF121212)
       //     : const Color(0xFFF5F5F5),
-      body: TransparentLoaderScreen(
+      body: MyntLoaderOverlay(
         isLoading: mfData.holdstatload ?? false,
         child: RefreshIndicator(
           onRefresh: () async {
@@ -139,20 +138,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: hasHoldingsData && items.isNotEmpty
-                      ? _buildTableContent(context, theme, mfData, items)
-                      : Center(
-                          child: NoDataFound(
-                            title: hasHoldingsData
-                                ? "No results found"
-                                : "There's nothing here yet.",
-                            subtitle: hasHoldingsData
-                                ? "Try adjusting your search"
-                                : "Buy some funds to see them here.",
-                            primaryEnabled: false,
-                            secondaryEnabled: false,
-                          ),
-                        ),
+                  child: _buildTableContent(context, theme, mfData, items),
                 ),
               ),
             ],
@@ -317,18 +303,43 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
 
                 // Scrollable Body
                 Expanded(
-                  child: RawScrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    trackColor: Colors.grey.withValues(alpha: 0.1),
-                    thumbColor: Colors.grey.withValues(alpha: 0.3),
-                    thickness: 6,
-                    radius: const Radius.circular(3),
-                    interactive: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
+                  child: sortedItems.isEmpty
+                      ? LayoutBuilder(
+                          builder: (context, constraints) => SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: Center(
+                                child: NoDataFound(
+                                  title: (mfData.mfholdingnew?.data != null &&
+                                          mfData.mfholdingnew!.data!.isNotEmpty)
+                                      ? "No results found"
+                                      : "There's nothing here yet.",
+                                  subtitle: (mfData.mfholdingnew?.data != null &&
+                                          mfData.mfholdingnew!.data!.isNotEmpty)
+                                      ? "Try adjusting your search"
+                                      : "Buy some funds to see them here.",
+                                  primaryEnabled: false,
+                                  secondaryEnabled: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : RawScrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          trackColor: Colors.grey.withValues(alpha: 0.1),
+                          thumbColor: Colors.grey.withValues(alpha: 0.3),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
                       child: shadcn.Table(
                         key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {

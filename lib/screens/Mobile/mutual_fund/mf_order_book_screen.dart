@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+// import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../sharedWidget/common_search_fields_web.dart';
 
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -11,7 +12,8 @@ import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
-import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/mynt_loader.dart';
+import '../../../utils/responsive_snackbar.dart';
 import 'order_single_page.dart';
 
 class MfOrderBookScreen extends ConsumerStatefulWidget {
@@ -43,6 +45,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   // int? _hoveredRowIndex;
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  final TextEditingController _searchController = TextEditingController();
 
   // Scroll controllers for Orders table
   final ScrollController _ordersVerticalScrollController = ScrollController();
@@ -73,7 +76,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
       final mforderbook = ref.watch(mfProvider);
       return  Stack(
           children: [
-            TransparentLoaderScreen(
+            MyntLoaderOverlay(
               isLoading: mforderbook.bestmfloader == true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -126,41 +129,20 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                         Container(
                           width: 300,
                           height: 45,
-                          decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? colors.searchBgDark
-                                : colors.searchBg,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: theme.isDarkMode
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                child: Icon(
-                                  Icons.search,
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  size: 20,
-                                ),
-                              ),
-                              Expanded(
-                                child: TextWidget.paraText(
-                                  text: "Search on holdings",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  theme: theme.isDarkMode,
-                                  fw: 0,
-                                ),
-                              ),
-                            ],
+                          child: MyntSearchTextField(
+                            controller: _searchController,
+                            placeholder: 'Search on holdings',
+                            leadingIcon: 'assets/icon/search.svg',
+                            onChanged: (value) {
+                              if (_tabController.index == 0) {
+                                // Update Holdings Search
+                                ref.read(mfProvider).mfHoldingSearchController.text = value;
+                                ref.read(mfProvider).mfHoldingSearch(value, context);
+                              } else {
+                                // Update Orders Search - Implement filtering for orders if needed
+                                // Currently just setState to update UI or variable
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -239,7 +221,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         );
       }
 
-      return TransparentLoaderScreen(
+      return MyntLoaderOverlay(
         isLoading: mforderbook.mforderloader,
         child: RefreshIndicator(
           onRefresh: () async {
@@ -852,10 +834,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         },
       );
     } else {
-      warningMessage(
-        context,
-        mforderbook.mforderdet?.emsg ?? 'Error loading order details',
-      );
+      ResponsiveSnackBar.show(context: context, message: mforderbook.mforderdet?.emsg ?? 'Error loading order details', type: SnackBarType.warning);
     }
   }
 

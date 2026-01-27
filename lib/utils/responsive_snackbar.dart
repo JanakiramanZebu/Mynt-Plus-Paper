@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/main.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/responsive_extensions.dart';
@@ -24,7 +25,7 @@ class ResponsiveSnackBar {
     if (context.isWebLayout) {
       // Desktop: Show as stacked toast in bottom-right corner
       _showDesktopToast(
-        context: context,
+        context: rootNavigatorKey.currentContext ?? context,
         message: message,
         type: type,
         duration: duration,
@@ -77,7 +78,20 @@ class ResponsiveSnackBar {
           child: _ToastStackWidget(),
         ),
       );
-      Overlay.of(context).insert(_overlayEntry!);
+      // Try to get overlay, fallback silently if not available
+      final overlay = Overlay.maybeOf(context);
+      if (overlay != null) {
+        overlay.insert(_overlayEntry!);
+      } else {
+        // If no overlay found, try with rootNavigatorKey context
+        final rootContext = rootNavigatorKey.currentContext;
+        if (rootContext != null) {
+          final rootOverlay = Overlay.maybeOf(rootContext);
+          if (rootOverlay != null) {
+            rootOverlay.insert(_overlayEntry!);
+          }
+        }
+      }
     }
   }
   
@@ -262,7 +276,7 @@ class _ToastStackWidgetState extends ConsumerState<_ToastStackWidget> {
     final double itemsHeight = _isHovering ? ((visibleToasts.length * 120.0) + 50) : 150;
 
     return Positioned(
-      top: 24,
+      bottom: 24,
       right: 24,
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovering = true),
@@ -273,7 +287,7 @@ class _ToastStackWidgetState extends ConsumerState<_ToastStackWidget> {
           width: 360,
           height: itemsHeight,
           child: Stack(
-            alignment: Alignment.topCenter,
+            alignment: Alignment.bottomCenter,
             clipBehavior: Clip.none,
             children: visibleToasts.map((entry) {
               final index = entry.key; // 0 is newest
@@ -381,7 +395,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOutCubic,
-      top: topOffset,
+      bottom: topOffset,
       left: 0,
       right: 0,
       // Removed fixed height to allow text expansion
@@ -389,7 +403,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
         scale: scale,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
-        alignment: Alignment.topCenter,
+        alignment: Alignment.bottomCenter,
         child: AnimatedOpacity(
           opacity: opacity,
           duration: const Duration(milliseconds: 300),
