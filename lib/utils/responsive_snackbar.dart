@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/responsive_extensions.dart';
 import 'dart:async';
 
 /// Responsive SnackBar utility that adapts to screen size
@@ -19,9 +20,8 @@ class ResponsiveSnackBar {
     String? actionLabel,
     VoidCallback? onActionPressed,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    
-    if (screenWidth >= 600) {
+    // Use centralized breakpoint check
+    if (context.isWebLayout) {
       // Desktop: Show as stacked toast in bottom-right corner
       _showDesktopToast(
         context: context,

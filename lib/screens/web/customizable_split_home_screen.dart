@@ -43,7 +43,8 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
-import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/mynt_web_color_styles.dart' hide WebColors;
+import '../../../res/web_colors.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
@@ -78,6 +79,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../res/mynt_web_text_styles.dart';
 import 'market_watch/index/index_bottom_sheet_web.dart';
 import 'home/widgets/app_bar/profile_dropdown.dart';
+import 'home/widgets/app_bar/navigation_drawer_web.dart';
+import '../../../res/responsive_extensions.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -102,6 +105,42 @@ class _CustomizableSplitHomeScreenState
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   int _holdingsInitialTabIndex = 0; // Track initial tab for holdings screen
+
+  // Scaffold key for drawer control
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// Breakpoint below which hamburger menu is shown
+  static const double _mobileBreakpoint = 1200.0;
+
+  /// Check if a screen is active in any panel (for drawer highlighting)
+  bool _isScreenActiveInAnyPanel(String screenName) {
+    // Map screen names to ScreenType
+    final screenTypeMap = {
+      'dashboard': ScreenType.dashboard,
+      'positions': ScreenType.positions,
+      'holdings': ScreenType.holdings,
+      'orderBook': ScreenType.orderBook,
+      'funds': ScreenType.funds,
+      'ipo': ScreenType.ipo,
+      'mutualFund': ScreenType.mutualFund,
+      'tradeAction': ScreenType.tradeAction,
+      'watchlist': ScreenType.watchlist,
+    };
+
+    final targetScreenType = screenTypeMap[screenName];
+    if (targetScreenType == null) return false;
+
+    for (final panel in _panels) {
+      if (panel.screenType == targetScreenType) return true;
+      if (panel.screens.isNotEmpty &&
+          panel.activeScreenIndex >= 0 &&
+          panel.activeScreenIndex < panel.screens.length &&
+          panel.screens[panel.activeScreenIndex] == targetScreenType) {
+        return true;
+      }
+    }
+    return false;
+  }
   String? _fundsInitialAction; // Track initial action for funds screen
 
   // Track loading states for each screen type
@@ -655,7 +694,39 @@ class _CustomizableSplitHomeScreenState
         }
 
         final theme = ref.watch(themeProvider);
+        final screenWidth = MediaQuery.of(context).size.width;
+        final showDrawer = screenWidth < _mobileBreakpoint;
+
+        // Get client ID for drawer
+        final userProfile = ref.read(userProfileProvider);
+        final userDetail = userProfile.userDetailModel;
+        final clientDetail = userProfile.clientDetailModel;
+        final Preferences pref = locator<Preferences>();
+        final clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
+
         return Scaffold(
+          key: _scaffoldKey,
+          drawer: showDrawer
+              ? NavigationDrawerWeb(
+                  isDarkMode: theme.isDarkMode,
+                  clientId: clientId,
+                  isScreenActive: (screenName) => _isScreenActiveInAnyPanel(screenName),
+                  onDashboardTap: _handleDashboardTap,
+                  onPositionsTap: _handlePositionsTap,
+                  onHoldingsTap: () => _handleHoldingsTap(),
+                  onOrderBookTap: _handleOrderBookTap,
+                  onFundsTap: () => _handleFundsTap(),
+                  onIPOTap: _handleIPOTap,
+                  onSwapPanels: _handleSwapPanels,
+                  onMutualFundTap: _handleMutualFundTap,
+                  onOptionZTap: _handleOptionZTap,
+                  onThemeToggle: () {
+                    ref.read(themeProvider.notifier).toggleTheme(
+                      themeMod: theme.isDarkMode ? 'Light' : 'Dark',
+                    );
+                  },
+                )
+              : null,
           body: _buildNewLayout(theme),
         );
       },
@@ -894,8 +965,11 @@ class _CustomizableSplitHomeScreenState
 
   /// Build app bar for right side only
   Widget _buildRightSideAppBar(bool isDarkMode) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showHamburger = screenWidth < _mobileBreakpoint;
+
     return Container(
-      height: 65,
+      height: context.responsive(mobile: 56.0, tablet: 60.0, desktop: 65.0),
       decoration: BoxDecoration(
         color: resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,
@@ -908,7 +982,7 @@ class _CustomizableSplitHomeScreenState
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -916,35 +990,69 @@ class _CustomizableSplitHomeScreenState
         ],
       ),
       child: Container(
-        padding: const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
+        padding: EdgeInsets.only(
+          left: context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0),
+          right: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+          top: 6,
+          bottom: 6,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            // Hamburger menu for mobile/tablet
+            if (showHamburger)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    size: 24,
+                  ),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  tooltip: 'Menu',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+
             // Logo section
             RepaintBoundary(
               child: SvgPicture.asset(
                 assets.appLogoIcon,
-                width: 100,
+                width: context.responsive(mobile: 80.0, tablet: 90.0, desktop: 100.0),
                 height: 38,
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(width: 24),
-            // Primary actions
-            _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
-                () => _handleMutualFundTap()),
-            const SizedBox(width: 12),
-            _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
-                () => _handleIPOTap()),
-            const SizedBox(width: 12),
-            _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
-                () => _handleOptionZTap()),
-            
+
+            // Show navigation items only on larger screens
+            if (!showHamburger) ...[
+              const SizedBox(width: 24),
+              // Primary actions
+              _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
+                  () => _handleMutualFundTap()),
+              const SizedBox(width: 12),
+              _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
+                  () => _handleIPOTap()),
+              const SizedBox(width: 12),
+              _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
+                  () => _handleOptionZTap()),
+            ],
+
             const Spacer(),
-            // Navigation screens
-            _buildNavigationScreens(isDarkMode),
-            const SizedBox(width: 20),
-            // Profile section (contains swap, theme toggle, switch account in dropdown)
+
+            // Navigation screens (only on larger screens)
+            if (!showHamburger) ...[
+              _buildNavigationScreens(isDarkMode),
+              const SizedBox(width: 20),
+            ],
+
+            // Profile section (always visible)
             RepaintBoundary(
               child: _buildProfileSection(isDarkMode),
             ),

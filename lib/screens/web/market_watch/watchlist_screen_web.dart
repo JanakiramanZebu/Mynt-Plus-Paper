@@ -18,6 +18,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/common_text_fields_web.dart';
@@ -66,31 +67,9 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   final List<String> _lastTabNames = [];
 
   /// Get responsive tab width based on watchlist panel width
+  /// Uses centralized ResponsiveSizes utility
   double _getResponsiveTabWidth(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Estimate watchlist width (assuming 20-35% of screen based on breakpoints)
-    double watchlistWidth;
-    if (screenWidth >= 1600) {
-      watchlistWidth = screenWidth * 0.20;
-    } else if (screenWidth >= 1200) {
-      watchlistWidth = screenWidth * 0.25;
-    } else if (screenWidth >= 992) {
-      watchlistWidth = screenWidth * 0.28;
-    } else if (screenWidth >= 768) {
-      watchlistWidth = screenWidth * 0.30;
-    } else {
-      watchlistWidth = screenWidth * 0.35;
-    }
-
-    // Tab width based on available watchlist space
-    if (watchlistWidth >= 400) {
-      return 120.0; // Wide watchlist: comfortable tab width
-    } else if (watchlistWidth >= 320) {
-      return 100.0; // Medium watchlist: slightly narrower tabs
-    } else {
-      return 90.0; // Narrow watchlist: compact tabs
-    }
+    return ResponsiveSizes.tabWidth(context);
   }
 
   Timer? _scrollDebounce;
@@ -1488,6 +1467,22 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       BuildContext context, WidgetRef ref, String watchlistName) {
     final TextEditingController controller =
         TextEditingController(text: watchlistName);
+    final FocusNode focusNode = FocusNode();
+
+    // Request focus after dialog animation completes (web autofocus fix)
+    // For edit dialog, position cursor at end instead of selecting all text
+    Future.delayed(const Duration(milliseconds: 250), () {
+      focusNode.requestFocus();
+      // Wait for focus to fully establish before setting cursor position
+      // This prevents the default "select all" behavior on web
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (controller.text.isNotEmpty) {
+          controller.selection = TextSelection.collapsed(
+            offset: controller.text.length,
+          );
+        }
+      });
+    });
 
     showGeneralDialog(
       context: context,
@@ -1570,6 +1565,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             children: [
                               MyntFormTextField(
                                 controller: controller,
+                                focusNode: focusNode,
                                 placeholder: 'Enter watchlist name',
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
@@ -1763,6 +1759,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   void _showCreateWatchlistDialog(BuildContext context, WidgetRef ref) {
     final TextEditingController controller = TextEditingController();
+    final FocusNode focusNode = FocusNode();
+
+    // Request focus after dialog animation completes (web autofocus fix)
+    Future.delayed(const Duration(milliseconds: 250), () {
+      focusNode.requestFocus();
+    });
 
     showGeneralDialog(
       context: context,
@@ -1845,6 +1847,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                             children: [
                               MyntFormTextField(
                                 controller: controller,
+                                focusNode: focusNode,
                                 placeholder: 'Enter watchlist name',
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(

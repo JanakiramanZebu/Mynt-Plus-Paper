@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
-
-import '../sharedWidget/functions.dart';
+import 'package:mynt_plus/res/responsive_extensions.dart';
 
 /// Utility class for responsive navigation
 /// Handles navigation logic based on screen size
@@ -13,7 +12,8 @@ class ResponsiveNavigation {
     required BuildContext context,
     required Map<String, dynamic> arguments,
   }) {
-    if (getResponsiveWidth(context) >= 600) {
+    // Use centralized breakpoint check
+    if (context.isWebLayout) {
       // Desktop: Show as draggable dialog using web version
       PlaceOrderScreenWeb.showDraggable(
         context: context,

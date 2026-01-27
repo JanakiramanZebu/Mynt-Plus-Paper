@@ -12,6 +12,7 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/responsive.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../utils/responsive_snackbar.dart';
@@ -146,29 +147,37 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
               children: [
                 for (int index = 0; index < _exchanges.length; index++)
                   shadcn.TabItem(
-                    child: Builder(
-                      builder: (context) {
-                        final isActive = index == _currentPageIndex;
-                        return Text(
-                          _exchanges[index],
-                          style: MyntWebTextStyles.body(
-                            context,
-                            fontWeight:
-                                isActive ? FontWeight.w700 : FontWeight.w500,
-                            color: isActive
-                                ? resolveThemeColor(
-                                    context,
-                                    dark: WebColors.primaryDark,
-                                    light: WebColors.primary,
-                                  )
-                                : resolveThemeColor(
-                                    context,
-                                    dark: WebColors.textSecondaryDark,
-                                    light: WebColors.textSecondary,
-                                  ),
-                          ),
-                        );
-                      },
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      hitTestBehavior: HitTestBehavior.opaque,
+                      child: Builder(
+                        builder: (context) {
+                          final isActive = index == _currentPageIndex;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 2),
+                            child: Text(
+                              _exchanges[index],
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight:
+                                    isActive ? FontWeight.w700 : FontWeight.w500,
+                                color: isActive
+                                    ? resolveThemeColor(
+                                        context,
+                                        dark: WebColors.primaryDark,
+                                        light: WebColors.primary,
+                                      )
+                                    : resolveThemeColor(
+                                        context,
+                                        dark: WebColors.textSecondaryDark,
+                                        light: WebColors.textSecondary,
+                                      ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
               ],
@@ -209,8 +218,14 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                 borderRadius: BorderRadius.circular(8),
                 padding: EdgeInsets.zero,
                 child: Container(
-                  width: 500,
-                  constraints: const BoxConstraints(maxHeight: 600),
+                  width: context.responsive(
+                    mobile: context.screenWidth * 0.95,
+                    tablet: 450.0,
+                    desktop: 500.0,
+                  ),
+                  constraints: BoxConstraints(
+                    maxHeight: context.screenHeight * 0.75,
+                  ),
                   child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
