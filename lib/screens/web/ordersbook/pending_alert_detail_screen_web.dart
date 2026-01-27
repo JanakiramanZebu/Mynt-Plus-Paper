@@ -14,6 +14,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../res/res.dart';
+import '../../../main.dart' show rootNavigatorKey;
 
 class PendingAlertDetailScreenWeb extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
@@ -297,35 +298,29 @@ class _PendingAlertDetailScreenWebState
               (isModifying || isCancelling)
                   ? null
                   : () async {
-                      final shouldCancel = await _showCancelAlertDialog(theme);
-                      if (shouldCancel != true) {
-                        return;
-                      }
+                      final marketWatchProviderRef =
+                          ref.read(marketWatchProvider);
+                      final String alertId = "${widget.alert.alId}";
+                      final targetContext = rootNavigatorKey.currentContext;
 
-                      setState(() {
-                        isCancelling = true;
-                      });
+                      // Close the sheet first
+                      if (mounted) shadcn.closeSheet(context);
+
+                      if (targetContext == null) return;
+
+                      final shouldCancel =
+                          await _showCancelAlertDialog(theme, targetContext);
+                      if (shouldCancel != true) return;
 
                       try {
-                        final String alertId = "${widget.alert.alId}";
-                        await ref
-                            .read(marketWatchProvider)
-                            .fetchCancelAlert(alertId, context);
-                        await ref
-                            .read(marketWatchProvider)
-                            .fetchPendingAlert(context);
-
-                        if (mounted) shadcn.closeSheet(context);
+                        await marketWatchProviderRef.fetchCancelAlert(
+                            alertId, targetContext);
+                        await marketWatchProviderRef
+                            .fetchPendingAlert(targetContext);
                       } catch (e) {
-                        if (mounted) {
-                          showResponsiveErrorMessage(context,
+                        if (targetContext.mounted) {
+                          showResponsiveErrorMessage(targetContext,
                               "Failed to cancel alert: ${e.toString()}");
-                        }
-                      } finally {
-                        if (mounted) {
-                          setState(() {
-                            isCancelling = false;
-                          });
                         }
                       }
                     },
@@ -570,13 +565,12 @@ class _PendingAlertDetailScreenWebState
     );
   }
 
-  Future<bool?> _showCancelAlertDialog(ThemesProvider theme) async {
-    final symbol = widget.alert.tsym?.replaceAll("-EQ", "") ?? '';
-    final exchange = widget.alert.exch ?? '';
-    final displayText = exchange.isNotEmpty ? '$symbol $exchange' : symbol;
+  Future<bool?> _showCancelAlertDialog(
+      ThemesProvider theme, BuildContext targetContext) async {
+    final symbol = widget.alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
 
     return showDialog<bool>(
-      context: context,
+      context: targetContext,
       barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(
@@ -586,15 +580,15 @@ class _PendingAlertDetailScreenWebState
             decoration: BoxDecoration(
               color: resolveThemeColor(dialogContext,
                   dark: const Color(0xFF0F172A), light: Colors.white),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
+                // Header row with title and close button
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -616,60 +610,69 @@ class _PendingAlertDetailScreenWebState
                               light: MyntColors.textPrimary),
                         ),
                       ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(false),
-                      ),
-                    ],
-                  ),
-                ),
-                // Content area
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(
-                        top: 0, bottom: 20, left: 20, right: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Center(
-                            child: Text(
-                              'Are you sure you want to cancel this alert?',
-                              textAlign: TextAlign.center,
-                              style: MyntWebTextStyles.head(
-                                dialogContext,
-                                color: resolveThemeColor(dialogContext,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Center(
-                          child: Text(
-                            displayText,
-                            textAlign: TextAlign.center,
-                            style: MyntWebTextStyles.bodySmall(
-                              dialogContext,
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
                               color: resolveThemeColor(dialogContext,
                                   dark: MyntColors.textSecondaryDark,
                                   light: MyntColors.textSecondary),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: MyntPrimaryButton(
-                            label: 'Yes, Cancel',
-                            onPressed: () =>
-                                Navigator.of(dialogContext).pop(true),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to cancel "$symbol"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        ),
+                      ),
+
+                      // Red Cancel button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              dialogContext,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],

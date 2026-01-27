@@ -474,7 +474,7 @@ class _BasketListState extends ConsumerState<BasketList> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFound(secondaryEnabled: false),
           ),
         ),
       );
@@ -675,100 +675,110 @@ class _BasketListState extends ConsumerState<BasketList> {
       builder: (BuildContext dialogContext) {
         final theme = ref.read(themeProvider);
         return Dialog(
-          backgroundColor: theme.isDarkMode
-              ? MyntColors.backgroundColorDark
-              : MyntColors.backgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          backgroundColor: Colors.transparent,
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: theme.isDarkMode
+                  ? MyntColors.backgroundColorDark
+                  : MyntColors.backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: Icon(
-                        Icons.close,
-                        size: 24,
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? MyntColors.textSecondaryDark
-                            : MyntColors.secondary,
+                            ? MyntColors.dividerDark
+                            : MyntColors.divider,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ndelete this ',
-                    style: WebTextStyles.dialogContent(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? MyntColors.textPrimaryDark
-                          : MyntColors.textPrimary,
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'basket',
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
+                      Text(
+                        'Delete Basket',
+                        style: MyntWebTextStyles.title(
+                          context,
                           color: theme.isDarkMode
                               ? MyntColors.textPrimaryDark
                               : MyntColors.textPrimary,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
                         ),
                       ),
-                      TextSpan(
-                        text: ' ${bsktName.toString().toUpperCase()}?',
-                        style: WebTextStyles.dialogContent(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? MyntColors.textPrimaryDark
-                              : MyntColors.textPrimary,
-                        ).copyWith(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18,
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: theme.isDarkMode
+                                  ? MyntColors.textSecondaryDark
+                                  : MyntColors.textSecondary,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with basket name in quotes
+                      Text(
+                        'Are you sure you want to delete "${bsktName.toString().toUpperCase()}"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: theme.isDarkMode
+                              ? MyntColors.textPrimaryDark
+                              : MyntColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    child: _isDeleting
-                        ? MyntLoader.inline(
-                            color: Colors.white,
-                            strokeWidth: 2.0,
-                          )
-                        : Text(
-                            'Delete',
-                            style: WebTextStyles.buttonMd(
-                              isDarkTheme: theme.isDarkMode,
-                              color: Colors.white,
-                            ).copyWith(fontSize: 16),
+
+                      // Red Delete button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
                           ),
+                          child: _isDeleting
+                              ? MyntLoader.inline(
+                                  color: Colors.white,
+                                  strokeWidth: 2.0,
+                                )
+                              : Text(
+                                  'Delete',
+                                  style: MyntWebTextStyles.buttonMd(
+                                    context,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -912,7 +922,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             ? SizedBox(
                 height: 400, child: Center(child: MyntLoader.simple()))
             : basket.bsktList.isEmpty
-                ? const SizedBox(height: 400, child: NoDataFound())
+                ? SizedBox(height: 400, child: NoDataFound(secondaryEnabled: false))
                 : Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -1716,7 +1726,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                   padding:
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                   child: basket.bsktScripList.isEmpty
-                      ? const NoDataFound()
+                      ? NoDataFound(secondaryEnabled: false)
                       : Builder(
                           builder: (context) {
                             // Process basket items to extract symbol info
@@ -2612,6 +2622,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   Future<void> _handleDeleteBasketScript(
       Map<String, dynamic> item, int index, ThemesProvider theme) async {
     // Show confirmation dialog
+    final symbol = item['symbol']?.replaceAll("-EQ", "") ?? 'N/A';
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -2622,88 +2633,100 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: colors.colorBlack, light: colors.colorWhite),
-              borderRadius: BorderRadius.circular(10), // Rounded corners
+              borderRadius: BorderRadius.circular(8),
             ),
-            padding: const EdgeInsets.all(24), // Consistent padding
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Close button (Top Right)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: Icon(
-                        Icons.close,
-                        size: 24,
-                        color: resolveThemeColor(context,
-                            dark: styles.MyntColors.textSecondaryDark,
-                            light: styles.MyntColors.textSecondary),
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: styles.MyntColors.dividerDark,
+                          light: styles.MyntColors.divider,
+                        ),
                       ),
                     ),
                   ),
-                ),
-
-                // Text Content
-                const SizedBox(height: 12),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ndelete this ',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: styles.MyntColors.textPrimaryDark,
-                          light: styles.MyntColors.textPrimary),
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'basket Script ',
+                      Text(
+                        'Delete Script',
                         style: MyntWebTextStyles.title(
                           context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w400, // Regular
-                          fontSize: 18,
+                          color: resolveThemeColor(context,
+                              dark: styles.MyntColors.textPrimaryDark,
+                              light: styles.MyntColors.textPrimary),
                         ),
                       ),
-                      TextSpan(
-                        text: '"${item['symbol']?.replaceAll("-EQ", "")}"?',
-                        style: MyntWebTextStyles.title(
-                          context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700, // Bold
-                          fontSize: 18,
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(context,
+                                  dark: styles.MyntColors.textSecondaryDark,
+                                  light: styles.MyntColors.textSecondary),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Button
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48, // Slightly taller button
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7), // Primary Blue
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to delete "$symbol"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: styles.MyntColors.textPrimaryDark,
+                              light: styles.MyntColors.textPrimary),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: Colors.white,
-                      ).copyWith(fontSize: 16),
-                    ),
+
+                      // Red Delete button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: styles.MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Delete',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -2740,83 +2763,116 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: colors.colorBlack, light: colors.colorWhite),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
-            padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: Icon(
-                        Icons.close,
-                        size: 24,
-                        color: resolveThemeColor(context,
-                            dark: styles.MyntColors.textSecondaryDark,
-                            light: styles.MyntColors.textSecondary),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ndelete this ',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: styles.MyntColors.textPrimaryDark,
-                          light: styles.MyntColors.textPrimary),
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                // Header with title and close button
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'basket',
+                      Text(
+                        'Delete Basket',
                         style: MyntWebTextStyles.title(
                           context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          color: resolveThemeColor(context,
+                              dark: styles.MyntColors.textPrimaryDark,
+                              light: styles.MyntColors.textPrimary),
                         ),
                       ),
-                      TextSpan(
-                        text: ' ${bsktName.toUpperCase()}?',
-                        style: MyntWebTextStyles.title(
-                          context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18,
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Icon(
+                            Icons.close,
+                            size: 24,
+                            color: resolveThemeColor(context,
+                                dark: styles.MyntColors.textSecondaryDark,
+                                light: styles.MyntColors.textSecondary),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+                // Border separator
+                Container(
+                  height: 1,
+                  color: resolveThemeColor(context,
+                      dark: WebColors.dividerDark,
+                      light: WebColors.divider),
+                ),
+
+                // Content
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Confirmation text
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          text: 'Are you sure you want to delete ',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: styles.MyntColors.textPrimaryDark,
+                                light: styles.MyntColors.textPrimary),
+                          ),
+                          children: [
+                            TextSpan(
+                              text: '"${bsktName.toUpperCase()}"',
+                              style: MyntWebTextStyles.body(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: styles.MyntColors.textPrimaryDark,
+                                    light: styles.MyntColors.textPrimary),
+                              ),
+                            ),
+                            TextSpan(
+                              text: '?',
+                              style: MyntWebTextStyles.body(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: styles.MyntColors.textPrimaryDark,
+                                    light: styles.MyntColors.textPrimary),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: Colors.white,
-                      ).copyWith(fontSize: 16),
-                    ),
+
+                      // Red Delete button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: styles.MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Delete',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
