@@ -970,7 +970,156 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
   }
-  
+
+  /// Unsubscribe specific tokens (for option chain, futures symbol changes)
+  /// This method checks for protected symbols before unsubscribing
+  /// Protected symbols: watchlist, depth, holdings, positions, indices, other active screens
+  Future<void> unsubscribeTokens({
+    required Set<String> tokensToCheck,
+    required BuildContext context,
+    String source = 'unknown',
+  }) async {
+    if (tokensToCheck.isEmpty) {
+      print('ℹ️  [WebSubscriptionManager] No tokens to unsubscribe for $source');
+      return;
+    }
+
+    print('═══════════════════════════════════════════════════════════');
+    print('🗑️  [WebSubscriptionManager] UNSUBSCRIBING tokens for: $source');
+    print('   Tokens to check: ${tokensToCheck.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    // Collect all protected symbols
+    final protectedSymbols = <String>{};
+
+    try {
+      // 1. Protect symbols from all active screen subscriptions
+      for (var screenSubscriptions in _screenSubscriptions.values) {
+        protectedSymbols.addAll(screenSubscriptions);
+      }
+      print('   🔒 Protected ${protectedSymbols.length} symbols from active screens');
+
+      // 2. Protect watchlist symbols
+      final watchlistSymbols = _getWatchlistSymbols();
+      if (watchlistSymbols.isNotEmpty) {
+        protectedSymbols.addAll(watchlistSymbols);
+        print('   🔒 Protected ${watchlistSymbols.length} watchlist symbols');
+      }
+
+      // 3. Protect depth symbol
+      final marketWatch = ref.read(marketWatchProvider);
+      final depthSymbol = marketWatch.currentDepthSymbol;
+      if (depthSymbol != null && depthSymbol.isNotEmpty) {
+        protectedSymbols.add(depthSymbol);
+        print('   🔒 Protected depth symbol: $depthSymbol');
+      }
+
+      // 4. Protect index symbols
+      final indexSymbols = _getIndexSymbols();
+      if (indexSymbols.isNotEmpty) {
+        protectedSymbols.addAll(indexSymbols);
+        print('   🔒 Protected ${indexSymbols.length} index symbols');
+      }
+
+      // 5. Protect holdings symbols
+      final portfolio = ref.read(portfolioProvider);
+      final holdings = portfolio.holdingsModel ?? [];
+      for (var holding in holdings) {
+        final exchTsymList = holding.exchTsym ?? [];
+        for (var exchTsym in exchTsymList) {
+          if (exchTsym.exch != null && exchTsym.token != null) {
+            protectedSymbols.add('${exchTsym.exch}|${exchTsym.token}');
+          }
+        }
+      }
+
+      // 6. Protect positions symbols
+      final positions = portfolio.postionBookModel ?? [];
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          protectedSymbols.add('${position.exch}|${position.token}');
+        }
+      }
+
+      // 7. Protect futures symbols (if futures list is open) - BUT NOT if we're unsubscribing futures
+      if (source != 'futures') {
+        final futList = marketWatch.fut ?? [];
+        for (var fut in futList) {
+          if (fut.exch != null && fut.token != null) {
+            protectedSymbols.add('${fut.exch}|${fut.token}');
+          }
+        }
+      }
+
+      // 8. Protect current option chain tokens (if option chain is open) - BUT NOT if we're unsubscribing optionChain
+      if (source != 'optionChain') {
+        final optionChainModel = marketWatch.optionChainModel;
+        if (optionChainModel?.optValue != null) {
+          for (var option in optionChainModel!.optValue!) {
+            if (option.exch != null && option.token != null) {
+              protectedSymbols.add('${option.exch}|${option.token}');
+            }
+          }
+          print('   🔒 Protected ${optionChainModel.optValue!.length} option chain symbols');
+        }
+      }
+
+    } catch (e) {
+      print('   ⚠️ Error getting protected symbols: $e');
+    }
+
+    // Find tokens that can be unsubscribed (not protected)
+    final tokensToUnsubscribe = tokensToCheck.where((token) =>
+      !protectedSymbols.contains(token)
+    ).toSet();
+
+    if (tokensToUnsubscribe.isEmpty) {
+      print('ℹ️  [WebSubscriptionManager] All tokens for $source are protected');
+      print('   Total tokens: ${tokensToCheck.length}');
+      print('   Protected: ${tokensToCheck.length}');
+      print('═══════════════════════════════════════════════════════════\n');
+      return;
+    }
+
+    print('✅ [WebSubscriptionManager] Unsubscribing ${tokensToUnsubscribe.length} tokens for $source');
+    print('   Total tokens: ${tokensToCheck.length}');
+    print('   Protected: ${tokensToCheck.length - tokensToUnsubscribe.length}');
+    print('   To unsubscribe: ${tokensToUnsubscribe.length}');
+    if (tokensToUnsubscribe.length <= 10) {
+      print('   Tokens: ${tokensToUnsubscribe.join(", ")}');
+    } else {
+      print('   First 10 tokens: ${tokensToUnsubscribe.take(10).join(", ")}...');
+    }
+
+    try {
+      // Unsubscribe via websocket provider
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = tokensToUnsubscribe.join('#');
+
+      // Use unsubscribe depth task for web
+      wsProvider.connectTouchLine(
+        task: "ud",
+        input: symbolString,
+        context: context,
+      );
+
+      // Remove from tracking
+      _currentWebSocketSubscriptions.removeAll(tokensToUnsubscribe);
+      _activeSubscriptions.removeAll(tokensToUnsubscribe);
+
+      print('📝 [WebSubscriptionManager] Removed ${tokensToUnsubscribe.length} tokens from tracking');
+      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
+      print('   Master list total: ${_activeSubscriptions.length}');
+      print('✅ [WebSubscriptionManager] Successfully unsubscribed tokens for $source');
+      print('═══════════════════════════════════════════════════════════\n');
+
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] ERROR unsubscribing tokens for $source: $e');
+      print('═══════════════════════════════════════════════════════════\n');
+      log('WebSubscriptionManager: Error unsubscribing tokens for $source: $e');
+    }
+  }
+
   /// Update context for future use
   void updateContext(BuildContext context) {
     _lastValidContext = context;

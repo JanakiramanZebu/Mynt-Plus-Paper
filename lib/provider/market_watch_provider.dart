@@ -48,6 +48,7 @@ import '../utils/responsive_snackbar.dart';
 import 'auth_provider.dart';
 import 'core/default_change_notifier.dart';
 import 'index_list_provider.dart';
+import 'web_subscription_manager.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 import 'websocket_provider.dart';
@@ -1544,10 +1545,22 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   Future<void> setOptionScript(
       BuildContext context, String exch, String token, String tsym) async {
+    print('🎯 [setOptionScript] CALLED: exch=$exch, token=$token, tsym=$tsym');
+    print('   _optionChainModel is ${_optionChainModel == null ? "NULL" : "NOT NULL (${_optionChainModel!.optValue?.length ?? 0} options)"}');
+
     try {
       toggleLoad(true);
       // singlePageloader(true);
       notifyListeners();
+
+      // STEP 0: Unsubscribe from old option chain BEFORE clearing the model
+      // This must happen first because clearOptionChainData() sets _optionChainModel = null
+      if (_optionChainModel != null) {
+        print('🔄 [setOptionScript] Unsubscribing old option chain tokens before symbol switch');
+        await requestWSOptChain(context: context, isSubscribe: false);
+      } else {
+        print('⚠️ [setOptionScript] No existing option chain to unsubscribe');
+      }
 
       // STEP 1: Clear any previous option chain data immediately
       clearOptionChainData();
@@ -3158,49 +3171,95 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   Future<void> requestWSOptChain(
       {required bool isSubscribe, required BuildContext context}) async {
-    // On web, WebSubscriptionManager handles all subscriptions
-    // Skip unsubscribe here to avoid conflicts with multi-panel layout
-    if (kIsWeb && !isSubscribe) return;
-
-    String input = "";
+    // Collect option chain tokens
+    final Set<String> optionTokens = {};
     if (_optionChainModel != null) {
       if (_optionChainModel!.optValue != null) {
         for (var element in _optionChainModel!.optValue!) {
-          input += "${element.exch}|${element.token}#";
+          if (element.exch != null && element.token != null) {
+            optionTokens.add("${element.exch}|${element.token}");
+          }
         }
       }
     }
 
-    if (input.isNotEmpty) {
-      // lastScbTok(input);
+    print('📊 [requestWSOptChain] isSubscribe: $isSubscribe, tokens: ${optionTokens.length}');
+
+    if (optionTokens.isEmpty) {
+      print('⚠️ [requestWSOptChain] No tokens to ${isSubscribe ? "subscribe" : "unsubscribe"}');
+      return;
+    }
+
+    if (kIsWeb) {
+      if (!isSubscribe) {
+        // On web, use WebSubscriptionManager to smart-unsubscribe
+        // This protects symbols used by watchlist, depth, futures, etc.
+        print('🗑️ [requestWSOptChain] Unsubscribing ${optionTokens.length} option chain tokens');
+        await ref.read(webSubscriptionManagerProvider).unsubscribeTokens(
+          tokensToCheck: optionTokens,
+          context: context,
+          source: 'optionChain',
+        );
+      } else {
+        // Subscribe using depth task for web
+        final input = optionTokens.join('#');
+        print('✅ [requestWSOptChain] Subscribing ${optionTokens.length} option chain tokens');
+        print('   First 5 tokens: ${optionTokens.take(5).join(", ")}');
+        await ref.read(websocketProvider).establishConnection(
+            channelInput: input,
+            task: "d",
+            context: context);
+        print('✅ [requestWSOptChain] Subscribe call completed');
+      }
+    } else {
+      // Mobile: use original logic
+      final input = optionTokens.join('#');
       await ref.read(websocketProvider).establishConnection(
-          channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
+          channelInput: input,
+          task: isSubscribe ? "t" : "u",
           context: context);
     }
   }
 
 // websocket Connection Request for Future list
-  requestWSFut({required bool isSubscribe, required BuildContext context}) {
-    // On web, WebSubscriptionManager handles all subscriptions
-    // Skip unsubscribe here to avoid conflicts with multi-panel layout
-    if (kIsWeb && !isSubscribe) return;
-
-    String input = "";
-
-    if (_fut!.isNotEmpty) {
+  Future<void> requestWSFut({required bool isSubscribe, required BuildContext context}) async {
+    // Collect futures tokens
+    final Set<String> futuresTokens = {};
+    if (_fut != null && _fut!.isNotEmpty) {
       for (var element in _fut!) {
-        input += "${element.exch}|${element.token}#";
+        if (element.exch != null && element.token != null) {
+          futuresTokens.add("${element.exch}|${element.token}");
+        }
       }
     }
 
     notifyListeners();
 
-    if (input.isNotEmpty) {
-      // lastScbTok(input);
+    if (futuresTokens.isEmpty) return;
+
+    if (kIsWeb) {
+      if (!isSubscribe) {
+        // On web, use WebSubscriptionManager to smart-unsubscribe
+        // This protects symbols used by watchlist, depth, option chain, etc.
+        await ref.read(webSubscriptionManagerProvider).unsubscribeTokens(
+          tokensToCheck: futuresTokens,
+          context: context,
+          source: 'futures',
+        );
+      } else {
+        // Subscribe using depth task for web
+        final input = futuresTokens.join('#');
+        await ref.read(websocketProvider).establishConnection(
+            channelInput: input,
+            task: "d",
+            context: context);
+      }
+    } else {
+      // Mobile: use original logic
+      final input = futuresTokens.join('#');
       ref.read(websocketProvider).establishConnection(
-          channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
+          channelInput: input,
+          task: isSubscribe ? "t" : "u",
           context: context);
     }
   }
