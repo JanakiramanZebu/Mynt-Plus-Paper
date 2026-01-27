@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
 import 'margin_details_dialog_web.dart';
 import 'dart:convert';
@@ -124,6 +126,9 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
   // Static variable to track inner dialog overlay entries
   static OverlayEntry? _currentDialogOverlayEntry;
 
+  // Static variable to remember the last position of the dialog
+  static Offset? _lastSavedPosition;
+
   /// Static method to show a dialog on top of the place order overlay
   /// This ensures dialogs appear above the draggable order screen
   /// Dialog only closes when user explicitly clicks close (not on outside tap)
@@ -204,10 +209,15 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
       _currentOverlayEntry = null;
     }
 
-    final position = initialPosition ??
+    // Dialog dimensions for centering calculation
+    const dialogWidth = 450.0;
+    const dialogHeight = 500.0;
+    // Use saved position, then initialPosition parameter, then center of screen
+    final position = _lastSavedPosition ??
+        initialPosition ??
         Offset(
-          MediaQuery.of(context).size.width * 0.35,
-          MediaQuery.of(context).size.height * 0.2,
+          (MediaQuery.of(context).size.width - dialogWidth) / 2,
+          (MediaQuery.of(context).size.height - dialogHeight) / 2,
         );
 
     late OverlayEntry overlayEntry;
@@ -219,7 +229,8 @@ class PlaceOrderScreenWeb extends ConsumerStatefulWidget {
         fromChart: fromChart,
         initialPosition: position,
         onPositionChanged: (newPosition) {
-          // Position can be saved if needed
+          // Save the position for next time
+          _lastSavedPosition = newPosition;
         },
         onClose: () {
           overlayEntry.remove();
@@ -798,6 +809,39 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     }
   }
 
+  void openFunds(String pageis, BuildContext context) {
+    if (!kIsWeb) {
+      showResponsiveWarningMessage(
+          context, "This feature is only available on web");
+      return;
+    }
+
+    try {
+      final pref = locator<Preferences>();
+      String? uid = pref.clientId;
+      String? stoken = pref.token;
+
+      // Check if credentials are missing
+      if (uid == null || uid.isEmpty || stoken == null || stoken.isEmpty) {
+        showResponsiveWarningMessage(context, "Please login to continue");
+        return;
+      }
+
+      // Construct URL based on page type
+      String url;
+      if (pageis == 'fund') {
+        url = 'https://fund.zebuetrade.com?uid=$uid&token=$stoken';
+      } else {
+        url = 'https://fund.zebuetrade.com/withdrawal?uid=$uid&token=$stoken';
+      }
+      html.window.open(url, '_blank');
+    } catch (e) {
+      print("Error opening fund page: $e");
+      showResponsiveWarningMessage(
+          context, "Error opening fund page. Please try again.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -1047,39 +1091,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 //     maxLines: 1),
                                                 // CustomExchBadge(
                                                 //     exch: " ${widget.scripInfo.exch}"),
-
-                                                Text(
-                                                  " ${stockExchangeSelected.exch ?? widget.scripInfo.exch}",
-                                                  style: WebTextStyles.para(
-                                                    isDarkTheme:
-                                                        theme.isDarkMode,
-                                                    color: resolveThemeColor(context,
-                                                        dark:
-                                                            MyntColors.textPrimary,
-                                                        light: MyntColors.textPrimary),
-                                                    fontWeight: WebFonts.medium,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                              ]),
-                                            ),
-                                            Row(
-                                              children: [
-                                                OrderScreenHeaderWeb(
-                                                  headerData: stockExchangeSelected.exch == null ? widget.orderArg : selectedStockSubscribe,
-                                                ),
-                                              ],
-                                            ),
-                                            
-                                          ],
-                                        ),
-                                           // NSE/BSE Exchange Switch
-                                            if (_isStock && _stockExchangesList.isNotEmpty && (orderType == "Delivery" || orderType == "Intraday" || orderType == "CO - BO")) ...[
+                                                if (_isStock && _stockExchangesList.isNotEmpty && (orderType == "Delivery" || orderType == "Intraday" || orderType == "CO - BO")) ...[
                                               const SizedBox(width: 4),
                                               SizedBox(
                                                 width: 100,
+                                                height: 30,
                                                 child: Row(
                                                   children: List.generate(
                                                     _stockExchangesList.length,
@@ -1130,8 +1146,38 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   ),
                                                 ),
                                               ),
+                                              ]else...[
+                                                Text(
+                                                  " ${stockExchangeSelected.exch ?? widget.scripInfo.exch}",
+                                                  style: WebTextStyles.para(
+                                                    isDarkTheme:
+                                                        theme.isDarkMode,
+                                                    color: resolveThemeColor(context,
+                                                        dark:
+                                                            MyntColors.textPrimary,
+                                                        light: MyntColors.textPrimary),
+                                                    fontWeight: WebFonts.medium,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
                                             ],
-                                        const SizedBox(width: 12),
+                                              ]),
+                                            ),
+                                            Row(
+                                              children: [
+                                                OrderScreenHeaderWeb(
+                                                  headerData: stockExchangeSelected.exch == null ? widget.orderArg : selectedStockSubscribe,
+                                                ),
+                                              ],
+                                            ),
+                                            
+                                          ],
+                                        ),
+                                           // NSE/BSE Exchange Switch
+                                            
+                                        // const SizedBox(width: 12),
                                         // Buy/Sell Toggle
                                         Row(
                                           children: [
@@ -1563,7 +1609,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           // ]
                           const SizedBox(height: 10),
                           // AMO Alert Banner - shown when market is closed
-                          if (_isMarketClosed && _afterMarketOrder && orderType != "CO - BO") ...[
+                          if (_isMarketClosed && orderType != "CO - BO") ...[
                             Container(
                               margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -3913,32 +3959,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           CrossAxisAlignment
                                                               .end,
                                                       children: [
-                                                        Row(
-                                                          children: [
-                                                            headerTitleText(
-                                                                (_isStock)
-                                                                    ? (_isQtyToAmount
-                                                                        ? "Amount"
-                                                                        : "Qty")
-                                                                    : (_isLotToQty
-                                                                        ? "Qty"
-                                                                        : "Lot"),
-                                                                theme),
-                                                            const SizedBox(
-                                                                width: 16),
-                                                            if (widget.scripInfo
-                                                                        .exch ==
-                                                                    "NFO" ||
-                                                                widget.scripInfo
-                                                                        .exch ==
-                                                                    "BFO" ||
-                                                                _isStock)
-                                                              Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                shape:
-                                                                    const CircleBorder(),
-                                                                child: InkWell(
+                                                        InkWell(
                                                                   customBorder:
                                                                       const CircleBorder(),
                                                                   splashColor: theme
@@ -3953,7 +3974,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .highlightDark
                                                                       : colors
                                                                           .highlightLight,
-                                                                  onTap: () {
+                                                                  onTap:(widget.scripInfo
+                                                                        .exch ==
+                                                                    "NFO" ||
+                                                                widget.scripInfo
+                                                                        .exch ==
+                                                                    "BFO" ||
+                                                                _isStock) ? () {
                                                                     setState(
                                                                         () {
                                                                       if (_isStock) {
@@ -3988,27 +4015,45 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       }
                                                                       _debouncedMarginUpdate();
                                                                     });
-                                                                  },
-                                                                  child:
-                                                                      Padding(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            0.0),
-                                                                    child: SvgPicture
-                                                                        .asset(
-                                                                      assets
-                                                                          .switchIcon,
-                                                                      width: 16,
-                                                                      height:
-                                                                          16,
-                                                                      fit: BoxFit
-                                                                          .contain,
-                                                                    ),
+                                                                  } : (){},
+                                                                  child: Row(
+                                                            children: [
+                                                              headerTitleText(
+                                                                  (_isStock)
+                                                                      ? (_isQtyToAmount
+                                                                          ? "Amount"
+                                                                          : "Qty")
+                                                                      : (_isLotToQty
+                                                                          ? "Qty"
+                                                                          : "Lot"),
+                                                                  theme),
+                                                              const SizedBox(
+                                                                  width: 16),
+                                                              if (widget.scripInfo
+                                                                          .exch ==
+                                                                      "NFO" ||
+                                                                  widget.scripInfo
+                                                                          .exch ==
+                                                                      "BFO" ||
+                                                                  _isStock)
+                                                                Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .all(
+                                                                          0.0),
+                                                                  child: SvgPicture
+                                                                  .asset(
+                                                                assets
+                                                                    .switchIcon,
+                                                                width: 16,
+                                                                height:
+                                                                    16,
+                                                                fit: BoxFit
+                                                                    .contain,
                                                                   ),
                                                                 ),
-                                                              ),
-                                                          ],
+                                                            ],
+                                                          ),
                                                         ),
 
                                                         // Text(
@@ -4401,31 +4446,46 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Row(
-                                                      // mainAxisAlignment:
-                                                      //     MainAxisAlignment
-                                                      //         .spaceBetween,
-                                                      // crossAxisAlignment:
-                                                      //     CrossAxisAlignment
-                                                      //         .end,
-                                                      children: [
-                                                        headerTitleText(
-                                                            "Price", theme),
-                                                        const SizedBox(
-                                                            width: 4),
-                                                        Text(priceType,
-                                                            style: WebTextStyles
-                                                                .formLabel(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
-                                                              color: theme
-                                                                      .isDarkMode
-                                                                  ? MyntColors
-                                                                      .textPrimaryDark
-                                                                  : MyntColors
-                                                                      .textPrimary,
-                                                            ))
-                                                      ]),
+                                                  InkWell(
+                                                    customBorder: const CircleBorder(),
+                                                              splashColor: theme.isDarkMode
+                                                                  ? colors.splashColorDark
+                                                                  : colors.splashColorLight,
+                                                              highlightColor: theme.isDarkMode
+                                                                  ? colors.highlightDark
+                                                                  : colors.highlightLight,
+                                                    onTap: () {
+                                                       if (orderType == "CO - BO" &&
+                                                                  _isStoplossOrder &&
+                                                                  !_isMarketOrder) {
+                                                                ResponsiveSnackBar.showWarning(
+                                                                    context,
+                                                                    "SL Market order is not allowed for CO-BO orders");
+                                                                return;
+                                                              }
+                                                              setState(() {
+                                                                _isMarketOrder = !_isMarketOrder;
+                                                                updatePriceType();
+                                                                orderInput.chngPriceType(
+                                                                    priceType,
+                                                                    widget.orderArg.exchange);
+                                                                _debouncedMarginUpdate();
+                                                              });
+                                                    },
+                                                    child: Row(
+                                                        children: [
+                                                          headerTitleText(
+                                                              "Price", theme),
+                                                          const SizedBox(
+                                                              width: 8),
+                                                          SvgPicture.asset(
+                                                            assets.switchIcon,
+                                                            width: 16,
+                                                            height: 16,
+                                                            fit: BoxFit.contain,
+                                                          ),
+                                                        ]),
+                                                  ),
                                                   const SizedBox(height: 10),
                                                   SizedBox(
                                                       height: 40,
@@ -4531,76 +4591,6 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                             "SL Limit"
                                                                     ? false
                                                                     : true,
-                                                                // prefixIcon: Container(
-                                                                //     margin:
-                                                                //         const EdgeInsets.all(
-                                                                //             12),
-                                                                //     decoration: BoxDecoration(
-                                                                //         borderRadius: BorderRadius.circular(20),
-                                                                //         color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
-                                                                //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, priceType == "Limit" || priceType == "SL Limit" ? assets.ruppeIcon : assets.lock, fit: BoxFit.scaleDown)),
-                                                                trailingWidget:
-                                                                    Material(
-                                                                  color: Colors
-                                                                      .transparent,
-                                                                  shape:
-                                                                      const CircleBorder(),
-                                                                  child:
-                                                                      InkWell(
-                                                                    customBorder:
-                                                                        const CircleBorder(),
-                                                                    splashColor: theme.isDarkMode
-                                                                        ? colors
-                                                                            .splashColorDark
-                                                                        : colors
-                                                                            .splashColorLight,
-                                                                    highlightColor: theme.isDarkMode
-                                                                        ? colors
-                                                                            .highlightDark
-                                                                        : colors
-                                                                            .highlightLight,
-                                                                    onTap: () {
-                                                                      // Check if trying to switch to SL MKT for CO-BO stoploss order
-                                                                      if (orderType ==
-                                                                              "CO - BO" &&
-                                                                          _isStoplossOrder &&
-                                                                          !_isMarketOrder) {
-                                                                        ResponsiveSnackBar
-                                                                            .showWarning(
-                                                                                context,
-                                                                                "SL Market order is not allowed for CO-BO orders");
-                                                                        return;
-                                                                      }
-                                                                      setState(
-                                                                          () {
-                                                                        _isMarketOrder =
-                                                                            !_isMarketOrder;
-                                                                        updatePriceType();
-                                                                        orderInput.chngPriceType(
-                                                                            priceType,
-                                                                            widget.orderArg.exchange);
-                                                                        _debouncedMarginUpdate();
-                                                                      });
-                                                                    },
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          14.0),
-                                                                      child: SvgPicture
-                                                                          .asset(
-                                                                        assets
-                                                                            .switchIcon,
-                                                                        width:
-                                                                            10,
-                                                                        height:
-                                                                            10,
-                                                                        fit: BoxFit
-                                                                            .contain,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
                                                                 controller:
                                                                     priceCtrl,
                                                                 textAlign:
@@ -5511,27 +5501,28 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   ? InkWell(
                                                                       onTap:
                                                                           () {
-                                                                        ref.read(transcationProvider).fetchValidateToken(
-                                                                            context);
-                                                                        Future.delayed(
-                                                                            const Duration(milliseconds: 100),
-                                                                            () async {
-                                                                          await trancation
-                                                                              .ip();
-                                                                          await trancation.fetchupiIdView(
-                                                                              trancation.bankdetails!.dATA![trancation.indexss][1],
-                                                                              trancation.bankdetails!.dATA![trancation.indexss][2]);
-                                                                          await trancation
-                                                                              .fetchcwithdraw(context);
-                                                                        });
+                                                                        // ref.read(transcationProvider).fetchValidateToken(
+                                                                        //     context);
+                                                                        // Future.delayed(
+                                                                        //     const Duration(milliseconds: 100),
+                                                                        //     () async {
+                                                                        //   await trancation
+                                                                        //       .ip();
+                                                                        //   await trancation.fetchupiIdView(
+                                                                        //       trancation.bankdetails!.dATA![trancation.indexss][1],
+                                                                        //       trancation.bankdetails!.dATA![trancation.indexss][2]);
+                                                                        //   await trancation
+                                                                        //       .fetchcwithdraw(context);
+                                                                        // });
 
-                                                                        trancation
-                                                                            .changebool(true);
-                                                                        showDialog(
-                                                                            context:
-                                                                                context,
-                                                                            builder: (context) =>
-                                                                                FundScreenWeb(dd: trancation));
+                                                                        // trancation
+                                                                        //     .changebool(true);
+                                                                        // showDialog(
+                                                                        //     context:
+                                                                        //         context,
+                                                                        //     builder: (context) =>
+                                                                        //         FundScreenWeb(dd: trancation));
+                                                                        openFunds('fund', context);
                                                                       },
                                                                       child:
                                                                           Row(

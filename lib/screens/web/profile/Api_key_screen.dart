@@ -1,20 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/api_key_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
-import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:share_plus/share_plus.dart';
-
-
 
 class ApiKeyScreen extends ConsumerStatefulWidget {
   const ApiKeyScreen({
@@ -28,95 +22,47 @@ class ApiKeyScreen extends ConsumerStatefulWidget {
 class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
     final apikeys = ref.watch(apikeyprovider);
 
-    // final screenheight = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Container(
-         decoration: BoxDecoration(
-           borderRadius: const BorderRadius.only(
-      topLeft: Radius.circular(16),
-      topRight: Radius.circular(16),
-    ),
-         color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-         border: Border(
-                                  top: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  left: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                  right: BorderSide(
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.5)
-                                        : colors.colorWhite,
-                                  ),
-                                ),
-
-         
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
+          color: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          border: Border(
+            top: BorderSide(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.backgroundColor),
+            ),
+            left: BorderSide(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.backgroundColor),
+            ),
+            right: BorderSide(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.backgroundColor),
+            ),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // const CustomDragHandler(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Padding(
-                  //   padding: const EdgeInsets.symmetric(vertical: 14),
-                  //   child: TextWidget.titleText(
-                  //       text: 'Generate API Key',
-                  //       theme: false,
-                  //       color: theme.isDarkMode
-                  //           ? colors.textPrimaryDark
-                  //           : colors.textPrimaryLight,
-                  //       fw: 1),
-                  // ),
-              
-                  // ListDivider(),
-              
-                  // TextWidget.titleText(
-                  //     text: 'Authenticator Key',
-                  //     theme: false,
-                  //     color: theme.isDarkMode
-                  //         ? colors.textPrimaryDark
-                  //         : colors.textPrimaryLight,
-                  //     fw: 0),
                   const SizedBox(height: 16.0),
-                  // apikeys.apikeyres!.apistatus == "VALID"
-                  //     ? TextWidget.subText(
-                  //         text: 'Your API Key click to copy',
-                  //         theme: false,
-                  //         color: theme.isDarkMode
-                  //             ? colors.textPrimaryDark
-                  //             : colors.textPrimaryLight,
-                  //         fw: 0)
-                  //     : TextWidget.subText(
-                  //         text: 'API Key is Expired Click to Generate',
-                  //         theme: false,
-                  //         color: theme.isDarkMode
-                  //             ? colors.textSecondaryDark
-                  //             : colors.textSecondaryLight,
-                  //         fw: 0),
-                  // TextWidget.paraText(
-                  //     text: '${apikeys.apikeyres!.apistatus}',
-                  //     theme: false,
-                  //     color: theme.isDarkMode
-                  //         ? colors.textSecondaryDark
-                  //         : colors.textSecondaryLight,
-                  //     fw: 0),
                   apikeys.apikeyres!.apistatus == "NOT_PRESENT"
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -125,60 +71,48 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                               children: [
                                 Column(
                                   children: [
-                                    TextWidget.subText(
+                                    Text(
+                                      "It looks like you haven't created an API key yet. Click below to generate your first key and get started.",
                                       maxLines: 2,
-                                      textOverflow: TextOverflow.ellipsis,
-                                      text:
-                                          "It looks like you haven't created an API key yet. Click below to generate your first key and get started.",
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 0,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          darkColor: MyntColors.textPrimaryDark,
+                                          lightColor: MyntColors.textPrimary),
                                     ),
                                     const SizedBox(height: 8.0),
                                   ],
                                 ),
                                 const SizedBox(height: 16.0),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        await ref
-                                            .read(apikeyprovider)
-                                            .fetchgenerateapikey(
-                                                context, "1 year", apikeys.apikeyres!.apistatus ?? "");
-                                        await ref
-                                            .read(apikeyprovider)
-                                            .fetchapikey(context);
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 40,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      await ref
+                                          .read(apikeyprovider)
+                                          .fetchgenerateapikey(context, "1 year",
+                                              apikeys.apikeyres!.apistatus ?? "");
+                                      await ref
+                                          .read(apikeyprovider)
+                                          .fetchapikey(context);
 
-                                        Clipboard.setData(ClipboardData(
-                                            text:
-                                                "${apikeys.apikeyres!.apikey}"));
-                                        successMessage(
-                                                context,
-                                                'API Key has been ${apikeys.generateApikey?.status} and copied');
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        elevation: 0,
-                                        minimumSize:
-                                            const Size(double.infinity, 45),
-                                        backgroundColor: theme.isDarkMode
-                                            ? colors.primaryDark
-                                            : colors.primaryLight,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
+                                      Clipboard.setData(ClipboardData(
+                                          text: "${apikeys.apikeyres!.apikey}"));
+                                      successMessage(context,
+                                          'API Key has been ${apikeys.generateApikey?.status} and copied');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: MyntColors.primary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
-                                      child: TextWidget.subText(
-                                          text: "Generate API Key",
-                                          theme: false,
-                                          color: colors.colorWhite,
-                                          fw: 2),
+                                    ),
+                                    child: Text(
+                                      "Generate API Key",
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          color: Colors.white,
+                                          fontWeight: MyntFonts.semiBold),
                                     ),
                                   ),
                                 ),
@@ -186,32 +120,28 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : SizedBox(),
-              
+                      : const SizedBox(),
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT"
                       ? Column(
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                TextWidget.subText(
-                                  text: 'API Key',
-                                  theme: false,
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                      fw: 1,
+                                Text(
+                                  'API Key',
+                                  style: MyntWebTextStyles.bodySmall(context,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary,
+                                      fontWeight: MyntFonts.medium),
                                 ),
                                 Row(
                                   children: [
-                                    TextWidget.paraText(
-                                      text: readTimestamp(int.parse(
+                                    Text(
+                                      readTimestamp(int.parse(
                                           "${apikeys.apikeyres!.exd}000")),
-                                      theme: false,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                          fw: 0,
+                                      style: MyntWebTextStyles.para(context,
+                                          darkColor: MyntColors.textSecondaryDark,
+                                          lightColor: MyntColors.textSecondary),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
@@ -219,21 +149,31 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                         decoration: BoxDecoration(
                                           color: apikeys.apikeyres!.apistatus ==
                                                   "VALID"
-                                              ? theme.isDarkMode ? colors.profitDark.withOpacity(0.2) : colors.profitLight.withOpacity(0.2)
-                                              : theme.isDarkMode ? colors.lossDark.withOpacity(0.2) : colors.lossLight.withOpacity(0.2),
+                                              ? resolveThemeColor(context,
+                                                  dark: MyntColors.profit
+                                                      .withValues(alpha: 0.2),
+                                                  light: MyntColors.profit
+                                                      .withValues(alpha: 0.2))
+                                              : resolveThemeColor(context,
+                                                  dark: MyntColors.loss
+                                                      .withValues(alpha: 0.2),
+                                                  light: MyntColors.loss
+                                                      .withValues(alpha: 0.2)),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Padding(
-                                          padding: const EdgeInsets.all(4.0),
-                                          child: TextWidget.paraText(
-                                            text:
-                                                "${apikeys.apikeyres!.apistatus}",
-                                            theme: false,
-                                            color:  apikeys.apikeyres!.apistatus ==
-                                                  "VALID"
-                                              ? theme.isDarkMode ? colors.profitDark : colors.profitLight
-                                              : theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                              fw: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          child: Text(
+                                            "${apikeys.apikeyres!.apistatus}",
+                                            style: MyntWebTextStyles.caption(
+                                                context,
+                                                color: apikeys.apikeyres!
+                                                            .apistatus ==
+                                                        "VALID"
+                                                    ? MyntColors.profit
+                                                    : MyntColors.loss,
+                                                fontWeight: MyntFonts.medium),
                                           ),
                                         ),
                                       ),
@@ -242,128 +182,71 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                                 ),
                               ],
                             ),
-                            SizedBox(height: 20.0),
+                            const SizedBox(height: 16.0),
                             Container(
                               decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                                borderRadius: BorderRadius.circular(5),
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.listItemBgDark,
+                                    light: MyntColors.listItemBg),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: colors.primaryLight,
+                                  color: MyntColors.primary,
                                   width: 1,
                                 ),
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(14.0),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
-                                      child: TextWidget.paraText(
-                                        text: apikeys.hidePass
+                                      child: Text(
+                                        apikeys.hidePass
                                             ? "•" *
                                                 apikeys.apikeyres!.apikey!.length
                                             : "${apikeys.apikeyres!.apikey}",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        fw: 0,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: MyntWebTextStyles.para(context,
+                                            darkColor: MyntColors.textPrimaryDark,
+                                            lightColor: MyntColors.textPrimary),
                                       ),
                                     ),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
-                                        onTap: () {
-                                          apikeys.hiddenPass();
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4.0),
-                                          child: SvgPicture.asset(
-                                            apikeys.hidePass
-                                                ? "assets/icon/eye-off.svg"
-                                                : "assets/icon/eye.svg",
-                                            width: 20,
-                                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                          ),
+                                    Row(
+                                      children: [
+                                        _buildIconButton(
+                                          icon: apikeys.hidePass
+                                              ? "assets/icon/eye-off.svg"
+                                              : "assets/icon/eye.svg",
+                                          onTap: () => apikeys.hiddenPass(),
+                                          useSvg: true,
                                         ),
-                                      ),
-                                    ),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
-                                        onTap: () async {
-                                          await Future.delayed(
-                                              const Duration(milliseconds: 150));
-                                          await Share.share(
-                                            "API Key\n${apikeys.apikeyres!.apikey}",
-                                          );
-                                        },
-                                        child: Container(
-                                          height: 32,
-                                          width: 32,
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.share_outlined,
-                                              size: 18,
-                                              color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                            ),
-                                          ),
+                                        const SizedBox(width: 4),
+                                        _buildIconButton(
+                                          iconData: Icons.share_outlined,
+                                          onTap: () async {
+                                            await Future.delayed(
+                                                const Duration(milliseconds: 150));
+                                            await Share.share(
+                                              "API Key\n${apikeys.apikeyres!.apikey}",
+                                            );
+                                          },
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
-                                        onTap: () async {
-                                          await Future.delayed(
-                                              const Duration(milliseconds: 150));
-                                          Clipboard.setData(ClipboardData(
-                                              text:
-                                                  "${apikeys.apikeyres!.apikey}"));
-                                          successMessage(
-                                                  context,
-                                                  "Auth key copied to clipboard");
-                                        },
-                                        child: Container(
-                                          height: 32,
-                                          width: 32,
-                                          child: Center(
-                                            child: Icon(Icons.copy, size: 18, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,),
-                                          ),
+                                        const SizedBox(width: 4),
+                                        _buildIconButton(
+                                          iconData: Icons.copy,
+                                          onTap: () async {
+                                            await Future.delayed(
+                                                const Duration(milliseconds: 150));
+                                            Clipboard.setData(ClipboardData(
+                                                text:
+                                                    "${apikeys.apikeyres!.apikey}"));
+                                            successMessage(context,
+                                                "Auth key copied to clipboard");
+                                          },
                                         ),
-                                      ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -371,55 +254,98 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                             ),
                           ],
                         )
-                      : SizedBox(),
-                  SizedBox(height: 18.0),
+                      : const SizedBox(),
+                  const SizedBox(height: 18.0),
                   apikeys.apikeyres!.apistatus != "NOT_PRESENT" &&
-                          apikeys.apikeyres!.apistatus != "VALID" || apikeys.apikeyres!.apistatus == "EXPIRED"
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                await ref
-                                    .read(apikeyprovider)
-                                    .fetchgenerateapikey(context, "1 year", apikeys.apikeyres!.apistatus ?? "");
-                                await ref
-                                    .read(apikeyprovider)
-                                    .fetchapikey(context);
-                                     await Future.delayed(Duration(milliseconds: 50));
+                              apikeys.apikeyres!.apistatus != "VALID" ||
+                          apikeys.apikeyres!.apistatus == "EXPIRED"
+                      ? SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await ref
+                                  .read(apikeyprovider)
+                                  .fetchgenerateapikey(context, "1 year",
+                                      apikeys.apikeyres!.apistatus ?? "");
+                              await ref.read(apikeyprovider).fetchapikey(context);
+                              await Future.delayed(
+                                  const Duration(milliseconds: 50));
 
-                                if (apikeys.apikeyres?.apikey != null){
+                              if (apikeys.apikeyres?.apikey != null) {
                                 Clipboard.setData(ClipboardData(
                                     text: "${apikeys.apikeyres!.apikey}"));
-                                    successMessage(context,
-                                        'API Key has been ${apikeys.generateApikey?.status} and copied');
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                elevation: 0,
-                                minimumSize: const Size(double.infinity, 40),
-                                backgroundColor: theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
+                                successMessage(context,
+                                    'API Key has been ${apikeys.generateApikey?.status} and copied');
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: MyntColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: TextWidget.subText(
-                                  text: "Generate API Key",
-                                  theme: false,
-                                  color: colors.colorWhite,
-                                  fw: 2),
+                            ),
+                            child: Text(
+                              "Generate API Key",
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  color: Colors.white,
+                                  fontWeight: MyntFonts.semiBold),
                             ),
                           ),
                         )
-                      : SizedBox(),
+                      : const SizedBox(),
                 ],
               ),
             ),
-            SizedBox(height: 30.0)
+            const SizedBox(height: 30.0)
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconButton({
+    String? icon,
+    IconData? iconData,
+    required VoidCallback onTap,
+    bool useSvg = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        splashColor: resolveThemeColor(context,
+            dark: MyntColors.rippleDark, light: MyntColors.rippleLight),
+        highlightColor: resolveThemeColor(context,
+            dark: MyntColors.highlightDark, light: MyntColors.highlightLight),
+        onTap: onTap,
+        child: Container(
+          height: 32,
+          width: 32,
+          padding: const EdgeInsets.all(6),
+          child: Center(
+            child: useSvg && icon != null
+                ? SvgPicture.asset(
+                    icon,
+                    width: 18,
+                    colorFilter: ColorFilter.mode(
+                      resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                      BlendMode.srcIn,
+                    ),
+                  )
+                : Icon(
+                    iconData,
+                    size: 18,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
+                  ),
+          ),
         ),
       ),
     );

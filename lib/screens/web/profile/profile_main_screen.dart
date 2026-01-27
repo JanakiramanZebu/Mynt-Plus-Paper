@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:mynt_plus/api/core/api_export.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,6 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/routes/route_names.dart';
@@ -68,12 +68,12 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
   void initState() {
     super.initState();
     // If initialIndex is provided, navigate to that section
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.initialIndex == 3) {
-        // Settings
-        _navigateToChild('Settings', const _SettingsSection());
-      }
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (widget.initialIndex == 3) {
+    //     // Settings
+    //     _navigateToChild('Settings', const _SettingsSection());
+    //   }
+    // });
   }
 
   void _navigateToChild(String title, Widget child) {
@@ -117,73 +117,69 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
     final theme = ref.watch(themeProvider);
     final isDark = theme.isDarkMode;
 
-    // If we have a child screen, show it with a back button
-    if (_currentChildScreen != null) {
-      return Container(
-        color: isDark ? const Color(0xFF121212) : Colors.white,
-        child: Column(
-          children: [
-            // Header with back button
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark ? colors.darkColorDivider : colors.colorDivider,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _currentChildTitle ?? '',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                        ),
-                      ),
-                      if (_currentChildTitle == 'Settings')
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            "Catch the log, setting up preference, get API key, and change themes.",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Child content
-            Expanded(child: _currentChildScreen!),
-          ],
-        ),
-      );
-    }
+    return _SettingsSection();
 
-    // Main profile menu
-    return _buildMainMenu(theme);
+    // If we have a child screen, show it with a back button
+    // if (_currentChildScreen != null) {
+    //   return Container(
+    //     color: isDark ? const Color(0xFF121212) : Colors.white,
+    //     child: Column(
+    //       children: [
+    //         // Header with back button
+    //         Container(
+    //           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    //           decoration: BoxDecoration(
+    //             border: Border(
+    //               bottom: BorderSide(
+    //                 color: isDark ? colors.darkColorDivider : colors.colorDivider,
+    //               ),
+    //             ),
+    //           ),
+    //           child: Row(
+    //             children: [
+    //               Column(
+    //                 crossAxisAlignment: CrossAxisAlignment.start,
+    //                 mainAxisSize: MainAxisSize.min,
+    //                 children: [
+    //                   Text(
+    //                     _currentChildTitle ?? '',
+    //                     style: MyntWebTextStyles.title(context, 
+    //                       color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+    //                   if (_currentChildTitle == 'Settings')
+    //                     Padding(
+    //                       padding: const EdgeInsets.only(top: 8.0),
+    //                       child: Text(
+    //                         "Catch the log, setting up preference, get API key, and change themes.",
+    //                         style: MyntWebTextStyles.body(context, 
+    //                           color: resolveThemeColor(context, dark: colors.textSecondaryDark, light: colors.textSecondaryLight),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
+    //                     ),
+    //                 ],
+    //               ),
+    //             ],
+    //           ),
+    //         ),
+    //         // Child content
+    //         Expanded(child: _currentChildScreen!),
+    //       ],
+    //     ),
+    //   );
+    // }
+
+    // // Main profile menu
+    // return _buildMainMenu(theme);
   }
 
   Widget _buildMainMenu(ThemesProvider theme) {
     final userProfile = ref.watch(userProfileProvider);
     final funds = ref.watch(fundProvider);
-    final isDark = theme.isDarkMode;
 
     final userName = userProfile.userDetailModel?.uname ?? 'User';
     final userInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
 
     return Container(
-      color: isDark ? const Color(0xFF121212) : Colors.white,
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       child: Column(
         children: [
           Expanded(
@@ -192,7 +188,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 24),
-                  
+
                   // Avatar
                   Container(
                     width: 80,
@@ -200,24 +196,22 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? colors.primaryDark : colors.primaryLight,
+                        color: MyntColors.primary,
                         width: 2,
                       ),
                     ),
                     child: Center(
                       child: Text(
                         userInitial,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? colors.primaryDark : colors.primaryLight,
-                        ),
+                        style: MyntWebTextStyles.title(context,
+                            color: MyntColors.primary,
+                            fontWeight: MyntFonts.semiBold).copyWith(fontSize: 32),
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // User Name with chevron
                   InkWell(
                     onTap: () => _navigateToChild('My Profile', const _ProfileDetailsSection()),
@@ -229,36 +223,43 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible(
-                            child: TextWidget.titleText(
-                              text: userName,
-                              theme: false,
-                              color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                              fw: 2,
-                              textOverflow: TextOverflow.ellipsis,
+                            child: Text(
+                              userName,
+                              overflow: TextOverflow.ellipsis,
+                              style: MyntWebTextStyles.title(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: MyntFonts.semiBold),
                             ),
                           ),
                           const SizedBox(width: 4),
                           Icon(
                             Icons.chevron_right_rounded,
                             size: 20,
-                            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Account Balance Card
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FD),
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.listItemBgDark,
+                          light: MyntColors.listItemBg),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isDark ? colors.darkColorDivider : colors.colorDivider,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
                       ),
                     ),
                     child: Row(
@@ -267,17 +268,19 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextWidget.captionText(
-                              text: 'Account Balance',
-                              theme: false,
-                              color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            Text(
+                              'Account Balance',
+                              style: MyntWebTextStyles.caption(context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary),
                             ),
                             const SizedBox(height: 4),
-                            TextWidget.titleText(
-                              text: formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? "0.00"),
-                              theme: false,
-                              color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                              fw: 2,
+                            Text(
+                              formatIndianCurrency(funds.fundDetailModel?.avlMrg ?? "0.00"),
+                              style: MyntWebTextStyles.title(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: MyntFonts.semiBold),
                             ),
                           ],
                         ),
@@ -287,21 +290,24 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                             _navigateToScreenInPanel(ScreenType.funds);
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: isDark ? colors.primaryDark : colors.primaryLight,
-                            side: BorderSide(color: isDark ? colors.primaryDark : colors.primaryLight),
+                            foregroundColor: MyntColors.primary,
+                            side: const BorderSide(color: MyntColors.primary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           ),
-                          child: const Text('Add Money'),
+                          child: Text('Add Money',
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  color: MyntColors.primary,
+                                  fontWeight: MyntFonts.medium)),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Menu Items - navigate to screens in main panel
                   _buildMenuItem(
                     theme,
@@ -310,7 +316,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _navigateToScreenInPanel(ScreenType.pledgeUnpledge);
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Corporate Actions',
@@ -318,7 +324,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _navigateToScreenInPanel(ScreenType.corporateActions);
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Reports',
@@ -326,7 +332,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _navigateToScreenInPanel(ScreenType.reports);
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Settings',
@@ -334,7 +340,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _navigateToScreenInPanel(ScreenType.settings);
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Notification',
@@ -343,7 +349,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _closeDropdown();
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Refer & Get ₹300',
@@ -352,7 +358,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _closeDropdown();
                     },
                   ),
-                  
+
                   _buildMenuItem(
                     theme,
                     title: 'Rate Us',
@@ -361,9 +367,9 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       _closeDropdown();
                     },
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Logout button
                   InkWell(
                     onTap: () => _showLogoutDialog(context, theme),
@@ -374,36 +380,37 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.logout_rounded,
                             size: 18,
-                            color: isDark ? colors.lossDark : colors.lossLight,
+                            color: MyntColors.loss,
                           ),
                           const SizedBox(width: 8),
-                          TextWidget.subText(
-                            text: 'Logout',
-                            theme: false,
-                            color: isDark ? colors.lossDark : colors.lossLight,
-                            fw: 2,
+                          Text(
+                            'Logout',
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: MyntColors.loss,
+                                fontWeight: MyntFonts.semiBold),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
                 ],
               ),
             ),
           ),
-          
+
           // Version at bottom
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
-            child: TextWidget.captionText(
-              text: 'Version 3.0.2',
-              theme: false,
-              color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+            child: Text(
+              'Version 3.0.2',
+              style: MyntWebTextStyles.caption(context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary),
             ),
           ),
         ],
@@ -412,8 +419,6 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
   }
 
   Widget _buildMenuItem(ThemesProvider theme, {required String title, required VoidCallback onTap}) {
-    final isDark = theme.isDarkMode;
-    
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -423,22 +428,27 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isDark ? colors.darkColorDivider : colors.colorDivider.withOpacity(0.5),
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.divider.withValues(alpha: 0.5)),
               ),
             ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.subText(
-                text: title,
-                theme: false,
-                color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+              Text(
+                title,
+                style: MyntWebTextStyles.bodySmall(context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary),
               ),
               Icon(
                 Icons.chevron_right_rounded,
                 size: 20,
-                color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
               ),
             ],
           ),
@@ -450,31 +460,41 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
   void _showLogoutDialog(BuildContext context, ThemesProvider theme) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext ctx) {
         return AlertDialog(
-          backgroundColor: theme.isDarkMode ? const Color(0xFF121212) : colors.colorWhite,
-          title: TextWidget.titleText(
-            text: "Confirmation",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-            fw: 1,
+          backgroundColor: resolveThemeColor(ctx,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
+          title: Text(
+            "Confirmation",
+            style: MyntWebTextStyles.title(ctx,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.medium),
           ),
-          content: TextWidget.subText(
-            text: "Are you sure you want to logout?",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          content: Text(
+            "Are you sure you want to logout?",
+            style: MyntWebTextStyles.bodySmall(ctx,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: TextWidget.subText(text: "Cancel", theme: false, color: colors.textSecondaryLight),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text("Cancel",
+                  style: MyntWebTextStyles.bodySmall(ctx,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary)),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(ctx);
                 ref.read(authProvider).fetchLogout(context);
               },
-              child: TextWidget.subText(text: "Logout", theme: false, color: colors.lossLight, fw: 2),
+              child: Text("Logout",
+                  style: MyntWebTextStyles.bodySmall(ctx,
+                      color: MyntColors.loss,
+                      fontWeight: MyntFonts.semiBold)),
             ),
           ],
         );
@@ -520,6 +540,24 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Settings",
+                        style: MyntWebTextStyles.title(context, 
+                          color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            "Catch the log, setting up preference, get API key, and change themes.",
+                            style: MyntWebTextStyles.body(context, 
+                              color: resolveThemeColor(context, dark: colors.textSecondaryDark, light: colors.textSecondaryLight),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
+                        ),
+                        const SizedBox(height: 16),
+                    ],
+                  ),
         Container(
           padding: const EdgeInsets.only(right: 16.0),
           decoration: BoxDecoration(
@@ -535,8 +573,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('API Key', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                    child: Text('API Key', style: MyntWebTextStyles.titlesub(context, 
+                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -557,8 +595,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('TOTP', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                    child: Text('TOTP', style: MyntWebTextStyles.titlesub(context, 
+                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -567,7 +605,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16.0),
-                  child: _buildTotpContent(theme),
+                  child: _buildTotpContent(theme,context),
                 ),
               ),
             ),
@@ -579,8 +617,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Change Password ', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                    child: Text('Change Password ', style: MyntWebTextStyles.titlesub(context, 
+                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -595,26 +633,26 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
             ),
             
             // Themes
-            shadcn.AccordionItem(
-              trigger: shadcn.AccordionTrigger(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Themes', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
-                  ),
-                ),
-              ),
-              content: FractionallySizedBox(
-                widthFactor: 0.5,
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: _buildThemesContent(theme),
-                ),
-              ),
-            ),
+            // shadcn.AccordionItem(
+            //   trigger: shadcn.AccordionTrigger(
+            //     child: SizedBox(
+            //       width: double.infinity,
+            //       child: Padding(
+            //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            //         child: Text('Themes', style: MyntWebTextStyles.title(context, 
+            //           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+            //       ),
+            //     ),
+            //   ),
+            //   content: FractionallySizedBox(
+            //     widthFactor: 0.5,
+            //     alignment: Alignment.centerLeft,
+            //     child: Padding(
+            //       padding: const EdgeInsets.only(left: 16.0),
+            //       child: _buildThemesContent(theme),
+            //     ),
+            //   ),
+            // ),
             
             // Order Preference
             shadcn.AccordionItem(
@@ -623,8 +661,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Order Preference', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+                    child: Text('Order Preference', style: MyntWebTextStyles.titlesub(context, 
+                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -645,8 +683,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   width: double.infinity,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text('Freeze Account', style: MyntWebTextStyles.title(context, 
-                      color: theme.isDarkMode ? colors.lossDark : colors.lossLight).copyWith(decoration: TextDecoration.none)),
+                    child: Text('Freeze Account', style: MyntWebTextStyles.titlesub(context, 
+                      color: resolveThemeColor(context, dark: colors.lossDark, light: colors.lossLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -677,7 +715,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
     );
   }
 
-  Widget _buildTotpContent(ThemesProvider theme) {
+  Widget _buildTotpContent(ThemesProvider theme, BuildContext context) {
     final apikeys = ref.watch(apikeyprovider);
     final isDark = theme.isDarkMode;
 
@@ -696,10 +734,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.captionText(
-            text: 'Generate TOTP for 2FA authentication',
-            theme: false,
-            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+          Text(
+            'Generate TOTP for 2FA authentication',
+            style: MyntWebTextStyles.bodySmall(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -726,10 +765,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.captionText(
-            text: 'Update your account password',
-            theme: false,
-            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+          Text(
+            'Update your account password',
+            style: MyntWebTextStyles.bodySmall(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -758,8 +798,6 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
   }
 
   Widget _buildThemesContent(ThemesProvider theme) {
-    final isDark = theme.isDarkMode;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -779,7 +817,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? colors.primaryLight : (isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                        color: isSelected
+                            ? MyntColors.primary
+                            : resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
                         width: 2,
                       ),
                       color: Colors.transparent,
@@ -789,9 +831,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                             child: Container(
                               width: 10,
                               height: 10,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: colors.primaryLight,
+                                color: MyntColors.primary,
                               ),
                             ),
                           )
@@ -800,10 +842,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   const SizedBox(width: 8),
                   Text(
                     t,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
+                    style: MyntWebTextStyles.para(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary),
                   ),
                 ],
               ),
@@ -818,35 +859,35 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
     final isDark = theme.isDarkMode;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Product Type
           _buildLabel('Product type', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['Delivery / Carry', 'Intraday', 'CO - BO'],
             selected: _selectedProductType,
             onChanged: (val) => setState(() => _selectedProductType = val),
             isDark: isDark,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Order Type
           _buildLabel('Order type', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['Limit', 'Market', 'SL Limit', 'SL MKT'],
             selected: _selectedOrderType,
             onChanged: (val) => setState(() => _selectedOrderType = val),
             isDark: isDark,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Validity
           _buildLabel('Validity', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['DAY', 'IOC'],
             selected: _selectedValidity,
@@ -854,14 +895,14 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
             isDark: isDark,
             compact: true,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Market Protection
           _buildLabel('Market Protection', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
             width: 100,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               border: Border.all(color: isDark ? colors.darkColorDivider : colors.colorDivider),
               borderRadius: BorderRadius.circular(8),
@@ -870,39 +911,41 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               children: [
                 Text(
                   '%',
-                  style: MyntWebTextStyles.bodySmall(context,
-                    color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  style: MyntWebTextStyles.para(context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '5',
-                  style: MyntWebTextStyles.bodySmall(context,
-                    color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
+                  style: MyntWebTextStyles.para(context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Quantity Preference
           _buildLabel('Quantity preference', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             children: [
-              _buildRadioOption('Default Qty / Lot', _selectedQuantityPref == 'Default Qty / Lot', 
+              _buildRadioOption('Default Qty / Lot', _selectedQuantityPref == 'Default Qty / Lot',
                 () => setState(() => _selectedQuantityPref = 'Default Qty / Lot'), isDark),
-              const SizedBox(width: 80),
-              _buildRadioOption('Multiples of Qty / Lot', _selectedQuantityPref == 'Multiples of Qty / Lot', 
+              const SizedBox(width: 48),
+              _buildRadioOption('Multiples of Qty / Lot', _selectedQuantityPref == 'Multiples of Qty / Lot',
                 () => setState(() => _selectedQuantityPref = 'Multiples of Qty / Lot'), isDark),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Position Exit Market
           _buildLabel('Position Exit Market', isDark),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['Limit', 'Market'],
             selected: _selectedPositionExit,
@@ -910,62 +953,64 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
             isDark: isDark,
             compact: true,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Toggles
-          _buildToggleRow('Sticky Order Window', _stickyOrderWindow, 
+          _buildToggleRow('Sticky Order Window', _stickyOrderWindow,
             (val) => setState(() => _stickyOrderWindow = val), isDark),
-          const SizedBox(height: 12),
-          _buildToggleRow('Quick Order Screen', _quickOrderScreen, 
+          const SizedBox(height: 8),
+          _buildToggleRow('Quick Order Screen', _quickOrderScreen,
             (val) => setState(() => _quickOrderScreen = val), isDark),
-          const SizedBox(height: 40),
+          const SizedBox(height: 16),
 
-          // Buttons - 50% width
           // Buttons
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 200, // Fixed width for buttons
-                  child: OutlinedButton(
-                    onPressed: () {
-                      _resetPreferences();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: colors.primaryDark,
-                      backgroundColor:  const Color(0xFFEFF4FF),
-                      side: BorderSide(color: colors.primaryLight),
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          Row(
+            children: [
+              SizedBox(
+                width: 160,
+                height: 40,
+                child: OutlinedButton(
+                  onPressed: () {
+                    _resetPreferences();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: MyntColors.primary,
+                    backgroundColor: isDark ? MyntColors.primary.withValues(alpha: 0.1) : const Color(0xFFEFF4FF),
+                    side: const BorderSide(color: MyntColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('Reset'),
                   ),
+                  child: Text('Reset', style: MyntWebTextStyles.bodySmall(context,
+                    darkColor: MyntColors.primary,
+                    lightColor: MyntColors.primary,
+                    fontWeight: MyntFonts.semiBold)),
                 ),
-                const SizedBox(width: 24),
-                SizedBox(
-                  width: 200, // Fixed width for buttons
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _savePreferences();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colors.primaryLight,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+              const SizedBox(width: 16),
+              SizedBox(
+                width: 160,
+                height: 40,
+                child: ElevatedButton(
+                  onPressed: () {
+                    _savePreferences();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MyntColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('Save'),
                   ),
+                  child: Text('Save', style: MyntWebTextStyles.bodySmall(context,
+                    color: Colors.white,
+                    fontWeight: MyntFonts.semiBold)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1146,17 +1191,16 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
   }
 
   Widget _buildFreezeAccountContent(ThemesProvider theme) {
-    final isDark = theme.isDarkMode;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.subText(
-            text: 'Freezing your account will temporarily disable trading. All open orders will be cancelled.',
-            theme: false,
-            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+          Text(
+            'Freezing your account will temporarily disable trading. All open orders will be cancelled.',
+            style: MyntWebTextStyles.bodySmall(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1166,7 +1210,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               showDialog(
                 context: context,
                 builder: (ctx) => Dialog(
-                  backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                  backgroundColor: resolveThemeColor(context,
+                      dark: MyntColors.backgroundColorDark,
+                      light: MyntColors.backgroundColor),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   child: Container(
                     width: 450,
@@ -1180,15 +1226,17 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                           children: [
                             Text(
                               'Freeze Account',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                              ),
+                              style: MyntWebTextStyles.title(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: MyntFonts.bold),
                             ),
                             IconButton(
                               onPressed: () => Navigator.pop(ctx),
-                              icon: Icon(Icons.close, color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                              icon: Icon(Icons.close,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary)),
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                             ),
@@ -1197,38 +1245,30 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                         const SizedBox(height: 20),
                         Text(
                           'Freezing your account will lock access for everyone, including you.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            height: 1.5,
-                          ),
+                          style: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           'All open orders will be automatically cancelled.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            height: 1.5,
-                          ),
+                          style: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           'Existing positions will remain unaffected.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            height: 1.5,
-                          ),
+                          style: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           'You can unfreeze your account anytime by verifying your identity.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                            height: 1.5,
-                          ),
+                          style: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary),
                         ),
                         const SizedBox(height: 24),
                         SizedBox(
@@ -1239,18 +1279,17 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                               Navigator.pop(ctx);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primaryLight,
+                              backgroundColor: MyntColors.primary,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              textStyle: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
                             ),
-                            child: const Text('Freeze My Account'),
+                            child: Text('Freeze My Account',
+                                style: MyntWebTextStyles.body(context,
+                                    color: Colors.white,
+                                    fontWeight: MyntFonts.bold)),
                           ),
                         ),
                       ],
@@ -1260,16 +1299,20 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: isDark ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1),
-              foregroundColor: isDark ? colors.lossDark : colors.lossLight,
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.loss.withValues(alpha: 0.1),
+                  light: MyntColors.loss.withValues(alpha: 0.1)),
+              foregroundColor: MyntColors.loss,
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
-            child: const Text('Freeze Account'),
+            child: Text('Freeze Account',
+                style: MyntWebTextStyles.body(context,
+                    color: MyntColors.loss,
+                    fontWeight: MyntFonts.semiBold)),
           ),
           ),
         ],
@@ -1280,8 +1323,10 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
   Widget _buildLabel(String text, bool isDark) {
     return Text(
       text,
-      style: MyntWebTextStyles.body(context,
-        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+      style: MyntWebTextStyles.bodySmall(context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
     );
   }
@@ -1298,32 +1343,32 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
         final isSelected = option == selected;
         return compact
             ? Padding(
-                padding: EdgeInsets.only(right: option == options.last ? 0 : 12.0),
+                padding: EdgeInsets.only(right: option == options.last ? 0 : 8.0),
                 child: InkWell(
                   onTap: () => onChanged(option),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                   child: Container(
-                    width: 70, // Fixed width for compact buttons like Validity
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    width: 64,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? (isDark ? colors.primaryLight.withOpacity(0.1) : const Color(0xFFEFF4FF))
+                          ? resolveThemeColor(context, dark: MyntColors.primary.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
                           : Colors.transparent,
                       border: Border.all(
                         color: isSelected
-                            ? (isDark ? colors.primaryDark : colors.primaryLight)
-                            : (isDark ? colors.darkColorDivider : colors.colorDivider),
+                            ? resolveThemeColor(context, dark: MyntColors.primary, light: MyntColors.primary)
+                            : resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider),
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       option,
                       textAlign: TextAlign.center,
-                      style: MyntWebTextStyles.bodySmall(context,
-                        fontWeight: FontWeight.w500,
+                      style: MyntWebTextStyles.para(context,
+                        fontWeight: MyntFonts.medium,
                         color: isSelected
-                            ? (isDark ? colors.primaryDark : colors.primaryLight)
-                            : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                            ? MyntColors.primary
+                            : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                       ),
                     ),
                   ),
@@ -1331,31 +1376,31 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
               )
             : Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: option == options.last ? 0 : 12.0),
+                  padding: EdgeInsets.only(right: option == options.last ? 0 : 8.0),
                   child: InkWell(
                     onTap: () => onChanged(option),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? (isDark ? colors.primaryLight.withOpacity(0.1) : const Color(0xFFEFF4FF))
+                            ? resolveThemeColor(context, dark: MyntColors.primary.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
                             : Colors.transparent,
                         border: Border.all(
                           color: isSelected
-                              ? (isDark ? colors.primaryDark : colors.primaryLight)
-                              : (isDark ? colors.darkColorDivider : colors.colorDivider),
+                              ? resolveThemeColor(context, dark: MyntColors.primary, light: MyntColors.primary)
+                              : resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider),
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         option,
                         textAlign: TextAlign.center,
-                        style: MyntWebTextStyles.body(context, // Changed from sub to body
-                          fontWeight: FontWeight.w500,
+                        style: MyntWebTextStyles.para(context,
+                          fontWeight: MyntFonts.medium,
                           color: isSelected
-                              ? (isDark ? colors.primaryDark : colors.primaryLight)
-                              : (isDark ? colors.textPrimaryDark : colors.textPrimaryLight),
+                              ? MyntColors.primary
+                              : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                         ),
                       ),
                     ),
@@ -1369,72 +1414,125 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
   Widget _buildRadioOption(String label, bool isSelected, VoidCallback onTap, bool isDark) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? colors.primaryLight : (isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
-                width: 2,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? MyntColors.primary
+                      : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                  width: 1.5,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: MyntColors.primary,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: MyntWebTextStyles.para(context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.medium,
               ),
             ),
-            child: isSelected
-                ? Center(
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: colors.primaryLight,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: MyntWebTextStyles.bodySmall(context,
-              color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildToggleRow(String label, bool value, Function(bool) onChanged, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: MyntWebTextStyles.body(context,
-                color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: MyntWebTextStyles.para(context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.info_outline,
+                size: 14,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+            ],
+          ),
+          // Custom animated toggle switch like place order screen
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => onChanged(!value),
+              child: Container(
+                width: 40,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: value
+                      ? MyntColors.primary
+                      : resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeInOut,
+                      left: value ? 20 : 2,
+                      top: 2,
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.info_outline,
-              size: 16,
-              color: isDark ? colors.textSecondaryDark.withOpacity(0.7) : colors.textSecondaryLight.withOpacity(0.7),
-            ),
-          ],
-        ),
-        Switch(
-          value: value,
-          onChanged: onChanged,
-          activeColor: colors.primaryLight,
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1474,7 +1572,6 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final userProfile = ref.watch(userProfileProvider);
-    final isDark = theme.isDarkMode;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -1484,33 +1581,39 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.grey.shade100,
+            color: resolveThemeColor(context,
+                dark: MyntColors.listItemBgDark,
+                light: MyntColors.listItemBg),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: colors.primaryLight,
+                backgroundColor: MyntColors.primary,
                 child: Text(
                   userProfile.userDetailModel?.uname?.substring(0, 1).toUpperCase() ?? "U",
-                  style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: MyntWebTextStyles.title(context,
+                      color: Colors.white,
+                      fontWeight: MyntFonts.bold),
                 ),
               ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.subText(
-                    text: userProfile.userDetailModel?.uname ?? "",
-                    theme: false,
-                    color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 2,
+                  Text(
+                    userProfile.userDetailModel?.uname ?? "",
+                    style: MyntWebTextStyles.bodySmall(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.semiBold),
                   ),
-                  TextWidget.captionText(
-                    text: "Client ID: ${userProfile.userDetailModel?.uid ?? ""}",
-                    theme: false,
-                    color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                  Text(
+                    "Client ID: ${userProfile.userDetailModel?.uid ?? ""}",
+                    style: MyntWebTextStyles.caption(context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary),
                   ),
                 ],
               ),
@@ -1527,17 +1630,14 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
   }
 
   shadcn.AccordionItem _buildAccordionItem(String title, ThemesProvider theme) {
-    final isDark = theme.isDarkMode;
-    
     return shadcn.AccordionItem(
       trigger: shadcn.AccordionTrigger(
         child: Text(
           title,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-          ),
+          style: MyntWebTextStyles.bodySmall(context,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+              fontWeight: MyntFonts.medium),
         ),
       ),
       content: _buildSectionContent(title, theme),
@@ -1546,7 +1646,6 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
 
   Widget _buildSectionContent(String section, ThemesProvider theme) {
     final profileDetails = ref.watch(profileAllDetailsProvider);
-    final isDark = theme.isDarkMode;
 
     if (profileDetails.isLoading) {
       return const Padding(
@@ -1569,19 +1668,21 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
             children: [
               Expanded(
                 flex: 2,
-                child: TextWidget.captionText(
-                  text: e.key,
-                  theme: false,
-                  color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                child: Text(
+                  e.key,
+                  style: MyntWebTextStyles.caption(context,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary),
                 ),
               ),
               Expanded(
                 flex: 3,
-                child: TextWidget.subText(
-                  text: e.value,
-                  theme: false,
-                  color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                  fw: 1,
+                child: Text(
+                  e.value,
+                  style: MyntWebTextStyles.bodySmall(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium),
                 ),
               ),
             ],
@@ -1680,14 +1781,19 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
     return Column(
       children: [
         TabBar(
           controller: _tabController,
-          labelColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-          unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-          indicatorColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+          labelColor: MyntColors.primary,
+          unselectedLabelColor: resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary),
+          indicatorColor: MyntColors.primary,
+          labelStyle: MyntWebTextStyles.bodySmall(context,
+              fontWeight: MyntFonts.semiBold),
+          unselectedLabelStyle: MyntWebTextStyles.bodySmall(context,
+              fontWeight: MyntFonts.medium),
           tabs: const [
             Tab(text: "Base Key"),
             Tab(text: "OAuth Key"),
@@ -1816,30 +1922,18 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = widget.isDark;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          // TextWidget.titleText(
-          //   text: 'Your TOTP',
-          //   theme: false,
-          //   color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-          //   fw: 0,
-          // ),
-          // const SizedBox(height: 16),
-          // Divider(color: isDark ? colors.darkColorDivider : colors.colorDivider),
-          // const SizedBox(height: 8),
-
           // Token Label
-          TextWidget.subText(
-            text: 'Token',
-            theme: false,
-            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-            fw: 1,
+          Text(
+            'Token',
+            style: MyntWebTextStyles.bodySmall(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary,
+                fontWeight: MyntFonts.medium),
           ),
           const SizedBox(height: 8),
 
@@ -1851,15 +1945,17 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
                 children: [
                   Text(
                     otp.length >= 6 ? '${otp.substring(0, 3)} ${otp.substring(3, 6)}' : otp,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
+                    style: MyntWebTextStyles.title(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.semiBold),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: Icon(Icons.copy, size: 18, color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                    icon: Icon(Icons.copy, size: 18,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)),
                     onPressed: () => _copyToClipboard(otp, 'TOTP copied to clipboard'),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -1868,21 +1964,21 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
               ),
               Text(
                 '$remainingSeconds sec',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-                ),
+                style: MyntWebTextStyles.para(context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary),
               ),
             ],
           ),
           const SizedBox(height: 16),
 
           // Authenticator Key Label
-          TextWidget.subText(
-            text: 'Authenticator Key',
-            theme: false,
-            color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-            fw: 0,
+          Text(
+            'Authenticator Key',
+            style: MyntWebTextStyles.bodySmall(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary,
+                fontWeight: MyntFonts.medium),
           ),
           const SizedBox(height: 8),
 
@@ -1890,9 +1986,11 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : const Color(0xffF1F3F8),
+              color: resolveThemeColor(context,
+                  dark: MyntColors.listItemBgDark,
+                  light: MyntColors.listItemBg),
               borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: colors.primaryLight, width: 1),
+              border: Border.all(color: MyntColors.primary, width: 1),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1900,10 +1998,9 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
                 Expanded(
                   child: Text(
                     isObscure ? '••••••••••••••••••••' : widget.secretKey,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
+                    style: MyntWebTextStyles.para(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -1913,7 +2010,9 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
                       icon: Icon(
                         isObscure ? Icons.visibility_off : Icons.visibility,
                         size: 18,
-                        color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
                       ),
                       onPressed: () => setState(() => isObscure = !isObscure),
                       padding: EdgeInsets.zero,
@@ -1921,7 +2020,10 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
                     ),
                     const SizedBox(width: 12),
                     IconButton(
-                      icon: Icon(Icons.copy, size: 18, color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight),
+                      icon: Icon(Icons.copy, size: 18,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary)),
                       onPressed: () => _copyToClipboard(widget.secretKey, 'Auth key copied to clipboard'),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),

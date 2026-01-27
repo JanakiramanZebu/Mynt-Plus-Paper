@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/api_key_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
@@ -105,12 +104,11 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
   void _showRegenerateConfirmation() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        final theme = ref.read(themeProvider);
+      builder: (BuildContext ctx) {
         return AlertDialog(
-          backgroundColor: theme.isDarkMode
-              ? const Color(0xFF121212)
-              : const Color(0xFFF1F3F8),
+          backgroundColor: resolveThemeColor(ctx,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
@@ -127,42 +125,40 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                     color: Colors.transparent,
                     shape: const CircleBorder(),
                     child: InkWell(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Navigator.pop(ctx),
                       borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
+                      splashColor: resolveThemeColor(ctx,
+                          dark: MyntColors.rippleDark,
+                          light: MyntColors.rippleLight),
+                      highlightColor: resolveThemeColor(ctx,
+                          dark: MyntColors.highlightDark,
+                          light: MyntColors.highlightLight),
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
                         child: Icon(
                           Icons.close_rounded,
                           size: 22,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
+                          color: resolveThemeColor(ctx,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-             
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextWidget.subText(
-                text: "Are you sure you want to regenerate the secret code? This will generate a new secret code and the old one will no longer work.",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 3,
-                align: TextAlign.center,
+              Text(
+                "Are you sure you want to regenerate the secret code? This will generate a new secret code and the old one will no longer work.",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(ctx,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                    fontWeight: MyntFonts.medium),
               ),
             ],
           ),
@@ -171,21 +167,21 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(ctx);
                   ref.read(apikeyprovider).generateNewSecretCode();
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(0, 45),
-                  backgroundColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                  backgroundColor: MyntColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: TextWidget.subText(
-                  text: "Regenerate",
-                  theme: false,
-                  color: colors.colorWhite,
-                  fw: 2,
+                child: Text(
+                  "Regenerate",
+                  style: MyntWebTextStyles.bodySmall(ctx,
+                      color: Colors.white,
+                      fontWeight: MyntFonts.semiBold),
                 ),
               ),
             ),
@@ -204,9 +200,9 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
     _validateBackupIp(provider.backupIpController.text);
 
     // Check if there are any errors
-    bool hasErrors = _errorMessageUrl != null || 
-                     _errorMessagePrimaryIp != null || 
-                     _errorMessageBackupIp != null;
+    bool hasErrors = _errorMessageUrl != null ||
+        _errorMessagePrimaryIp != null ||
+        _errorMessageBackupIp != null;
 
     // Return early if there are validation errors
     if (hasErrors) {
@@ -214,43 +210,42 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
     }
 
     final apiData = provider.generateApikeyNew;
-      if (apiData == null) {
+    if (apiData == null) {
       error(context, "API data not available. Please refresh and try again.");
-        return;
-      }
+      return;
+    }
 
-      final ipAddresses = <String>[];
+    final ipAddresses = <String>[];
     if (provider.primaryIpController.text.isNotEmpty) {
       ipAddresses.add(provider.primaryIpController.text);
-      }
+    }
     if (provider.backupIpController.text.isNotEmpty) {
       ipAddresses.add(provider.backupIpController.text);
-      }
+    }
 
     final userIds = apiData.userIds.isNotEmpty
         ? apiData.userIds.map((e) => e.userId).toList()
         : [apiData.appKey]; // Use app key as default user ID for new API keys
 
     final result = await provider.submitApiKeyNew(
-        appKey: apiData.appKey,
+      appKey: apiData.appKey,
       secretCode: provider.generatedSecretCode ??
           (apiData.stat == "Ok" ? apiData.secretCode : ""),
       redirectUrl: provider.urlController.text,
-        displayName: apiData.displayName,
-        ipAddresses: ipAddresses,
-        userIds: userIds,
-      );
+      displayName: apiData.displayName,
+      ipAddresses: ipAddresses,
+      userIds: userIds,
+    );
 
-      if (result?.stat == "Ok") {
-        successMessage(context, "API Key updated successfully");
-      } else {
-        error(context, result?.emsg ?? "");
+    if (result?.stat == "Ok") {
+      successMessage(context, "API Key updated successfully");
+    } else {
+      error(context, result?.emsg ?? "");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
     final apiData = ref.watch(apikeyprovider).generateApikeyNew;
     final provider = ref.watch(apikeyprovider);
 
@@ -266,22 +261,24 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
               ),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
               border: Border(
                 top: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.backgroundColor),
                 ),
                 left: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.backgroundColor),
                 ),
                 right: BorderSide(
-                  color: theme.isDarkMode
-                      ? colors.textSecondaryDark.withOpacity(0.5)
-                      : colors.colorWhite,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.backgroundColor),
                 ),
               ),
             ),
@@ -299,13 +296,12 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                         if (apiData != null) ...[
                           Row(
                             children: [
-                              TextWidget.subText(
-                                text: 'Client Id :',
-                                theme: false,
-                                color: theme.isDarkMode
-                                    ? colors.textPrimaryDark
-                                    : colors.textPrimaryLight,
-                                fw: 1,
+                              Text(
+                                'Client Id :',
+                                style: MyntWebTextStyles.bodySmall(context,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary,
+                                    fontWeight: MyntFonts.medium),
                               ),
                               const SizedBox(width: 8),
                               Flexible(
@@ -313,13 +309,12 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Flexible(
-                                      child: TextWidget.titleText(
-                                        text: "${apiData.appKey}",
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        fw: 0,
+                                      child: Text(
+                                        "${apiData.appKey}",
+                                        style: MyntWebTextStyles.title(context,
+                                            darkColor: MyntColors.textPrimaryDark,
+                                            lightColor: MyntColors.textPrimary,
+                                            fontWeight: MyntFonts.medium),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -330,16 +325,16 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                       child: InkWell(
                                         customBorder: const CircleBorder(),
                                         onTap: () => _copyToClipboard(apiData.appKey),
-                                        child: Container(
+                                        child: SizedBox(
                                           height: 28,
                                           width: 28,
                                           child: Center(
                                             child: Icon(
                                               Icons.copy,
                                               size: 16,
-                                              color: theme.isDarkMode 
-                                                  ? colors.textSecondaryDark 
-                                                  : colors.textSecondaryLight,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.textSecondaryDark,
+                                                  light: MyntColors.textSecondary),
                                             ),
                                           ),
                                         ),
@@ -352,16 +347,15 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                           ),
                           const SizedBox(height: 16),
                         ],
-      
+
                         // Form Fields (always visible but disabled when no API data)
                         // Redirect URL Label
-                        TextWidget.subText(
-                          text: 'Redirect URL',
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 1,
+                        Text(
+                          'Redirect URL',
+                          style: MyntWebTextStyles.bodySmall(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary,
+                              fontWeight: MyntFonts.medium),
                         ),
                         const SizedBox(height: 8),
                         // URL Input Field (project-styled)
@@ -369,26 +363,16 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                           textCtrl: provider.urlController,
                           textAlign: TextAlign.start,
                           keyboardType: TextInputType.url,
-                          fillColor: theme.isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
+                          fillColor: resolveThemeColor(context,
+                              dark: MyntColors.listItemBgDark,
+                              light: MyntColors.listItemBg),
                           hintText: 'URL',
-                          hintStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            fw: 0,
-                          ),
-                          style: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                          ),
+                          hintStyle: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary),
+                          style: MyntWebTextStyles.para(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary),
                           onChanged: (value) {
                             _validateUrl(value);
                           },
@@ -398,18 +382,15 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                           const SizedBox(height: 8),
                           Align(
                             alignment: Alignment.centerLeft,
-                            child: TextWidget.captionText(
-                              text: _errorMessageUrl!,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.lossDark
-                                  : colors.lossLight,
-                              fw: 0,
+                            child: Text(
+                              _errorMessageUrl!,
+                              style: MyntWebTextStyles.caption(context,
+                                  color: MyntColors.loss),
                             ),
                           ),
                         ],
                         const SizedBox(height: 16),
-      
+
                         // IP Address Fields
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,13 +399,12 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget.subText(
-                                    text: 'Primary IP Address',
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                  Text(
+                                    'Primary IP Address',
+                                    style: MyntWebTextStyles.bodySmall(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.medium),
                                   ),
                                   const SizedBox(height: 8),
                                   CustomTextFormField(
@@ -432,25 +412,15 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                     textAlign: TextAlign.start,
                                     keyboardType: TextInputType.number,
                                     hintText: 'Primary IP Address',
-                                    fillColor: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffF1F3F8),
-                                    hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 0,
-                                    ),
-                                    style: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 0,
-                                    ),
+                                    fillColor: resolveThemeColor(context,
+                                        dark: MyntColors.listItemBgDark,
+                                        light: MyntColors.listItemBg),
+                                    hintStyle: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary),
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary),
                                     inputFormate: [
                                       FilteringTextInputFormatter.allow(
                                           RegExp(r'[0-9.]')),
@@ -464,13 +434,10 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                     const SizedBox(height: 8),
                                     Align(
                                       alignment: Alignment.centerLeft,
-                                      child: TextWidget.captionText(
-                                        text: _errorMessagePrimaryIp!,
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.lossDark
-                                            : colors.lossLight,
-                                        fw: 0,
+                                      child: Text(
+                                        _errorMessagePrimaryIp!,
+                                        style: MyntWebTextStyles.caption(context,
+                                            color: MyntColors.loss),
                                       ),
                                     ),
                                   ],
@@ -482,13 +449,12 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TextWidget.subText(
-                                    text: 'Backup IP Address',
-                                    theme: false,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                  Text(
+                                    'Backup IP Address',
+                                    style: MyntWebTextStyles.bodySmall(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.medium),
                                   ),
                                   const SizedBox(height: 8),
                                   CustomTextFormField(
@@ -496,31 +462,17 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                     textAlign: TextAlign.start,
                                     keyboardType: TextInputType.number,
                                     hintText: 'Backup IP Address',
-                                    fillColor: theme.isDarkMode
-                                        ? colors.darkGrey
-                                        : const Color(0xffF1F3F8),
-                                    hintStyle: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 0,
-                                    ),
-                                    style: TextWidget.textStyle(
-                                      fontSize: 14,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 0,
-                                    ),
-                                    errorStyle: TextWidget.textStyle(
-                                      fontSize: 12,
-                                      theme: theme.isDarkMode,
-                                      color: Colors.red,
-                                      fw: 0,
-                                    ),
+                                    fillColor: resolveThemeColor(context,
+                                        dark: MyntColors.listItemBgDark,
+                                        light: MyntColors.listItemBg),
+                                    hintStyle: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary),
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary),
+                                    errorStyle: MyntWebTextStyles.caption(context,
+                                        color: MyntColors.loss),
                                     onChanged: (value) {
                                       _validateBackupIp(value);
                                     },
@@ -530,13 +482,10 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                     const SizedBox(height: 8),
                                     Align(
                                       alignment: Alignment.centerLeft,
-                                      child: TextWidget.captionText(
-                                        text: _errorMessageBackupIp!,
-                                        theme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? colors.lossDark
-                                            : colors.lossLight,
-                                        fw: 0,
+                                      child: Text(
+                                        _errorMessageBackupIp!,
+                                        style: MyntWebTextStyles.caption(context,
+                                            color: MyntColors.loss),
                                       ),
                                     ),
                                   ],
@@ -546,22 +495,22 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                           ],
                         ),
                         const SizedBox(height: 24),
-      
+
                         if (apiData != null) ...[
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                            TextWidget.subText(
-                              text: 'Secret Code',
-                              theme: false,
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 1,
+                              Text(
+                                'Secret Code',
+                                style: MyntWebTextStyles.bodySmall(context,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary,
+                                    fontWeight: MyntFonts.medium),
                               ),
                               // Regenerate button (only show for existing data)
                               if (apiData.stat == "Ok")
                                 Material(
+                                  color: Colors.transparent,
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(5),
                                     onTap: () {
@@ -569,37 +518,37 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(4.0),
-                                      child: TextWidget.paraText(
-                                        text: 'Regenerate',
-                                        theme: false,
-                                        color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                                        fw: 2,
+                                      child: Text(
+                                        'Regenerate',
+                                        style: MyntWebTextStyles.para(context,
+                                            color: MyntColors.primary,
+                                            fontWeight: MyntFonts.semiBold),
                                       ),
                                     ),
                                   ),
                                 ),
                             ],
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: theme.isDarkMode
-                                    ? colors.darkGrey
-                                    : const Color(0xffF1F3F8),
-                                borderRadius: BorderRadius.circular(5),
-                                border: Border.all(
-                                  color: colors.primaryLight,
-                                  width: 1,
-                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.listItemBgDark,
+                                  light: MyntColors.listItemBg),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: MyntColors.primary,
+                                width: 1,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(14.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: TextWidget.paraText(
-                                      text: provider.hideSecret
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      provider.hideSecret
                                           ? "•" *
                                               ((provider.generatedSecretCode
                                                               ?.length ??
@@ -614,100 +563,95 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                                               (apiData.stat == "Ok"
                                                   ? apiData.secretCode
                                                   : "")),
-                                        theme: false,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                        textOverflow: TextOverflow.ellipsis,
-                                        fw: 0,
-                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.para(context,
+                                          darkColor: MyntColors.textPrimaryDark,
+                                          lightColor: MyntColors.textPrimary),
                                     ),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
-                                        onTap: _toggleSecretVisibility,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4.0),
-                                          child: Icon(
+                                  ),
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      splashColor: resolveThemeColor(context,
+                                          dark: MyntColors.rippleDark,
+                                          light: MyntColors.rippleLight),
+                                      highlightColor: resolveThemeColor(context,
+                                          dark: MyntColors.highlightDark,
+                                          light: MyntColors.highlightLight),
+                                      onTap: _toggleSecretVisibility,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Icon(
                                           provider.hideSecret
-                                                ? Icons.visibility_off
-                                                : Icons.visibility,
-                                            size: 20,
-                                            color: theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight,
-                                          ),
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                          size: 20,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textSecondaryDark,
+                                              light: MyntColors.textSecondary),
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      splashColor: resolveThemeColor(context,
+                                          dark: MyntColors.rippleDark,
+                                          light: MyntColors.rippleLight),
+                                      highlightColor: resolveThemeColor(context,
+                                          dark: MyntColors.highlightDark,
+                                          light: MyntColors.highlightLight),
                                       onTap: () => _copyToClipboard(
                                           provider.generatedSecretCode ??
                                               (apiData.stat == "Ok"
                                                   ? apiData.secretCode
                                                   : "")),
-                                        child: Container(
-                                          height: 32,
-                                          width: 32,
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.copy,
-                                              size: 18,
-                                              color: theme.isDarkMode
-                                                  ? colors.textSecondaryDark
-                                                  : colors.textSecondaryLight,
-                                            ),
+                                      child: SizedBox(
+                                        height: 32,
+                                        width: 32,
+                                        child: Center(
+                                          child: Icon(
+                                            Icons.copy,
+                                            size: 18,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.textSecondaryDark,
+                                                light: MyntColors.textSecondary),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
                         ],
                         // Add extra padding at bottom for keyboard
-                        SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 100 : 20),
+                        SizedBox(
+                            height: MediaQuery.of(context).viewInsets.bottom > 0
+                                ? 100
+                                : 20),
                       ],
                     ),
                   ),
                 ),
-                
+
                 // Fixed bottom button
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                    // border: Border(
-                    //   top: BorderSide(
-                    //     color: theme.isDarkMode
-                    //         ? colors.textSecondaryDark.withOpacity(0.2)
-                    //         : colors.textSecondaryLight.withOpacity(0.2),
-                    //     width: 1,
-                    //   ),
-                    // ),
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
                   ),
                   child: SizedBox(
                     width: double.infinity,
@@ -716,18 +660,16 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         minimumSize: const Size(double.infinity, 45),
-                        backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
+                        backgroundColor: MyntColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
-                      child: TextWidget.subText(
-                        text: apiData?.stat == "Ok" ? "Update" : "Create",
-                        theme: false,
-                        color: colors.colorWhite,
-                        fw: 2,
+                      child: Text(
+                        apiData?.stat == "Ok" ? "Update" : "Create",
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold),
                       ),
                     ),
                   ),
@@ -740,7 +682,3 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
     );
   }
 }
-
-
-
-

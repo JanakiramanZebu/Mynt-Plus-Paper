@@ -84,6 +84,9 @@ class ModifyGttWeb extends ConsumerStatefulWidget {
   @override
   ConsumerState<ModifyGttWeb> createState() => _ModifyGttWebState();
 
+  // Static variable to remember the last position of the dialog
+  static Offset? _lastSavedPosition;
+
   /// Static method to show ModifyGttWeb as a draggable dialog
   static void showDraggable({
     required BuildContext context,
@@ -93,12 +96,18 @@ class ModifyGttWeb extends ConsumerStatefulWidget {
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
     late OverlayEntry overlayEntry;
-    
-    final position = initialPosition ?? Offset(
-      MediaQuery.of(context).size.width * 0.1,
-      MediaQuery.of(context).size.height * 0.05,
-    );
-    
+
+    // Dialog dimensions for centering calculation
+    const dialogWidth = 450.0;
+    const dialogHeight = 500.0;
+    // Use saved position, then initialPosition parameter, then center of screen
+    final position = _lastSavedPosition ??
+        initialPosition ??
+        Offset(
+          (MediaQuery.of(context).size.width - dialogWidth) / 2,
+          (MediaQuery.of(context).size.height - dialogHeight) / 2,
+        );
+
     overlayEntry = OverlayEntry(
       maintainState: false,
       builder: (context) => _DraggableModifyGttDialog(
@@ -106,7 +115,8 @@ class ModifyGttWeb extends ConsumerStatefulWidget {
         scripInfo: scripInfo,
         initialPosition: position,
         onPositionChanged: (newPosition) {
-          // Position can be saved if needed
+          // Save the position for next time
+          _lastSavedPosition = newPosition;
         },
         onClose: () {
           // Remove overlay immediately for quick response
@@ -592,24 +602,45 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "Price",
-                    style: WebTextStyles.formLabel(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+              InkWell(
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () {
+                  setState(() {
+                    _GTTPriceTypeIsMarket = !_GTTPriceTypeIsMarket;
+                    orderInput.chngGTTPriceType(
+                      _GTTPriceTypeIsMarket ? "Market" : "Limit",
+                    );
+                    if (orderInput.actPrcType == "Market" ||
+                        orderInput.actPrcType == "SL MKT") {
+                      orderInput.priceCtrl.text = "Market";
+                    } else {
+                      orderInput.priceCtrl.text = "${widget.gttOrderBook.ltp}";
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      "Price",
+                      style: WebTextStyles.formLabel(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    orderInput.actPrcType,
-                    style: WebTextStyles.formLabel(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                    const SizedBox(width: 8),
+                    SvgPicture.asset(
+                      assets.switchIcon,
+                      width: 16,
+                      height: 16,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -643,26 +674,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       orderInput.actPrcType == "SL Limit"
                       ? false
                       : true,
-                  trailingWidget: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _GTTPriceTypeIsMarket = !_GTTPriceTypeIsMarket;
-                        orderInput.chngGTTPriceType(
-                          _GTTPriceTypeIsMarket ? "Market" : "Limit",
-                        );
-                        if (orderInput.actPrcType == "Market" ||
-                            orderInput.actPrcType == "SL MKT") {
-                          orderInput.priceCtrl.text = "Market";
-                        } else {
-                          orderInput.priceCtrl.text = "${widget.gttOrderBook.ltp}";
-                        }
-                      });
-                    },
-                    child: SvgPicture.asset(
-                      assets.switchIcon,
-                      fit: BoxFit.scaleDown,
-                    ),
-                  ),
                   controller: orderInput.priceCtrl,
                   textAlign: TextAlign.start,
                 ),
@@ -801,24 +812,45 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Text(
-                    "Price",
-                    style: WebTextStyles.formLabel(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+              InkWell(
+                splashColor: theme.isDarkMode
+                    ? colors.splashColorDark
+                    : colors.splashColorLight,
+                highlightColor: theme.isDarkMode
+                    ? colors.highlightDark
+                    : colors.highlightLight,
+                onTap: () {
+                  setState(() {
+                    _GTTOCOPriceTypeIsMarket = !_GTTOCOPriceTypeIsMarket;
+                    orderInput.chngOCOPriceType(
+                      _GTTOCOPriceTypeIsMarket ? "Market" : "Limit",
+                    );
+                    if (orderInput.actOcoPrcType == "Market" ||
+                        orderInput.actOcoPrcType == "SL MKT") {
+                      orderInput.ocoPriceCtrl.text = "Market";
+                    } else {
+                      orderInput.ocoPriceCtrl.text = "${widget.gttOrderBook.ltp}";
+                    }
+                  });
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      "Price",
+                      style: WebTextStyles.formLabel(
+                        isDarkTheme: theme.isDarkMode,
+                        color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    orderInput.actOcoPrcType,
-                    style: WebTextStyles.formLabel(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.icon : MyntColors.icon,
+                    const SizedBox(width: 8),
+                    SvgPicture.asset(
+                      assets.switchIcon,
+                      width: 16,
+                      height: 16,
+                      fit: BoxFit.contain,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -844,26 +876,6 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       orderInput.actOcoPrcType == "SL Limit"
                       ? false
                       : true,
-                  trailingWidget: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _GTTOCOPriceTypeIsMarket = !_GTTOCOPriceTypeIsMarket;
-                        orderInput.chngOCOPriceType(
-                          _GTTOCOPriceTypeIsMarket ? "Market" : "Limit",
-                        );
-                        if (orderInput.actOcoPrcType == "Market" ||
-                            orderInput.actOcoPrcType == "SL MKT") {
-                          orderInput.ocoPriceCtrl.text = "Market";
-                        } else {
-                          orderInput.ocoPriceCtrl.text = "${widget.gttOrderBook.ltp}";
-                        }
-                      });
-                    },
-                    child: SvgPicture.asset(
-                      assets.switchIcon,
-                      fit: BoxFit.scaleDown,
-                    ),
-                  ),
                   controller: orderInput.ocoPriceCtrl,
                   textAlign: TextAlign.start,
                 ),
