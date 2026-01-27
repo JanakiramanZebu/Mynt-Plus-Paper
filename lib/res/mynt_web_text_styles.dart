@@ -189,7 +189,7 @@ class MyntWebTextStyles {
       _text(
         c,
         size: MyntFonts.titleMedium,
-          weight: FontWeight.w600,
+          weight: fontWeight ?? FontWeight.w500,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
