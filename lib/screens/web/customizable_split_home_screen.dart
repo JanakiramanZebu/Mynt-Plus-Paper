@@ -1642,8 +1642,8 @@ class _CustomizableSplitHomeScreenState
               final token = quotes?.token?.toString() ?? fallback.token;
               final exch = quotes?.exch ?? fallback.exch;
               return ChartWithDepthWeb(
-                // Key ensures widget rebuilds when scrip changes
-                key: ValueKey('depth_${exch}_$token'),
+                // Don't use dynamic key - it destroys/recreates the widget (and chart iframe)
+                // Instead, let didUpdateWidget handle symbol changes via postMessage
                 wlValue: DepthInputArgs(
                   exch: exch,
                   token: token,
@@ -1655,9 +1655,8 @@ class _CustomizableSplitHomeScreenState
                 ),
               );
             }
-            // Key ensures widget rebuilds when scrip changes from trade action or other sources
+            // Don't use dynamic key - let didUpdateWidget handle symbol changes via postMessage
             return ChartWithDepthWeb(
-              key: ValueKey('depth_${args.exch}_${args.token}'),
               wlValue: args,
             );
           },
