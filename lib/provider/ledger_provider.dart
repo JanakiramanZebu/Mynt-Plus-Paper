@@ -1,6 +1,7 @@
 import 'dart:async';
 // import 'dart:ffi';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -1400,6 +1401,10 @@ class LDProvider extends DefaultChangeNotifier {
   }
 
   requestWS({required bool isSubscribe, required BuildContext context}) async {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     String input = "";
     if (_holdingsAllData != null) {
       if (_holdingsAllData!.holdings != null) {
@@ -1415,7 +1420,7 @@ class LDProvider extends DefaultChangeNotifier {
     if (input.isNotEmpty) {
       // lastScbTok(input);
       await ref.read(websocketProvider).establishConnection(
-          channelInput: input, task: isSubscribe ? "t" : "u", context: context);
+          channelInput: input, task: isSubscribe ? (kIsWeb ? "d" : "t") : "u", context: context);
     }
   }
 

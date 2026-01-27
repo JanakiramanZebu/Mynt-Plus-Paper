@@ -825,6 +825,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   bool get isDepthVisible => _isDepthVisible;
   bool _depthDataLoaded = false; // Track if depth data has been loaded
   String? _currentDepthSymbol; // Track current depth subscription (exch|token)
+  String? get currentDepthSymbol => _currentDepthSymbol; // Public getter for WebSubscriptionManager
 
   /// Lazy load market depth data when user opens depth panel
   setIsDepthVisibleWeb(bool value, {BuildContext? context, String? exch, String? token, String? tsym}) async {
@@ -3157,6 +3158,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
   Future<void> requestWSOptChain(
       {required bool isSubscribe, required BuildContext context}) async {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     String input = "";
     if (_optionChainModel != null) {
       if (_optionChainModel!.optValue != null) {
@@ -3170,13 +3175,17 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // lastScbTok(input);
       await ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
+          task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
           context: context);
     }
   }
 
 // websocket Connection Request for Future list
   requestWSFut({required bool isSubscribe, required BuildContext context}) {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     String input = "";
 
     if (_fut!.isNotEmpty) {
@@ -3191,7 +3200,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // lastScbTok(input);
       ref.read(websocketProvider).establishConnection(
           channelInput: input.substring(0, input.length - 1),
-          task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
+          task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
           context: context);
     }
   }
@@ -3649,6 +3658,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 // websocket Connection Request for Market watch scrip
   requestMWScrip(
       {required bool isSubscribe, required BuildContext context}) async {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     try {
       toggleLoadingOn(true);
       String input = "";
@@ -3740,7 +3753,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             "WebSocket: ${isSubscribe ? "Subscribing to" : "Unsubscribing from"} ${input.split('#').length} symbols");
         await ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? (kIsWeb ? "d" : "t") : (kIsWeb ? "ud" : "u"),
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
 
         // For predefined watchlists, ensure data wasn't accidentally cleared during subscription

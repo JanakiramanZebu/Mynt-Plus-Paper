@@ -1618,10 +1618,14 @@ class _CustomizableSplitHomeScreenState
                   ref.watch(marketWatchProvider.select((p) => p.getQuotes));
               final fallback =
                   ChartArgs(exch: 'NSE', tsym: 'Nifty 50', token: '26000');
+              final token = quotes?.token?.toString() ?? fallback.token;
+              final exch = quotes?.exch ?? fallback.exch;
               return ChartWithDepthWeb(
+                // Key ensures widget rebuilds when scrip changes
+                key: ValueKey('depth_${exch}_$token'),
                 wlValue: DepthInputArgs(
-                  exch: quotes?.exch ?? fallback.exch,
-                  token: quotes?.token?.toString() ?? fallback.token,
+                  exch: exch,
+                  token: token,
                   tsym: quotes?.tsym ?? fallback.tsym,
                   instname: quotes?.instname ?? '',
                   symbol: quotes?.symbol ?? '',
@@ -1630,7 +1634,11 @@ class _CustomizableSplitHomeScreenState
                 ),
               );
             }
-            return ChartWithDepthWeb(wlValue: args);
+            // Key ensures widget rebuilds when scrip changes from trade action or other sources
+            return ChartWithDepthWeb(
+              key: ValueKey('depth_${args.exch}_${args.token}'),
+              wlValue: args,
+            );
           },
         );
       case ScreenType.optionChain:

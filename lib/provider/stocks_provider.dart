@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -992,6 +993,10 @@ class StocksProvider extends DefaultChangeNotifier {
 
   requestWSTradeaction(
       {required bool isSubscribe, required BuildContext context}) {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     try {
       String input = "";
       if (_topStockData.isNotEmpty) {
@@ -1004,7 +1009,7 @@ class StocksProvider extends DefaultChangeNotifier {
         // ConstantName.lastSubscribe = input;
         ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? "t" : "u",
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
       }
     } catch (e) {}

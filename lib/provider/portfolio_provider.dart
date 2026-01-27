@@ -1135,6 +1135,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // websocket Connection Request for Position scrip
   requestWSPosition(
       {required bool isSubscribe, required BuildContext context}) {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     try {
       String input = "";
 
@@ -1150,7 +1154,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // ConstantName.lastSubscribe = input;
         ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? "t" : "u",
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
       }
     } catch (e) {}
@@ -1161,6 +1165,10 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // websocket Connection Request for Holdings scrip
   requestWSHoldings(
       {required bool isSubscribe, required BuildContext context}) {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb && !isSubscribe) return;
+
     try {
       String input = "";
       if (_holdingsModel != null) {
@@ -1177,7 +1185,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         // ConstantName.lastSubscribe = input;
         ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? "t" : "u",
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
       }
     } catch (e) {}
