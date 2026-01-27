@@ -253,7 +253,7 @@ class WebChartManager {
   }) {
     // Add timestamp for cache-busting to ensure fresh load when symbol changes
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    return "https://mynt.zebuetrade.com/tv?src=app&symbol=$tsym&user=${prefs.clientId}&usession=${prefs.clientSession}&token=$token&exch=$exch&dark=$isDarkMode&_t=$timestamp";
+    return "https://mynt.zebuetrade.com/tv?src=web&symbol=$tsym&user=${prefs.clientId}&usession=${prefs.clientSession}&token=$token&exch=$exch&dark=$isDarkMode&_t=$timestamp";
   }
 }
 

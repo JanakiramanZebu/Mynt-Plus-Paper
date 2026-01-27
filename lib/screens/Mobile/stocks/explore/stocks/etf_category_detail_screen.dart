@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
@@ -465,12 +466,15 @@ class _ETFListViewState extends ConsumerState<_ETFListView> {
     _subInput = tokens.join('#');
     _websocket.establishConnection(
           channelInput: _subInput,
-          task: 't',
+          task: kIsWeb ? 'd' : 't',
           context: contextVal,
         );
   }
 
   void _unsubscribeTokens() {
+    // On web, WebSubscriptionManager handles all subscriptions
+    // Skip unsubscribe here to avoid conflicts with multi-panel layout
+    if (kIsWeb) return;
     if (_subInput.isEmpty) return;
     _websocket.establishConnection(
           channelInput: _subInput,

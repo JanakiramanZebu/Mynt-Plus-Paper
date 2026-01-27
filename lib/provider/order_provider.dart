@@ -1732,6 +1732,13 @@ class OrderProvider extends DefaultChangeNotifier {
       // Remove duplicates from symbolList
       final uniqueSymbols = symbolList.toSet().toList();
 
+      // On web, WebSubscriptionManager handles all subscriptions
+      // Skip unsubscribe here to avoid conflicts with multi-panel layout
+      if (kIsWeb && !isSubscribe) {
+        print("ℹ️ [Order Book] Skipping unsubscribe on web (handled by WebSubscriptionManager)");
+        return;
+      }
+
       // Print subscription/unsubscription details
       if (isSubscribe) {
         print("═══════════════════════════════════════════════════════════");
@@ -1760,7 +1767,7 @@ class OrderProvider extends DefaultChangeNotifier {
       if (input.isNotEmpty) {
         ref.read(websocketProvider).establishConnection(
             channelInput: input,
-            task: isSubscribe ? "t" : "u",
+            task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
       } else {
         print(

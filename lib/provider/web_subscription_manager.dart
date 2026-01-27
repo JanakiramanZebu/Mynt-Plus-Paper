@@ -108,6 +108,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   // Track if this is the first WebSocket connection (initial page load)
   bool _isInitialConnection = true;
 
+  // Pending subscription queue - subscriptions waiting for WebSocket to be ready
+  final List<_PendingSubscription> _pendingSubscriptionQueue = [];
+  Timer? _retryTimer;
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(milliseconds: 500);
+
   /// Handle websocket connection state changes
   void _handleWebSocketStateChange() {
     try {
@@ -116,13 +122,20 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
       // Check if socket just connected (was disconnected, now connected)
       if (!_lastKnownWsConnected && isNowConnected) {
-        log('WebSubscriptionManager: WebSocket reconnected, restoring subscriptions');
-        print('🔄 [WebSubscriptionManager] WebSocket reconnected');
+        log('WebSubscriptionManager: WebSocket connected');
+        print('🔄 [WebSubscriptionManager] WebSocket connected');
         print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
+        print('   Pending queue size: ${_pendingSubscriptionQueue.length}');
         print('   Is initial connection: $_isInitialConnection');
 
         // Clear deduplication tracking (NOT the master list!)
         _currentWebSocketSubscriptions.clear();
+
+        // Process any pending subscriptions first
+        if (_pendingSubscriptionQueue.isNotEmpty) {
+          print('📤 [WebSubscriptionManager] Processing ${_pendingSubscriptionQueue.length} pending subscriptions');
+          _processPendingSubscriptions();
+        }
 
         // Check if we have subscriptions to restore from master list
         if (_activeSubscriptions.isNotEmpty && _isUserLoggedIn()) {
@@ -170,6 +183,128 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       _lastKnownWsConnected = isNowConnected;
     } catch (e) {
       log('WebSubscriptionManager: Error handling websocket state change: $e');
+    }
+  }
+
+  /// Check if WebSocket is ready for subscriptions
+  bool _isWebSocketReady() {
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      return wsProvider.wsConnected;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Queue a subscription for later if WebSocket isn't ready
+  void _queueSubscription(ScreenType screenType, Set<String> symbols, int retryCount) {
+    // Remove any existing pending subscription for this screen
+    _pendingSubscriptionQueue.removeWhere((p) => p.screenType == screenType);
+
+    _pendingSubscriptionQueue.add(_PendingSubscription(
+      screenType: screenType,
+      symbols: symbols,
+      retryCount: retryCount,
+      timestamp: DateTime.now(),
+    ));
+
+    print('📋 [WebSubscriptionManager] Queued subscription for $screenType (${symbols.length} symbols, retry $retryCount)');
+
+    // Start retry timer if not already running
+    _startRetryTimer();
+  }
+
+  /// Start retry timer to process pending subscriptions
+  void _startRetryTimer() {
+    if (_retryTimer?.isActive == true) return;
+
+    _retryTimer = Timer.periodic(_retryDelay, (_) {
+      if (_pendingSubscriptionQueue.isEmpty) {
+        _retryTimer?.cancel();
+        _retryTimer = null;
+        return;
+      }
+
+      if (_isWebSocketReady()) {
+        _processPendingSubscriptions();
+      }
+    });
+  }
+
+  /// Process all pending subscriptions
+  void _processPendingSubscriptions() {
+    if (_pendingSubscriptionQueue.isEmpty) return;
+
+    final toProcess = List<_PendingSubscription>.from(_pendingSubscriptionQueue);
+    _pendingSubscriptionQueue.clear();
+
+    for (final pending in toProcess) {
+      if (pending.retryCount >= _maxRetries) {
+        print('⚠️ [WebSubscriptionManager] Max retries reached for ${pending.screenType}, dropping');
+        continue;
+      }
+
+      // Try to subscribe
+      _subscribeToScreenWithSymbols(pending.screenType, pending.symbols, pending.retryCount + 1);
+    }
+  }
+
+  /// Subscribe to a screen with specific symbols (used for retry)
+  Future<void> _subscribeToScreenWithSymbols(ScreenType screenType, Set<String> symbols, int retryCount) async {
+    if (!_isUserLoggedIn()) return;
+
+    // Check WebSocket readiness
+    if (!_isWebSocketReady()) {
+      print('⏳ [WebSubscriptionManager] WebSocket not ready, queueing ${screenType} subscription (retry $retryCount)');
+      _queueSubscription(screenType, symbols, retryCount);
+      return;
+    }
+
+    final context = _getValidContext();
+    if (context == null) {
+      log('WebSubscriptionManager: No valid context for subscription');
+      // Queue for retry with context
+      _queueSubscription(screenType, symbols, retryCount);
+      return;
+    }
+
+    if (symbols.isEmpty) {
+      print('⚠️ [WebSubscriptionManager] No symbols to subscribe for $screenType');
+      return;
+    }
+
+    // Filter out already subscribed symbols
+    final newSymbols = symbols.where((s) => !_currentWebSocketSubscriptions.contains(s)).toSet();
+
+    if (newSymbols.isEmpty) {
+      print('ℹ️ [WebSubscriptionManager] All symbols for $screenType already subscribed');
+      _screenSubscriptions[screenType] = symbols;
+      return;
+    }
+
+    print('✅ [WebSubscriptionManager] Subscribing ${newSymbols.length} symbols for $screenType (retry $retryCount)');
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = newSymbols.join('#');
+
+      wsProvider.connectTouchLine(
+        task: "d",
+        input: symbolString,
+        context: context,
+      );
+
+      _currentWebSocketSubscriptions.addAll(newSymbols);
+      _activeSubscriptions.addAll(newSymbols);
+      _screenSubscriptions[screenType] = symbols;
+
+      print('✅ [WebSubscriptionManager] Successfully subscribed to $screenType');
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] Error subscribing to $screenType: $e');
+      // Queue for retry
+      if (retryCount < _maxRetries) {
+        _queueSubscription(screenType, symbols, retryCount);
+      }
     }
   }
 
@@ -245,7 +380,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       ScreenType.mutualFund: SubscriptionType.none,
       ScreenType.ipo: SubscriptionType.none,
       ScreenType.bond: SubscriptionType.none,
-      ScreenType.scripDepthInfo: SubscriptionType.marketWatch,
+      // scripDepthInfo handles its own subscription via setIsDepthVisibleWeb
+      // Setting to none prevents unsubscribing other panels' symbols when depth opens
+      ScreenType.scripDepthInfo: SubscriptionType.none,
       ScreenType.optionChain: SubscriptionType.marketWatch,
       ScreenType.pledgeUnpledge: SubscriptionType.none,
       ScreenType.corporateActions: SubscriptionType.none,
@@ -255,10 +392,14 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     };
   }
   
-  // Debounce timer to prevent rapid screen updates
-  Timer? _updateDebounceTimer;
+  // Debounce timers to prevent rapid screen updates - ONE PER PANEL
+  // Using a Map ensures each panel's subscription is processed independently
+  // This fixes the bug where only the last panel's subscription was processed
+  final Map<int, Timer> _updateDebounceTimers = {};
+  // Track pending screen changes so we can complete them if needed
+  final Map<int, _PendingScreenChange> _pendingScreenChanges = {};
   static const Duration _updateDebounceDelay = Duration(milliseconds: 300);
-  
+
   /// Update active screen for a panel (with debouncing to prevent rapid calls)
   void updateActiveScreen(int panelIndex, ScreenType? screenType) {
     final previousScreen = _activeScreens[panelIndex];
@@ -268,12 +409,22 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return; // No change - skip unnecessary processing
     }
 
-    // Cancel any pending debounce timer
-    _updateDebounceTimer?.cancel();
+    // Cancel any pending debounce timer FOR THIS PANEL ONLY
+    _updateDebounceTimers[panelIndex]?.cancel();
 
-    // Debounce the update to prevent rapid screen changes
-    _updateDebounceTimer = Timer(_updateDebounceDelay, () {
+    // Track the pending screen change so we can complete it if needed
+    _pendingScreenChanges[panelIndex] = _PendingScreenChange(
+      panelIndex: panelIndex,
+      previousScreen: previousScreen,
+      newScreen: screenType,
+    );
+
+    // Debounce the update for this specific panel
+    _updateDebounceTimers[panelIndex] = Timer(_updateDebounceDelay, () {
+      _pendingScreenChanges.remove(panelIndex);
       _performScreenUpdate(panelIndex, previousScreen, screenType);
+      // Clean up timer reference after execution
+      _updateDebounceTimers.remove(panelIndex);
     });
   }
 
@@ -295,12 +446,17 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     print('   From: ${previousScreen ?? "none"}');
     print('   To: ${screenType ?? "none"}');
     log('WebSubscriptionManager: Panel $panelIndex screen changed from $previousScreen to $screenType');
-    
+
+    // CRITICAL FIX: Before unsubscribing, complete ALL pending subscription timers
+    // This ensures _screenSubscriptions is fully populated for all panels
+    // Without this, the unsubscribe check may think no other panel needs the symbols
+    _completePendingSubscriptionTimers(excludePanelIndex: panelIndex);
+
     // Unsubscribe from previous screen if it exists
     if (previousScreen != null) {
       _unsubscribeFromScreen(previousScreen);
     }
-    
+
     // Update active screen
     if (screenType != null) {
       _activeScreens[panelIndex] = screenType;
@@ -308,8 +464,38 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     } else {
       _activeScreens.remove(panelIndex);
     }
-    
+
     notifyListeners();
+  }
+
+  /// Complete all pending subscription timers immediately (except for the excluded panel)
+  /// This ensures _screenSubscriptions is fully populated before any unsubscription logic runs
+  void _completePendingSubscriptionTimers({int? excludePanelIndex}) {
+    final pendingPanels = _pendingScreenChanges.keys.toList();
+
+    for (final panelIdx in pendingPanels) {
+      if (panelIdx == excludePanelIndex) continue; // Skip the panel being changed
+
+      final pending = _pendingScreenChanges[panelIdx];
+      final timer = _updateDebounceTimers[panelIdx];
+
+      if (pending != null && timer != null && timer.isActive) {
+        timer.cancel();
+
+        // For initial subscriptions (previousScreen is null), we just need to subscribe
+        // For screen changes, we'd do the full update - but during initial load,
+        // previousScreen is typically null, so we just subscribe the new screen
+        final screenToSubscribe = pending.newScreen;
+        if (screenToSubscribe != null && !_screenSubscriptions.containsKey(screenToSubscribe)) {
+          print('⚡ [WebSubscriptionManager] Fast-tracking subscription for panel $panelIdx: $screenToSubscribe');
+          _activeScreens[panelIdx] = screenToSubscribe;
+          _subscribeToScreen(screenToSubscribe);
+        }
+      }
+
+      _updateDebounceTimers.remove(panelIdx);
+      _pendingScreenChanges.remove(panelIdx);
+    }
   }
   
   /// Subscribe to a screen's data
@@ -319,21 +505,30 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       return;
     }
 
-    final context = _getValidContext();
-    if (context == null) {
-      log('WebSubscriptionManager: No valid context for subscription');
-      return;
-    }
-
     final subscriptionType = _screenSubscriptionTypes[screenType] ?? SubscriptionType.none;
 
     if (subscriptionType == SubscriptionType.none) {
       return; // Screen doesn't need subscriptions
     }
 
+    // Check WebSocket readiness BEFORE getting symbols
+    if (!_isWebSocketReady()) {
+      print('⏳ [WebSubscriptionManager] WebSocket not ready for $screenType, will retry when connected');
+      // Queue empty set - will be filled when retry happens
+      _queueSubscription(screenType, {}, 0);
+      return;
+    }
+
+    final context = _getValidContext();
+    if (context == null) {
+      log('WebSubscriptionManager: No valid context for subscription');
+      return;
+    }
+
     print('═══════════════════════════════════════════════════════════');
     print('📱 [WebSubscriptionManager] SUBSCRIBING to screen: $screenType');
     print('   Subscription Type: $subscriptionType');
+    print('   WebSocket ready: ${_isWebSocketReady()}');
     print('═══════════════════════════════════════════════════════════');
     log('WebSubscriptionManager: Subscribing to $screenType (type: $subscriptionType)');
 
@@ -405,6 +600,13 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       }
       log('WebSubscriptionManager: Subscribing to ${newSymbols.length} new symbols for $screenType');
 
+      // Final WebSocket check before sending
+      if (!_isWebSocketReady()) {
+        print('⏳ [WebSubscriptionManager] WebSocket disconnected before sending, queueing $screenType');
+        _queueSubscription(screenType, symbolsToSubscribe, 0);
+        return;
+      }
+
       // Subscribe via websocket provider (which handles the subscription manager integration)
       final wsProvider = ref.read(websocketProvider);
       final symbolString = newSymbols.join('#');
@@ -436,6 +638,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       print('❌ [WebSubscriptionManager] ERROR subscribing to $screenType: $e');
       print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error subscribing to $screenType: $e');
+      // Queue for retry on error
+      final symbols = _getSymbolsForScreen(screenType, _screenSubscriptionTypes[screenType] ?? SubscriptionType.none);
+      if (symbols.isNotEmpty) {
+        _queueSubscription(screenType, symbols, 0);
+      }
     }
   }
 
@@ -586,7 +793,55 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
 
     return symbols;
   }
-  
+
+  /// Get current watchlist symbols (symbols visible in watchlist panel)
+  Set<String> _getWatchlistSymbols() {
+    final symbols = <String>{};
+    try {
+      final mwProvider = ref.read(marketWatchProvider);
+
+      // Get symbols from the current watchlist scrips
+      final scrips = mwProvider.scrips;
+      for (var scrip in scrips) {
+        final exch = scrip['exch']?.toString();
+        final token = scrip['token']?.toString();
+        if (exch != null && token != null && exch.isNotEmpty && token.isNotEmpty) {
+          symbols.add('$exch|$token');
+        }
+      }
+    } catch (e) {
+      log('WebSubscriptionManager: Error getting watchlist symbols: $e');
+    }
+    return symbols;
+  }
+
+  /// Get current index symbols (top indices and default indices)
+  Set<String> _getIndexSymbols() {
+    final symbols = <String>{};
+    try {
+      final indexProvider = ref.read(indexListProvider);
+
+      // Add top indices (dashboard)
+      final topIndices = indexProvider.topIndicesForDashboard?.indValues ?? [];
+      for (var index in topIndices) {
+        if (index.exch != null && index.token != null) {
+          symbols.add('${index.exch}|${index.token}');
+        }
+      }
+
+      // Add default indices
+      final defaultIndices = indexProvider.defaultIndexList?.indValues ?? [];
+      for (var index in defaultIndices) {
+        if (index.exch != null && index.token != null) {
+          symbols.add('${index.exch}|${index.token}');
+        }
+      }
+    } catch (e) {
+      log('WebSubscriptionManager: Error getting index symbols: $e');
+    }
+    return symbols;
+  }
+
   /// Unsubscribe from a screen's data
   Future<void> _unsubscribeFromScreen(ScreenType screenType) async {
     final context = _getValidContext();
@@ -625,6 +880,35 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           symbolsStillNeeded.addAll(otherScreenSymbols);
         }
       }
+    }
+
+    // CRITICAL: Also check symbols that are actively used by providers
+    // This prevents unsubscribing symbols that are shown in watchlist, depth, etc.
+    try {
+      final marketWatch = ref.read(marketWatchProvider);
+
+      // Add current depth symbol (the symbol user clicked on)
+      final depthSymbol = marketWatch.currentDepthSymbol;
+      if (depthSymbol != null && depthSymbol.isNotEmpty) {
+        symbolsStillNeeded.add(depthSymbol);
+        print('   🔒 Protected depth symbol: $depthSymbol');
+      }
+
+      // Add all watchlist symbols (visible in watchlist panel)
+      final watchlistSymbols = _getWatchlistSymbols();
+      if (watchlistSymbols.isNotEmpty) {
+        symbolsStillNeeded.addAll(watchlistSymbols);
+        print('   🔒 Protected ${watchlistSymbols.length} watchlist symbols');
+      }
+
+      // Add index symbols (visible in dashboard/indices)
+      final indexSymbols = _getIndexSymbols();
+      if (indexSymbols.isNotEmpty) {
+        symbolsStillNeeded.addAll(indexSymbols);
+        print('   🔒 Protected ${indexSymbols.length} index symbols');
+      }
+    } catch (e) {
+      print('   ⚠️ Error getting protected symbols: $e');
     }
 
     // Find symbols that can be unsubscribed (not needed by any other screen)
@@ -686,7 +970,156 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
   }
-  
+
+  /// Unsubscribe specific tokens (for option chain, futures symbol changes)
+  /// This method checks for protected symbols before unsubscribing
+  /// Protected symbols: watchlist, depth, holdings, positions, indices, other active screens
+  Future<void> unsubscribeTokens({
+    required Set<String> tokensToCheck,
+    required BuildContext context,
+    String source = 'unknown',
+  }) async {
+    if (tokensToCheck.isEmpty) {
+      print('ℹ️  [WebSubscriptionManager] No tokens to unsubscribe for $source');
+      return;
+    }
+
+    print('═══════════════════════════════════════════════════════════');
+    print('🗑️  [WebSubscriptionManager] UNSUBSCRIBING tokens for: $source');
+    print('   Tokens to check: ${tokensToCheck.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    // Collect all protected symbols
+    final protectedSymbols = <String>{};
+
+    try {
+      // 1. Protect symbols from all active screen subscriptions
+      for (var screenSubscriptions in _screenSubscriptions.values) {
+        protectedSymbols.addAll(screenSubscriptions);
+      }
+      print('   🔒 Protected ${protectedSymbols.length} symbols from active screens');
+
+      // 2. Protect watchlist symbols
+      final watchlistSymbols = _getWatchlistSymbols();
+      if (watchlistSymbols.isNotEmpty) {
+        protectedSymbols.addAll(watchlistSymbols);
+        print('   🔒 Protected ${watchlistSymbols.length} watchlist symbols');
+      }
+
+      // 3. Protect depth symbol
+      final marketWatch = ref.read(marketWatchProvider);
+      final depthSymbol = marketWatch.currentDepthSymbol;
+      if (depthSymbol != null && depthSymbol.isNotEmpty) {
+        protectedSymbols.add(depthSymbol);
+        print('   🔒 Protected depth symbol: $depthSymbol');
+      }
+
+      // 4. Protect index symbols
+      final indexSymbols = _getIndexSymbols();
+      if (indexSymbols.isNotEmpty) {
+        protectedSymbols.addAll(indexSymbols);
+        print('   🔒 Protected ${indexSymbols.length} index symbols');
+      }
+
+      // 5. Protect holdings symbols
+      final portfolio = ref.read(portfolioProvider);
+      final holdings = portfolio.holdingsModel ?? [];
+      for (var holding in holdings) {
+        final exchTsymList = holding.exchTsym ?? [];
+        for (var exchTsym in exchTsymList) {
+          if (exchTsym.exch != null && exchTsym.token != null) {
+            protectedSymbols.add('${exchTsym.exch}|${exchTsym.token}');
+          }
+        }
+      }
+
+      // 6. Protect positions symbols
+      final positions = portfolio.postionBookModel ?? [];
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          protectedSymbols.add('${position.exch}|${position.token}');
+        }
+      }
+
+      // 7. Protect futures symbols (if futures list is open) - BUT NOT if we're unsubscribing futures
+      if (source != 'futures') {
+        final futList = marketWatch.fut ?? [];
+        for (var fut in futList) {
+          if (fut.exch != null && fut.token != null) {
+            protectedSymbols.add('${fut.exch}|${fut.token}');
+          }
+        }
+      }
+
+      // 8. Protect current option chain tokens (if option chain is open) - BUT NOT if we're unsubscribing optionChain
+      if (source != 'optionChain') {
+        final optionChainModel = marketWatch.optionChainModel;
+        if (optionChainModel?.optValue != null) {
+          for (var option in optionChainModel!.optValue!) {
+            if (option.exch != null && option.token != null) {
+              protectedSymbols.add('${option.exch}|${option.token}');
+            }
+          }
+          print('   🔒 Protected ${optionChainModel.optValue!.length} option chain symbols');
+        }
+      }
+
+    } catch (e) {
+      print('   ⚠️ Error getting protected symbols: $e');
+    }
+
+    // Find tokens that can be unsubscribed (not protected)
+    final tokensToUnsubscribe = tokensToCheck.where((token) =>
+      !protectedSymbols.contains(token)
+    ).toSet();
+
+    if (tokensToUnsubscribe.isEmpty) {
+      print('ℹ️  [WebSubscriptionManager] All tokens for $source are protected');
+      print('   Total tokens: ${tokensToCheck.length}');
+      print('   Protected: ${tokensToCheck.length}');
+      print('═══════════════════════════════════════════════════════════\n');
+      return;
+    }
+
+    print('✅ [WebSubscriptionManager] Unsubscribing ${tokensToUnsubscribe.length} tokens for $source');
+    print('   Total tokens: ${tokensToCheck.length}');
+    print('   Protected: ${tokensToCheck.length - tokensToUnsubscribe.length}');
+    print('   To unsubscribe: ${tokensToUnsubscribe.length}');
+    if (tokensToUnsubscribe.length <= 10) {
+      print('   Tokens: ${tokensToUnsubscribe.join(", ")}');
+    } else {
+      print('   First 10 tokens: ${tokensToUnsubscribe.take(10).join(", ")}...');
+    }
+
+    try {
+      // Unsubscribe via websocket provider
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = tokensToUnsubscribe.join('#');
+
+      // Use unsubscribe depth task for web
+      wsProvider.connectTouchLine(
+        task: "ud",
+        input: symbolString,
+        context: context,
+      );
+
+      // Remove from tracking
+      _currentWebSocketSubscriptions.removeAll(tokensToUnsubscribe);
+      _activeSubscriptions.removeAll(tokensToUnsubscribe);
+
+      print('📝 [WebSubscriptionManager] Removed ${tokensToUnsubscribe.length} tokens from tracking');
+      print('   Current subscriptions: ${_currentWebSocketSubscriptions.length}');
+      print('   Master list total: ${_activeSubscriptions.length}');
+      print('✅ [WebSubscriptionManager] Successfully unsubscribed tokens for $source');
+      print('═══════════════════════════════════════════════════════════\n');
+
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] ERROR unsubscribing tokens for $source: $e');
+      print('═══════════════════════════════════════════════════════════\n');
+      log('WebSubscriptionManager: Error unsubscribing tokens for $source: $e');
+    }
+  }
+
   /// Update context for future use
   void updateContext(BuildContext context) {
     _lastValidContext = context;
@@ -902,7 +1335,13 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   
   @override
   void dispose() {
-    _updateDebounceTimer?.cancel();
+    // Cancel all per-panel debounce timers
+    for (final timer in _updateDebounceTimers.values) {
+      timer.cancel();
+    }
+    _updateDebounceTimers.clear();
+
+    _retryTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription.cancel();
 
@@ -919,8 +1358,38 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _screenSubscriptions.clear();
     _currentWebSocketSubscriptions.clear();
     _activeSubscriptions.clear(); // Clear master list
+    _pendingSubscriptionQueue.clear();
+    _pendingScreenChanges.clear();
     super.dispose();
   }
+}
+
+/// Pending subscription waiting for WebSocket to be ready
+class _PendingSubscription {
+  final ScreenType screenType;
+  final Set<String> symbols;
+  final int retryCount;
+  final DateTime timestamp;
+
+  _PendingSubscription({
+    required this.screenType,
+    required this.symbols,
+    required this.retryCount,
+    required this.timestamp,
+  });
+}
+
+/// Pending screen change waiting to be processed (used to fast-track subscriptions)
+class _PendingScreenChange {
+  final int panelIndex;
+  final ScreenType? previousScreen;
+  final ScreenType? newScreen;
+
+  _PendingScreenChange({
+    required this.panelIndex,
+    required this.previousScreen,
+    required this.newScreen,
+  });
 }
 
 /// Subscription types that different screens need

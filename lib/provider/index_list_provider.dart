@@ -220,10 +220,14 @@ class IndexListProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchIndexList(String exch, BuildContext context) async {
     try {
-      if (_subscr.isNotEmpty) {
+      // On web, WebSubscriptionManager handles all subscriptions
+      // Skip unsubscribe here to avoid conflicts with multi-panel layout
+      if (_subscr.isNotEmpty && !kIsWeb) {
         ref.read(websocketProvider).establishConnection(
             channelInput: _subscr, task: 'u', context: context);
         _subscr = "";
+      } else if (kIsWeb) {
+        _subscr = ""; // Just clear the string on web, don't unsubscribe
       }
       if (exch != "exit") {
         _indValuesList = [];
@@ -237,7 +241,8 @@ class IndexListProvider extends DefaultChangeNotifier {
         if (_indexList!.stat != "Not_Ok" || _indexList!.stat != null) {
           ConstantName.sessCheck = true;
           _indValuesList = _indexList!.indValues!;
-          if (_subscr.isNotEmpty) {
+          // On web, skip unsubscribe - WebSubscriptionManager handles it
+          if (_subscr.isNotEmpty && !kIsWeb) {
             ref.read(websocketProvider).establishConnection(
                 channelInput: _subscr, task: 'u', context: context);
           }

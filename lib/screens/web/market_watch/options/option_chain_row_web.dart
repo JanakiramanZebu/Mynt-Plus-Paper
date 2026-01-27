@@ -134,13 +134,13 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     final oiLack = (currentOI / 100000).toStringAsFixed(2);
 
     // Calculate OI percentage change
-    final poi = double.tryParse(socketData?['poi']?.toString() ?? "0") ?? 0.0;
+    // Use option.poi as fallback when socket data doesn't have poi yet (during symbol switch)
+    final poi = double.tryParse(socketData?['poi']?.toString() ?? option.poi ?? "0") ?? 0.0;
     String oiPerChng = "0.00";
     if (poi > 0) {
       oiPerChng = (((currentOI - poi) / poi) * 100).toStringAsFixed(2);
-    } else if (currentOI > 0) {
-      oiPerChng = "100.00";
     }
+    // Don't show 100% when poi is 0 - we just don't have the data yet
 
     final changeColor = perChange.startsWith("-")
         ? resolveThemeColor(context,
@@ -346,13 +346,13 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
     final oiLack = (currentOI / 100000).toStringAsFixed(2);
 
     // Calculate OI percentage change
-    final poi = double.tryParse(socketData?['poi']?.toString() ?? "0") ?? 0.0;
+    // Use option.poi as fallback when socket data doesn't have poi yet (during symbol switch)
+    final poi = double.tryParse(socketData?['poi']?.toString() ?? option.poi ?? "0") ?? 0.0;
     String oiPerChng = "0.00";
     if (poi > 0) {
       oiPerChng = (((currentOI - poi) / poi) * 100).toStringAsFixed(2);
-    } else if (currentOI > 0) {
-      oiPerChng = "100.00";
     }
+    // Don't show 100% when poi is 0 - we just don't have the data yet
 
     final changeColor = perChange.startsWith("-")
         ? resolveThemeColor(context,

@@ -32,13 +32,38 @@ class ExitAllPositionsDialogWeb extends ConsumerStatefulWidget {
 
 class _ExitAllPositionsDialogWebState
     extends ConsumerState<ExitAllPositionsDialogWeb> {
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     // Disable chart iframe pointer events when dialog opens
     _disableAllChartIframes();
+  }
+
+  /// Handle exit all positions and close dialog when done
+  Future<void> _handleExitAllPositions() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final positionBook = ref.read(portfolioProvider);
+      await positionBook.exitPosition(context, true);
+
+      // Close the dialog after successful exit
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      debugPrint('Error exiting positions: $e');
+      // Still close the dialog even on error
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   @override
@@ -83,8 +108,6 @@ class _ExitAllPositionsDialogWebState
 
   @override
   Widget build(BuildContext context) {
-    final positionBook = ref.read(portfolioProvider);
-
     return Center(
       child: Container(
         width: 380,
@@ -153,7 +176,7 @@ class _ExitAllPositionsDialogWebState
                 child: MyntPrimaryButton(
                   onPressed: _isLoading || widget.selectedPositions.isEmpty
                       ? null
-                      : () => positionBook.exitPosition(context, true),
+                      : _handleExitAllPositions,
                   label: 'Exit Order',
                   isLoading: _isLoading,
                   backgroundColor: resolveThemeColor(

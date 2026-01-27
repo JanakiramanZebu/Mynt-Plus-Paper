@@ -1300,12 +1300,17 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
           (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
 
     // Step 3: Determine ATM strike based on LIVE LTP (closest strike to current price)
-    // Get live LTP from websocket for the underlying token
-    final underlyingToken = depthData.token;
+    // Get live LTP from websocket for the UNDERLYING token (following mobile pattern)
+    // Mobile uses: depthData.undTk ?? depthData.token for the underlying token
+    final underlyingToken = depthData.undTk ?? depthData.token ?? '';
+    final underlyingExch = depthData.undExch ?? depthData.exch ?? '';
     final socketDatas = ref.read(websocketProvider).socketDatas;
-    final underlyingData = socketDatas['${depthData.exch}|$underlyingToken'];
+
+    // Get underlying's LTP from socket, fallback to optionStrPrc (which is set by fetchStikePrc)
+    final underlyingData = socketDatas['$underlyingExch|$underlyingToken'];
+    final optionStrPrc = scripInfo.optionStrPrc;
     final liveLtp = double.tryParse(
-            underlyingData?['lp']?.toString() ?? depthData.lp ?? '0') ??
+            underlyingData?['lp']?.toString() ?? optionStrPrc) ??
         0;
 
     // Find the closest strike to live LTP (this is the true ATM)

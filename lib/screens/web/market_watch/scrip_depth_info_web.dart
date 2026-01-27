@@ -267,48 +267,54 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     });
   }
 
-  // Preprocess depth data
+  // Preprocess depth data - only update fields that have non-null values
+  // This preserves existing values when incremental updates don't include certain fields
   void _processDepthData(GetQuotes depthData, Map<String, dynamic> socketData) {
-    depthData.ap = "${socketData['ap']}";
-    depthData.lp = "${socketData['lp']}";
-    depthData.pc = "${socketData['pc']}";
-    depthData.o = "${socketData['o']}";
-    depthData.l = "${socketData['l']}";
-    depthData.c = "${socketData['c']}";
-    depthData.chng = "${socketData['chng']}";
-    depthData.h = "${socketData['h']}";
-    depthData.poi = "${socketData['poi']}";
-    depthData.v = "${socketData['v']}";
-    depthData.toi = "${socketData['toi']}";
-    depthData.sp1 = "${socketData['sp1']}";
-    depthData.sp2 = "${socketData['sp2']}";
-    depthData.sp3 = "${socketData['sp3']}";
-    depthData.sp4 = "${socketData['sp4']}";
-    depthData.sp5 = "${socketData['sp5']}";
-    depthData.bp1 = "${socketData['bp1']}";
-    depthData.bp2 = "${socketData['bp2']}";
-    depthData.bp3 = "${socketData['bp3']}";
-    depthData.bp4 = "${socketData['bp4']}";
-    depthData.bp5 = "${socketData['bp5']}";
-    depthData.sq1 = "${socketData['sq1']}";
-    depthData.sq2 = "${socketData['sq2']}";
-    depthData.sq3 = "${socketData['sq3']}";
-    depthData.sq4 = "${socketData['sq4']}";
-    depthData.sq5 = "${socketData['sq5']}";
-    depthData.bq1 = "${socketData['bq1']}";
-    depthData.bq2 = "${socketData['bq2']}";
-    depthData.bq3 = "${socketData['bq3']}";
-    depthData.bq4 = "${socketData['bq4']}";
-    depthData.bq5 = "${socketData['bq5']}";
-    depthData.tbq = "${socketData['tbq']}";
-    depthData.tsq = "${socketData['tsq']}";
-    depthData.wk52H = "${socketData['52h']}";
-    depthData.wk52L = "${socketData['52l']}";
-    depthData.lc = "${socketData['lc']}";
-    depthData.uc = "${socketData['uc']}";
-    depthData.ltq = "${socketData['ltq']}";
-    depthData.ltt = "${socketData['ltt']}";
-    depthData.ft = "${socketData['ft']}";
+    if (socketData['ap'] != null) depthData.ap = "${socketData['ap']}";
+    if (socketData['lp'] != null) depthData.lp = "${socketData['lp']}";
+    if (socketData['pc'] != null) depthData.pc = "${socketData['pc']}";
+    if (socketData['o'] != null) depthData.o = "${socketData['o']}";
+    if (socketData['l'] != null) depthData.l = "${socketData['l']}";
+    if (socketData['c'] != null) depthData.c = "${socketData['c']}";
+    if (socketData['chng'] != null) depthData.chng = "${socketData['chng']}";
+    if (socketData['h'] != null) depthData.h = "${socketData['h']}";
+    if (socketData['poi'] != null) depthData.poi = "${socketData['poi']}";
+    if (socketData['v'] != null) depthData.v = "${socketData['v']}";
+    if (socketData['toi'] != null) depthData.toi = "${socketData['toi']}";
+    // Ask prices (sell prices)
+    if (socketData['sp1'] != null) depthData.sp1 = "${socketData['sp1']}";
+    if (socketData['sp2'] != null) depthData.sp2 = "${socketData['sp2']}";
+    if (socketData['sp3'] != null) depthData.sp3 = "${socketData['sp3']}";
+    if (socketData['sp4'] != null) depthData.sp4 = "${socketData['sp4']}";
+    if (socketData['sp5'] != null) depthData.sp5 = "${socketData['sp5']}";
+    // Bid prices (buy prices)
+    if (socketData['bp1'] != null) depthData.bp1 = "${socketData['bp1']}";
+    if (socketData['bp2'] != null) depthData.bp2 = "${socketData['bp2']}";
+    if (socketData['bp3'] != null) depthData.bp3 = "${socketData['bp3']}";
+    if (socketData['bp4'] != null) depthData.bp4 = "${socketData['bp4']}";
+    if (socketData['bp5'] != null) depthData.bp5 = "${socketData['bp5']}";
+    // Ask quantities (sell quantities)
+    if (socketData['sq1'] != null) depthData.sq1 = "${socketData['sq1']}";
+    if (socketData['sq2'] != null) depthData.sq2 = "${socketData['sq2']}";
+    if (socketData['sq3'] != null) depthData.sq3 = "${socketData['sq3']}";
+    if (socketData['sq4'] != null) depthData.sq4 = "${socketData['sq4']}";
+    if (socketData['sq5'] != null) depthData.sq5 = "${socketData['sq5']}";
+    // Bid quantities (buy quantities)
+    if (socketData['bq1'] != null) depthData.bq1 = "${socketData['bq1']}";
+    if (socketData['bq2'] != null) depthData.bq2 = "${socketData['bq2']}";
+    if (socketData['bq3'] != null) depthData.bq3 = "${socketData['bq3']}";
+    if (socketData['bq4'] != null) depthData.bq4 = "${socketData['bq4']}";
+    if (socketData['bq5'] != null) depthData.bq5 = "${socketData['bq5']}";
+    // Totals and other fields
+    if (socketData['tbq'] != null) depthData.tbq = "${socketData['tbq']}";
+    if (socketData['tsq'] != null) depthData.tsq = "${socketData['tsq']}";
+    if (socketData['52h'] != null) depthData.wk52H = "${socketData['52h']}";
+    if (socketData['52l'] != null) depthData.wk52L = "${socketData['52l']}";
+    if (socketData['lc'] != null) depthData.lc = "${socketData['lc']}";
+    if (socketData['uc'] != null) depthData.uc = "${socketData['uc']}";
+    if (socketData['ltq'] != null) depthData.ltq = "${socketData['ltq']}";
+    if (socketData['ltt'] != null) depthData.ltt = "${socketData['ltt']}";
+    if (socketData['ft'] != null) depthData.ft = "${socketData['ft']}";
   }
 
   // Memoized row builder
