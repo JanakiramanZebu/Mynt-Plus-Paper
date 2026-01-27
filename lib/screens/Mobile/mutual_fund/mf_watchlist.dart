@@ -19,7 +19,9 @@ import '../../../res/mynt_web_color_styles.dart';
 import 'mf_search_popup.dart';
 
 class MFWatchlistScreen extends ConsumerStatefulWidget {
-  const MFWatchlistScreen({super.key});
+  final Function(MutualFundList mfData)? onFundTap;
+
+  const MFWatchlistScreen({super.key, this.onFundTap});
 
   @override
   ConsumerState<MFWatchlistScreen> createState() => _MFWatchlistScreenState();
@@ -35,6 +37,15 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetch watchlist data on first load
+      ref.read(mfProvider).fetchMFWatchlist("", "", context, true, "");
+    });
+  }
 
   @override
   void dispose() {
@@ -798,11 +809,16 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
               }
             MutualFundList bInstance = MutualFundList.fromJson(jsonData);
 
-            // Navigate to full page using root navigator
-            Navigator.of(context, rootNavigator: true).pushNamed(
-              Routes.mfStockDetail,
-              arguments: bInstance,
-            );
+            // Use callback if provided (web panel navigation), otherwise use full page navigation
+            if (widget.onFundTap != null) {
+              widget.onFundTap!(bInstance);
+            } else {
+              // Navigate to full page using root navigator
+              Navigator.of(context, rootNavigator: true).pushNamed(
+                Routes.mfStockDetail,
+                arguments: bInstance,
+              );
+            }
          }
       }
     } catch (e) {

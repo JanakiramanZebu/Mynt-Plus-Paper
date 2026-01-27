@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/all.dart';
 // import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_order_book_screen.dart';
 // import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -26,6 +27,7 @@ class MFExploreScreens extends ConsumerStatefulWidget {
   final Function(String title, String subtitle, String icon)? onCategoryTap; // Callback when category is tapped
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
+  final Function(MutualFundList mfData)? onFundTap; // Callback when fund is tapped (for web panel navigation)
 
   const MFExploreScreens({
     super.key,
@@ -36,6 +38,7 @@ class MFExploreScreens extends ConsumerStatefulWidget {
     this.onCategoryTap,
     this.onSipCalculatorTap,
     this.onCagrCalculatorTap,
+    this.onFundTap,
   });
 
   @override
@@ -194,7 +197,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                       onSipCalculatorTap: widget.onSipCalculatorTap,
                       onCagrCalculatorTap: widget.onCagrCalculatorTap,
                     ),
-                   const MFWatchlistScreen(),
+                   MFWatchlistScreen(onFundTap: widget.onFundTap),
                    const MfOrderBookScreen(),
                    const MFSipdetScreen()
                  ],

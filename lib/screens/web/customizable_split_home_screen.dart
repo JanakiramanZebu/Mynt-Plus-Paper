@@ -1734,6 +1734,7 @@ class _CustomizableSplitHomeScreenState
           onCagrCalculatorTap: () {
             _showScreenInRightPanel(ScreenType.cagrCalculator);
           },
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
