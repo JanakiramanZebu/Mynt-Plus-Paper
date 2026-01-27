@@ -101,6 +101,8 @@ class _CustomizableSplitHomeScreenState
   String? _currentCategoryTitle; // Title for MF Category screen
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
+  int _holdingsInitialTabIndex = 0; // Track initial tab for holdings screen
+  String? _fundsInitialAction; // Track initial action for funds screen
 
   // Track loading states for each screen type
   final Map<ScreenType, bool> _screenLoadingStates = {};
@@ -204,7 +206,11 @@ class _CustomizableSplitHomeScreenState
             // caEvent and cpAction removed from panel navigation
           } else if (routeName == Routes.holdingscreen ||
               routeName == "HoldingScreen") {
-            _handleHoldingsTap();
+            _handleHoldingsTap(
+                initialTabIndex: arguments is int ? arguments : 0);
+          } else if (routeName == Routes.mfmainscreen ||
+              routeName == "mfMainScreen") {
+            _handleHoldingsTap(initialTabIndex: 1);
           } else if (routeName == Routes.positionscreen ||
               routeName == "PositionScreen") {
             _handlePositionsTap();
@@ -213,7 +219,8 @@ class _CustomizableSplitHomeScreenState
             showOrderBookInPanel();
           } else if (routeName == Routes.fundscreen ||
               routeName == "fundscreen") {
-            _handleFundsTap();
+            _handleFundsTap(
+                initialAction: arguments is String ? arguments : null);
           } else if (routeName == Routes.ipo ||
               routeName == "Ipo" ||
               routeName == "ipo") {
@@ -248,7 +255,11 @@ class _CustomizableSplitHomeScreenState
             // caEvent and cpAction removed from panel navigation
           } else if (routeName == Routes.holdingscreen ||
               routeName == "HoldingScreen") {
-            _handleHoldingsTap();
+            _handleHoldingsTap(
+                initialTabIndex: arguments is int ? arguments : 0);
+          } else if (routeName == Routes.mfmainscreen ||
+              routeName == "mfMainScreen") {
+            _handleHoldingsTap(initialTabIndex: 1);
           } else if (routeName == Routes.positionscreen ||
               routeName == "PositionScreen") {
             _handlePositionsTap();
@@ -257,7 +268,8 @@ class _CustomizableSplitHomeScreenState
             showOrderBookInPanel();
           } else if (routeName == Routes.fundscreen ||
               routeName == "fundscreen") {
-            _handleFundsTap();
+            _handleFundsTap(
+                initialAction: arguments is String ? arguments : null);
           } else if (routeName == Routes.ipo ||
               routeName == "Ipo" ||
               routeName == "ipo") {
@@ -1382,6 +1394,9 @@ class _CustomizableSplitHomeScreenState
         const SizedBox(width: 8),
         _buildNavItem('Orders', isDarkMode, ScreenType.orderBook,
             () => _handleOrderBookTap()),
+        const SizedBox(width: 8),
+        _buildNavItem(
+            'Funds', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
       ],
     );
   }
@@ -1549,7 +1564,10 @@ class _CustomizableSplitHomeScreenState
                 child: const CircularLoaderImage(),
               );
             }
-            return HoldingScreenWeb(listofHolding: holdingsModel ?? []);
+            return HoldingScreenWeb(
+              listofHolding: holdingsModel ?? [],
+              initialTabIndex: _holdingsInitialTabIndex,
+            );
           },
         );
       case ScreenType.positions:
@@ -1582,7 +1600,7 @@ class _CustomizableSplitHomeScreenState
         // It will handle its own loading states internally
         return const OrderBookScreenWeb();
       case ScreenType.funds:
-        return const _LazyFundScreen();
+        return _LazyFundScreen(initialAction: _fundsInitialAction);
       case ScreenType.mutualFund:
         return MFExploreScreens(
           onNfoTap: () {
@@ -2957,9 +2975,10 @@ class _CustomizableSplitHomeScreenState
   }
 
   // New handler methods for separate portfolio screens
-  void _handleHoldingsTap() async {
+  void _handleHoldingsTap({int initialTabIndex = 0}) async {
     // Set loading state immediately
     setState(() {
+      _holdingsInitialTabIndex = initialTabIndex;
       _screenLoadingStates[ScreenType.holdings] = true;
     });
 
@@ -3071,10 +3090,11 @@ class _CustomizableSplitHomeScreenState
     });
   }
 
-  void _handleFundsTap() async {
+  void _handleFundsTap({String? initialAction}) async {
     // Set loading state immediately
     setState(() {
       _screenLoadingStates[ScreenType.funds] = true;
+      _fundsInitialAction = initialAction;
     });
 
     // Replace screen immediately for instant UI response - this triggers setState synchronously
@@ -4253,7 +4273,8 @@ class _Debouncer {
 
 // Lazy loading wrapper for SecureFundWeb to prevent blocking UI
 class _LazyFundScreen extends ConsumerStatefulWidget {
-  const _LazyFundScreen();
+  final String? initialAction;
+  const _LazyFundScreen({this.initialAction});
 
   @override
   ConsumerState<_LazyFundScreen> createState() => _LazyFundScreenState();
@@ -4261,6 +4282,17 @@ class _LazyFundScreen extends ConsumerStatefulWidget {
 
 class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
   bool _shouldLoad = false;
+
+  @override
+  // ignore: must_call_super
+  void didUpdateWidget(_LazyFundScreen oldWidget) {
+    if (oldWidget.initialAction != widget.initialAction &&
+        widget.initialAction != null) {
+      // If action changes, we might want to trigger it again
+      // For now, SecureFundWeb handles it in initState, so we don't need to do much here
+      // unless we want to force re-initialization
+    }
+  }
 
   @override
   void initState() {
@@ -4284,7 +4316,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
     if (!_shouldLoad || fund.fundDetailModel == null) {
       return _buildFundLoadingIndicator(theme.isDarkMode);
     }
-    return const SecureFundWeb();
+    return SecureFundWeb(initialAction: widget.initialAction);
   }
 
   Widget _buildFundLoadingIndicator(bool isDarkMode) {

@@ -145,7 +145,9 @@ class OrderProvider extends DefaultChangeNotifier {
   final TextEditingController orderSipSearchCtrl = TextEditingController();
   final TextEditingController orderTradebookCtrl = TextEditingController();
 
-  OrderProvider(this.ref);
+  OrderProvider(this.ref) {
+    tabSize();
+  }
 
   int _selectedTab = 0;
   int get selectedTab => _selectedTab;
@@ -1266,7 +1268,6 @@ class OrderProvider extends DefaultChangeNotifier {
           if (websocCon) {
             requestWSOrderBook(isSubscribe: true, context: context);
           }
-          tabSize();
         } else {
           if (_orderBookModel![0].emsg ==
                   "Session Expired :  Invalid Session Key" &&
@@ -1275,6 +1276,7 @@ class OrderProvider extends DefaultChangeNotifier {
           }
         }
       }
+      tabSize();
       return _orderBookModel;
     } catch (e) {
       ref
