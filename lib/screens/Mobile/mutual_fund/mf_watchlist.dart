@@ -1,333 +1,664 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
-import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
-import '../../../provider/fund_provider.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+// import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
-import '../../../res/res.dart';
-import '../../../sharedWidget/list_divider.dart';
-import 'mf_stock_detail_screen.dart';
+import '../../../provider/transcation_provider.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/mynt_loader.dart';
+import '../../../utils/responsive_snackbar.dart';
+import '../../../sharedWidget/no_data_found.dart';
+import 'mf_order_screen.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import 'mf_search_popup.dart';
 
 class MFWatchlistScreen extends ConsumerStatefulWidget {
-  const MFWatchlistScreen({super.key});
+  final Function(MutualFundList mfData)? onFundTap;
+
+  const MFWatchlistScreen({super.key, this.onFundTap});
 
   @override
   ConsumerState<MFWatchlistScreen> createState() => _MFWatchlistScreenState();
 }
 
 class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
-  String selectedReturn = '3Y Returns'; // Track selected return period
+  TextEditingController searchController = TextEditingController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
+  String searchQuery = "";
+
+  // Sorting state
+  int? _sortColumnIndex;
+  bool _sortAscending = true;
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Fetch watchlist data on first load
+      ref.read(mfProvider).fetchMFWatchlist("", "", context, true, "");
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    _horizontalScrollController.dispose();
+    _verticalScrollController.dispose();
+    _hoveredRowIndex.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final fund = ref.watch(fundProvider);
     final mfData = ref.watch(mfProvider);
 
-    // Sort the list based on selected return period
-    final sortedList = mfData.mfWatchlist?.toList();
-    if (sortedList != null) {
-      sortedList.sort((a, b) {
-        String? aValue, bValue;
+    // Get watchlist data
+    final watchlist = mfData.mfWatchlist?.toList() ?? [];
 
-        switch (selectedReturn) {
-          case '1Y Returns':
-            aValue = a.oneYearData;
-            bValue = b.oneYearData;
+    // Filter list based on search query
+    final filteredList = watchlist.where((item) {
+      final name = (item.mfsearchnamename ?? item.schemeName ?? '').toLowerCase();
+      return name.contains(searchQuery.toLowerCase());
+    }).toList();
+
+    // Sort list
+    if (_sortColumnIndex != null) {
+      filteredList.sort((a, b) {
+        int compareResult = 0;
+        switch (_sortColumnIndex) {
+          case 0: // Name
+            compareResult =
+                (a.mfsearchnamename ?? '').compareTo(b.mfsearchnamename ?? '');
             break;
-          case '3Y Returns':
-            aValue = a.tHREEYEARDATA;
-            bValue = b.tHREEYEARDATA;
+          case 1: // AUM (Assuming field name aUM matches model)
+             compareResult = (double.tryParse(a.aUM ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.aUM ?? '0') ?? 0);
             break;
-          case '5Y Returns':
-            aValue = a.fIVEYEARDATA;
-            bValue = b.fIVEYEARDATA;
+          case 2: // 1Y
+            compareResult = (double.tryParse(a.oneYearData ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.oneYearData ?? '0') ?? 0);
             break;
-          default:
-            aValue = a.tHREEYEARDATA;
-            bValue = b.tHREEYEARDATA;
+          case 3: // 3Y
+            compareResult = (double.tryParse(a.tHREEYEARDATA ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.tHREEYEARDATA ?? '0') ?? 0);
+            break;
+          case 4: // Min Invest
+             compareResult = (double.tryParse(a.minimumPurchaseAmount ?? '0') ?? 0)
+                  .compareTo(double.tryParse(b.minimumPurchaseAmount ?? '0') ?? 0);
+            break;
         }
-
-        final aDouble = double.tryParse(aValue ?? '0.00') ?? 0.00;
-        final bDouble = double.tryParse(bValue ?? '0.00') ?? 0.00;
-        return bDouble.compareTo(aDouble); // Sort in descending order
+        return _sortAscending ? compareResult : -compareResult;
       });
     }
 
-    return TransparentLoaderScreen(
-        isLoading: mfData.bestmfloader ?? false,
-        child: sortedList?.isEmpty ?? true
-            ? const Center(child: NoDataFound(
-              title: "No Funds Found",
-              subtitle: "Add your favorite funds to your watchlist",
-              primaryEnabled: false,
-              secondaryEnabled: false,
-            ))
-            : Column(
-                children: [
-                  _buildHeader(theme),
-                  Expanded(
-                    child: ListView.separated(
-                      physics: const ClampingScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      // padding: const EdgeInsets.all(8),
-                      itemCount: sortedList?.length ?? 0,
-                      separatorBuilder: (_, __) => const ListDivider(),
-                      itemBuilder: (BuildContext context, int index) {
-                        final item = sortedList?[index];
-                        if (item == null) return const SizedBox.shrink();
-
-                        return _buildListItem(
-                            context, item, theme, mfData, selectedReturn);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-      );
-    // );
-  }
-
-  Widget _buildHeader(ThemesProvider theme) {
-    return Container(
-      // color:
-      //     theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFF1F3F8),
-      padding: const EdgeInsets.only(left: 12, bottom: 8, top: 16, right: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return MyntLoaderOverlay(
+      isLoading: mfData.bestmfloader ?? false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.paraText(
-            align: TextAlign.left,
-            text: 'Funds',
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            textOverflow: TextOverflow.ellipsis,
-            theme: theme.isDarkMode,
-            fw: 0,
+          _buildSearchBar(theme),
+          Expanded(
+            child: _buildTableWithHeader(filteredList, theme, mfData, searchQuery),
           ),
-          PopupMenuButton<String>(
-             color: theme.isDarkMode
-                              ? colors.searchBgDark
-                              : colors.searchBg,
-            onSelected: (value) {
-              setState(() {
-                selectedReturn = value;
-              });
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                  value: '1Y Returns',
-                  child: TextWidget.paraText(
-                    text: '1Y Returns',
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  )),
-              PopupMenuItem(
-                  value: '3Y Returns',
-                  child: TextWidget.paraText(
-                    text: '3Y Returns',
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  )),
-              PopupMenuItem(
-                  value: '5Y Returns',
-                  child: TextWidget.paraText(
-                    text: '5Y Returns',
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  )),
-            ],
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                 splashColor: theme.isDarkMode
-                                            ? Colors.white.withOpacity(0.15)
-                                            : Colors.black.withOpacity(0.15),
-                                        highlightColor: theme.isDarkMode
-                                            ? Colors.white.withOpacity(0.08)
-                                            : Colors.black.withOpacity(0.08),
-                                        borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: TextWidget.paraText(
-                    align: TextAlign.right,
-                    text: selectedReturn,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                  ),
-                ),
-              ),
-            ),
-          )
         ],
       ),
     );
   }
 
-  Widget _buildListItem(BuildContext context, dynamic item,
-      ThemesProvider theme, dynamic mfData, String selectedReturn) {
-    return Material(
-        color: Colors.transparent,
-        child: InkWell(
-            splashColor: theme.isDarkMode
-                ? Colors.white.withOpacity(0.15)
-                : Colors.black.withOpacity(0.15),
-            highlightColor: theme.isDarkMode
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.08),
-            onLongPress: () async {
-              try {
-                final isin = item.iSIN;
-                if (isin != null) {
-                  await mfData.fetchMFWatchlist(
-                    isin,
-                    "delete",
-                    context,
-                    true,
-                    "watch",
-                  );
-                } else {
-                      successMessage(context, "Missing fund information");
-                }
-              } catch (e) {
-                successMessage(
-                    context, "Error updating watchlist: ${e.toString()}");
-              }
-            },
-            onTap: () async {
-              try {
-                mfData.loaderfun();
-                final isin = item.iSIN;
-                if (isin != null) {
-                  await mfData.fetchFactSheet(isin);
-                  await mfData.fetchmatchisan(isin);
-                  // Navigator.pushNamed(
-                  //   context,
-                  //   Routes.mfStockDetail,
-                  //   arguments: item,
-                  // );
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                    ),
-                    isDismissible: true,
-                    enableDrag: false,
-                    useSafeArea: true,
-                    context: context,
-                    builder: (context) => Container(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewInsets.bottom,
-                        ),
-                        child: MFStockDetailScreen(mfStockData: item)),
-                  );
-                } else {
-                      successMessage(context, "Missing fund information");
-                }
-              } catch (e) {
-                successMessage(
-                    context, "Error loading fund details: ${e.toString()}");
-              }
-            },
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 8,
+  Widget _buildSearchBar(ThemesProvider theme) {
+    return Container(
+      width: double.infinity,
+      height: 45,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,
+        borderRadius: BorderRadius.circular(5),
+      ),
+      child: InkWell(
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => const MFSearchPopup(),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+               Icon(
+                Icons.search,
+                size: 21,
+                color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
               ),
-              dense: false,
-              leading: CircleAvatar(
-                backgroundImage: NetworkImage(
-                  "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+              const SizedBox(width: 8), // Common search field usually has 8-12 gap
+              Text(
+                "Search & Add",
+                style: MyntWebTextStyles.placeholder(
+                  context,
+                  color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                  fontWeight: MyntFonts.medium,
                 ),
               ),
-              title: Container(
-                margin: EdgeInsets.only(
-                  right: MediaQuery.of(context).size.width * 0.1,
-                ),
-                child: TextWidget.subText(
-                  text: item.mfsearchnamename ?? "Unknown Scheme",
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: SizedBox(
-                  height: 18,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      TextWidget.paraText(
-                        text: "${item.type ?? "Unknown"}",
-                        textOverflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        theme: false,
-                        fw: 0,
-                      ),
-                      // const SizedBox(width: 4),
-                      // TextWidget.paraText(
-                      //   text: "${item.schemeType ?? "Unknown"}",
-                      //   textOverflow: TextOverflow.ellipsis,
-                      //   maxLines: 1,
-                      //   color: theme.isDarkMode
-                      //       ? colors.textSecondaryDark
-                      //       : colors.textSecondaryLight,
-                      //   theme: false,
-                      // ),
-                    ],
-                  ),
-                ),
-              ),
-              trailing: TextWidget.subText(
-                align: TextAlign.right,
-                text: _formatReturns(_getReturnValue(item, selectedReturn)),
-                color: colors.colorBlack,
-                // _getReturnColor(item.tHREEYEARDATA, theme.isDarkMode)
-                textOverflow: TextOverflow.ellipsis,
-                theme: theme.isDarkMode,
-                fw: 0,
-              ),
-            )));
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  String _getReturnValue(dynamic item, String selectedReturn) {
-    switch (selectedReturn) {
-      case '1Y Returns':
-        return item.oneYearData ?? "0.00";
-      case '3Y Returns':
-        return item.tHREEYEARDATA ?? "0.00";
-      case '5Y Returns':
-        return item.fIVEYEARDATA ?? "0.00";
-      default:
-        return item.tHREEYEARDATA ?? "0.00";
+  Widget _buildTableWithHeader(List<dynamic> data, ThemesProvider theme, MFProvider mf, String searchQuery) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: shadcn.OutlinedContainer(
+        child: LayoutBuilder(builder: (context, constraints) {
+          final double totalWidth = constraints.maxWidth;
+          // Proportions: Fund Name 40%, AUM 15%, 1yr 15%, 3yr 15%, Min Invest 15%
+          final double fundNameWidth = totalWidth * 0.40;
+          final double otherColumnWidth = totalWidth * 0.15;
+
+          // Filter local references of scroll controllers to avoid attach errors if rebuilds happen differently
+          // Using the one defined in state: _horizontalScrollController
+
+          return Scrollbar(
+            controller: _horizontalScrollController,
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              controller: _horizontalScrollController,
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: totalWidth),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    shadcn.Table(
+                      defaultRowHeight: const shadcn.FixedTableSize(60), // Increased height to fit 2 lines
+                      columnWidths: {
+                        0: shadcn.FixedTableSize(fundNameWidth),
+                        1: shadcn.FixedTableSize(otherColumnWidth), // AUM
+                        2: shadcn.FixedTableSize(otherColumnWidth), // 1Y
+                        3: shadcn.FixedTableSize(otherColumnWidth), // 3Y
+                        4: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
+                      },
+                      rows: [
+                        shadcn.TableHeader(
+                          cells: [
+                            buildHeaderCell('Fund name', 0),
+                            buildHeaderCell('AUM', 1, true),
+                            buildHeaderCell('1yr CAGR', 2, true),
+                            buildHeaderCell('3yr CAGR', 3, true),
+                            buildHeaderCell('Min. Invest', 4, true),
+                          ],
+                        ),
+                        if (data.isNotEmpty)
+                          ...data.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final item = entry.value;
+
+                            return shadcn.TableRow(
+                              cells: [
+                                // Fund Name
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 0,
+                                  onTap: () => _openFundDetails(item, mf),
+                                  child: _buildFundNameCell(item, index, mf),
+                                ),
+                                // AUM
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 1,
+                                  alignRight: true,
+                                  onTap: () => _openFundDetails(item, mf),
+                                  child: Text(
+                                    _formatAUM(item.aUM),
+                                    style: _getTextStyle(context),
+                                  ),
+                                ),
+                                // 1yr
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 2,
+                                  alignRight: true,
+                                  onTap: () => _openFundDetails(item, mf),
+                                  child: Text(
+                                    _formatReturns(item.oneYearData),
+                                    style: _getTextStyle(context),
+                                  ),
+                                ),
+                                // 3yr
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 3,
+                                  alignRight: true,
+                                  onTap: () => _openFundDetails(item, mf),
+                                  child: Text(
+                                    _formatReturns(item.tHREEYEARDATA),
+                                    style: _getTextStyle(context,
+                                        color: _getReturnColor(context, item.tHREEYEARDATA)),
+                                  ),
+                                ),
+                                // Min Invest
+                                buildCellWithHover(
+                                  rowIndex: index,
+                                  columnIndex: 4,
+                                  alignRight: true,
+                                  onTap: () => _openFundDetails(item, mf),
+                                  child: Text(
+                                    '₹${item.minimumPurchaseAmount ?? '500.00'}',
+                                    style: _getTextStyle(context),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                      ],
+                    ),
+                    if (data.isEmpty)
+                      SizedBox(
+                        height: 300,
+                        width: totalWidth,
+                         child: Center(
+                          child: NoDataFound(
+                            title: "No Funds Found",
+                            subtitle: searchQuery.isNotEmpty
+                                ? "No funds match your search"
+                                : "Add your favorite funds to your watchlist",
+                            primaryEnabled: false,
+                            secondaryEnabled: false,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildTable(List<dynamic> data, ThemesProvider theme, MFProvider mf) {
+    return LayoutBuilder(builder: (context, constraints) {
+      final double totalWidth = constraints.maxWidth - 32;
+      final double fundNameWidth = totalWidth * 0.40;
+      final double otherColumnWidth = totalWidth * 0.15;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Scrollbar(
+          controller: _horizontalScrollController,
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth - 32),
+              child: shadcn.Table(
+                defaultRowHeight: const shadcn.FixedTableSize(50),
+                columnWidths: {
+                  0: shadcn.FixedTableSize(fundNameWidth),
+                  1: shadcn.FixedTableSize(otherColumnWidth), // AUM
+                  2: shadcn.FixedTableSize(otherColumnWidth), // 1Y
+                  3: shadcn.FixedTableSize(otherColumnWidth), // 3Y
+                  4: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
+                },
+                rows: [
+                  shadcn.TableHeader(
+                    cells: [
+                      buildHeaderCell('Fund name', 0),
+                      buildHeaderCell('AUM', 1, true),
+                      buildHeaderCell('1yr CAGR', 2, true),
+                      buildHeaderCell('3yr CAGR', 3, true),
+                      buildHeaderCell('Min. Invest', 4, true),
+                    ],
+                  ),
+                  ...data.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final item = entry.value;
+
+                    return shadcn.TableRow(
+                      cells: [
+                        // Fund Name
+                        buildCellWithHover(
+                          rowIndex: index,
+                          columnIndex: 0,
+                          onTap: () => _openFundDetails(item, mf),
+                          child: _buildFundNameCell(item, index, mf),
+                        ),
+                        // AUM
+                        buildCellWithHover(
+                          rowIndex: index,
+                          columnIndex: 1,
+                          alignRight: true,
+                          onTap: () => _openFundDetails(item, mf),
+                          child: Text(
+                            _formatAUM(item.aUM),
+                            style: _getTextStyle(context),
+                          ),
+                        ),
+                        // 1yr
+                        buildCellWithHover(
+                          rowIndex: index,
+                          columnIndex: 2,
+                          alignRight: true,
+                          onTap: () => _openFundDetails(item, mf),
+                          child: Text(
+                            _formatReturns(item.oneYearData),
+                            style: _getTextStyle(context),
+                          ),
+                        ),
+                        // 3yr
+                        buildCellWithHover(
+                          rowIndex: index,
+                          columnIndex: 3,
+                          alignRight: true,
+                          onTap: () => _openFundDetails(item, mf),
+                          child: Text(
+                            _formatReturns(item.tHREEYEARDATA),
+                            style: _getTextStyle(context,
+                                color: _getReturnColor(context, item.tHREEYEARDATA)),
+                          ),
+                        ),
+                        // Min Invest
+                        buildCellWithHover(
+                          rowIndex: index,
+                          columnIndex: 4,
+                          alignRight: true,
+                          onTap: () => _openFundDetails(item, mf),
+                          child: Text(
+                            '₹${item.minimumPurchaseAmount ?? '500.00'}',
+                            style: _getTextStyle(context),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildFundNameCell(dynamic item, int index, MFProvider mf) {
+    final amcCode = item.aMCCode ?? "default";
+    
+    return ValueListenableBuilder<int?>(
+      valueListenable: _hoveredRowIndex,
+      builder: (context, hoveredIndex, _) {
+        final isHovered = hoveredIndex == index;
+        return Row(
+          children: [
+            CircleAvatar(
+              radius: 14,
+              backgroundImage: NetworkImage(
+                "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      item.mfsearchnamename ?? item.schemeName ?? '--',
+                      style: _getTextStyle(context),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 2), // Reduced spacing
+                  Row(
+                    children: [
+                      _buildTag(item.type ?? 'Equity'),
+                         // _buildTag(item.schemeType ?? ''),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            if (isHovered) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.searchBgDark,
+                      light: MyntColors.backgroundColor),
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: MyntShadows.card,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildActionButton('Buy', const Color(0xff0037B7),
+                        () => _handleOrder(item, 'One-time', mf),
+                        filled: true),
+                    const SizedBox(width: 6),
+                    _buildActionButton('SIP', const Color(0xff0037B7),
+                        () => _handleOrder(item, 'SIP', mf),
+                        filled: true),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: () async {
+                        final isin = item.iSIN;
+                        if (isin != null) {
+                          await mf.fetchMFWatchlist(
+                            isin,
+                            "delete",
+                            context,
+                            true,
+                            "watch",
+                          );
+                        }
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                              color: resolveThemeColor(context,
+                                  dark: Colors.grey.withOpacity(0.2),
+                                  light: Colors.grey.withOpacity(0.1)),
+                              borderRadius: BorderRadius.circular(4)),
+                          child: Icon(Icons.close,
+                              size: 16,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary))),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTag(String text) {
+      if(text.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2), // Remove horizontal padding if bg is gone? kept minimal.
+      decoration: BoxDecoration(
+        // color: Colors.transparent, // Background removed
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          color: resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary),
+        ),
+      ),
+    );
+  }
+
+  // ... (Helper methods copy-pasted/adapted from mf_all_best_funds.dart)
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    VoidCallback? onTap,
+    bool alignRight = false,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 4;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: cellPadding,
+                color: isRowHovered
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        light: MyntColors.primary.withValues(alpha: 0.08))
+                    : null,
+                alignment: alignRight ? Alignment.topRight : null,
+                child: child,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
+      [bool alignRight = false]) {
+     final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 4;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+               if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              Text(
+                label,
+                style: _getHeaderStyle(context),
+              ),
+               if (!alignRight && _sortColumnIndex == columnIndex)
+                 Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
+    );
+  }
+
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
   }
 
   String _formatReturns(String? returns) {
@@ -337,128 +668,163 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
     return "$returns%";
   }
 
-  Color _getReturnColor(String? returns, bool isDarkMode) {
-    if (returns == null || returns.isEmpty) {
-      return isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+  String _formatAUM(String? aum) {
+    if (aum == null || aum.isEmpty) return "--";
+    try {
+      double value = double.tryParse(aum) ?? 0;
+      return value.toStringAsFixed(2);
+    } catch (e) {
+      return aum;
     }
+  }
 
+  Color _getReturnColor(BuildContext context, String? returns) {
+    if (returns == null || returns.isEmpty) {
+      return Colors.grey;
+    }
     try {
       final value = double.parse(returns);
-      return value >= 0 ? Colors.green : Colors.red;
+      if (value > 0) {
+        return resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit);
+      }
+      if (value < 0) {
+        return resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
+      }
+      return Colors.grey;
     } catch (e) {
       return Colors.grey;
     }
   }
+
+  Widget _buildActionButton(String label, Color color, VoidCallback onTap,
+      {bool filled = true}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: filled ? color : Colors.transparent,
+          border: filled ? null : Border.all(color: color, width: 1.5),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: filled ? Colors.white : color,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+    Future<void> _handleOrder(dynamic item, String orderType, MFProvider mf) async {
+    // Show loader while fetching dependencies
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: MyntLoader(size: MyntLoaderSize.large)),
+    );
+
+    try {
+      // Fetch bank details
+      await ref.read(transcationProvider).fetchfundbank(context);
+
+      if (!context.mounted) return;
+      Navigator.pop(context); // Dismiss loader
+
+      final isin = item.iSIN;
+      final schemeCode = item.schemeCode;
+
+      // Set up SIP if applicable
+      if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
+        mf.invertfun(isin, schemeCode, context);
+      }
+
+      // Pre-fill amount based on order type
+      if (orderType == "One-time") {
+        String amt = item.minimumPurchaseAmount ?? "0";
+        mf.invAmt.text = amt.split('.').first;
+      } else {
+        String amt = item.minimumPurchaseAmount ?? "0";
+        mf.installmentAmt.text = amt.split('.').first;
+      }
+
+      // Convert item to MutualFundList
+      Map<String, dynamic> jsonData = item.toJson();
+      // Ensure fSchemeName is set from name if not present
+      if (jsonData['f_scheme_name'] == null && (jsonData['name'] != null || jsonData['mfsearchnamename'] != null)) {
+        jsonData['f_scheme_name'] = jsonData['name'] ?? jsonData['mfsearchnamename'];
+      }
+      MutualFundList mfItem = MutualFundList.fromJson(jsonData);
+
+      if (context.mounted) {
+        mf.chngOrderType(orderType);
+        mf.orderchangetitle(orderType);
+        
+        // Get screen dimensions
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = screenSize.width * 0.25; // 25% width
+        final dialogHeight = screenSize.height * 0.60; // 60% height
+        
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: MFOrderScreen(mfData: mfItem),
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context); // Dismiss loader if still showing
+        ResponsiveSnackBar.show(context: context,  message: "Error: ${e.toString()}", type: SnackBarType.error);
+      }
+    }
+  }
+
+  void _openFundDetails(dynamic item, MFProvider mf) async {
+    try {
+      final isin = item.iSIN;
+      if (isin != null) {
+        mf.loaderfun();
+        await mf.fetchFactSheet(isin);
+         mf.fetchmatchisan(isin);
+
+        // Navigate to full page instead of side sheet
+         if (mf.factSheetDataModel?.stat != "Not Ok") {
+            Map<String, dynamic> jsonData = item.toJson();
+             if (jsonData['f_scheme_name'] == null && (jsonData['name'] != null || jsonData['mfsearchnamename'] != null)) {
+                jsonData['f_scheme_name'] = jsonData['name'] ?? jsonData['mfsearchnamename'];
+              }
+            MutualFundList bInstance = MutualFundList.fromJson(jsonData);
+
+            // Use callback if provided (web panel navigation), otherwise use full page navigation
+            if (widget.onFundTap != null) {
+              widget.onFundTap!(bInstance);
+            } else {
+              // Navigate to full page using root navigator
+              Navigator.of(context, rootNavigator: true).pushNamed(
+                Routes.mfStockDetail,
+                arguments: bInstance,
+              );
+            }
+         }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Container(
-//           decoration: BoxDecoration(
-//             border: Border.symmetric(
-//               vertical: BorderSide(
-//                 color: theme.isDarkMode
-//                     ? colors.darkGrey
-//                     : const Color(0xffEEF0F2),
-//                 width: 0,
-//               ),
-//             ),
-//           ),
-//           padding: const EdgeInsets.all(8),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   Padding(
-//                     padding: const EdgeInsets.only(right: 16),
-//                     child: CircleAvatar(
-//                       backgroundImage: NetworkImage(
-//                         "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
-//                       ),
-//                     ),
-//                   ),
-//                   Expanded(
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         TextWidget.subText(
-//                                                     align: TextAlign.right,
-//                                                     text: item.schemeName ?? "Unknown Scheme",
-//                                                     color: theme.isDarkMode
-//                                                         ?  colors.textPrimaryDark:
-//                                                          colors.textPrimaryLight
-//                                                              ,
-//                                                     textOverflow:
-//                                                         TextOverflow.ellipsis,
-//                                                     theme: theme.isDarkMode,
-//                                                     fw: 3),
-                         
-//                         Padding(
-//                           padding: const EdgeInsets.only(top: 8),
-//                           child: SizedBox(
-//                             height: 18,
-//                             child: ListView(
-//                               scrollDirection: Axis.horizontal,
-//                               children: [
-//                                 TextWidget.paraText(
-//                                   fw: 3,
-//                                   text: "${item.type ?? "Unknown"}",
-//                                   textOverflow: TextOverflow.ellipsis,
-//                                   maxLines: 1,
-//                                   color: theme.isDarkMode
-//                                       ? colors.textSecondaryDark
-//                                       : colors.textSecondaryLight,
-//                                   theme: false,
-//                                 ),
-//                                 Padding(
-//                                   padding: const EdgeInsets.only(left: 5),
-//                                   child: TextWidget.paraText(
-//                                     fw: 3,
-//                                     text: "${item.schemeType ?? "Unknown"}",
-//                                     textOverflow: TextOverflow.ellipsis,
-//                                     maxLines: 1,
-//                                     color: theme.isDarkMode
-//                                         ? colors.textSecondaryDark
-//                                         : colors.textSecondaryLight,
-//                                     theme: false,
-//                                   ),
-                                  
-                                  
-//                                 ),
-//                               ],
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   TextWidget.titleText(
-//                                                     align: TextAlign.right,
-//                                                     text: _formatReturns(item.tHREEYEARDATA),
-//                                                     color: _getReturnColor(item.tHREEYEARDATA,theme.isDarkMode)
-//                                                              ,
-//                                                     textOverflow:
-//                                                         TextOverflow.ellipsis,
-//                                                     theme: theme.isDarkMode,
-//                                                     fw: 3),
-                  
-//                 ],
-//               ),
-             
-//             ],
-//           ),
-//         ),

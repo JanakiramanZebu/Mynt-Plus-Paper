@@ -10,6 +10,8 @@ import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
+import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
+import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_top_category_list.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
@@ -43,7 +45,8 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
-import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/mynt_web_color_styles.dart' hide WebColors;
+import '../../../res/web_colors.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
@@ -78,6 +81,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../res/mynt_web_text_styles.dart';
 import 'market_watch/index/index_bottom_sheet_web.dart';
 import 'home/widgets/app_bar/profile_dropdown.dart';
+import 'home/widgets/app_bar/navigation_drawer_web.dart';
+import '../../../res/responsive_extensions.dart';
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   const CustomizableSplitHomeScreen({super.key});
@@ -98,10 +103,51 @@ class _CustomizableSplitHomeScreenState
   DepthInputArgs? _optionChainArgs;
   DepthInputArgs? _currentDepthArgs;
   String? _currentCollectionTitle; // Title for MF Collection screen
+  String? _currentCollectionSubtitle; // Subtitle for MF Collection screen
+  String? _currentCollectionIcon; // Icon for MF Collection screen
   String? _currentCategoryTitle; // Title for MF Category screen
+  String? _currentCategorySubtitle; // Subtitle for MF Category screen
+  String? _currentCategoryIcon; // Icon for MF Category screen
+  MutualFundList? _currentMfStockData; // Data for MF Stock Detail screen
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   int _holdingsInitialTabIndex = 0; // Track initial tab for holdings screen
+
+  // Scaffold key for drawer control
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  /// Breakpoint below which hamburger menu is shown
+  static const double _mobileBreakpoint = 1200.0;
+
+  /// Check if a screen is active in any panel (for drawer highlighting)
+  bool _isScreenActiveInAnyPanel(String screenName) {
+    // Map screen names to ScreenType
+    final screenTypeMap = {
+      'dashboard': ScreenType.dashboard,
+      'positions': ScreenType.positions,
+      'holdings': ScreenType.holdings,
+      'orderBook': ScreenType.orderBook,
+      'funds': ScreenType.funds,
+      'ipo': ScreenType.ipo,
+      'mutualFund': ScreenType.mutualFund,
+      'tradeAction': ScreenType.tradeAction,
+      'watchlist': ScreenType.watchlist,
+    };
+
+    final targetScreenType = screenTypeMap[screenName];
+    if (targetScreenType == null) return false;
+
+    for (final panel in _panels) {
+      if (panel.screenType == targetScreenType) return true;
+      if (panel.screens.isNotEmpty &&
+          panel.activeScreenIndex >= 0 &&
+          panel.activeScreenIndex < panel.screens.length &&
+          panel.screens[panel.activeScreenIndex] == targetScreenType) {
+        return true;
+      }
+    }
+    return false;
+  }
   String? _fundsInitialAction; // Track initial action for funds screen
 
   // Track loading states for each screen type
@@ -110,8 +156,8 @@ class _CustomizableSplitHomeScreenState
   // Store initial tab index for trade action screen
   int? _tradeActionTabIndex;
 
-  // Track previous screen for each panel (for back navigation)
-  final Map<int, ScreenType?> _panelScreenHistory = {};
+  // Track previous screens for each panel (for back navigation) - using a stack
+  final Map<int, List<ScreenType>> _panelScreenHistory = {};
 
   // Cooldown for portfolio data fetching to prevent excessive API calls
   DateTime? _lastPortfolioFetch;
@@ -655,7 +701,39 @@ class _CustomizableSplitHomeScreenState
         }
 
         final theme = ref.watch(themeProvider);
+        final screenWidth = MediaQuery.of(context).size.width;
+        final showDrawer = screenWidth < _mobileBreakpoint;
+
+        // Get client ID for drawer
+        final userProfile = ref.read(userProfileProvider);
+        final userDetail = userProfile.userDetailModel;
+        final clientDetail = userProfile.clientDetailModel;
+        final Preferences pref = locator<Preferences>();
+        final clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
+
         return Scaffold(
+          key: _scaffoldKey,
+          drawer: showDrawer
+              ? NavigationDrawerWeb(
+                  isDarkMode: theme.isDarkMode,
+                  clientId: clientId,
+                  isScreenActive: (screenName) => _isScreenActiveInAnyPanel(screenName),
+                  onDashboardTap: _handleDashboardTap,
+                  onPositionsTap: _handlePositionsTap,
+                  onHoldingsTap: () => _handleHoldingsTap(),
+                  onOrderBookTap: _handleOrderBookTap,
+                  onFundsTap: () => _handleFundsTap(),
+                  onIPOTap: _handleIPOTap,
+                  onSwapPanels: _handleSwapPanels,
+                  onMutualFundTap: _handleMutualFundTap,
+                  onOptionZTap: _handleOptionZTap,
+                  onThemeToggle: () {
+                    ref.read(themeProvider.notifier).toggleTheme(
+                      themeMod: theme.isDarkMode ? 'Light' : 'Dark',
+                    );
+                  },
+                )
+              : null,
           body: _buildNewLayout(theme),
         );
       },
@@ -894,8 +972,11 @@ class _CustomizableSplitHomeScreenState
 
   /// Build app bar for right side only
   Widget _buildRightSideAppBar(bool isDarkMode) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showHamburger = screenWidth < _mobileBreakpoint;
+
     return Container(
-      height: 65,
+      height: context.responsive(mobile: 56.0, tablet: 60.0, desktop: 65.0),
       decoration: BoxDecoration(
         color: resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,
@@ -908,7 +989,7 @@ class _CustomizableSplitHomeScreenState
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -916,35 +997,69 @@ class _CustomizableSplitHomeScreenState
         ],
       ),
       child: Container(
-        padding: const EdgeInsets.only(left: 20, right: 16, top: 6, bottom: 6),
+        padding: EdgeInsets.only(
+          left: context.responsive(mobile: 12.0, tablet: 16.0, desktop: 20.0),
+          right: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+          top: 6,
+          bottom: 6,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            // Hamburger menu for mobile/tablet
+            if (showHamburger)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: isDarkMode
+                        ? WebDarkColors.textPrimary
+                        : WebColors.textPrimary,
+                    size: 24,
+                  ),
+                  onPressed: () {
+                    _scaffoldKey.currentState?.openDrawer();
+                  },
+                  tooltip: 'Menu',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+
             // Logo section
             RepaintBoundary(
               child: SvgPicture.asset(
                 assets.appLogoIcon,
-                width: 100,
+                width: context.responsive(mobile: 80.0, tablet: 90.0, desktop: 100.0),
                 height: 38,
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(width: 24),
-            // Primary actions
-            _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
-                () => _handleMutualFundTap()),
-            const SizedBox(width: 12),
-            _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
-                () => _handleIPOTap()),
-            const SizedBox(width: 12),
-            _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
-                () => _handleOptionZTap()),
-            
+
+            // Show navigation items only on larger screens
+            if (!showHamburger) ...[
+              const SizedBox(width: 24),
+              // Primary actions
+              _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
+                  () => _handleMutualFundTap()),
+              const SizedBox(width: 12),
+              _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
+                  () => _handleIPOTap()),
+              const SizedBox(width: 12),
+              _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
+                  () => _handleOptionZTap()),
+            ],
+
             const Spacer(),
-            // Navigation screens
-            _buildNavigationScreens(isDarkMode),
-            const SizedBox(width: 20),
-            // Profile section (contains swap, theme toggle, switch account in dropdown)
+
+            // Navigation screens (only on larger screens)
+            if (!showHamburger) ...[
+              _buildNavigationScreens(isDarkMode),
+              const SizedBox(width: 20),
+            ],
+
+            // Profile section (always visible)
             RepaintBoundary(
               child: _buildProfileSection(isDarkMode),
             ),
@@ -1607,11 +1722,11 @@ class _CustomizableSplitHomeScreenState
             // Show NFO screen in right panel (panel 2)
             _showScreenInRightPanel(ScreenType.mfNfo);
           },
-          onCollectionTap: (title) {
-            _showMfCollectionInPanel(title);
+          onCollectionTap: (title, subtitle, icon) {
+            _showMfCollectionInPanel(title, subtitle, icon);
           },
-          onCategoryTap: (title) {
-            _showMfCategoryInPanel(title);
+          onCategoryTap: (title, subtitle, icon) {
+            _showMfCategoryInPanel(title, subtitle, icon);
           },
           onSipCalculatorTap: () {
             _showScreenInRightPanel(ScreenType.sipCalculator);
@@ -1619,6 +1734,7 @@ class _CustomizableSplitHomeScreenState
           onCagrCalculatorTap: () {
             _showScreenInRightPanel(ScreenType.cagrCalculator);
           },
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
@@ -1685,12 +1801,18 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.mfCollection:
         return SaveTaxesScreen(
           title: _currentCollectionTitle ?? "Collection",
+          subtitle: _currentCollectionSubtitle ?? "",
+          icon: _currentCollectionIcon ?? "",
           onBack: _handleMfCollectionBack,
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.mfCategory:
         return MFCategoryListScreen(
           title: _currentCategoryTitle ?? "Category",
+          subtitle: _currentCategorySubtitle ?? "",
+          icon: _currentCategoryIcon ?? "",
           onBack: _handleMfCategoryBack,
+          onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.sipCalculator:
         return MFSIPSCREEN(
@@ -1700,6 +1822,14 @@ class _CustomizableSplitHomeScreenState
         return MFCAGRCAL(
           onBack: _goBackInRightPanel,
         );
+      case ScreenType.mfStockDetail:
+        if (_currentMfStockData != null) {
+          return MFStockDetailScreen(
+            mfStockData: _currentMfStockData!,
+            onBack: _goBackInRightPanel,
+          );
+        }
+        return const SizedBox.shrink();
       // caEvent and cpAction removed
     }
   }
@@ -1749,6 +1879,8 @@ class _CustomizableSplitHomeScreenState
         return 'SIP Calculator';
       case ScreenType.cagrCalculator:
         return 'CAGR Calculator';
+      case ScreenType.mfStockDetail:
+        return 'Fund Details';
       // caEvent and cpAction removed
     }
   }
@@ -1798,6 +1930,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.calculate;
       case ScreenType.cagrCalculator:
         return Icons.calculate;
+      case ScreenType.mfStockDetail:
+        return Icons.show_chart;
       // caEvent and cpAction removed
     }
   }
@@ -2174,6 +2308,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.mfCategory:
       case ScreenType.sipCalculator:
       case ScreenType.cagrCalculator:
+      case ScreenType.mfStockDetail:
         break;
       // caEvent and cpAction removed
     }
@@ -3316,29 +3451,37 @@ class _CustomizableSplitHomeScreenState
 
   // Show screen in right panel (for app bar navigation)
   void _showScreenInRightPanel(ScreenType screenType) {
-    if (_panels.length < 2) return;
+    if (_panels.isEmpty) return;
 
-    // Find the panel that doesn't have watchlist (prefer right panel for non-watchlist screens)
+    // Find the non-watchlist panel (prefer right panel for multi-panel layouts)
     int targetPanelIndex = -1;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
-          (panel.screens.isNotEmpty &&
-              panel.screens.contains(ScreenType.watchlist));
 
-      if (!hasWatchlist) {
-        targetPanelIndex = i;
-        break;
+    // For multi-panel layouts, search from the end (right panel first)
+    if (_panels.length >= 2) {
+      for (int i = _panels.length - 1; i >= 0; i--) {
+        final panel = _panels[i];
+        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+            (panel.screens.isNotEmpty &&
+                panel.screens.contains(ScreenType.watchlist));
+
+        if (!hasWatchlist) {
+          targetPanelIndex = i;
+          break;
+        }
       }
     }
 
-    // If no panel without watchlist found, use the right panel (index 1)
+    // For single panel or if no non-watchlist found, use first panel
     if (targetPanelIndex == -1) {
-      targetPanelIndex = 1;
+      targetPanelIndex = 0;
     }
 
-    // Save current screen type for back navigation
-    _panelScreenHistory[targetPanelIndex] = _panels[targetPanelIndex].screenType;
+    // Save current screen type for back navigation (push to stack)
+    final currentScreen = _panels[targetPanelIndex].screenType;
+    if (currentScreen != null) {
+      _panelScreenHistory[targetPanelIndex] ??= [];
+      _panelScreenHistory[targetPanelIndex]!.add(currentScreen);
+    }
 
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
@@ -3351,43 +3494,49 @@ class _CustomizableSplitHomeScreenState
 
   // Go back to previous screen in the right panel
   void _goBackInRightPanel() {
-    if (_panels.length < 2) return;
+    if (_panels.isEmpty) return;
 
-    // Find the non-watchlist panel
+    // Find the non-watchlist panel (prefer last panel for multi-panel, first for single)
     int targetPanelIndex = -1;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
-          (panel.screens.isNotEmpty &&
-              panel.screens.contains(ScreenType.watchlist));
 
-      if (!hasWatchlist) {
-        targetPanelIndex = i;
-        break;
+    // For multi-panel layouts, search from the end (right panel first)
+    if (_panels.length >= 2) {
+      for (int i = _panels.length - 1; i >= 0; i--) {
+        final panel = _panels[i];
+        bool hasWatchlist = panel.screenType == ScreenType.watchlist ||
+            (panel.screens.isNotEmpty &&
+                panel.screens.contains(ScreenType.watchlist));
+
+        if (!hasWatchlist) {
+          targetPanelIndex = i;
+          break;
+        }
       }
     }
 
+    // For single panel or if no non-watchlist found, use first panel
     if (targetPanelIndex == -1) {
-      targetPanelIndex = 1;
+      targetPanelIndex = 0;
     }
 
-    // Get the previous screen type
-    final previousScreen = _panelScreenHistory[targetPanelIndex];
-    if (previousScreen != null) {
+    // Get the previous screen type from stack
+    final historyStack = _panelScreenHistory[targetPanelIndex];
+    if (historyStack != null && historyStack.isNotEmpty) {
+      final previousScreen = historyStack.removeLast(); // Pop from stack
       setState(() {
         _panels[targetPanelIndex].screenType = previousScreen;
         _panels[targetPanelIndex].screens = [previousScreen];
         _panels[targetPanelIndex].activeScreenIndex = 0;
       });
-      // Clear history after going back
-      _panelScreenHistory.remove(targetPanelIndex);
       _saveLayout();
     }
   }
 
   // Show MF Collection in right panel
-  void _showMfCollectionInPanel(String title) {
+  void _showMfCollectionInPanel(String title, String subtitle, String icon) {
     _currentCollectionTitle = title;
+    _currentCollectionSubtitle = subtitle;
+    _currentCollectionIcon = icon;
     _showScreenInRightPanel(ScreenType.mfCollection);
   }
 
@@ -3397,14 +3546,22 @@ class _CustomizableSplitHomeScreenState
   }
 
   // Show MF Category in right panel
-  void _showMfCategoryInPanel(String title) {
+  void _showMfCategoryInPanel(String title, String subtitle, String icon) {
     _currentCategoryTitle = title;
+    _currentCategorySubtitle = subtitle;
+    _currentCategoryIcon = icon;
     _showScreenInRightPanel(ScreenType.mfCategory);
   }
 
   // Handle back navigation from MF Category
   void _handleMfCategoryBack() {
     _goBackInRightPanel();
+  }
+
+  // Show MF Stock Detail in right panel
+  void showMfStockDetailInPanel(MutualFundList mfData) {
+    _currentMfStockData = mfData;
+    _showScreenInRightPanel(ScreenType.mfStockDetail);
   }
 
   void _showScreenInLeftPanel(ScreenType screenType) {
@@ -3784,6 +3941,7 @@ enum ScreenType {
   mfCategory,
   sipCalculator,
   cagrCalculator,
+  mfStockDetail,
 }
 
 // Hoverable navigation item widget

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../res/app_breakpoints.dart';
+import '../res/responsive_extensions.dart';
 
 /// Utility class for showing responsive modals
 /// Shows a Dialog on desktop (width >= 600) and ModalBottomSheet on mobile
@@ -30,9 +32,8 @@ class ResponsiveModal {
     bool canPop = true,
     Function(bool, dynamic)? onPopInvokedWithResult,
   }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    
-    if (screenWidth >= 600) {
+    // Use centralized breakpoint check
+    if (context.isWebLayout) {
       // Desktop: Show as Dialog
       return showDialog<T>(
         context: context,
@@ -57,7 +58,7 @@ class ResponsiveModal {
             ),
             backgroundColor: backgroundColor,
             child: SizedBox(
-              width: dialogWidth ?? MediaQuery.of(context).size.width * 0.4,
+              width: dialogWidth ?? context.dialogWidth,
               height: dialogHeight,
               child: dialogChild,
             ),
@@ -123,12 +124,16 @@ class ResponsiveModal {
   }
 
   /// Helper method to get responsive width
+  /// @deprecated Use context.screenWidth from responsive_extensions.dart instead
+  @Deprecated('Use context.screenWidth from responsive_extensions.dart instead')
   static double getResponsiveWidth(BuildContext context) {
-    return MediaQuery.of(context).size.width;
+    return context.screenWidth;
   }
 
-  /// Helper method to check if device is desktop
+  /// Helper method to check if device is desktop (>= 600px)
+  /// @deprecated Use context.isWebLayout from responsive_extensions.dart instead
+  @Deprecated('Use context.isWebLayout from responsive_extensions.dart instead')
   static bool isDesktop(BuildContext context) {
-    return MediaQuery.of(context).size.width >= 600;
+    return context.isWebLayout;
   }
 }

@@ -6,15 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
-import 'dart:html' as html;
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
-import '../../../provider/user_profile_provider.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/responsive.dart';
 import '../../../locator/preference.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -22,7 +21,6 @@ import '../../../sharedWidget/common_search_fields_web.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
-import 'tv_chart/chart_iframe_guard.dart';
 import 'tv_chart/chart_iframe_guard.dart';
 
 class SearchDialogWeb extends ConsumerStatefulWidget {
@@ -49,6 +47,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   final TextEditingController _textController = TextEditingController();
   final ScrollController _tabScrollController = ScrollController();
   final ScrollController _scrollController = ScrollController();
+  final FocusNode _searchFocusNode = FocusNode();
   Preferences pref = Preferences();
   late bool scripisAscending;
   late bool pricepisAscending;
@@ -64,6 +63,9 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   @override
   void initState() {
     super.initState();
+    // Clear previous search results when dialog opens
+    ref.read(marketWatchProvider).searchClear();
+
     // Disable chart iframe pointer events when dialog opens
     _disableAllChartIframes();
 
@@ -109,6 +111,15 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     // Acquire chart iframe guard on init to prevent cursor bleed
     ChartIframeGuard.acquire();
     _disableAllChartIframes();
+
+    // Request focus after dialog animation completes (web autofocus fix)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _searchFocusNode.requestFocus();
+        }
+      });
+    });
   }
 
   // Directly disable all chart iframes and reset cursor (like chart's onExit)
@@ -148,6 +159,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   void dispose() {
     _tabScrollController.dispose();
     _scrollController.dispose();
+    _searchFocusNode.dispose();
     // Remove listener before disposing to prevent memory leaks
     if (_tabControllerListener != null) {
       _tabController.removeListener(_tabControllerListener!);
@@ -257,8 +269,14 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                 borderRadius: BorderRadius.circular(8),
                 padding: EdgeInsets.zero,
                 child: Container(
-                  width: 560,
-                  constraints: const BoxConstraints(maxHeight: 600),
+                  width: context.responsive(
+                    mobile: context.screenWidth * 0.95,
+                    tablet: 500.0,
+                    desktop: 560.0,
+                  ),
+                  constraints: BoxConstraints(
+                    maxHeight: context.screenHeight * 0.75,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,6 +290,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             Expanded(
                               child: MyntSearchTextField.withSmartClear(
                                 controller: _textController,
+                                focusNode: _searchFocusNode,
                                 placeholder: 'Search stocks, indices, options',
                                 leadingIcon: assets.searchIcon,
                                 leadingIconHoverEffect: true,
@@ -373,30 +392,39 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                 children: [
                   for (int index = 0; index < searchTabList.length; index++)
                     shadcn.TabItem(
-                      child: Builder(
-                        builder: (context) {
-                          final isActive = index == _tabController.index;
-                          return Text(
-                            searchTabList[index].text ?? '',
-                            style: MyntWebTextStyles.body(
-                              context,
-                              // fontSize: WebFonts.subSize,
-                              fontWeight:
-                                  isActive ? MyntFonts.bold : MyntFonts.medium,
-                              color: isActive
-                                  ? resolveThemeColor(
-                                      context,
-                                      dark: WebColors.primaryDark,
-                                      light: WebColors.primary,
-                                    )
-                                  : resolveThemeColor(
-                                      context,
-                                      dark: WebColors.textSecondaryDark,
-                                      light: WebColors.textSecondary,
-                                    ),
-                            ),
-                          );
-                        },
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        hitTestBehavior: HitTestBehavior.opaque,
+                        child: Builder(
+                          builder: (context) {
+                            final isActive = index == _tabController.index;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 2),
+                              child: Text(
+                                searchTabList[index].text ?? '',
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  // fontSize: WebFonts.subSize,
+                                  fontWeight: isActive
+                                      ? MyntFonts.bold
+                                      : MyntFonts.medium,
+                                  color: isActive
+                                      ? resolveThemeColor(
+                                          context,
+                                          dark: WebColors.primaryDark,
+                                          light: WebColors.primary,
+                                        )
+                                      : resolveThemeColor(
+                                          context,
+                                          dark: WebColors.textSecondaryDark,
+                                          light: WebColors.textSecondary,
+                                        ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                 ],
@@ -747,36 +775,11 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             searchScrip.scrips.length < 50)
                           Builder(
                             builder: (context) {
-                              // Check if user data is still loading
-                              final userProfile = ref.watch(userProfileProvider);
-                              final isUserDataLoading = userProfile.userDetailModel == null;
+                              // Use exarr from marketWatchProvider (already available during search)
+                              // This avoids waiting for userProfileProvider.userDetailModel API call
+                              // Note: searchScrip.exarr contains quoted strings like '"NSE"'
+                              final isSegmentActive = searchScrip.exarr.contains('"${scrip.exch}"');
 
-                              // Show skeleton loader while user data is loading
-                              if (isUserDataLoading) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(7),
-                                  child: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        resolveThemeColor(
-                                          context,
-                                          dark: WebColors.iconDark,
-                                          light: WebColors.icon,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-
-                              // Get exarr directly from userProfileProvider (fresh data)
-                              final userExarr = userProfile.userDetailModel?.exarr ?? [];
-                              final isSegmentActive = userExarr.contains(scrip.exch);
-
-                              // Data loaded - show actual icon
                               return Material(
                                 color: Colors.transparent,
                                 shape: const CircleBorder(),

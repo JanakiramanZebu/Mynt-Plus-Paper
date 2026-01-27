@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'responsive_extensions.dart';
 
 /// ===============================================================
 /// FONT SYSTEM – single source of truth
@@ -65,13 +66,8 @@ TextStyle _text(
             )
           : scheme.foreground);
 
-  double width = MediaQuery.of(context).size.width;
-  double scaleFactor = 1.0;
-  if (width < 1000) {
-    scaleFactor = 0.8;
-  } else if (width < 1300) {
-    scaleFactor = 0.9;
-  }
+  // Use centralized font scale factor from responsive extensions
+  final scaleFactor = context.fontScaleFactor;
 
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,
@@ -96,13 +92,8 @@ TextStyle webText(
 }) {
   final scheme = shadcn.Theme.of(context).colorScheme;
 
-  double width = MediaQuery.of(context).size.width;
-  double scaleFactor = 1.0;
-  if (width < 1000) {
-    scaleFactor = 0.8;
-  } else if (width < 1300) {
-    scaleFactor = 0.9;
-  }
+  // Use centralized font scale factor from responsive extensions
+  final scaleFactor = context.fontScaleFactor;
 
   return TextStyle(
     fontFamily: MyntFonts.fontFamily,

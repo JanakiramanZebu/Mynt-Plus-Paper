@@ -29,6 +29,7 @@ mixin UserProfileAPI on ApiCore {
 
       return UserDetailModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
+      print('[UserDetail API] ERROR: $e');
       rethrow;
     }
   }
