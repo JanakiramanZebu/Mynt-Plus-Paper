@@ -147,8 +147,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       _isNavigating = true;
                     });
 
-                    // Show depth by default for Overview tab
-                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
+                    // Depth visibility is managed by chart_with_depth_web.dart based on current tab:
+                    // - Overview tab: shows depth automatically
+                    // - Chart/Options tab: preserves current depth state (respects user's hide action)
 
                     // Create proper DepthInputArgs object
                     DepthInputArgs depthArgs = DepthInputArgs(

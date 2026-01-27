@@ -1299,11 +1299,22 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       ..sort((a, b) =>
           (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
 
-    // Step 3: Determine LTP for the center line
-    // Get the underlying token for websocket lookup (same token used by header)
-    final underlyingToken = depthData.token ?? '';
-    // Use depthData.lp as fallback, but the LTP line widget will get real-time updates via StreamBuilder
-    final liveLtp = double.tryParse(depthData.lp ?? scripInfo.optionStrPrc) ?? 0;
+    // Step 3: Determine ATM strike based on LIVE LTP (closest strike to current price)
+    // Get live LTP from websocket for the UNDERLYING token (following mobile pattern)
+    // Mobile uses: depthData.undTk ?? depthData.token for the underlying token
+    final underlyingToken = depthData.undTk ?? depthData.token ?? '';
+    final underlyingExch = depthData.undExch ?? depthData.exch ?? '';
+    // Build full socket key in EXCH|TOKEN format (e.g., "NSE|26000" for NIFTY)
+    final underlyingSocketKey = '$underlyingExch|$underlyingToken';
+    final socketDatas = ref.read(websocketProvider).socketDatas;
+
+    // Get underlying's LTP from socket, fallback to optionStrPrc (which is set by fetchStikePrc)
+    // IMPORTANT: Do NOT use depthData.lp as fallback - that's the option's LTP, not underlying's
+    // scripInfo.optionStrPrc is set by fetchStikePrc() which fetches the underlying's LTP for options
+    final underlyingData = socketDatas[underlyingSocketKey];
+    final optionStrPrc = scripInfo.optionStrPrc;
+    final liveLtp = double.tryParse(
+        underlyingData?['lp']?.toString() ?? optionStrPrc) ?? 0;
 
     // Find the closest strike to live LTP (this is the true ATM)
     String atmStrike = '';
@@ -1412,7 +1423,7 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
                     return _LtpCenterLine(
                       key: const ValueKey('ltp-center-line'),
                       fallbackLtp: liveLtp,
-                      underlyingToken: underlyingToken,
+                      underlyingSocketKey: underlyingSocketKey,
                     );
                   }
 
@@ -1451,12 +1462,13 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
 /// This line appears between strike rows and updates in real-time via StreamBuilder
 class _LtpCenterLine extends ConsumerWidget {
   final double fallbackLtp;
-  final String underlyingToken;
+  /// Socket key in EXCH|TOKEN format (e.g., "NSE|26000" for NIFTY underlying)
+  final String underlyingSocketKey;
 
   const _LtpCenterLine({
     super.key,
     required this.fallbackLtp,
-    required this.underlyingToken,
+    required this.underlyingSocketKey,
   });
 
   @override
@@ -1467,10 +1479,10 @@ class _LtpCenterLine extends ConsumerWidget {
       builder: (context, snapshot) {
         final socketDatas = snapshot.data ?? {};
 
-        // Get live LTP from websocket, fallback to passed value
+        // Get live LTP from websocket using EXCH|TOKEN key, fallback to passed value
         double liveLtp = fallbackLtp;
-        if (socketDatas.containsKey(underlyingToken)) {
-          final socketData = socketDatas[underlyingToken];
+        if (socketDatas.containsKey(underlyingSocketKey)) {
+          final socketData = socketDatas[underlyingSocketKey];
           final wsLtp = socketData['lp']?.toString();
           if (wsLtp != null && wsLtp != "null" && wsLtp != "0") {
             liveLtp = double.tryParse(wsLtp) ?? fallbackLtp;

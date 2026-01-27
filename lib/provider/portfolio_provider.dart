@@ -661,13 +661,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
                         int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
             element.currentQty = qty;
-            ref
-                .read(websocketProvider)
-                .socketDatas["${element.exchTsym![0].token}"] = {'holdQty': ""};
-
-            ref
-                    .read(websocketProvider)
-                    .socketDatas["${element.exchTsym![0].token}"]['holdQty'] =
+            // FIX: Update holdQty without wiping existing socket data
+            // Previously this replaced all socket data (lp, pc, chng, etc.) with just {'holdQty': ""}
+            // causing watchlist symbols with holdings to show 0
+            final wsProvider = ref.read(websocketProvider);
+            final holdingToken = "${element.exchTsym![0].token}";
+            if (!wsProvider.socketDatas.containsKey(holdingToken)) {
+              wsProvider.socketDatas[holdingToken] = <String, dynamic>{};
+            }
+            wsProvider.socketDatas[holdingToken]!['holdQty'] =
                 "${element.currentQty}";
 
             double avgCost = double.parse(

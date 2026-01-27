@@ -450,9 +450,8 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                         setState(() => _isNavigating = true);
                                         WidgetsBinding.instance
                                             .addPostFrameCallback((_) async {
-                                          ref
-                                              .read(marketWatchProvider)
-                                              .setIsDepthVisibleWeb(true);
+                                          // Depth visibility is managed by chart_with_depth_web.dart
+                                          // based on current tab (Overview shows depth, others preserve state)
 
                                           DepthInputArgs depthArgs =
                                               DepthInputArgs(
