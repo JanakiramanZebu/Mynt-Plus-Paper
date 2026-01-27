@@ -1193,11 +1193,11 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
     // Determine if data is fully loaded
     // Note: scripDepthloader is excluded because it's set when updating depth panel,
     // not when reloading option chain data
-    final bool isLoading = isLoad ||
-        optChainCallUP.isEmpty ||
-        optChainPutUp.isEmpty ||
-        optChainCallDown.isEmpty ||
-        optChainPutDown.isEmpty;
+    // FIX: Don't require ALL lists to have data - API may return strikes only on one side of LTP
+    // Just check if we have ANY option data (from either UP or DOWN lists)
+    final bool hasCallData = optChainCallUP.isNotEmpty || optChainCallDown.isNotEmpty;
+    final bool hasPutData = optChainPutUp.isNotEmpty || optChainPutDown.isNotEmpty;
+    final bool isLoading = isLoad || (!hasCallData && !hasPutData);
 
     if (isLoading) {
       // Create a timeout to handle cases where loading gets stuck
@@ -1299,19 +1299,11 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       ..sort((a, b) =>
           (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
 
-    // Step 3: Determine ATM strike based on LIVE LTP (closest strike to current price)
-    // Get live LTP from websocket for the UNDERLYING token (following mobile pattern)
-    // Mobile uses: depthData.undTk ?? depthData.token for the underlying token
-    final underlyingToken = depthData.undTk ?? depthData.token ?? '';
-    final underlyingExch = depthData.undExch ?? depthData.exch ?? '';
-    final socketDatas = ref.read(websocketProvider).socketDatas;
-
-    // Get underlying's LTP from socket, fallback to optionStrPrc (which is set by fetchStikePrc)
-    final underlyingData = socketDatas['$underlyingExch|$underlyingToken'];
-    final optionStrPrc = scripInfo.optionStrPrc;
-    final liveLtp = double.tryParse(
-            underlyingData?['lp']?.toString() ?? optionStrPrc) ??
-        0;
+    // Step 3: Determine LTP for the center line
+    // Get the underlying token for websocket lookup (same token used by header)
+    final underlyingToken = depthData.token ?? '';
+    // Use depthData.lp as fallback, but the LTP line widget will get real-time updates via StreamBuilder
+    final liveLtp = double.tryParse(depthData.lp ?? scripInfo.optionStrPrc) ?? 0;
 
     // Find the closest strike to live LTP (this is the true ATM)
     String atmStrike = '';
@@ -1334,6 +1326,28 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       }
     }
 
+    // Calculate LTP line position: find the index where LTP falls between strikes
+    // The line appears between the strike just below LTP and the strike just above LTP
+    int ltpLineIndex = -1;
+    for (int i = 0; i < sortedStrikes.length - 1; i++) {
+      final currentStrike = double.tryParse(sortedStrikes[i]) ?? 0;
+      final nextStrike = double.tryParse(sortedStrikes[i + 1]) ?? 0;
+      if (liveLtp >= currentStrike && liveLtp < nextStrike) {
+        ltpLineIndex = i + 1; // Insert line after current strike row
+        break;
+      }
+    }
+    // Edge cases: LTP below all strikes or above all strikes
+    if (ltpLineIndex == -1 && sortedStrikes.isNotEmpty) {
+      final firstStrike = double.tryParse(sortedStrikes.first) ?? 0;
+      final lastStrike = double.tryParse(sortedStrikes.last) ?? 0;
+      if (liveLtp < firstStrike) {
+        ltpLineIndex = 0; // Line at the very top
+      } else if (liveLtp >= lastStrike) {
+        ltpLineIndex = sortedStrikes.length; // Line at the very bottom
+      }
+    }
+
     // Step 4: Build StrikeRowData list
     final strikeRowData = sortedStrikes.map((strike) {
       return StrikeRowData(
@@ -1344,20 +1358,27 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
       );
     }).toList();
 
-    // Find ATM index for initial scroll position
-    final atmIndex = strikeRowData.indexWhere((row) => row.isATM);
+    // Calculate total item count including the LTP line
+    // The LTP line is inserted at ltpLineIndex position
+    final bool showLtpLine = ltpLineIndex >= 0 && liveLtp > 0;
+    final int totalItemCount = strikeRowData.length + (showLtpLine ? 1 : 0);
 
-    // Step 5: Schedule scroll to ATM ONLY on initial load or after strike change
-    // This prevents scroll from snapping back to center on every 500ms refresh
-    // but ensures it scrolls when strike selection changes (e.g., "Near 5" -> "All")
-    if (atmIndex >= 0 && !_hasScrolledInitially) {
+    // Find ATM index for initial scroll position (accounting for LTP line)
+    int atmIndex = strikeRowData.indexWhere((row) => row.isATM);
+    if (showLtpLine && atmIndex >= ltpLineIndex) {
+      atmIndex += 1; // Account for LTP line before ATM
+    }
+
+    // Step 5: Schedule scroll to LTP line position on initial load or after strike change
+    // This centers the view on the current market price position
+    if (ltpLineIndex >= 0 && !_hasScrolledInitially) {
       _hasScrolledInitially = true;
       // Delay scroll by 1 second to ensure data is fully loaded and rendered
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted && widget.mainScrollController.hasClients) {
-          // Note: itemExtent is 56, center ATM in viewport
+          // Note: itemExtent is 56, center LTP line in viewport
           final targetOffset =
-              atmIndex * 56.0 - (MediaQuery.of(context).size.height / 3);
+              ltpLineIndex * 56.0 - (MediaQuery.of(context).size.height / 3);
           widget.mainScrollController.jumpTo(targetOffset.clamp(
               0.0, widget.mainScrollController.position.maxScrollExtent));
         }
@@ -1376,34 +1397,180 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
           .withValues(alpha: 0.5),
       child: Column(
         children: [
-          // Virtualized option chain list
-          // PERFORMANCE: Timer triggers setState(_refreshTick++) every 500ms for live data
+          // Virtualized option chain list with dynamic LTP line
           Expanded(
             child: ScrollConfiguration(
               behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
               child: ListView.builder(
                 controller: widget.mainScrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: strikeRowData.length,
+                itemCount: totalItemCount,
                 itemExtent: 56, // Fixed height for better scroll performance
                 itemBuilder: (context, index) {
-                final rowData = strikeRowData[index];
-                return OptionChainRowWeb(
-                  key: ValueKey('row-${rowData.strikePrice}'),
-                  rowData: rowData,
-                  watchlistTokens: watchlistTokens,
-                  showPriceView: widget.showPriceView,
-                  isBasketMode: widget.isBasketMode,
-                  swipeController: widget.swipecontroller,
-                  index: index,
-                  atmKey: rowData.isATM ? widget.strikePriceKey : null,
-                );
-              },
-            ),
+                  // Check if this index is the LTP line position
+                  if (showLtpLine && index == ltpLineIndex) {
+                    return _LtpCenterLine(
+                      key: const ValueKey('ltp-center-line'),
+                      fallbackLtp: liveLtp,
+                      underlyingToken: underlyingToken,
+                    );
+                  }
+
+                  // Adjust data index if we're past the LTP line
+                  final dataIndex = showLtpLine && index > ltpLineIndex
+                      ? index - 1
+                      : index;
+
+                  // Safety check for valid index
+                  if (dataIndex < 0 || dataIndex >= strikeRowData.length) {
+                    return const SizedBox.shrink();
+                  }
+
+                  final rowData = strikeRowData[dataIndex];
+                  return OptionChainRowWeb(
+                    key: ValueKey('row-${rowData.strikePrice}'),
+                    rowData: rowData,
+                    watchlistTokens: watchlistTokens,
+                    showPriceView: widget.showPriceView,
+                    isBasketMode: widget.isBasketMode,
+                    swipeController: widget.swipecontroller,
+                    index: dataIndex,
+                    atmKey: rowData.isATM ? widget.strikePriceKey : null,
+                  );
+                },
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Dynamic LTP center line widget that shows the current underlying price
+/// This line appears between strike rows and updates in real-time via StreamBuilder
+class _LtpCenterLine extends ConsumerWidget {
+  final double fallbackLtp;
+  final String underlyingToken;
+
+  const _LtpCenterLine({
+    super.key,
+    required this.fallbackLtp,
+    required this.underlyingToken,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use StreamBuilder to get real-time updates (same pattern as header)
+    return StreamBuilder<Map>(
+      stream: ref.read(websocketProvider).socketDataStream,
+      builder: (context, snapshot) {
+        final socketDatas = snapshot.data ?? {};
+
+        // Get live LTP from websocket, fallback to passed value
+        double liveLtp = fallbackLtp;
+        if (socketDatas.containsKey(underlyingToken)) {
+          final socketData = socketDatas[underlyingToken];
+          final wsLtp = socketData['lp']?.toString();
+          if (wsLtp != null && wsLtp != "null" && wsLtp != "0") {
+            liveLtp = double.tryParse(wsLtp) ?? fallbackLtp;
+          }
+        }
+
+        // Format LTP with appropriate decimal places
+        final formattedLtp = liveLtp.toStringAsFixed(2);
+
+        return Container(
+          height: 56, // Match row height
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              // Left line (Calls side)
+              Expanded(
+                flex: 6,
+                child: Container(
+                  height: 2,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Center LTP badge
+              Container(
+                width: 150, // Match strike price column width
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // LTP value
+                      Text(
+                        formattedLtp,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight: MyntFonts.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Right line (Puts side)
+              Expanded(
+                flex: 6,
+                child: Container(
+                  height: 2,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

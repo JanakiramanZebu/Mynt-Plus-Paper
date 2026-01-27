@@ -4900,32 +4900,78 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   }
 
   // CRITICAL FIX: Clear old option chain socket data to prevent stale LTP showing
+  // BUT preserve socket data for tokens that are still subscribed by other sources (watchlist, etc.)
   Future<void> _clearOldOptionSocketData() async {
     try {
       final wsProvider = ref.read(websocketProvider);
       final Map socketDatas = wsProvider.socketDatas;
 
+      // Get protected symbols from WebSubscriptionManager AND websocket _sentSubscriptions
+      // These are tokens that are used by watchlist, depth, holdings, etc.
+      final Set<String> protectedTokens = {};
+      try {
+        // Method 1: Check WebSubscriptionManager's active subscriptions
+        final webSubManager = ref.read(webSubscriptionManagerProvider);
+        final activeSubscriptions = webSubManager.activeSubscriptions;
+        print("DEBUG: activeSubscriptions count: ${activeSubscriptions.length}");
+        print("DEBUG: activeSubscriptions sample: ${activeSubscriptions.take(10).join(', ')}");
+
+        for (var symbol in activeSubscriptions) {
+          // Extract token from "NFO|58652" format
+          if (symbol.contains('|')) {
+            protectedTokens.add(symbol.split('|')[1]);
+          }
+        }
+
+        // Method 2: Also check _sentSubscriptions in websocket provider
+        // This catches tokens that are still subscribed but might not be in master list
+        final sentSubs = wsProvider.sentSubscriptions;
+        print("DEBUG: _sentSubscriptions count: ${sentSubs.length}");
+        for (var entry in sentSubs) {
+          // Format is "d:NFO|58652" - extract just the token
+          if (entry.contains('|')) {
+            final parts = entry.split('|');
+            if (parts.length > 1) {
+              protectedTokens.add(parts[1]);
+            }
+          }
+        }
+
+        print("DEBUG: Total protected tokens: ${protectedTokens.length}");
+        print("DEBUG: Protected tokens sample: ${protectedTokens.take(20).join(', ')}");
+      } catch (e) {
+        print("Warning: Could not get protected tokens: $e");
+      }
+
       // Get all current option chain tokens that should be cleared
       final List<String> tokensToRemove = [];
+      final List<String> tokensProtected = [];
 
       if (_optionChainModel?.optValue != null) {
         for (var option in _optionChainModel!.optValue!) {
           if (option.token != null && socketDatas.containsKey(option.token)) {
-            tokensToRemove.add(option.token!);
+            // Check if this token is protected (used by other subscriptions)
+            if (protectedTokens.contains(option.token)) {
+              tokensProtected.add(option.token!);
+            } else {
+              tokensToRemove.add(option.token!);
+            }
           }
         }
       }
 
-      // Remove old option chain tokens from socket data
+      // Remove old option chain tokens from socket data (except protected ones)
       for (String token in tokensToRemove) {
         socketDatas.remove(token);
         print("Cleared stale socket data for token: $token");
       }
 
       // Force update the socket data stream to notify UI components
-      if (tokensToRemove.isNotEmpty) {
-        print(
-            "Cleared ${tokensToRemove.length} stale option tokens from socket data");
+      if (tokensToRemove.isNotEmpty || tokensProtected.isNotEmpty) {
+        print("Cleared ${tokensToRemove.length} stale option tokens from socket data");
+        if (tokensProtected.isNotEmpty) {
+          print("Preserved ${tokensProtected.length} protected tokens: ${tokensProtected.join(', ')}");
+        }
       }
     } catch (e) {
       print("Error clearing old option socket data: $e");

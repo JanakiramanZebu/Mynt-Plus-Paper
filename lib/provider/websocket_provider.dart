@@ -626,6 +626,10 @@ class WebSocketProvider extends ChangeNotifier {
     // Notify market watch provider with the updated data
     _notifyMarketWatchProvider();
 
+    // CRITICAL: Notify Riverpod listeners after processing all buffered updates
+    // This ensures ref.watch().select() triggers rebuilds for new tokens
+    notifyListeners();
+
     // Clear the buffer after applying
     _pendingSocketUpdates.clear();
   }
@@ -929,6 +933,10 @@ class WebSocketProvider extends ChangeNotifier {
 
       _socketDataController.add(_socketDatas);
 
+      // CRITICAL: Notify Riverpod listeners so ref.watch().select() triggers rebuilds
+      // Without this, the .select() pattern won't detect changes even with new Map reference
+      notifyListeners();
+
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data
       if ((res.containsKey('lp') || res.containsKey('pc') || res.containsKey('c')) && data["lp"] != null && data["lp"] != "0" && data["lp"] != "0.00") {
@@ -1013,6 +1021,7 @@ class WebSocketProvider extends ChangeNotifier {
   // Format: "taskType:symbol" (e.g., "t:NSE|1234" or "d:NSE|1234")
   // This allows the same symbol to have both touchline and depth subscriptions
   final Set<String> _sentSubscriptions = {};
+  Set<String> get sentSubscriptions => Set.from(_sentSubscriptions);
   Timer? _subscriptionDebounce;
   final Map<String, List<String>> _pendingSubscriptions = {
     't': [],
@@ -1044,13 +1053,24 @@ class WebSocketProvider extends ChangeNotifier {
       // Filter out already sent subscriptions for THIS task type
       final taskKey = task.toLowerCase();
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      
+
       // Create task-specific subscription keys (e.g., "t:NSE|1234" or "d:NSE|1234")
       final subscriptionKeys = symbols.map((s) => "$taskKey:$s").toList();
       final newSubscriptionKeys = subscriptionKeys.where((key) => !_sentSubscriptions.contains(key)).toList();
-      
+
       // Extract just the symbols from the new subscription keys
       final newSymbols = newSubscriptionKeys.map((key) => key.split(':')[1]).toList();
+
+      // DEBUG: Log which symbols are being skipped (already subscribed)
+      final skippedCount = symbols.length - newSymbols.length;
+      if (skippedCount > 0) {
+        final skippedSymbols = symbols.where((s) => !newSymbols.contains(s)).toList();
+        print('⚠️ [WEBSOCKET] SKIPPED $skippedCount symbols (already in _sentSubscriptions):');
+        print('   Skipped symbols: ${skippedSymbols.join(", ")}');
+        print('   Total _sentSubscriptions count: ${_sentSubscriptions.length}');
+        // Show first 10 entries in _sentSubscriptions for debugging
+        print('   Sample _sentSubscriptions: ${_sentSubscriptions.take(10).join(", ")}...');
+      }
 
       if (newSymbols.isEmpty) {
         log("WebSocket: ℹ️ All ${symbols.length} symbols already subscribed for task '$taskKey', skipping");
@@ -1078,15 +1098,27 @@ class WebSocketProvider extends ChangeNotifier {
       // Unsubscribe tasks - remove from subscription manager and tracking
       subscriptionManager.removeSubscription(input);
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      
+
       // Determine which task type to unsubscribe (touchline by default)
       final taskKey = task.toLowerCase() == "ud" ? "d" : "t";
-      
+
+      // DEBUG: Log before removing
+      print('🗑️ [WEBSOCKET] UNSUBSCRIBE: Removing ${symbols.length} $taskKey subscriptions');
+      print('   _sentSubscriptions BEFORE: ${_sentSubscriptions.length} entries');
+
       // Remove task-specific subscription keys
+      int removedCount = 0;
       for (final symbol in symbols) {
-        _sentSubscriptions.remove("$taskKey:$symbol");
+        final key = "$taskKey:$symbol";
+        if (_sentSubscriptions.contains(key)) {
+          _sentSubscriptions.remove(key);
+          removedCount++;
+        }
       }
-      
+
+      print('   Actually removed: $removedCount (${symbols.length - removedCount} were not in _sentSubscriptions)');
+      print('   _sentSubscriptions AFTER: ${_sentSubscriptions.length} entries');
+
       log("WebSocket: ➖ Removed ${symbols.length} $taskKey subscriptions for task '$task'");
       if (symbols.length <= 10) {
         log("  Symbols: ${symbols.join(', ')}");
