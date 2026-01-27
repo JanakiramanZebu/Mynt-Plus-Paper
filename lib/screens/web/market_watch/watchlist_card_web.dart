@@ -1960,6 +1960,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
       await ref
           .read(marketWatchProvider)
           .fetchScripQuote(currentToken, currentExch, context);
+      await ref
+          .read(marketWatchProvider)
+          .fetchLinkeScrip(currentToken, currentExch, context);
 
       // Ensure scripInfo is loaded before proceeding
       final scripInfo = ref.read(marketWatchProvider).scripInfoModel;

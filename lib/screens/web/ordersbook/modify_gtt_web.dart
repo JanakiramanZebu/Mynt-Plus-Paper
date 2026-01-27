@@ -16,7 +16,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import 'dart:html' as html;
@@ -324,7 +324,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                         "$symbol $expDate $option ",
                         style: WebTextStyles.title(
                           isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                          color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                           fontWeight: WebFonts.medium,
                         ),
                       ),
@@ -332,7 +332,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                         exchange,
                         style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
-                            color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                            color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                             fontWeight: WebFonts.medium,
                         ),
                       ),
@@ -347,7 +347,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
                         color: (change == "null" || change == "0.00")
-                            ? MyntColors.textSecondary
+                            ? MyntColors.textSecondaryDark
                             : (change.startsWith("-") == true || perChange.startsWith("-") == true)
                                 ? MyntColors.loss
                                 : MyntColors.profit,
@@ -359,7 +359,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       "${(double.tryParse(change) ?? 0.00).toStringAsFixed(2)} ($perChange%)",
                       style: WebTextStyles.sub(
                         isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode ? MyntColors.textSecondary : MyntColors.textSecondary,
+                        color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
                         fontWeight: WebFonts.medium,
                       ),
                     ),
@@ -475,15 +475,15 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           isOco ? "Target Trigger Price" : "Trigger Price",
           style: WebTextStyles.formLabel(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+            color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
         SizedBox(
           height: 40,
           width: 200,
-          child: CustomTextFormField(
-         fillColor: theme.isDarkMode
+          child: MyntTextField(
+         backgroundColor: theme.isDarkMode
                                                             ? colors.darkGrey
                                                             : const Color(
                                                                 0xffF1F3F8),
@@ -506,21 +506,21 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 );
               }
             },
-            hintText: "${widget.gttOrderBook.ltp}",
-          hintStyle: WebTextStyles.formInput(
+            placeholder: "${widget.gttOrderBook.ltp}",
+          placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: WebTextStyles.formInput(
+          textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-            textCtrl: orderInput.val1Ctrl,
+            controller: orderInput.val1Ctrl,
             textAlign: TextAlign.start,
           ),
         ),
@@ -541,30 +541,30 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 "Qty",
                 style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                  color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                  hintText: orderInput.qtyCtrl.text,
-                   hintStyle: WebTextStyles.formInput(
+                child: MyntTextField(
+                  backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  placeholder: orderInput.qtyCtrl.text,
+                   placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
-                  inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                  style: WebTextStyles.formInput(
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-                  textCtrl: orderInput.qtyCtrl,
+                  controller: orderInput.qtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
                     if (value.isEmpty || value == "0") {
@@ -598,15 +598,15 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     "Price",
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 2),
                   Text(
                     orderInput.actPrcType,
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                     ),
                   ),
                 ],
@@ -615,8 +615,8 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                child: MyntTextField(
+                  backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   onChanged: (value) {
                     if (value.isEmpty) {
                       showResponsiveWarningMessage(context, "Price can not be empty");
@@ -626,24 +626,24 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       });
                     }
                   },
-                  hintText: "${widget.gttOrderBook.placeOrderParams!.prc}",
-               hintStyle: WebTextStyles.formInput(
+                  placeholder: "${widget.gttOrderBook.placeOrderParams!.prc}",
+               placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
-                   style: WebTextStyles.formInput(
+                   textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-                  isReadable: orderInput.actPrcType == "Limit" ||
+                  readOnly: orderInput.actPrcType == "Limit" ||
                       orderInput.actPrcType == "SL Limit"
                       ? false
                       : true,
-                  suffixIcon: InkWell(
+                  trailingWidget: InkWell(
                     onTap: () {
                       setState(() {
                         _GTTPriceTypeIsMarket = !_GTTPriceTypeIsMarket;
@@ -663,7 +663,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       fit: BoxFit.scaleDown,
                     ),
                   ),
-                  textCtrl: orderInput.priceCtrl,
+                  controller: orderInput.priceCtrl,
                   textAlign: TextAlign.start,
                 ),
               ),
@@ -684,15 +684,15 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
           isOco ? "Stoploss Trigger Price" : "Trigger Price",
           style: WebTextStyles.formLabel(
             isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+            color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
         SizedBox(
           height: 40,
           width: 200,
-          child: CustomTextFormField(
-            fillColor: theme.isDarkMode
+          child: MyntTextField(
+            backgroundColor: theme.isDarkMode
                                                             ? colors.darkGrey
                                                             : const Color(
                                                                 0xffF1F3F8),
@@ -715,21 +715,21 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 );
               }
             },
-            hintText: "${widget.gttOrderBook.ltp}",
-           hintStyle: WebTextStyles.formInput(
+            placeholder: "${widget.gttOrderBook.ltp}",
+           placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            style: WebTextStyles.formInput(
+            textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-            textCtrl: orderInput.val2Ctrl,
+            controller: orderInput.val2Ctrl,
             textAlign: TextAlign.start,
           ),
         ),
@@ -750,30 +750,30 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 "Qty",
                 style: WebTextStyles.formLabel(
                   isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                  color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
               SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                  hintText: orderInput.ocoQtyCtrl.text,
-                  hintStyle: WebTextStyles.formInput(
+                child: MyntTextField(
+                  backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                  placeholder: orderInput.ocoQtyCtrl.text,
+                  placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
-                  inputFormate: [FilteringTextInputFormatter.digitsOnly],
-                  style: WebTextStyles.formInput(
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-                  textCtrl: orderInput.ocoQtyCtrl,
+                  controller: orderInput.ocoQtyCtrl,
                   textAlign: TextAlign.start,
                   onChanged: (value) {
                     if (value.isEmpty || value == "0") {
@@ -807,7 +807,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                     "Price",
                     style: WebTextStyles.formLabel(
                       isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary,
+                      color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 4),
@@ -824,27 +824,27 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
               SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                  fillColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+                child: MyntTextField(
+                  backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
                   onChanged: (value) {},
-                  hintText: "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
-                  hintStyle: WebTextStyles.formInput(
+                  placeholder: "${widget.gttOrderBook.placeOrderParamsLeg2!.prc}",
+                  placeholderStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
                                     ? MyntColors.textSecondary
                                     : MyntColors.textSecondary,
                               ),
-                 style: WebTextStyles.formInput(
+                 textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
-                                    ? MyntColors.textPrimary
+                                    ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
-                  isReadable: orderInput.actOcoPrcType == "Limit" ||
+                  readOnly: orderInput.actOcoPrcType == "Limit" ||
                       orderInput.actOcoPrcType == "SL Limit"
                       ? false
                       : true,
-                  suffixIcon: InkWell(
+                  trailingWidget: InkWell(
                     onTap: () {
                       setState(() {
                         _GTTOCOPriceTypeIsMarket = !_GTTOCOPriceTypeIsMarket;
@@ -864,7 +864,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       fit: BoxFit.scaleDown,
                     ),
                   ),
-                  textCtrl: orderInput.ocoPriceCtrl,
+                  controller: orderInput.ocoPriceCtrl,
                   textAlign: TextAlign.start,
                 ),
               ),

@@ -20,7 +20,7 @@ import '../../../provider/network_state_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_font_web.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/custom_widget_button.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -400,9 +400,7 @@ class _ModifyPlaceOrderScreenState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? colors.darkGrey
-                          : const Color(0xfffafbff),
+                      color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -421,7 +419,7 @@ class _ModifyPlaceOrderScreenState
                                       style: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
                                         color: resolveThemeColor(context,
-                                            dark: MyntColors.textPrimary,
+                                            dark: MyntColors.textPrimaryDark,
                                             light: MyntColors.textPrimary),
                                         fontWeight: WebFonts.medium,
                                       ),
@@ -434,7 +432,7 @@ class _ModifyPlaceOrderScreenState
                                         style: WebTextStyles.title(
                                           isDarkTheme: theme.isDarkMode,
                                           color: resolveThemeColor(context,
-                                              dark: MyntColors.textPrimary,
+                                              dark: MyntColors.textPrimaryDark,
                                               light: MyntColors.textPrimary),
                                           fontWeight: WebFonts.medium,
                                         ),
@@ -447,7 +445,7 @@ class _ModifyPlaceOrderScreenState
                                         style: WebTextStyles.sub(
                                           isDarkTheme: theme.isDarkMode,
                                           color: resolveThemeColor(context,
-                                              dark: MyntColors.textPrimary,
+                                              dark: MyntColors.textPrimaryDark,
                                               light: MyntColors.textPrimary),
                                           fontWeight: WebFonts.medium,
                                         ),
@@ -459,7 +457,7 @@ class _ModifyPlaceOrderScreenState
                                       style: WebTextStyles.para(
                                         isDarkTheme: theme.isDarkMode,
                                         color: resolveThemeColor(context,
-                                            dark: MyntColors.textPrimary,
+                                            dark: MyntColors.textPrimaryDark,
                                             light: MyntColors.textPrimary),
                                         fontWeight: WebFonts.medium,
                                       ),
@@ -782,29 +780,29 @@ class _ModifyPlaceOrderScreenState
                                             SizedBox(
                                               height: 40,
                                               // width: 150,
-                                              child: CustomTextFormField(
-                                                fillColor: theme.isDarkMode
+                                              child: MyntTextField(
+                                                backgroundColor: theme.isDarkMode
                                                     ? colors.darkGrey
                                                     : const Color(0xffF1F3F8),
-                                                hintText:
+                                                placeholder:
                                                     "${widget.orderArg.lotSize}",
-                                                hintStyle:
+                                                placeholderStyle:
                                                     WebTextStyles.formInput(
                                                   isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
                                                       ? MyntColors.textSecondary
                                                       : MyntColors.textSecondary,
                                                 ),
-                                                inputFormate: [
+                                                inputFormatters: [
                                                   FilteringTextInputFormatter
                                                       .digitsOnly
                                                 ],
                                                 keyboardType:
                                                     TextInputType.number,
-                                                style: WebTextStyles.formInput(
+                                                textStyle: WebTextStyles.formInput(
                                                   isDarkTheme: theme.isDarkMode,
                                                   color: theme.isDarkMode
-                                                      ? MyntColors.textPrimary
+                                                      ? MyntColors.textPrimaryDark
                                                       : MyntColors.textPrimary,
                                                 ),
                                                 // prefixIcon: InkWell(
@@ -923,7 +921,7 @@ class _ModifyPlaceOrderScreenState
                                                 //       fit:
                                                 //           BoxFit.scaleDown),
                                                 // ),
-                                                textCtrl: qtyCtrl,
+                                                controller: qtyCtrl,
                                                 textAlign: TextAlign.start,
                                                 onChanged: (value) {
                                                   if (value.isEmpty ||
@@ -1031,7 +1029,7 @@ class _ModifyPlaceOrderScreenState
                                                         isDarkTheme:
                                                             theme.isDarkMode,
                                                         color: theme.isDarkMode
-                                                            ? MyntColors.textPrimary
+                                                            ? MyntColors.textPrimaryDark
                                                             : MyntColors.textPrimary,
                                                       )),
                                                 ]),
@@ -1039,8 +1037,8 @@ class _ModifyPlaceOrderScreenState
                                             SizedBox(
                                               height: 40,
                                               // width: 150,
-                                              child: CustomTextFormField(
-                                                  fillColor: theme.isDarkMode
+                                              child: MyntTextField(
+                                                  backgroundColor: theme.isDarkMode
                                                       ? colors.darkGrey
                                                       : const Color(0xffF1F3F8),
                                                   onChanged: (value) {
@@ -1093,9 +1091,9 @@ class _ModifyPlaceOrderScreenState
                                                       });
                                                     }
                                                   },
-                                                  hintText:
+                                                  placeholder:
                                                       "${widget.orderArg.ltp}",
-                                                  hintStyle:
+                                                  placeholderStyle:
                                                       WebTextStyles.formInput(
                                                     isDarkTheme:
                                                         theme.isDarkMode,
@@ -1107,15 +1105,15 @@ class _ModifyPlaceOrderScreenState
                                                       const TextInputType
                                                           .numberWithOptions(
                                                           decimal: true),
-                                                  style:
+                                                  textStyle:
                                                       WebTextStyles.formInput(
                                                     isDarkTheme:
                                                         theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? MyntColors.textPrimary
+                                                        ? MyntColors.textPrimaryDark
                                                         : MyntColors.textPrimary,
                                                   ),
-                                                  isReadable: prcType ==
+                                                  readOnly: prcType ==
                                                               "MKT" ||
                                                           prcType == "SL-MKT"
                                                       ? true
@@ -1130,7 +1128,7 @@ class _ModifyPlaceOrderScreenState
                                                   //             ? const Color(0xff555555)
                                                   //             : colors.colorWhite),
                                                   //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, isActivePrice[1] || isActivePrice[3] ? assets.lock : assets.ruppeIcon, fit: BoxFit.scaleDown)),
-                                                  suffixIcon: InkWell(
+                                                  trailingWidget: InkWell(
                                                     onTap: () {
                                                       setState(() {
                                                         _isMarketOrder =
@@ -1144,7 +1142,7 @@ class _ModifyPlaceOrderScreenState
                                                         assets.switchIcon,
                                                         fit: BoxFit.scaleDown),
                                                   ),
-                                                  textCtrl: priceCtrl,
+                                                  controller: priceCtrl,
                                                   textAlign: TextAlign.start),
                                             ),
                                           ],
@@ -1171,8 +1169,8 @@ class _ModifyPlaceOrderScreenState
                                           style: TextButton.styleFrom(
                                             shape: const RoundedRectangleBorder(),
                                             padding: const EdgeInsets.all(0),
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                            foregroundColor: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.backgroundColor),
                                             elevation: 0.0,
                                             minimumSize: const Size(0, 30),
                                             side: BorderSide.none,
@@ -2443,7 +2441,7 @@ class _ModifyPlaceOrderScreenState
       style: WebTextStyles.formLabel(
         isDarkTheme: theme.isDarkMode,
         color: theme.isDarkMode
-            ? MyntColors.textPrimary
+            ? MyntColors.textPrimaryDark
             : MyntColors.textPrimary,
       ),
     );
@@ -2466,18 +2464,20 @@ class _ModifyPlaceOrderScreenState
           const SizedBox(height: 2),
           Row(children: [
           headerTitleText("Trigger", theme),
-          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
           SizedBox(
               height: 40,
               width: 200,
-              child: CustomTextFormField(
-                  fillColor: theme.isDarkMode
+              child: MyntTextField(
+                  backgroundColor: theme.isDarkMode
                       ? colors.darkGrey
                       : const Color(0xffF1F3F8),
-                  hintText: "0.00",
-                  hintStyle: WebTextStyles.formInput(
+                  placeholder: "0.00",
+                  placeholderStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
                         ? MyntColors.textSecondary
@@ -2502,17 +2502,17 @@ class _ModifyPlaceOrderScreenState
                   },
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  style: WebTextStyles.formInput(
+                  textStyle: WebTextStyles.formInput(
                     isDarkTheme: theme.isDarkMode,
                     color: theme.isDarkMode
-                        ? MyntColors.textPrimary
+                        ? MyntColors.textPrimaryDark
                         : MyntColors.textPrimary,
                   ),
                   // prefixIcon: Container(
                   //     margin: const EdgeInsets.all(12),
                   //     decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                   //     child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown)),
-                  textCtrl: triggerPriceCtrl,
+                  controller: triggerPriceCtrl,
                   textAlign: TextAlign.start))
         ],
       ),
@@ -2531,17 +2531,19 @@ class _ModifyPlaceOrderScreenState
               widget.modifyOrderArgs.bpprc != null) ...[
             Row(children: [
             headerTitleText("Target", theme),
-            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           ],),
             const SizedBox(height: 10),
             SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                    fillColor: theme.isDarkMode
+                child: MyntTextField(
+                    backgroundColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
-                    hintText: "0.00",
+                    placeholder: "0.00",
                     onChanged: (value) {
                       double inputPrice = double.tryParse(value) ?? 0;
 
@@ -2563,7 +2565,7 @@ class _ModifyPlaceOrderScreenState
                             "Target can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                       }
                     },
-                    hintStyle: WebTextStyles.formInput(
+                    placeholderStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? MyntColors.textSecondary
@@ -2571,10 +2573,10 @@ class _ModifyPlaceOrderScreenState
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: WebTextStyles.formInput(
+                    textStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? MyntColors.textPrimary
+                          ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
@@ -2582,7 +2584,7 @@ class _ModifyPlaceOrderScreenState
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                     //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
                     // ),
-                    textCtrl: targetCtrl,
+                    controller: targetCtrl,
                     textAlign: TextAlign.start)),
             const SizedBox(height: 10),
           ],
@@ -2591,14 +2593,16 @@ class _ModifyPlaceOrderScreenState
               widget.modifyOrderArgs.blprc != null) ...[
             Row(children: [
             headerTitleText("Stoploss", theme),
-            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: theme.isDarkMode ? MyntColors.textPrimary : MyntColors.textPrimary)),
+            Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary))),
           ],),
             const SizedBox(height: 10),
             SizedBox(
                 height: 40,
                 width: 200,
-                child: CustomTextFormField(
-                    fillColor: theme.isDarkMode
+                child: MyntTextField(
+                    backgroundColor: theme.isDarkMode
                         ? colors.darkGrey
                         : const Color(0xffF1F3F8),
                     onChanged: (value) {
@@ -2621,8 +2625,8 @@ class _ModifyPlaceOrderScreenState
                             "Stoploss can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                       }
                     },
-                    hintText: "0.00",
-                    hintStyle: WebTextStyles.formInput(
+                    placeholder: "0.00",
+                    placeholderStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
                           ? MyntColors.textSecondary
@@ -2630,10 +2634,10 @@ class _ModifyPlaceOrderScreenState
                     ),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: WebTextStyles.formInput(
+                    textStyle: WebTextStyles.formInput(
                       isDarkTheme: theme.isDarkMode,
                       color: theme.isDarkMode
-                          ? MyntColors.textPrimary
+                          ? MyntColors.textPrimaryDark
                           : MyntColors.textPrimary,
                     ),
                     // prefixIcon: Container(
@@ -2641,7 +2645,7 @@ class _ModifyPlaceOrderScreenState
                     //   decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.isDarkMode ? const Color(0xff555555) : colors.colorWhite),
                     //   child: SvgPicture.asset(color: theme.isDarkMode ? colors.colorWhite : colors.colorGrey, assets.ruppeIcon, fit: BoxFit.scaleDown),
                     // ),
-                    textCtrl: stopLossCtrl,
+                    controller: stopLossCtrl,
                     textAlign: TextAlign.start)),
           ],
         ],
@@ -2733,11 +2737,11 @@ class _ModifyPlaceOrderScreenState
                                             : MyntColors.textPrimary,
                                       )),
                                   const SizedBox(height: 10),
-                            CustomTextFormField(
-                              fillColor: theme.isDarkMode
+                            MyntTextField(
+                              backgroundColor: theme.isDarkMode
                                           ? colors.darkGrey
                                           : const Color(0xffF1F3F8),
-                                      inputFormate: [
+                                      inputFormatters: [
                                         FilteringTextInputFormatter.allow(
                                           RegExp(r'^(0|[1-9][0-9]{0,19})$'),
                                         ),
@@ -2771,14 +2775,14 @@ class _ModifyPlaceOrderScreenState
                                 });
                               },
                               keyboardType: TextInputType.number,
-                                      style: WebTextStyles.title(
+                                      textStyle: WebTextStyles.title(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? MyntColors.textPrimary
+                                            ? MyntColors.textPrimaryDark
                                             : MyntColors.textPrimary,
                                       ),
-                                      textCtrl: mktProtCtrl,
-                                      prefixIcon: Container(
+                                      controller: mktProtCtrl,
+                                      leadingWidget: Container(
                                         margin: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
                                             borderRadius:
@@ -2794,8 +2798,8 @@ class _ModifyPlaceOrderScreenState
                                             fit: BoxFit.scaleDown),
                                       ),
                                       textAlign: TextAlign.start,
-                                      hintText: "Add Market Protection %",
-                                      hintStyle: WebTextStyles.formLabel(
+                                      placeholder: "Add Market Protection %",
+                                      placeholderStyle: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
                                         color: (theme.isDarkMode
                                                 ? MyntColors.textSecondary
@@ -3106,26 +3110,26 @@ class _ModifyPlaceOrderScreenState
                 SizedBox(
                   height: 40,
                   width: 200,
-                  child: CustomTextFormField(
-                      fillColor: theme.isDarkMode
+                  child: MyntTextField(
+                      backgroundColor: theme.isDarkMode
                           ? colors.darkGrey
                           : const Color(0xffF1F3F8),
-                      hintText: "0",
-                      hintStyle: WebTextStyles.formInput(
+                      placeholder: "0",
+                      placeholderStyle: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
                             ? MyntColors.textSecondary
                             : MyntColors.textSecondary,
                       ),
-                      inputFormate: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       keyboardType: TextInputType.number,
-                      style: WebTextStyles.formInput(
+                      textStyle: WebTextStyles.formInput(
                         isDarkTheme: theme.isDarkMode,
                         color: theme.isDarkMode
-                            ? MyntColors.textPrimary
+                            ? MyntColors.textPrimaryDark
                             : MyntColors.textPrimary,
                       ),
-                      textCtrl: discQtyCtrl,
+                      controller: discQtyCtrl,
                       textAlign: TextAlign.start),
                 ),
               ],
@@ -3263,11 +3267,11 @@ class _DraggableModifyPlaceOrderScreenDialogState
                       height: dialogHeight,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: theme.isDarkMode
-                              ? MyntColors.divider
-                              : MyntColors.divider,
-                        ),
+                        // border: Border.all(
+                        //   color: theme.isDarkMode
+                        //       ? MyntColors.divider
+                        //       : MyntColors.divider,
+                        // ),
                       ),
                       child: _ModifyPlaceOrderDialogCloseNotifier(
                         onClose: widget.onClose,
