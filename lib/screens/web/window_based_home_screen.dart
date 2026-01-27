@@ -15,6 +15,8 @@ import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import '../../../locator/constant.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/index_list_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/network_state_provider.dart';
@@ -999,7 +1001,9 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         final userDetail = userProfile.userDetailModel;
         final clientDetail = userProfile.clientDetailModel;
 
-        String clientId = userDetail?.actid ?? clientDetail?.actid ?? '';
+        // Get client ID with fallback to preferences
+        final Preferences pref = locator<Preferences>();
+        String clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
 
         return _ProfileDropdown(
           isDarkMode: isDarkMode,

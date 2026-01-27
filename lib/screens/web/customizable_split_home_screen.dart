@@ -23,6 +23,8 @@ import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
 import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 import '../../../provider/index_list_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/network_state_provider.dart';
@@ -1418,8 +1420,9 @@ class _CustomizableSplitHomeScreenState
         final clientDetail = userProfile.clientDetailModel;
         final isDark = ref.watch(themeProvider).isDarkMode;
 
-        // Get client ID
-        String clientId = userDetail?.actid ?? clientDetail?.actid ?? '';
+        // Get client ID with fallback to preferences
+        final Preferences pref = locator<Preferences>();
+        String clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
 
         return ProfileDropdown(
           isDarkMode: isDarkMode,

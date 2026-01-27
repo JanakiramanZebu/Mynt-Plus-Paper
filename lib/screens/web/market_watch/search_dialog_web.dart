@@ -9,6 +9,7 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'dart:html' as html;
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
+import '../../../provider/user_profile_provider.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../provider/thems.dart';
@@ -744,104 +745,136 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                             widget.isBasket != "Option||Is" &&
                             searchScrip.isPreDefWLs != "Yes" &&
                             searchScrip.scrips.length < 50)
-                          Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              splashColor: Colors.grey.withOpacity(0.2),
-                              highlightColor: Colors.grey.withOpacity(0.1),
-                              onTap: () async {
-                                if (!searchScrip.exarr
-                                    .contains('"${scrip.exch}"')) {
-                                  showResponsiveErrorMessage(
-                                      context, "Segment is not active.");
-                                } else {
-                                  if (searchScrip.isAdded![index]) {
-                                    await searchScrip.isActiveAddBtn(
-                                        false, index);
-                                    await searchScrip.addDelMarketScrip(
-                                      widget.wlName,
-                                      "${scrip.exch}|${scrip.token}",
-                                      context,
-                                      false,
-                                      false,
-                                      false,
-                                      false,
-                                    );
-                                  } else {
-                                    await searchScrip.isActiveAddBtn(
-                                        true, index);
-                                    await searchScrip.addDelMarketScrip(
-                                      widget.wlName,
-                                      "${scrip.exch}|${scrip.token}",
-                                      context,
-                                      true,
-                                      false,
-                                      false,
-                                      false,
-                                    );
+                          Builder(
+                            builder: (context) {
+                              // Check if user data is still loading
+                              final userProfile = ref.watch(userProfileProvider);
+                              final isUserDataLoading = userProfile.userDetailModel == null;
 
-                                    try {
-                                      final currentSort = ref
-                                          .read(marketWatchProvider)
-                                          .sortByWL;
-
-                                      if (currentSort.isNotEmpty) {
-                                        await ref
-                                            .read(marketWatchProvider)
-                                            .filterMWScrip(
-                                              sorting: currentSort,
-                                              wlName: widget.wlName,
-                                              context: context,
-                                            );
-                                      }
-
-                                      scripisAscending = !scripisAscending;
-                                      pref.setMWScrip(scripisAscending);
-
-                                      pricepisAscending = !pricepisAscending;
-                                      pref.setMWPrice(pricepisAscending);
-
-                                      perchangisAscending =
-                                          !perchangisAscending;
-                                      pref.setMWPerchnage(perchangisAscending);
-                                    } catch (e) {
-                                      print("Error in sorting: $e");
-                                    }
-                                  }
-                                }
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(7),
-                                child: !searchScrip.exarr
-                                        .contains('"${scrip.exch}"')
-                                    ? SvgPicture.asset(
-                                        assets.dInfo,
-                                        color: Colors.red,
-                                        height: 18,
-                                        width: 18,
-                                      )
-                                    : SvgPicture.asset(
-                                        searchScrip.isAdded![index]
-                                            ? assets.bookmarkIcon
-                                            : assets.bookmarkedIcon,
-                                        color: searchScrip.isAdded![index]
-                                            ? resolveThemeColor(
-                                                context,
-                                                dark: WebColors.primaryDark,
-                                                light: WebColors.primary,
-                                              )
-                                            : resolveThemeColor(
-                                                context,
-                                                dark: WebColors.iconDark,
-                                                light: WebColors.icon,
-                                              ),
-                                        height: 18,
-                                        width: 18,
+                              // Show skeleton loader while user data is loading
+                              if (isUserDataLoading) {
+                                return Padding(
+                                  padding: const EdgeInsets.all(7),
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        resolveThemeColor(
+                                          context,
+                                          dark: WebColors.iconDark,
+                                          light: WebColors.icon,
+                                        ),
                                       ),
-                              ),
-                            ),
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              // Get exarr directly from userProfileProvider (fresh data)
+                              final userExarr = userProfile.userDetailModel?.exarr ?? [];
+                              final isSegmentActive = userExarr.contains(scrip.exch);
+
+                              // Data loaded - show actual icon
+                              return Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  splashColor: Colors.grey.withOpacity(0.2),
+                                  highlightColor: Colors.grey.withOpacity(0.1),
+                                  onTap: () async {
+                                    if (!isSegmentActive) {
+                                      showResponsiveErrorMessage(
+                                          context, "Segment is not active.");
+                                    } else {
+                                      if (searchScrip.isAdded![index]) {
+                                        await searchScrip.isActiveAddBtn(
+                                            false, index);
+                                        await searchScrip.addDelMarketScrip(
+                                          widget.wlName,
+                                          "${scrip.exch}|${scrip.token}",
+                                          context,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                        );
+                                      } else {
+                                        await searchScrip.isActiveAddBtn(
+                                            true, index);
+                                        await searchScrip.addDelMarketScrip(
+                                          widget.wlName,
+                                          "${scrip.exch}|${scrip.token}",
+                                          context,
+                                          true,
+                                          false,
+                                          false,
+                                          false,
+                                        );
+
+                                        try {
+                                          final currentSort = ref
+                                              .read(marketWatchProvider)
+                                              .sortByWL;
+
+                                          if (currentSort.isNotEmpty) {
+                                            await ref
+                                                .read(marketWatchProvider)
+                                                .filterMWScrip(
+                                                  sorting: currentSort,
+                                                  wlName: widget.wlName,
+                                                  context: context,
+                                                );
+                                          }
+
+                                          scripisAscending = !scripisAscending;
+                                          pref.setMWScrip(scripisAscending);
+
+                                          pricepisAscending = !pricepisAscending;
+                                          pref.setMWPrice(pricepisAscending);
+
+                                          perchangisAscending =
+                                              !perchangisAscending;
+                                          pref.setMWPerchnage(perchangisAscending);
+                                        } catch (e) {
+                                          print("Error in sorting: $e");
+                                        }
+                                      }
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(7),
+                                    child: !isSegmentActive
+                                        ? SvgPicture.asset(
+                                            assets.dInfo,
+                                            color: Colors.red,
+                                            height: 18,
+                                            width: 18,
+                                          )
+                                        : SvgPicture.asset(
+                                            searchScrip.isAdded![index]
+                                                ? assets.bookmarkIcon
+                                                : assets.bookmarkedIcon,
+                                            color: searchScrip.isAdded![index]
+                                                ? resolveThemeColor(
+                                                    context,
+                                                    dark: WebColors.primaryDark,
+                                                    light: WebColors.primary,
+                                                  )
+                                                : resolveThemeColor(
+                                                    context,
+                                                    dark: WebColors.iconDark,
+                                                    light: WebColors.icon,
+                                                  ),
+                                            height: 18,
+                                            width: 18,
+                                          ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                       ],
                     ),
