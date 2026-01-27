@@ -170,35 +170,46 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   Widget _buildSummaryCards(
       ThemesProvider theme, PortfolioProvider positionBook) {
-    return Row(children: [
-      // Expanded(
-      //   child: _buildStatCard(
-      //     label: 'Trade Value',
-      //     value: _calculateTradeValue(positionBook),
-      //     valueColor:
-      //         _getStatValueColor(_calculateTradeValue(positionBook), theme),
-      //     theme: theme,
-      //   ),
-      // ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: _buildStatCard(
-          label: 'Total P&L',
-          value: positionBook.totPnL,
-          valueColor: _getValueColor(positionBook.totPnL, theme),
-          theme: theme,
-        ),
-      ),
-      const SizedBox(width: 12),
-      Expanded(
-        child: _buildStatCard(
-          label: 'Total MTM',
-          value: positionBook.totMtM,
-          valueColor: _getValueColor(positionBook.totMtM, theme),
-          theme: theme,
-        ),
-      ),
-    ]);
+    // Use Consumer to watch specific portfolio values for live updates
+    // This ensures stats update when positionCal() recalculates totals from WebSocket data
+    return Consumer(
+      builder: (context, ref, _) {
+        // Watch the portfolio provider to get live updates for totals
+        final portfolio = ref.watch(portfolioProvider);
+        final totPnL = portfolio.totPnL;
+        final totMtM = portfolio.totMtM;
+
+        return Row(children: [
+          // Expanded(
+          //   child: _buildStatCard(
+          //     label: 'Trade Value',
+          //     value: _calculateTradeValue(positionBook),
+          //     valueColor:
+          //         _getStatValueColor(_calculateTradeValue(positionBook), theme),
+          //     theme: theme,
+          //   ),
+          // ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              label: 'Total P&L',
+              value: totPnL,
+              valueColor: _getValueColor(totPnL, theme),
+              theme: theme,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              label: 'Total MTM',
+              value: totMtM,
+              valueColor: _getValueColor(totMtM, theme),
+              theme: theme,
+            ),
+          ),
+        ]);
+      },
+    );
   }
 
   Widget _buildStatCard({

@@ -105,6 +105,9 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     }
   }
 
+  // Track if this is the first WebSocket connection (initial page load)
+  bool _isInitialConnection = true;
+
   /// Handle websocket connection state changes
   void _handleWebSocketStateChange() {
     try {
@@ -116,6 +119,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         log('WebSubscriptionManager: WebSocket reconnected, restoring subscriptions');
         print('🔄 [WebSubscriptionManager] WebSocket reconnected');
         print('   Active subscriptions in master list: ${_activeSubscriptions.length}');
+        print('   Is initial connection: $_isInitialConnection');
 
         // Clear deduplication tracking (NOT the master list!)
         _currentWebSocketSubscriptions.clear();
@@ -135,17 +139,31 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
             }
           });
         } else if (_activeScreens.isNotEmpty && _isUserLoggedIn()) {
-          // No master list but have active screens - restore via screen-based method
-          print('📤 [WebSubscriptionManager] No master list, restoring via active screens');
-          Future.delayed(const Duration(milliseconds: 100), () {
-            final stillConnected = ref.read(websocketProvider).wsConnected;
-            if (stillConnected) {
-              _restoreActiveSubscriptions();
-            }
-          });
+          // No master list but have active screens
+          if (_isInitialConnection) {
+            // INITIAL LOAD: Don't try to restore immediately - data hasn't been fetched yet
+            // Screen handlers (e.g., _handleDashboardTap) will call _updateSubscriptionManagerForPanels
+            // after fetching data, which will properly subscribe with the fetched data.
+            print('⏳ [WebSubscriptionManager] Initial load - waiting for screen handlers to fetch data and subscribe');
+            log('WebSubscriptionManager: Initial connection - skipping immediate restore, screen handlers will subscribe after data fetch');
+
+            // Mark initial connection as complete
+            _isInitialConnection = false;
+          } else {
+            // RECONNECTION: Try to restore via screen-based method with longer delay
+            // to give time for any pending data refreshes
+            print('📤 [WebSubscriptionManager] Reconnection - restoring via active screens');
+            Future.delayed(const Duration(milliseconds: 500), () {
+              final stillConnected = ref.read(websocketProvider).wsConnected;
+              if (stillConnected) {
+                _restoreActiveSubscriptions();
+              }
+            });
+          }
         } else if (_isUserLoggedIn()) {
           // No subscriptions yet - screens will register and subscribe later
           log('WebSubscriptionManager: No subscriptions to restore, waiting for screens to register');
+          _isInitialConnection = false;
         }
       }
 
