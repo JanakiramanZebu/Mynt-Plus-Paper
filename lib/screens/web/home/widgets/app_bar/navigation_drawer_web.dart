@@ -166,28 +166,28 @@ class NavigationDrawerWeb extends StatelessWidget {
 
                   Divider(color: dividerColor.withValues(alpha: 0.3), height: 24),
 
-                  // Swap panels option
-                  _buildDrawerActionItem(
-                    context: context,
-                    title: 'Swap Panels',
-                    icon: Icons.swap_horiz_outlined,
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onSwapPanels();
-                    },
-                  ),
+                  // // Swap panels option
+                  // _buildDrawerActionItem(
+                  //   context: context,
+                  //   title: 'Swap Panels',
+                  //   icon: Icons.swap_horiz_outlined,
+                  //   onTap: () {
+                  //     Navigator.of(context).pop();
+                  //     onSwapPanels();
+                  //   },
+                  // ),
 
-                  // Theme toggle
-                  if (onThemeToggle != null)
-                    _buildDrawerActionItem(
-                      context: context,
-                      title: isDarkMode ? 'Light Mode' : 'Dark Mode',
-                      icon: isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onThemeToggle!();
-                      },
-                    ),
+                  // // Theme toggle
+                  // if (onThemeToggle != null)
+                  //   _buildDrawerActionItem(
+                  //     context: context,
+                  //     title: isDarkMode ? 'Light Mode' : 'Dark Mode',
+                  //     icon: isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  //     onTap: () {
+                  //       Navigator.of(context).pop();
+                  //       onThemeToggle!();
+                  //     },
+                  //   ),
                 ],
               ),
             ),

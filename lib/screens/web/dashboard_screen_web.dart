@@ -262,81 +262,122 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     FundProvider fund,
     MFProvider mfData,
   ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _buildPortfolioSection(
-            context,
-            'Equity',
-            _getEquityMetrics(context, portfolio),
-            onTap: () {
-              if (WebNavigationHelper.isAvailable) {
-                WebNavigationHelper.navigateTo(Routes.holdingscreen);
-              }
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildPortfolioSection(
-            context,
-            'Mutual Fund',
-            _getMutualFundMetrics(context, mfData),
-            onTap: () {
-              if (WebNavigationHelper.isAvailable) {
-                WebNavigationHelper.navigateTo(Routes.mfmainscreen);
-              }
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildPortfolioSection(
-            context,
-            'Position',
-            _getPositionMetrics(context, portfolio),
-            onTap: () {
-              if (WebNavigationHelper.isAvailable) {
-                WebNavigationHelper.navigateTo(Routes.positionscreen);
-              }
-            },
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildPortfolioSection(
-            context,
-            'Funds',
-            _getFundsMetrics(context, fund),
-            onTap: () {
-              if (WebNavigationHelper.isAvailable) {
-                WebNavigationHelper.navigateTo(Routes.fundscreen);
-              }
-            },
-            trailing: MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () {
-                  if (WebNavigationHelper.isAvailable) {
-                    WebNavigationHelper.navigateTo(Routes.fundscreen,
-                        arguments: 'addMoney');
-                  }
-                },
-                child: Text(
-                  'Add Money',
-                  style: MyntWebTextStyles.body(
-                    context,
-                    darkColor: MyntColors.primaryDark,
-                    lightColor: MyntColors.primary,
-                    fontWeight: MyntFonts.bold,
-                  ).copyWith(fontSize: 12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        const cardSpacing = 16.0;
+        const minCardWidth = 240.0;
+        const totalCards = 4;
+        const totalSpacing = cardSpacing * (totalCards - 1);
+        const totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+
+        // Calculate card width
+        double cardWidth;
+        bool needsScrolling = false;
+
+        if (availableWidth >= totalMinWidth) {
+          // All cards fit, distribute evenly
+          cardWidth = (availableWidth - totalSpacing) / totalCards;
+        } else {
+          // Need scrolling, use min width
+          cardWidth = minCardWidth;
+          needsScrolling = true;
+        }
+
+        Widget content = SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: needsScrolling
+              ? const ClampingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: cardWidth,
+                child: _buildPortfolioSection(
+                  context,
+                  'Equity',
+                  _getEquityMetrics(context, portfolio),
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.holdingscreen);
+                    }
+                  },
                 ),
               ),
-            ),
+              const SizedBox(width: cardSpacing),
+              SizedBox(
+                width: cardWidth,
+                child: _buildPortfolioSection(
+                  context,
+                  'Mutual Fund',
+                  _getMutualFundMetrics(context, mfData),
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.mfmainscreen);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: cardSpacing),
+              SizedBox(
+                width: cardWidth,
+                child: _buildPortfolioSection(
+                  context,
+                  'Position',
+                  _getPositionMetrics(context, portfolio),
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.positionscreen);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: cardSpacing),
+              SizedBox(
+                width: cardWidth,
+                child: _buildPortfolioSection(
+                  context,
+                  'Funds',
+                  _getFundsMetrics(context, fund),
+                  onTap: () {
+                    if (WebNavigationHelper.isAvailable) {
+                      WebNavigationHelper.navigateTo(Routes.fundscreen);
+                    }
+                  },
+                  trailing: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () {
+                        if (WebNavigationHelper.isAvailable) {
+                          WebNavigationHelper.navigateTo(Routes.fundscreen,
+                              arguments: 'addMoney');
+                        }
+                      },
+                      child: Text(
+                        'Add Money',
+                        style: MyntWebTextStyles.symbol(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+        );
+
+        // If scrolling not needed, wrap in a row to fill width
+        if (!needsScrolling) {
+          return content;
+        }
+
+        return content;
+      },
     );
   }
 
@@ -383,12 +424,12 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   children: [
                     Text(
                       title,
-                      style: MyntWebTextStyles.body(
+                      style: MyntWebTextStyles.symbol(
                         context,
-                        darkColor: MyntColors.textPrimaryDark,
-                        lightColor: MyntColors.textPrimary,
-                        fontWeight: MyntFonts.bold,
-                      ).copyWith(fontSize: 14),
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
                     ),
                     if (trailing != null) trailing,
                   ],
@@ -475,11 +516,13 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       children: [
         Text(
           metric['label'],
-          style: MyntWebTextStyles.caption(
+          style: MyntWebTextStyles.exch(
             context,
-            darkColor: MyntColors.textSecondaryDark,
-            lightColor: MyntColors.textSecondary,
-          ).copyWith(fontSize: 14),
+            fontWeight: FontWeight.w500,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary),
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: isLeftAligned ? TextAlign.left : TextAlign.right,
@@ -490,20 +533,19 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           children: [
             Text(
               metric['value'],
-              style: MyntWebTextStyles.body(
+              style: MyntWebTextStyles.price(
                 context,
-                fontWeight: MyntFonts.medium,
                 color: valueColor,
-              ).copyWith(fontSize: 14),
+              ),
             ),
             if (metric['subValue'] != null) ...[
               const SizedBox(width: 4),
               Text(
                 metric['subValue'],
-                style: MyntWebTextStyles.caption(
+                style: MyntWebTextStyles.priceChange(
                   context,
                   color: valueColor,
-                ).copyWith(fontSize: 12),
+                ),
               ),
             ],
           ],
@@ -673,29 +715,56 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           ],
         ),
         const SizedBox(height: 10),
-        // Index cards - horizontal scrollable
+        // Index cards - responsive layout
         if (hasIndices)
-          SizedBox(
-            height: 100, // Fixed height for index cards
-            child: SingleChildScrollView(
-              controller: _indexScrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const ClampingScrollPhysics(), // No bouncing at edges
-              child: Row(
-                children: indexValues.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final item = entry.value;
-                  return Container(
-                    margin: EdgeInsets.only(
-                      right: index < indexValues.length - 1 ? 12 : 0,
-                    ),
-                    child: _DashboardIndexCard(
-                      indexItem: item,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              const cardSpacing = 12.0;
+              const minCardWidth = 140.0;
+              final totalCards = indexValues.length;
+              final totalSpacing = cardSpacing * (totalCards - 1);
+              final totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+
+              // Calculate card width
+              double cardWidth;
+              bool needsScrolling = false;
+
+              if (availableWidth >= totalMinWidth) {
+                // All cards fit, distribute evenly
+                cardWidth = (availableWidth - totalSpacing) / totalCards;
+              } else {
+                // Need scrolling, use min width
+                cardWidth = minCardWidth;
+                needsScrolling = true;
+              }
+
+              return SizedBox(
+                height: 100,
+                child: SingleChildScrollView(
+                  controller: _indexScrollController,
+                  scrollDirection: Axis.horizontal,
+                  physics: needsScrolling
+                      ? const ClampingScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
+                  child: Row(
+                    children: indexValues.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final item = entry.value;
+                      return Container(
+                        width: cardWidth,
+                        margin: EdgeInsets.only(
+                          right: index < indexValues.length - 1 ? cardSpacing : 0,
+                        ),
+                        child: _DashboardIndexCard(
+                          indexItem: item,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              );
+            },
           )
         else
           SizedBox(
@@ -1344,74 +1413,82 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
             debugPrint("Error tapping index: $e");
           }
         },
-        child: Container(
-          width: 180, // Fixed width for all cards
-          height: 100, // Fixed height for all cards
-          padding: const EdgeInsets.all(15),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? shadcn.Theme.of(context).colorScheme.muted
-                : shadcn.Theme.of(context).colorScheme.card,
-            borderRadius: BorderRadius.circular(4),
-            // border: Border.all(
-            //   color: shadcn.Theme.of(context).colorScheme.border,
-            //   width: 1,
-            // ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                widget.indexItem.idxname?.toUpperCase() ?? "",
-                style: MyntWebTextStyles.body(
-                  context,
-                  darkColor: MyntColors.textPrimaryDark,
-                  lightColor: MyntColors.textPrimary,
-                  fontWeight: MyntFonts.semiBold,
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Use responsive width - minimum 140, expand to fit available space
+            final cardWidth = constraints.maxWidth > 0 ? constraints.maxWidth : 180.0;
+            final isCompact = cardWidth < 160;
+
+            return Container(
+              constraints: const BoxConstraints(minWidth: 140),
+              padding: EdgeInsets.all(isCompact ? 12 : 15),
+              decoration: BoxDecoration(
+                color: _isHovered
+                    ? shadcn.Theme.of(context).colorScheme.muted
+                    : shadcn.Theme.of(context).colorScheme.card,
+                borderRadius: BorderRadius.circular(4),
               ),
-              // Price and change section
-              Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // LTP without ₹ symbol, with profit/loss color
                   Text(
-                    _ltp,
-                    style: MyntWebTextStyles.body(
+                    widget.indexItem.idxname?.toUpperCase() ?? "",
+                    style: MyntWebTextStyles.symbol(
                       context,
-                      color: changeColor, // Profit/loss color for LTP
-                      fontWeight: MyntFonts.medium,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  // Change and percentage - textPrimary color
-                  Row(
+                  const SizedBox(height: 8),
+                  // Price and change section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // LTP without ₹ symbol, with profit/loss color
                       Text(
-                        _change.startsWith("-") ? _change : "+$_change ",
-                        style: MyntWebTextStyles.para(
+                        _ltp,
+                        style: MyntWebTextStyles.price(
                           context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: MyntColors.textPrimary,
-                          fontWeight: MyntFonts.medium,
+                          color: changeColor,
                         ),
                       ),
-                      Text(
-                        "($_perChange%)",
-                        style: MyntWebTextStyles.para(
-                          context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: MyntColors.textPrimary,
-                          fontWeight: MyntFonts.medium,
-                        ),
+                      const SizedBox(height: 4),
+                      // Change and percentage - wrap to next line if needed
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 2,
+                        children: [
+                          Text(
+                            _change.startsWith("-") ? _change : "+$_change",
+                            style: MyntWebTextStyles.priceChange(
+                              context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            ),
+                          ),
+                          Text(
+                            "($_perChange%)",
+                            style: MyntWebTextStyles.priceChange(
+                              context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -1837,10 +1914,13 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                       Expanded(
                         child: Text(
                           symbolName,
-                          style: MyntWebTextStyles.body(
+                          style: MyntWebTextStyles.symbol(
                             context,
-                            darkColor: MyntColors.textPrimaryDark,
-                            lightColor: MyntColors.textPrimary,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
                           ),
                         ),
                       ),
@@ -1848,7 +1928,7 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                       if (widget.showPrice)
                         Text(
                           "₹$_ltp",
-                          style: MyntWebTextStyles.body(
+                          style: MyntWebTextStyles.price(
                             context,
                             color: changeColor,
                           ),
@@ -1867,33 +1947,27 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                           widget.stock.exch ?? "",
                           style: MyntWebTextStyles.exch(
                             context,
-                            darkColor: MyntColors.textSecondaryDark,
-                            lightColor: MyntColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
                       // Change and percentage
                       if (widget.showPrice)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _change.startsWith("-") ? _change : "+$_change",
-                              style: MyntWebTextStyles.para(
-                                context,
-                                darkColor: MyntColors.textPrimaryDark,
-                                lightColor: MyntColors.textPrimary,
-                              ),
+                        Text(
+                          "${_change.startsWith("-") ? _change : "+$_change"} ($_perChange%)",
+                          style: MyntWebTextStyles.priceChange(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
                             ),
-                            Text(
-                              " ($_perChange%)",
-                              style: MyntWebTextStyles.para(
-                                context,
-                                darkColor: MyntColors.textPrimaryDark,
-                                lightColor: MyntColors.textPrimary,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                     ],
                   ),

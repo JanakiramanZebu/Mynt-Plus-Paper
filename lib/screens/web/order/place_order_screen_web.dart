@@ -446,7 +446,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
     priceType = widget.orderArg.isExit &&
             ["Limit", "Market"].contains(userOrderPreference['expos'])
-        ? userOrderPreference['expos']
+        ? (userOrderPreference['expos'] ?? 'Limit')
         : checkRawValue
             ? {
                   "MKT": "Market",
@@ -456,12 +456,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 "Limit"
             : isUserOrderPreferenceAvailable
                 ? (["Limit", "Market"].contains(userOrderPreference['prc'])
-                    ? userOrderPreference['prc']
+                    ? (userOrderPreference['prc'] ?? 'Limit')
                     : (userOrderPreference['prc'] == "SL MKT" &&
                             (orderType != "Delivery" &&
                                 orderType != "Intraday"))
                         ? 'Limit'
-                        : userOrderPreference['prc'])
+                        : (userOrderPreference['prc'] ?? 'Limit'))
                 : 'Limit';
 
     _isMarketOrder = ["Market", "SL MKT"].contains(priceType);
@@ -7701,7 +7701,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
           ref.read(orderProvider).setOrderloader(false);
           // Close the place order dialog after order is placed (for overlay dialogs)
           // Only close if sticky order window is not enabled
-          bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+          bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
           if (!stickyOrderWindow) {
             final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
             if (closeNotifier != null) {
@@ -8002,7 +8002,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       await action();
                                       // Close the place order dialog after order is placed
                                       // Only close if sticky order window is not enabled
-                                      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+                                      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
                                       if (!stickyOrderWindow) {
                                         final closeNotifier =
                                             _PlaceOrderDialogCloseNotifier.of(
@@ -8106,7 +8106,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     // Only close if sticky order window is not enabled
     if (wasSuccessful && mounted) {
       ResponsiveSnackBar.showSuccess(context, "GTT Order Placed Successfully");
-      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
       if (!stickyOrderWindow && closeNotifier != null) {
         closeNotifier.onClose();
       }
@@ -8160,7 +8160,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     // Only close if sticky order window is not enabled
     if (wasSuccessful && mounted) {
       ResponsiveSnackBar.showSuccess(context, "OCO Order Placed Successfully");
-      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True" || userOrderPreference['stickysrc'] == true;
       if (!stickyOrderWindow && closeNotifier != null) {
         closeNotifier.onClose();
       }

@@ -93,6 +93,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // Track if mouse is hovering over the dropdown menu
   bool _isHoveringDropdown = false;
 
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -112,35 +115,62 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     if (_activePopoverController != null) {
       final currentHover = _hoveredRowIndex.value;
 
-      // If still hovering the same row that has the popover, don't close
+      // If still hovering the same row that has the popover, cancel any pending close
       if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
         return;
       }
 
-      // If hovering the dropdown menu, don't close
+      // If hovering the dropdown menu, cancel any pending close
       if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
         return;
       }
 
-      // Close the popover when row is unhovered and not hovering dropdown
-      _closePopover();
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
     }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
   }
 
   // Helper to close popover and reset state
   void _closePopover() {
+    _cancelPopoverCloseTimer();
     try {
       _activePopoverController?.close();
     } catch (_) {
       // Overlay might already be closed, ignore
     }
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
     _activePopoverController = null;
     _popoverRowIndex = null;
     _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
     _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
@@ -235,15 +265,30 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null,
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          // Cancel any pending close if re-entering the popover's row
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          // If popover is open and not hovering dropdown, start close timer
+          // This handles case where value was already null (no listener trigger)
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           // PERFORMANCE FIX: Pass child to the 'child' parameter so it's cached
           // and NOT rebuilt when hover changes. Only the Container color changes.
           child: child,
           builder: (context, hoveredIndex, cachedChild) {
-            final isRowHovered = hoveredIndex == rowIndex;
+            // Row is hovered if mouse is over it OR if its dropdown menu is open
+            final isRowHovered = hoveredIndex == rowIndex ||
+                (_activePopoverController != null && _popoverRowIndex == rowIndex);
 
             // Background color logic: No hover effect for closed positions
             Color? backgroundColor;
@@ -654,68 +699,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   @override
   Widget build(BuildContext context) {
     final portfolioData = ref.watch(portfolioProvider);
-    // ignore: unused_local_variable
-    final realPositions = portfolioData.allPostionList.isNotEmpty
+    final positions = portfolioData.allPostionList.isNotEmpty
         ? portfolioData.allPostionList
         : portfolioData.openPosition ?? [];
-
-    // TODO: Remove this static test data after testing
-    final positions = [
-      PositionBookModel(
-        exch: "NSE",
-        tsym: "YESBANK-EQ",
-        sPrdtAli: "MIS",
-        prd: "I",
-        token: "11915",
-        symbol: "YESBANK",
-        daybuyqty: "2",
-        daysellqty: "2",
-        daybuyavgprc: "21.38",
-        daysellavgprc: "21.42",
-        netqty: "0",
-        qty: "0",
-        avgPrc: "0.00",
-        lp: "21.43",
-        mTm: "0.00",
-        profitNloss: "0.08",
-      ),
-      PositionBookModel(
-        exch: "NSE",
-        tsym: "IDEA-EQ",
-        sPrdtAli: "CNC",
-        prd: "C",
-        token: "14366",
-        symbol: "IDEA",
-        daybuyqty: "2",
-        daysellqty: "2",
-        daybuyavgprc: "9.97",
-        daysellavgprc: "9.96",
-        netqty: "0",
-        qty: "0",
-        avgPrc: "0.00",
-        lp: "9.91",
-        mTm: "0.00",
-        profitNloss: "-0.03",
-      ),
-      PositionBookModel(
-        exch: "NSE",
-        tsym: "YESBANK-EQ",
-        sPrdtAli: "CNC",
-        prd: "C",
-        token: "11915",
-        symbol: "YESBANK",
-        daybuyqty: "1",
-        daysellqty: "0",
-        daybuyavgprc: "21.38",
-        daysellavgprc: "0.00",
-        netqty: "1",
-        qty: "1",
-        avgPrc: "21.38",
-        lp: "21.43",
-        mTm: "0.05",
-        profitNloss: "0.05",
-      ),
-    ];
 
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);
@@ -941,7 +927,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                   child: ValueListenableBuilder<int?>(
                                     valueListenable: _hoveredRowIndex,
                                     builder: (context, hoveredIndex, _) {
-                                      final isRowHovered = hoveredIndex == index;
+                                      // Row is hovered if mouse is over it OR if its dropdown menu is open
+                                      final isRowHovered = hoveredIndex == index ||
+                                          (_activePopoverController != null && _popoverRowIndex == index);
                                       return _buildCellContent(
                                         context,
                                         header,
@@ -1522,13 +1510,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 return MouseRegion(
                   onEnter: (_) {
                     _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
                   },
                   onExit: (_) {
                     _isHoveringDropdown = false;
-                    // Close if not hovering the row either
-                    if (_hoveredRowIndex.value != _popoverRowIndex) {
-                      _closePopover();
-                    }
+                    // Start delayed close - gives time for mouse to move back to row
+                    _startPopoverCloseTimer();
                   },
                   child: shadcn.DropdownMenu(
                     children: menuItems,

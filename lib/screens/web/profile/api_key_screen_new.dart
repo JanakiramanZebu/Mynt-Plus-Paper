@@ -272,23 +272,23 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
             color: resolveThemeColor(context,
                 dark: MyntColors.backgroundColorDark,
                 light: MyntColors.backgroundColor),
-            border: Border(
-              top: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-              left: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-              right: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-            ),
+            // border: Border(
+            //   top: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            //   left: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            //   right: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            // ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

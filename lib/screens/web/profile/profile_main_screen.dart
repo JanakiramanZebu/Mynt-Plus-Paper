@@ -565,8 +565,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
         expriceType = ["Limit", "Market"].contains(userSavedOrderPreference['expos'])
             ? userSavedOrderPreference['expos']
             : 'Market';
-        // Load sticky order window setting
-        _stickyOrderWindow = userSavedOrderPreference['stickysrc'] == true;
+        // Load sticky order window setting (handle both boolean and string values, default to false if null)
+        _stickyOrderWindow = userSavedOrderPreference['stickysrc'] == true || userSavedOrderPreference['stickysrc'] == "True";
       });
     }
   }
@@ -1227,6 +1227,17 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   child: Container(
                     width: 340,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.card,
+                          light: MyntColors.backgroundColor),
+                          border: Border.all(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.backgroundColor),
+                          ),
+                    ),
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -1376,7 +1387,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                         style: MyntWebTextStyles.para(context,
                           fontWeight: MyntFonts.medium,
                           color: isSelected
-                              ? MyntColors.primary
+                              ?resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.primary)
                               : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                         ),
                       ),
@@ -1786,8 +1797,8 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
           controller: _tabController,
           labelColor: MyntColors.primary,
           unselectedLabelColor: resolveThemeColor(context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary),
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary),
           indicatorColor: MyntColors.primary,
           labelStyle: MyntWebTextStyles.bodySmall(context,
               fontWeight: MyntFonts.semiBold),
