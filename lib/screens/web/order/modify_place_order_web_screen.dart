@@ -2870,19 +2870,27 @@ class _ModifyPlaceOrderScreenState
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(
-                    " $marketProtection %",
-                    style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? MyntColors.primary
-                        : MyntColors.primary,
-                  ).copyWith(
-                    decoration: TextDecoration.underline,
-                  ),
-                  ),
-                ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.only(bottom: 2), // 👈 GAP between text & underline
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: MyntColors.primary,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          "$marketProtection %",
+                          style: WebTextStyles.para(
+                            isDarkTheme: theme.isDarkMode,
+                            color: MyntColors.primary,
+                            fontWeight: WebFonts.semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
               ),
             ],
           ),

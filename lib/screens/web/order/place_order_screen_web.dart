@@ -334,6 +334,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   bool _isLotToQty = true;
   bool _isStoplossOrder = false;
   bool _afterMarketOrder = false;
+  bool _savedAfterMarketOrder = false; // Stores AMO state when switching to CO-BO
+  bool _wasInCOBOMode = false; // Tracks if previous order type was CO-BO
   bool _addValidityAndDisclosedQty = false;
   bool _isCoverOrderEnabled = true;
   bool _isBracketOrderEnabled = false;
@@ -388,7 +390,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                 }[orderRawValue['prd']] ??
                 "Delivery"
             : isUserOrderPreferenceAvailable
-                ? (["Delivery", "Intraday", "MTF"]
+                ? (["Delivery", "Intraday", "MTF", "CO - BO"]
                         .contains(userOrderPreference['prd'])
                     ? userOrderPreference['prd']
                     : "Delivery")
@@ -726,6 +728,15 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       }
     }
 
+    // Initialize CO-BO specific flags when loaded from user preferences
+    if (!checkRawValue && isUserOrderPreferenceAvailable && orderType == "CO - BO") {
+      _addValidityAndDisclosedQty = false;
+      _afterMarketOrder = false;
+      _wasInCOBOMode = true;
+      _isCoverOrderEnabled = true;
+      _isBracketOrderEnabled = false;
+    }
+
     // Initialize circuit breaker validation flag
     _hasValidCircuitBreakerValues = widget.scripInfo.lc != null &&
         widget.scripInfo.uc != null &&
@@ -734,9 +745,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         widget.scripInfo.lc!.isNotEmpty &&
         widget.scripInfo.uc!.isNotEmpty;
 
-    // Check if market is closed and auto-enable AMO
+    // Check if market is closed and auto-enable AMO (except for CO-BO which doesn't support AMO)
     _isMarketClosed = _checkMarketClosed();
-    if (_isMarketClosed && !checkRawValue) {
+    if (_isMarketClosed && !checkRawValue && orderType != "CO - BO") {
       _afterMarketOrder = true;
       isAdvancedOptionClicked = true; // Auto-expand advanced section
     }
@@ -1250,7 +1261,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       _debouncedMarginUpdate();
                                                     },
                                                     child: Container(
-                                                      width: 42,
+                                                      width: 43,
                                                       height: 22,
                                                       decoration: BoxDecoration(
                                                         color: resolveThemeColor(
@@ -1609,7 +1620,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           // ]
                           const SizedBox(height: 10),
                           // AMO Alert Banner - shown when market is closed
-                          if (_isMarketClosed && orderType != "CO - BO") ...[
+                          if (_isMarketClosed && _afterMarketOrder && orderType != "CO - BO") ...[
                             Container(
                               margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -7519,18 +7530,26 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      " $marketProtection %",
-                      style: WebTextStyles.para(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? MyntColors.primary
-                            : MyntColors.primary,
-                        fontWeight: WebFonts.semiBold,
-                      ).copyWith(decoration: TextDecoration.underline),
-                    ),
-
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          padding: const EdgeInsets.only(bottom: 2), // 👈 GAP between text & underline
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: MyntColors.primary,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            "$marketProtection %",
+                            style: WebTextStyles.para(
+                              isDarkTheme: theme.isDarkMode,
+                              color: MyntColors.primary,
+                              fontWeight: WebFonts.semiBold,
+                            ),
+                          ),
+                        ),
                     //  Text(
                     //   " $marketProtection %",
                     //   style: textStyle(
@@ -7681,14 +7700,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               context, placeOrderInput, widget.orderArg.isExit);
           ref.read(orderProvider).setOrderloader(false);
           // Close the place order dialog after order is placed (for overlay dialogs)
-          final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
-          if (closeNotifier != null) {
-            // Add a small delay to allow order confirmation dialog to appear first
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (mounted) {
-                closeNotifier.onClose();
-              }
-            });
+          // Only close if sticky order window is not enabled
+          bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+          if (!stickyOrderWindow) {
+            final closeNotifier = _PlaceOrderDialogCloseNotifier.of(context);
+            if (closeNotifier != null) {
+              // Add a small delay to allow order confirmation dialog to appear first
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  closeNotifier.onClose();
+                }
+              });
+            }
           }
         }
       } else {
@@ -7978,18 +8001,22 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       });
                                       await action();
                                       // Close the place order dialog after order is placed
-                                      final closeNotifier =
-                                          _PlaceOrderDialogCloseNotifier.of(
-                                              context);
-                                      if (closeNotifier != null) {
-                                        // Add a small delay to allow order confirmation dialog to appear first
-                                        Future.delayed(
-                                            const Duration(milliseconds: 300),
-                                            () {
-                                          if (mounted) {
-                                            closeNotifier.onClose();
-                                          }
-                                        });
+                                      // Only close if sticky order window is not enabled
+                                      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+                                      if (!stickyOrderWindow) {
+                                        final closeNotifier =
+                                            _PlaceOrderDialogCloseNotifier.of(
+                                                context);
+                                        if (closeNotifier != null) {
+                                          // Add a small delay to allow order confirmation dialog to appear first
+                                          Future.delayed(
+                                              const Duration(milliseconds: 300),
+                                              () {
+                                            if (mounted) {
+                                              closeNotifier.onClose();
+                                            }
+                                          });
+                                        }
                                       }
                                     }
                                   },
@@ -8076,9 +8103,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     final wasSuccessful = placeResult?.stat == "OI created";
 
     // Close the draggable dialog and show success message
+    // Only close if sticky order window is not enabled
     if (wasSuccessful && mounted) {
       ResponsiveSnackBar.showSuccess(context, "GTT Order Placed Successfully");
-      if (closeNotifier != null) {
+      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+      if (!stickyOrderWindow && closeNotifier != null) {
         closeNotifier.onClose();
       }
     }
@@ -8128,9 +8157,11 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     final wasSuccessful = placeResult?.stat == "OI created";
 
     // Close the draggable dialog and show success message
+    // Only close if sticky order window is not enabled
     if (wasSuccessful && mounted) {
       ResponsiveSnackBar.showSuccess(context, "OCO Order Placed Successfully");
-      if (closeNotifier != null) {
+      bool stickyOrderWindow = userOrderPreference['stickysrc'] == "True";
+      if (!stickyOrderWindow && closeNotifier != null) {
         closeNotifier.onClose();
       }
     }
@@ -8353,9 +8384,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         orderType == "MTF") {
       _isCoverOrderEnabled = true;
       _isBracketOrderEnabled = false;
+      // Only restore saved AMO value when switching back from CO-BO
+      if (_wasInCOBOMode) {
+        _afterMarketOrder = _savedAfterMarketOrder;
+        _wasInCOBOMode = false;
+      }
     } else if (orderType == "CO - BO") {
       _addValidityAndDisclosedQty = false;
+      // Save AMO value before disabling it for CO-BO
+      _savedAfterMarketOrder = _afterMarketOrder;
       _afterMarketOrder = false;
+      _wasInCOBOMode = true;
     }
   }
 

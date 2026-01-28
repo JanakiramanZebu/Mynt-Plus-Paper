@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +21,8 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart' show ScreenType;
 
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
+import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'Api_key_screen.dart';
 import 'api_key_screen_new.dart';
 
@@ -514,14 +514,19 @@ class _SettingsSection extends ConsumerStatefulWidget {
 }
 
 class _SettingsSectionState extends ConsumerState<_SettingsSection> {
-  // Order preference state
-  String _selectedProductType = 'Delivery / Carry';
-  String _selectedOrderType = 'Market';
-  String _selectedValidity = 'DAY';
-  String _selectedMarketProtection = '%';
-  String _selectedQuantityPref = 'Default Qty / Lot';
-  String _selectedPositionExit = 'Limit';
-  bool _stickyOrderWindow = true;
+  // Order preference state - using same variable names as order_prefere_screen.dart
+  String priceType = "Limit";
+  String expriceType = "Market";
+  String orderType = "Delivery";
+  String validity = "DAY";
+  OrdQtyPref QtyPrefer = OrdQtyPref.mktqty;
+
+  // Text controllers for editable fields
+  TextEditingController mktProtCtrl = TextEditingController(text: "1");
+  TextEditingController qtyCtrl = TextEditingController(text: "1");
+
+  // Additional web-specific settings
+  bool _stickyOrderWindow = false;
   bool _quickOrderScreen = false;
 
   @override
@@ -529,8 +534,51 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
     super.initState();
     // Fetch API keys and TOTP on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(apikeyprovider).fetchapikey(context);
+      _loadSavedOrderPreferences();
     });
+  }
+
+  @override
+  void dispose() {
+    mktProtCtrl.dispose();
+    qtyCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Load saved order preferences from authProvider (same logic as order_prefere_screen.dart)
+  void _loadSavedOrderPreferences() {
+    if (!mounted) return;
+    final userSavedOrderPreference = ref.read(authProvider).savedOrderPreference;
+    if (userSavedOrderPreference.isNotEmpty && mounted) {
+      setState(() {
+        // Use same logic as order_prefere_screen.dart initState
+        updatePriceAndOrderTypes(
+            userSavedOrderPreference['prd'], userSavedOrderPreference['prc']);
+        validity = userSavedOrderPreference['validity'] ?? 'DAY';
+        QtyPrefer = userSavedOrderPreference['qtypref'] == 'lot'
+            ? OrdQtyPref.mktlot
+            : OrdQtyPref.mktqty;
+        qtyCtrl = TextEditingController(text: "${userSavedOrderPreference['qty'] ?? '1'}");
+        mktProtCtrl = TextEditingController(text: "${userSavedOrderPreference['mrkprot'] ?? '1'}");
+        expriceType = ["Limit", "Market"].contains(userSavedOrderPreference['expos'])
+            ? userSavedOrderPreference['expos']
+            : 'Market';
+        // Load sticky order window setting
+        _stickyOrderWindow = userSavedOrderPreference['stickysrc'] == true;
+      });
+    }
+  }
+
+  /// Update price and order types (same as order_prefere_screen.dart)
+  void updatePriceAndOrderTypes(selectedOrderType, selectedPriceType) {
+    orderType = selectedOrderType == "Cover" || selectedOrderType == "Bracket"
+        ? "CO - BO"
+        : (selectedOrderType ?? "Delivery");
+    priceType = (orderType == "CO - BO" && selectedPriceType == "SL MKT")
+        ? "Market"
+        : (selectedPriceType ?? "Limit");
   }
 
   @override
@@ -684,7 +732,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('Freeze Account', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.lossDark, light: colors.lossLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -741,30 +789,12 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 45,
-            child: ElevatedButton(
-              onPressed: () async {
-                await ref.read(apikeyprovider).fetchTotp();
-                setState(() {});
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: MyntColors.primary,
-                foregroundColor: MyntColors.backgroundColor,
-                  // padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                ),
-              child: Text(
-                        "Generate TOTP",
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: Colors.white,
-                            fontWeight: MyntFonts.semiBold),
-                      ),
-            ),
+          MyntPrimaryButton(
+            label: "Generate TOTP",
+            onPressed: () async {
+              await ref.read(apikeyprovider).fetchTotp();
+              if (mounted) setState(() {});
+            },
           ),
         ],
       ),
@@ -786,31 +816,13 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            height: 45,
-            child: ElevatedButton(
-              onPressed: () {
-                final pref = locator<Preferences>();
-                ref.read(changePasswordProvider).userIdController.text = "${pref.clientId}";
-                Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: MyntColors.primary,
-                foregroundColor: MyntColors.backgroundColor,
-                // padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-              ),
-              child: Text(
-                        "Change Password",
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: Colors.white,
-                            fontWeight: MyntFonts.semiBold),
-                      ),
-            ),
+          MyntPrimaryButton(
+            label: "Change Password",
+            onPressed: () {
+              final pref = locator<Preferences>();
+              ref.read(changePasswordProvider).userIdController.text = "${pref.clientId}";
+              Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
+            },
           ),
         ],
       ),
@@ -878,6 +890,12 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
   Widget _buildOrderPreferenceContent(ThemesProvider theme) {
     final isDark = theme.isDarkMode;
 
+    // Map orderType to display value for segmented button
+    String getProductTypeDisplay() {
+      if (orderType == 'Delivery') return 'Delivery / Carry';
+      return orderType;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
@@ -888,19 +906,27 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['Delivery / Carry', 'Intraday', 'CO - BO'],
-            selected: _selectedProductType,
-            onChanged: (val) => setState(() => _selectedProductType = val),
+            selected: getProductTypeDisplay(),
+            onChanged: (val) => setState(() {
+              orderType = val == 'Delivery / Carry' ? 'Delivery' : val;
+              updatePriceAndOrderTypes(orderType, priceType);
+            }),
             isDark: isDark,
           ),
           const SizedBox(height: 16),
 
-          // Order Type
+          // Order Type (Price Type)
           _buildLabel('Order type', isDark),
           const SizedBox(height: 8),
           _buildSegmentedButton(
-            options: ['Limit', 'Market', 'SL Limit', 'SL MKT'],
-            selected: _selectedOrderType,
-            onChanged: (val) => setState(() => _selectedOrderType = val),
+            options: orderType == "CO - BO"
+                ? ['Limit', 'Market', 'SL Limit']
+                : ['Limit', 'Market', 'SL Limit', 'SL MKT'],
+            selected: priceType,
+            onChanged: (val) => setState(() {
+              priceType = val;
+              updatePriceAndOrderTypes(orderType, priceType);
+            }),
             isDark: isDark,
           ),
           const SizedBox(height: 16),
@@ -910,8 +936,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['DAY', 'IOC'],
-            selected: _selectedValidity,
-            onChanged: (val) => setState(() => _selectedValidity = val),
+            selected: validity,
+            onChanged: (val) => setState(() => validity = val),
             isDark: isDark,
             compact: true,
           ),
@@ -920,31 +946,61 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           // Market Protection
           _buildLabel('Market Protection', isDark),
           const SizedBox(height: 8),
-          Container(
+          SizedBox(
             width: 100,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border.all(color: isDark ? colors.darkColorDivider : colors.colorDivider),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  '%',
-                  style: MyntWebTextStyles.para(context,
-                    darkColor: MyntColors.textSecondaryDark,
-                    lightColor: MyntColors.textSecondary,
+            height: 40,
+            child: TextField(
+              controller: mktProtCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              style: MyntWebTextStyles.para(context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 8),
+                  child: Text(
+                    '%',
+                    style: MyntWebTextStyles.para(context,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '5',
-                  style: MyntWebTextStyles.para(context,
-                    darkColor: MyntColors.textPrimaryDark,
-                    lightColor: MyntColors.textPrimary,
-                  ),
+                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
                 ),
-              ],
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: MyntColors.primary),
+                ),
+              ),
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  int parsed = int.tryParse(value) ?? 1;
+                  if (parsed > 20) {
+                    mktProtCtrl.text = '20';
+                    mktProtCtrl.selection = TextSelection.fromPosition(
+                      TextPosition(offset: mktProtCtrl.text.length),
+                    );
+                    ResponsiveSnackBar.showWarning(context, "Can't enter greater than 20% of Market Protection");
+                  } else if (parsed < 1) {
+                    mktProtCtrl.text = '1';
+                    mktProtCtrl.selection = TextSelection.fromPosition(
+                      TextPosition(offset: mktProtCtrl.text.length),
+                    );
+                    ResponsiveSnackBar.showWarning(context, "Can't enter less than 1% of Market Protection");
+                  }
+                }
+              },
             ),
           ),
           const SizedBox(height: 16),
@@ -954,22 +1010,62 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildRadioOption('Default Qty / Lot', _selectedQuantityPref == 'Default Qty / Lot',
-                () => setState(() => _selectedQuantityPref = 'Default Qty / Lot'), isDark),
+              _buildRadioOption('Default Qty / Lot', QtyPrefer == OrdQtyPref.mktqty,
+                () => setState(() {
+                  QtyPrefer = OrdQtyPref.mktqty;
+                  qtyCtrl.text = "1";
+                }), isDark),
               const SizedBox(width: 48),
-              _buildRadioOption('Multiples of Qty / Lot', _selectedQuantityPref == 'Multiples of Qty / Lot',
-                () => setState(() => _selectedQuantityPref = 'Multiples of Qty / Lot'), isDark),
+              _buildRadioOption('Multiples of Qty / Lot', QtyPrefer == OrdQtyPref.mktlot,
+                () => setState(() => QtyPrefer = OrdQtyPref.mktlot), isDark),
             ],
           ),
+          // Show quantity input when "Multiples of Qty / Lot" is selected
+          if (QtyPrefer == OrdQtyPref.mktlot) ...[
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 100,
+              height: 40,
+              child: TextField(
+                controller: qtyCtrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: MyntWebTextStyles.para(context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Qty',
+                  hintStyle: MyntWebTextStyles.para(context,
+                    darkColor: MyntColors.textSecondaryDark.withValues(alpha: 0.5),
+                    lightColor: MyntColors.textSecondary.withValues(alpha: 0.5),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: MyntColors.primary),
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
 
-          // Position Exit Market
-          _buildLabel('Position Exit Market', isDark),
+          // Position Exit
+          _buildLabel('Position Exit $expriceType', isDark),
           const SizedBox(height: 8),
           _buildSegmentedButton(
             options: ['Limit', 'Market'],
-            selected: _selectedPositionExit,
-            onChanged: (val) => setState(() => _selectedPositionExit = val),
+            selected: expriceType,
+            onChanged: (val) => setState(() => expriceType = val),
             isDark: isDark,
             compact: true,
           ),
@@ -978,57 +1074,26 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           // Toggles
           _buildToggleRow('Sticky Order Window', _stickyOrderWindow,
             (val) => setState(() => _stickyOrderWindow = val), isDark),
-          const SizedBox(height: 8),
-          _buildToggleRow('Quick Order Screen', _quickOrderScreen,
-            (val) => setState(() => _quickOrderScreen = val), isDark),
+          // const SizedBox(height: 8),
+          // _buildToggleRow('Quick Order Screen', _quickOrderScreen,
+          //   (val) => setState(() => _quickOrderScreen = val), isDark),
           const SizedBox(height: 16),
 
           // Buttons
           Row(
             children: [
-              SizedBox(
-                width: 160,
-                height: 40,
-                child: OutlinedButton(
-                  onPressed: () {
-                    _resetPreferences();
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: MyntColors.primary,
-                    backgroundColor: isDark ? MyntColors.primary.withValues(alpha: 0.1) : const Color(0xFFEFF4FF),
-                    side: const BorderSide(color: MyntColors.primary),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text('Reset', style: MyntWebTextStyles.bodySmall(context,
-                    darkColor: MyntColors.primary,
-                    lightColor: MyntColors.primary,
-                    fontWeight: MyntFonts.semiBold)),
-                ),
+              MyntOutlinedButton(
+                label: 'Reset',
+                onPressed: () {
+                  _resetPreferences();
+                },
               ),
               const SizedBox(width: 16),
-              SizedBox(
-                width: 160,
-                height: 40,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _savePreferences();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyntColors.primary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text('Save', style: MyntWebTextStyles.bodySmall(context,
-                    color: Colors.white,
-                    fontWeight: MyntFonts.semiBold)),
-                ),
+              MyntPrimaryButton(
+                label: 'Save',
+                onPressed: () {
+                  _savePreferences();
+                },
               ),
             ],
           ),
@@ -1039,52 +1104,45 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
 
   Future<void> _resetPreferences() async {
     final pref = locator<Preferences>();
-    final api = locator<ApiExporter>();
 
-    // Update local state to match reset defaults
+    // Update local state to match reset defaults (same as order_prefere_screen.dart)
     setState(() {
-      _selectedProductType = 'Delivery / Carry';
-      _selectedOrderType = 'Limit'; // Matches LMT in payload
-      _selectedValidity = 'DAY';
-      _selectedMarketProtection = '%';
-      _selectedQuantityPref = 'Default Qty / Lot';
-      _selectedPositionExit = 'Limit';
-      _stickyOrderWindow = false; // Matches stickysrc: false
-      _quickOrderScreen = false; // Matches quicksrc: false
+      priceType = "Limit";
+      orderType = "Delivery";
+      validity = "DAY";
+      mktProtCtrl.text = "1";
+      qtyCtrl.text = "1";
+      QtyPrefer = OrdQtyPref.mktqty;
+      expriceType = "Market";
+      _stickyOrderWindow = false;
+      _quickOrderScreen = false;
     });
 
-    // Static payload for reset
+    // Reset payload in the same format as mobile
     Map<String, dynamic> data = {
       "clientid": pref.clientId,
       "metadata": {
-          "expos": "MKT", // As per user request static payload
-          "mainpreitems": {
-              "NSE": ["CNC", "LMT", "DAY", "1"],
-              "BSE": ["CNC", "LMT", "DAY", "1"],
-              "MCX": ["NRML", "LMT", "DAY", "1"],
-              "NFO": ["NRML", "LMT", "DAY", "1"],
-              "CDS": ["NRML", "LMT", "DAY", "1"],
-              "BFO": ["NRML", "LMT", "EOS", "1"],
-              "BCD": ["NRML", "LMT", "EOS", "1"]
-          },
-          "mktpro": 5, // As per user request
-          "qtypre": "0",
-          "quicksrc": false,
-          "stickysrc": false
+        "prc": priceType,
+        "prd": orderType,
+        "qtypref": "qty",
+        "qty": qtyCtrl.text,
+        "validity": validity,
+        "mrkprot": mktProtCtrl.text,
+        "expos": expriceType,
+        "stickysrc": false,
       },
       "source": "WEB"
     };
 
     try {
-      final res = await api.setOrderprefer(data, true, context);
-      if (res != null && (res['stat'] == 'Ok' || res['status'] == 'Ok' || res['status'] == 'updated')) {
-        if (mounted) {
-          ResponsiveSnackBar.showSuccess(context, 'Preferences reset successfully');
-        }
-      } else {
-        if (mounted) {
-          ResponsiveSnackBar.showError(context, res?['emsg'] ?? 'Failed to reset preferences');
-        }
+      // Use authProvider.getPrefOrderPrefer to save (same as mobile)
+      await ref.read(authProvider).getPrefOrderPrefer(data, true, context);
+
+      // Refresh the savedOrderPreference cache
+      await ref.read(authProvider).setPrefOrderPrefer(context);
+
+      if (mounted) {
+        ResponsiveSnackBar.showSuccess(context, 'Preferences reset successfully');
       }
     } catch (e) {
       if (mounted) {
@@ -1093,115 +1151,49 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
     }
   }
 
+  /// Save preferences using the same format as mobile (order_prefere_screen.dart)
   Future<void> _savePreferences() async {
+    // Validate market protection (same as mobile)
+    if (mktProtCtrl.text.isEmpty ||
+        int.parse(mktProtCtrl.text) > 20 ||
+        int.parse(mktProtCtrl.text) < 1) {
+      ResponsiveSnackBar.showWarning(context, "Market Protection between 1% to 20%");
+      return;
+    }
+
+    // Validate quantity if multiples selected (same as mobile)
+    if ((QtyPrefer == OrdQtyPref.mktlot) && qtyCtrl.text == "") {
+      ResponsiveSnackBar.showWarning(context, "Quantity can not be 0 or empty");
+      return;
+    }
+
     final pref = locator<Preferences>();
-    final api = locator<ApiExporter>();
 
-    // Helper to map Order Type
-    String mapOrderType() {
-      switch (_selectedOrderType) {
-        case 'Limit': return 'LMT';
-        case 'Market': return 'MKT';
-        case 'SL Limit': return 'SL-LMT';
-        case 'SL MKT': return 'SL-MKT';
-        default: return 'LMT';
-      }
-    }
-
-    // Helper to map Product Type per exchange
-    String mapProductType(String exch) {
-      if (_selectedProductType == 'Delivery / Carry') {
-        if (['NSE', 'BSE'].contains(exch)) return 'CNC';
-        return 'NRML';
-      } else if (_selectedProductType == 'Intraday') {
-        return 'MIS';
-      } else if (_selectedProductType == 'CO - BO') {
-        return 'CO'; // Assuming CO for cover order
-      }
-      return 'CNC';
-    }
-
-    // Helper to map Validity
-    String mapValidity() {
-      return _selectedValidity; // 'DAY', 'IOC'
-    }
-
-    String mapQtyPref() {
-      return _selectedQuantityPref == 'Default Qty / Lot' ? "0" : "1";
-    }
-
-    // Construct mainpreitems for each exchange
-    Map<String, List<String>> mainpreitems = {};
-    final exchanges = ['NSE', 'BSE', 'MCX', 'NFO', 'CDS', 'BFO', 'BCD'];
-    
-    final orderType = mapOrderType();
-    final validity = mapValidity();
-    
-    for (var exch in exchanges) {
-      // Logic for 4th parameter (Protection %?) - Using 5 as per UI fixed value or default
-      // User example had varied values: 3, 10, 1, 25, 1. 
-      // Since UI only shows "5", providing "5" or defaulting to sensible logic.
-      // However, to match user request structure precisely, we might need dynamic or fixed.
-      // We'll use "5" to match the UI's 'mktpro': "5".
-      mainpreitems[exch] = [
-        mapProductType(exch),
-        orderType,
-        validity,
-        exch == 'NFO' ? "25" : (exch == 'BSE' ? "10" : "5") // Attempting to match example somewhat or just using 5
-      ];
-      // Note: User example had: NSE:3, BSE:10, MCX:1, NFO:25, CDS:1, BFO:1, BCD:1
-      // Ideally we shouldn't hardcode these unless we know what they are. 
-      // But preserving specific values from example might be safer if they mean "Lot Size" or "Tick"? No, 3% protection?
-      // Let's stick to "5" if we can't be sure, OR use the values from user example if they are constant defaults.
-      // Re-reading user request: "mktpro": "5". Arrays have different values.
-      // Let's use string "5" for all to be consistent with UI "5%", unless we have better info.
-    }
-
+    // Build data in the exact same format as mobile (order_prefere_screen.dart setPrefOrderPrefer)
     Map<String, dynamic> data = {
       "clientid": pref.clientId,
       "metadata": {
-        "expos": orderType,
-        "mainpreitems": {
-            "NSE": ["CNC", orderType, validity, "3"],
-            "BSE": ["MIS", orderType, validity, "10"],
-            "MCX": ["NRML", orderType, validity, "1"],
-            "NFO": ["NRML", orderType, validity, "25"],
-            "CDS": ["NRML", orderType, validity, "1"],
-            "BFO": ["NRML", orderType, validity, "1"],
-            "BCD": ["NRML", orderType, validity, "1"]
-        }, // Initial hardcoded structure based on user example, but dynamic keys should be applied
-        "mktpro": "5",
-        "qtypre": mapQtyPref(),
-        "quicksrc": _quickOrderScreen,
-        "stickysrc": _stickyOrderWindow
+        "prc": priceType,
+        "prd": orderType,
+        "qtypref": QtyPrefer == OrdQtyPref.mktlot ? 'lot' : 'qty',
+        "qty": qtyCtrl.text,
+        "validity": validity,
+        "mrkprot": mktProtCtrl.text,
+        "expos": expriceType,
+        "stickysrc": _stickyOrderWindow ? true : false,
       },
       "source": "WEB"
     };
 
-    // Override mainpreitems with dynamic selected values
-    Map<String, List<String>> dynamicPreItems = {};
-    for (var exch in exchanges) {
-       dynamicPreItems[exch] = [
-          mapProductType(exch),
-          orderType,
-          validity,
-          // Using the specific numbers from user example as placeholders since UI doesn't allow changing them per exchange
-          (exch == 'NFO' ? "25" : (exch == 'BSE' ? "10" : (exch == 'NSE' ? "3" : "1")))
-       ];
-    }
-    data["metadata"]["mainpreitems"] = dynamicPreItems;
-
-
     try {
-      final res = await api.setOrderprefer(data, true, context);
-      if (res != null && (res['stat'] == 'Ok' || res['status'] == 'Ok' || res['status'] == 'updated')) {
-        if (mounted) {
-          ResponsiveSnackBar.showSuccess(context, 'Preferences saved successfully');
-        }
-      } else {
-         if (mounted) {
-          ResponsiveSnackBar.showError(context, res?['emsg'] ?? 'Failed to save preferences');
-        }
+      // Use authProvider.getPrefOrderPrefer to save (same as mobile)
+      await ref.read(authProvider).getPrefOrderPrefer(data, true, context);
+
+      // Refresh the savedOrderPreference cache
+      await ref.read(authProvider).setPrefOrderPrefer(context);
+
+      if (mounted) {
+        ResponsiveSnackBar.showSuccess(context, 'Order Preference has been saved');
       }
     } catch (e) {
       if (mounted) {
@@ -1223,10 +1215,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: 200,
-            child: ElevatedButton(
-              onPressed: () {
+          MyntPrimaryButton(
+            label: 'Freeze Account',
+            onPressed: () {
               showDialog(
                 context: context,
                 builder: (ctx) => Dialog(
@@ -1235,8 +1226,8 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                       light: MyntColors.backgroundColor),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   child: Container(
-                    width: 450,
-                    padding: const EdgeInsets.all(24),
+                    width: 340,
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1249,68 +1240,50 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                               style: MyntWebTextStyles.title(context,
                                   darkColor: MyntColors.textPrimaryDark,
                                   lightColor: MyntColors.textPrimary,
-                                  fontWeight: MyntFonts.bold),
+                                  fontWeight: MyntFonts.semiBold),
                             ),
-                            IconButton(
+                            MyntCloseButton(
                               onPressed: () => Navigator.pop(ctx),
-                              icon: Icon(Icons.close,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textPrimaryDark,
-                                      light: MyntColors.textPrimary)),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
+                              iconSize: 20,
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         Text(
                           'Freezing your account will lock access for everyone, including you.',
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary),
+                          style: MyntWebTextStyles.bodyMedium(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                         Text(
                           'All open orders will be automatically cancelled.',
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary),
+                          style: MyntWebTextStyles.bodyMedium(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                         Text(
                           'Existing positions will remain unaffected.',
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary),
+                          style: MyntWebTextStyles.bodyMedium(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 4),
                         Text(
                           'You can unfreeze your account anytime by verifying your identity.',
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary),
+                          style: MyntWebTextStyles.bodyMedium(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary),
                         ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              ref.read(userProfileProvider).fetchFreezeAc(context);
-                              Navigator.pop(ctx);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: MyntColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text('Freeze My Account',
-                                style: MyntWebTextStyles.body(context,
-                                    color: Colors.white,
-                                    fontWeight: MyntFonts.bold)),
-                          ),
+                        const SizedBox(height: 20),
+                        MyntPrimaryButton(
+                          label: 'Freeze My Account',
+                          isFullWidth: true,
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            ref.read(userProfileProvider).fetchFreezeAc(context);
+                          },
                         ),
                       ],
                     ),
@@ -1318,22 +1291,6 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: resolveThemeColor(context,
-                  dark: MyntColors.loss.withValues(alpha: 0.1),
-                  light: MyntColors.loss.withValues(alpha: 0.1)),
-              foregroundColor: MyntColors.loss,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text('Freeze Account',
-                style: MyntWebTextStyles.body(context,
-                    color: MyntColors.loss,
-                    fontWeight: MyntFonts.semiBold)),
-          ),
           ),
         ],
       ),
@@ -1498,15 +1455,36 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 ),
               ),
               const SizedBox(width: 6),
-              Icon(
+              Tooltip(
+              message:
+                  'The order screen stays open after placing an order',
+              waitDuration: const Duration(milliseconds: 150),
+              verticalOffset: -35,
+              showDuration: const Duration(seconds: 4),
+              textStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                height: 1.4,
+              ),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? MyntColors.textPrimaryDark
+                    : Colors.black87,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Icon(
                 Icons.info_outline,
                 size: 14,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
+
           // Custom animated toggle switch like place order screen
           MouseRegion(
             cursor: SystemMouseCursors.click,
@@ -1584,6 +1562,7 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
     super.initState();
     // Fetch profile details on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(profileAllDetailsProvider).fetchClientProfileAllDetails();
     });
   }
@@ -1814,6 +1793,10 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
               fontWeight: MyntFonts.semiBold),
           unselectedLabelStyle: MyntWebTextStyles.bodySmall(context,
               fontWeight: MyntFonts.medium),
+          dividerColor: Colors.transparent,
+          labelPadding: EdgeInsets.all(0),
+          // indicatorPadding: EdgeInsets.all(0),
+          indicatorSize: TabBarIndicatorSize.tab,
           tabs: const [
             Tab(text: "Base Key"),
             Tab(text: "OAuth Key"),
@@ -1897,15 +1880,21 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
   void setTOTP() async {
     generateTOTP();
     timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       generateTOTP();
-      setState(() {
-        int currentSecond = DateTime.now().second;
-        remainingSeconds = 30 - (currentSecond % 30);
-      });
+      if (mounted) {
+        setState(() {
+          int currentSecond = DateTime.now().second;
+          remainingSeconds = 30 - (currentSecond % 30);
+        });
+      }
     });
   }
 
-  void generateTOTP() async {
+  void generateTOTP() {
     String key = base32ToHex(widget.secretKey);
 
     int epoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -1928,9 +1917,11 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
     int otpNumber = binary % 1000000;
     String otpCode = otpNumber.toString().padLeft(6, '0');
 
-    setState(() {
-      otp = otpCode;
-    });
+    if (mounted) {
+      setState(() {
+        otp = otpCode;
+      });
+    }
   }
 
   void _copyToClipboard(String text, String message) {

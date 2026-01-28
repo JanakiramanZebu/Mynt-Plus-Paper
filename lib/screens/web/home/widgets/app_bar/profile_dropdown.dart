@@ -211,9 +211,9 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
         children: [
           // User Profile Header
           MenuButton(
-            onPressed: (ctx) {
-              Navigator.pushNamed(widget.parentContext, Routes.myAcc);
-            },
+            // onPressed: (ctx) {
+            //   Navigator.pushNamed(widget.parentContext, Routes.myAcc);
+            // },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
