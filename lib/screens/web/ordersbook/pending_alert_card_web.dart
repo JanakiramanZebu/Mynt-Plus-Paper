@@ -471,7 +471,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFound(secondaryEnabled: false),
           ),
         ),
       );
@@ -703,7 +703,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return MyntWebTextStyles.body(
       context,
       color: color,
-      fontWeight: fontWeight,
+      fontWeight: fontWeight ?? MyntFonts.medium,
     ).copyWith(fontSize: fontSize);
   }
 
