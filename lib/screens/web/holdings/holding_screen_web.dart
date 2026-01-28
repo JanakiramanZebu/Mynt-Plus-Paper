@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/hold_table.dart';
@@ -756,8 +757,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     return SizedBox(
       height: 35,
       child: ElevatedButton(
-        onPressed: () {
-          // TODO: Implement E-DIS functionality
+        onPressed: () async {
+          await ref.read(fundProvider).fetchHstoken(context);
+          // Use web-specific E-DIS that opens in new browser tab
+          await ref.read(fundProvider).eDisWeb();
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: resolveThemeColor(

@@ -617,6 +617,9 @@ class _PositionDetailScreenWebState
         : (_positionData.mTm ?? "0.00");
     final pnlColor = _getPnLColor(pnlValue);
 
+    final mtmValue = _positionData.mTm ?? "0.00";
+    final mtmColor = _getPnLColor(mtmValue);
+
     return Column(
       children: [
         // P&L item
@@ -626,6 +629,16 @@ class _PositionDetailScreenWebState
             pnlValue,
             style: MyntWebTextStyles.body(context,
                 color: pnlColor, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        // MTM item
+        _rowOfInfoData(
+          "MTM",
+          Text(
+            mtmValue,
+            style: MyntWebTextStyles.body(context,
+                color: mtmColor, fontWeight: MyntFonts.medium),
           ),
           theme,
         ),

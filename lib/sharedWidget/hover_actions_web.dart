@@ -264,7 +264,7 @@ class HoverActionButton extends StatelessWidget {
       final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Text(
         label!,
-        style: WebTextStyles.buttonXs(
+        style: WebTextStyles.buttonSm(
           isDarkTheme: isDarkMode,
           color: color,
         ),

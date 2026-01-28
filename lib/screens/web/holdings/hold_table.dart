@@ -951,6 +951,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                             icon:
                                                                 Icons.bar_chart,
                                                             size: 30,
+                                                            iconSize: 18,
                                                             iconColor:
                                                                 Colors.black,
                                                             onPressed: () =>

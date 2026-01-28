@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/material.dart'
     show
         InkWell,
@@ -38,7 +38,6 @@ import 'package:flutter/material.dart'
         showDialog,
         RichText,
         Stack,
-        LinearGradient,
         Clip,
         Tooltip,
         ValueNotifier,
@@ -46,10 +45,10 @@ import 'package:flutter/material.dart'
         Positioned,
         MediaQuery,
         BoxShadow,
-        Border,
         Offset,
         RawScrollbar,
-        Radius;
+        Radius,
+        Builder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -66,7 +65,6 @@ import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import 'position_detail_screen_web.dart';
 import 'convert_position_dialogue_web.dart';
-import '../../../sharedWidget/hover_actions_web.dart';
 
 // Shadcn Table for Positions with WebSocket updates
 class PositionTable extends ConsumerStatefulWidget {
@@ -86,6 +84,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -95,10 +102,46 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
+
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, don't close
+      if (currentHover == _popoverRowIndex) {
+        return;
+      }
+
+      // If hovering the dropdown menu, don't close
+      if (_isHoveringDropdown) {
+        return;
+      }
+
+      // Close the popover when row is unhovered and not hovering dropdown
+      _closePopover();
+    }
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
   }
 
   @override
   void dispose() {
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -159,8 +202,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     bool isClosed = false,
   }) {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 12;
+    final isInstrumentColumn = columnIndex == 2; // Instrument column (now index 2)
+    final isLastColumn = columnIndex == 6; // P&L is now last column
 
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -170,7 +213,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       // Select column - symmetric padding for checkbox
       cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
     } else if (isInstrumentColumn) {
-      // Instrument column - more left, minimal right (for overlay buttons)
+      // Instrument column - more left, minimal right (for 3-dot menu)
       cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
     } else if (isLastColumn) {
       // Last column - minimal left, more right
@@ -247,8 +290,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       String label, int columnIndex, ThemesProvider theme,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 12;
+    final isInstrumentColumn = columnIndex == 2; // Instrument column (now index 2)
+    final isLastColumn = columnIndex == 6; // P&L is now last column
 
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -335,9 +378,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     switch (header) {
       case 'Select':
         return 0;
-      case 'Instrument':
-        return 1;
       case 'Product':
+        return 1;
+      case 'Instrument':
         return 2;
       case 'Qty':
         return 3;
@@ -347,18 +390,6 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         return 5;
       case 'P&L':
         return 6;
-      case 'MTM':
-        return 7;
-      case 'Avg Price':
-        return 8;
-      case 'Buy Qty':
-        return 9;
-      case 'Sell Qty':
-        return 10;
-      case 'Buy Avg':
-        return 11;
-      case 'Sell Avg':
-        return 12;
       default:
         return -1;
     }
@@ -366,7 +397,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Check if column is numeric
   bool _isNumericColumn(String header) {
-    return header != 'Select' && header != 'Instrument' && header != 'Product';
+    return header != 'Select' && header != 'Product' && header != 'Instrument';
   }
 
   // Format quantity
@@ -424,12 +455,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       filtered.sort((a, b) {
         int comparison = 0;
         switch (_sortColumnIndex) {
-          case 1: // Instrument
+          case 1: // Product
+            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
+            break;
+          case 2: // Instrument
             comparison = '${a.symbol ?? ''} ${a.exch ?? ''}'
                 .compareTo('${b.symbol ?? ''} ${b.exch ?? ''}');
-            break;
-          case 2: // Product
-            comparison = (a.sPrdtAli ?? '').compareTo(b.sPrdtAli ?? '');
             break;
           case 3: // Qty
             comparison = (int.tryParse(a.qty ?? '0') ?? 0)
@@ -447,30 +478,31 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             comparison = (double.tryParse(a.profitNloss ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.profitNloss ?? '0') ?? 0);
             break;
-          case 7: // MTM
-            comparison = (double.tryParse(a.mTm ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.mTm ?? '0') ?? 0);
-            break;
-          case 8: // Avg Price
-            comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
-            break;
-          case 9: // Buy Qty
-            comparison = (int.tryParse(a.daybuyqty ?? '0') ?? 0)
-                .compareTo(int.tryParse(b.daybuyqty ?? '0') ?? 0);
-            break;
-          case 10: // Sell Qty
-            comparison = (int.tryParse(a.daysellqty ?? '0') ?? 0)
-                .compareTo(int.tryParse(b.daysellqty ?? '0') ?? 0);
-            break;
-          case 11: // Buy Avg
-            comparison = (double.tryParse(a.daybuyavgprc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.daybuyavgprc ?? '0') ?? 0);
-            break;
-          case 12: // Sell Avg
-            comparison = (double.tryParse(a.daysellavgprc ?? '0') ?? 0)
-                .compareTo(double.tryParse(b.daysellavgprc ?? '0') ?? 0);
-            break;
+          // Commented out columns - data available in Position Details sheet
+          // case 7: // MTM
+          //   comparison = (double.tryParse(a.mTm ?? '0') ?? 0)
+          //       .compareTo(double.tryParse(b.mTm ?? '0') ?? 0);
+          //   break;
+          // case 8: // Avg Price
+          //   comparison = (double.tryParse(a.avgPrc ?? '0') ?? 0)
+          //       .compareTo(double.tryParse(b.avgPrc ?? '0') ?? 0);
+          //   break;
+          // case 9: // Buy Qty
+          //   comparison = (int.tryParse(a.daybuyqty ?? '0') ?? 0)
+          //       .compareTo(int.tryParse(b.daybuyqty ?? '0') ?? 0);
+          //   break;
+          // case 10: // Sell Qty
+          //   comparison = (int.tryParse(a.daysellqty ?? '0') ?? 0)
+          //       .compareTo(int.tryParse(b.daysellqty ?? '0') ?? 0);
+          //   break;
+          // case 11: // Buy Avg
+          //   comparison = (double.tryParse(a.daybuyavgprc ?? '0') ?? 0)
+          //       .compareTo(double.tryParse(b.daybuyavgprc ?? '0') ?? 0);
+          //   break;
+          // case 12: // Sell Avg
+          //   comparison = (double.tryParse(a.daysellavgprc ?? '0') ?? 0)
+          //       .compareTo(double.tryParse(b.daysellavgprc ?? '0') ?? 0);
+          //   break;
         }
         return _sortAscending ? comparison : -comparison;
       });
@@ -495,24 +527,18 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       List<PositionBookModel> positions, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
     final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
-    const padding = 24.0;
+    const padding = 16.0; // Reduced from 24.0 for tighter layout
     const sortIconWidth = 24.0;
 
-    // Header texts - ALL columns always shown (like holdings table)
+    // Header texts - Essential columns for responsive layout (Product first, then Instrument)
     final headers = [
       'Select',
-      'Instrument',
       'Product',
+      'Instrument',
       'Qty',
       'Act Avg Price',
       'LTP',
       'P&L',
-      'MTM',
-      'Avg Price',
-      'Buy Qty',
-      'Sell Qty',
-      'Buy Avg',
-      'Sell Avg',
     ];
 
     final minWidths = <int, double>{};
@@ -537,6 +563,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         String cellText = '';
 
         switch (header) {
+          case 'Product':
+            cellText = position.sPrdtAli ?? 'N/A';
+            break;
           case 'Instrument':
             // For Instrument column, measure symbol + exchange separately
             // since exchange uses smaller font
@@ -557,18 +586,16 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ? _measureTextWidth(exchangeText, exchangeStyle)
                 : 0.0;
 
-            // Total width = symbol + exchange + 4px gap
+            // Total width = symbol + exchange + 4px gap + space for 3-dot menu
             final totalWidth = symbolWidth +
                 exchangeWidth +
-                (exchangeText.isNotEmpty ? 4.0 : 0.0);
+                (exchangeText.isNotEmpty ? 4.0 : 0.0) +
+                40.0; // Extra space for 3-dot menu button
             if (totalWidth > maxWidth) {
               maxWidth = totalWidth;
             }
             // Skip normal cellWidth calculation for Instrument - already handled above
             continue;
-          case 'Product':
-            cellText = position.sPrdtAli ?? 'N/A';
-            break;
           case 'Qty':
             cellText = _formatQty(position.qty ?? '0');
             break;
@@ -581,24 +608,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           case 'P&L':
             cellText = position.profitNloss ?? '0.00';
             break;
-          case 'MTM':
-            cellText = position.mTm ?? '0.00';
-            break;
-          case 'Avg Price':
-            cellText = position.avgPrc ?? '0.00';
-            break;
-          case 'Buy Qty':
-            cellText = position.daybuyqty ?? '0';
-            break;
-          case 'Sell Qty':
-            cellText = position.daysellqty ?? '0';
-            break;
-          case 'Buy Avg':
-            cellText = position.daybuyavgprc ?? '0.00';
-            break;
-          case 'Sell Avg':
-            cellText = position.daysellavgprc ?? '0.00';
-            break;
+          // Commented out columns - data available in Position Details sheet
+          // case 'MTM':
+          //   cellText = position.mTm ?? '0.00';
+          //   break;
+          // case 'Avg Price':
+          //   cellText = position.avgPrc ?? '0.00';
+          //   break;
+          // case 'Buy Qty':
+          //   cellText = position.daybuyqty ?? '0';
+          //   break;
+          // case 'Sell Qty':
+          //   cellText = position.daysellqty ?? '0';
+          //   break;
+          // case 'Buy Avg':
+          //   cellText = position.daybuyavgprc ?? '0.00';
+          //   break;
+          // case 'Sell Avg':
+          //   cellText = position.daysellavgprc ?? '0.00';
+          //   break;
         }
 
         final cellWidth = _measureTextWidth(cellText, textStyle);
@@ -626,9 +654,69 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   @override
   Widget build(BuildContext context) {
     final portfolioData = ref.watch(portfolioProvider);
-    final positions = portfolioData.allPostionList.isNotEmpty
+    // ignore: unused_local_variable
+    final realPositions = portfolioData.allPostionList.isNotEmpty
         ? portfolioData.allPostionList
         : portfolioData.openPosition ?? [];
+
+    // TODO: Remove this static test data after testing
+    final positions = [
+      PositionBookModel(
+        exch: "NSE",
+        tsym: "YESBANK-EQ",
+        sPrdtAli: "MIS",
+        prd: "I",
+        token: "11915",
+        symbol: "YESBANK",
+        daybuyqty: "2",
+        daysellqty: "2",
+        daybuyavgprc: "21.38",
+        daysellavgprc: "21.42",
+        netqty: "0",
+        qty: "0",
+        avgPrc: "0.00",
+        lp: "21.43",
+        mTm: "0.00",
+        profitNloss: "0.08",
+      ),
+      PositionBookModel(
+        exch: "NSE",
+        tsym: "IDEA-EQ",
+        sPrdtAli: "CNC",
+        prd: "C",
+        token: "14366",
+        symbol: "IDEA",
+        daybuyqty: "2",
+        daysellqty: "2",
+        daybuyavgprc: "9.97",
+        daysellavgprc: "9.96",
+        netqty: "0",
+        qty: "0",
+        avgPrc: "0.00",
+        lp: "9.91",
+        mTm: "0.00",
+        profitNloss: "-0.03",
+      ),
+      PositionBookModel(
+        exch: "NSE",
+        tsym: "YESBANK-EQ",
+        sPrdtAli: "CNC",
+        prd: "C",
+        token: "11915",
+        symbol: "YESBANK",
+        daybuyqty: "1",
+        daysellqty: "0",
+        daybuyavgprc: "21.38",
+        daysellavgprc: "0.00",
+        netqty: "1",
+        qty: "1",
+        avgPrc: "21.38",
+        lp: "21.43",
+        mTm: "0.05",
+        profitNloss: "0.05",
+      ),
+    ];
+
     final theme = ref.read(themeProvider);
     final positionBook = ref.read(portfolioProvider);
 
@@ -650,21 +738,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       );
     }
 
-    // Define ALL columns always (like holdings table)
+    // Define essential columns for responsive layout (Product first, then Instrument)
     final headers = [
       'Select',
-      'Instrument',
       'Product',
+      'Instrument',
       'Qty',
       'Act Avg Price',
       'LTP',
       'P&L',
-      'MTM',
-      'Avg Price',
-      'Buy Qty',
-      'Sell Qty',
-      'Buy Avg',
-      'Sell Avg',
     ];
 
     return shadcn.OutlinedContainer(
@@ -686,9 +768,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           final totalMinWidth = columnWidths.values
               .fold<double>(0.0, (sum, width) => sum + width);
 
-          // Step 3: If there's extra space, distribute it proportionally
-          // This prevents unnecessary horizontal scroll while using available space efficiently
+          // Step 3: Handle width adjustment based on available space
           if (totalMinWidth < availableWidth) {
+            // Extra space available - distribute it proportionally
             final extraSpace = availableWidth - totalMinWidth;
 
             // Define which columns can grow and their growth priorities
@@ -703,8 +785,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
             for (int i = 0; i < headers.length; i++) {
               final header = headers[i];
-              if (header == 'Select') {
-                // Select column doesn't grow (checkbox needs fixed space)
+              if (header == 'Select' || header == 'Product') {
+                // Select and Product columns don't grow much
                 growthFactors[i] = 0.0;
               } else if (header == 'Instrument') {
                 growthFactors[i] = instrumentGrowthFactor;
@@ -725,13 +807,58 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 }
               }
             }
+          } else if (totalMinWidth > availableWidth) {
+            // Not enough space - shrink columns proportionally to eliminate scroll
+            final excessWidth = totalMinWidth - availableWidth;
+
+            // Define absolute minimum widths (cannot shrink below these)
+            final absoluteMinWidths = <int, double>{
+              0: 50.0,  // Select (checkbox)
+              1: 50.0,  // Product (CNC/MIS/NRML)
+              2: 120.0, // Instrument (needs space for 3-dot menu)
+              3: 45.0,  // Qty
+              4: 65.0,  // Act Avg Price
+              5: 50.0,  // LTP
+              6: 55.0,  // P&L
+            };
+
+            // Calculate how much each column can shrink
+            final shrinkableAmounts = <int, double>{};
+            double totalShrinkable = 0.0;
+
+            for (int i = 0; i < headers.length; i++) {
+              final currentWidth = columnWidths[i]!;
+              final absoluteMin = absoluteMinWidths[i] ?? 50.0;
+              final shrinkable = currentWidth - absoluteMin;
+              if (shrinkable > 0) {
+                shrinkableAmounts[i] = shrinkable;
+                totalShrinkable += shrinkable;
+              } else {
+                shrinkableAmounts[i] = 0.0;
+              }
+            }
+
+            // Shrink proportionally if we have enough shrinkable space
+            if (totalShrinkable > 0) {
+              // Calculate shrink factor (cap at 1.0 if excess > shrinkable)
+              final shrinkFactor = excessWidth < totalShrinkable
+                  ? excessWidth / totalShrinkable
+                  : 1.0;
+
+              for (int i = 0; i < headers.length; i++) {
+                if (shrinkableAmounts[i]! > 0) {
+                  final shrinkAmount = shrinkableAmounts[i]! * shrinkFactor;
+                  columnWidths[i] = columnWidths[i]! - shrinkAmount;
+                }
+              }
+            }
           }
 
-          // Calculate total required width
+          // Calculate total required width after adjustment
           final totalRequiredWidth = columnWidths.values
               .fold<double>(0.0, (sum, width) => sum + width);
 
-          // If total width exceeds available width, enable horizontal scrolling
+          // Only enable horizontal scroll if columns are at absolute minimum and still don't fit
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
           // Build table content
@@ -823,6 +950,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                         isClosed,
                                         isRowHovered,
                                         positionBook,
+                                        rowIndex: index,
                                       );
                                     },
                                   ),
@@ -970,8 +1098,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     ThemesProvider theme,
     bool isClosed,
     bool isRowHovered,
-    PortfolioProvider positionBook,
-  ) {
+    PortfolioProvider positionBook, {
+    int? rowIndex,
+  }) {
     final isNumeric = _isNumericColumn(header);
     final alignment = isNumeric ? Alignment.centerRight : Alignment.centerLeft;
     final textColor = isClosed
@@ -982,17 +1111,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     switch (header) {
       case 'Select':
         return _buildCheckboxCell(position, theme, isClosed, positionBook);
+      case 'Product':
+        return _buildProductCell(context, position, isClosed, textColor);
       case 'Instrument':
         return _buildInstrumentCell(
-            context, position, theme, isClosed, isRowHovered, positionBook);
-      case 'Product':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.sPrdtAli ?? 'N/A',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
+            context, position, theme, isClosed, isRowHovered, positionBook,
+            rowIndex: rowIndex);
       case 'Qty':
         return Align(
           alignment: alignment,
@@ -1032,57 +1156,58 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 color: _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
           ),
         );
-      case 'MTM':
-        // Just display provider value - positionCal() already calculates correctly
-        final mtmValue = position.mTm ?? '0.00';
-        return Align(
-          alignment: alignment,
-          child: Text(
-            mtmValue,
-            style: _getTextStyle(context,
-                color: _getCellColor(double.tryParse(mtmValue) ?? 0.0, context)),
-          ),
-        );
-      case 'Avg Price':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.avgPrc ?? '0.00',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
-      case 'Buy Qty':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.daybuyqty ?? '0',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
-      case 'Sell Qty':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.daysellqty ?? '0',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
-      case 'Buy Avg':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.daybuyavgprc ?? '0.00',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
-      case 'Sell Avg':
-        return Align(
-          alignment: alignment,
-          child: Text(
-            position.daysellavgprc ?? '0.00',
-            style: _getTextStyle(context, color: textColor),
-          ),
-        );
+      // Commented out columns - data available in Position Details sheet
+      // case 'MTM':
+      //   // Just display provider value - positionCal() already calculates correctly
+      //   final mtmValue = position.mTm ?? '0.00';
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       mtmValue,
+      //       style: _getTextStyle(context,
+      //           color: _getCellColor(double.tryParse(mtmValue) ?? 0.0, context)),
+      //     ),
+      //   );
+      // case 'Avg Price':
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       position.avgPrc ?? '0.00',
+      //       style: _getTextStyle(context, color: textColor),
+      //     ),
+      //   );
+      // case 'Buy Qty':
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       position.daybuyqty ?? '0',
+      //       style: _getTextStyle(context, color: textColor),
+      //     ),
+      //   );
+      // case 'Sell Qty':
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       position.daysellqty ?? '0',
+      //       style: _getTextStyle(context, color: textColor),
+      //     ),
+      //   );
+      // case 'Buy Avg':
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       position.daybuyavgprc ?? '0.00',
+      //       style: _getTextStyle(context, color: textColor),
+      //     ),
+      //   );
+      // case 'Sell Avg':
+      //   return Align(
+      //     alignment: alignment,
+      //     child: Text(
+      //       position.daysellavgprc ?? '0.00',
+      //       style: _getTextStyle(context, color: textColor),
+      //     ),
+      //   );
       default:
         return const SizedBox.shrink();
     }
@@ -1132,37 +1257,114 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     );
   }
 
-  // Build instrument cell with hover actions
+  // Build product cell with colored badge
+  Widget _buildProductCell(
+    BuildContext context,
+    PositionBookModel position,
+    bool isClosed,
+    Color? textColor,
+  ) {
+    final product = position.sPrdtAli ?? 'N/A';
+
+    // Get product badge color
+    Color badgeColor;
+    Color badgeTextColor;
+    if (isClosed) {
+      badgeColor = resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark.withValues(alpha: 0.2),
+          light: MyntColors.textSecondary.withValues(alpha: 0.15));
+      badgeTextColor = textColor ?? resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark,
+          light: MyntColors.textSecondary);
+    } else {
+      switch (product) {
+        case 'CNC':
+          badgeColor = resolveThemeColor(context,
+              dark: MyntColors.primaryDark.withValues(alpha: 0.15),
+              light: MyntColors.primary.withValues(alpha: 0.12));
+          badgeTextColor = resolveThemeColor(context,
+              dark: MyntColors.primaryDark,
+              light: MyntColors.primary);
+          break;
+        case 'MIS':
+          badgeColor = resolveThemeColor(context,
+              dark: MyntColors.warning.withValues(alpha: 0.15),
+              light: MyntColors.warning.withValues(alpha: 0.12));
+          badgeTextColor = resolveThemeColor(context,
+              dark: MyntColors.warning,
+              light: MyntColors.warning);
+          break;
+        case 'NRML':
+          badgeColor = resolveThemeColor(context,
+              dark: MyntColors.profitDark.withValues(alpha: 0.15),
+              light: MyntColors.profit.withValues(alpha: 0.12));
+          badgeTextColor = resolveThemeColor(context,
+              dark: MyntColors.profitDark,
+              light: MyntColors.profit);
+          break;
+        default:
+          badgeColor = resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark.withValues(alpha: 0.15),
+              light: MyntColors.textSecondary.withValues(alpha: 0.12));
+          badgeTextColor = resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary);
+      }
+    }
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: badgeColor,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          product,
+          style: MyntWebTextStyles.tableCell(
+            context,
+            color: badgeTextColor,
+            darkColor: badgeTextColor,
+            lightColor: badgeTextColor,
+            fontWeight: MyntFonts.semiBold,
+          ).copyWith(fontSize: 11),
+        ),
+      ),
+    );
+  }
+
+  // Build instrument cell with 3-dot menu on hover
   Widget _buildInstrumentCell(
     BuildContext context,
     PositionBookModel position,
     ThemesProvider theme,
     bool isClosed,
     bool isRowHovered,
-    PortfolioProvider positionBook,
-  ) {
+    PortfolioProvider positionBook, {
+    int? rowIndex,
+  }) {
     final colorScheme = shadcn.Theme.of(context).colorScheme;
     final textColor =
         isClosed ? colorScheme.mutedForeground : colorScheme.foreground;
 
     return GestureDetector(
       onTap: () => _showPositionDetail(position),
-      behavior: HitTestBehavior.opaque,
+      behavior: HitTestBehavior.deferToChild, // Allow children (PopupMenuButton) to handle taps first
       child: SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Instrument name - full width, can be partially covered by buttons
-            // Only truncate when hovered (buttons visible), otherwise show full text
+            // Instrument name
             Align(
               alignment: Alignment.centerLeft,
               child: Tooltip(
                 message:
                     '${_formatInstrumentText(position)}${position.exch != null && position.exch!.isNotEmpty && (position.expDate == null || position.expDate!.isEmpty) ? ' ${position.exch}' : ''}',
                 child: Padding(
-                  padding: EdgeInsets.only(right: isRowHovered ? 8.0 : 0.0),
+                  padding: EdgeInsets.only(right: isRowHovered ? 40.0 : 0.0),
                   child: RichText(
                     overflow: isRowHovered
                         ? TextOverflow.ellipsis
@@ -1175,7 +1377,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                           text: _formatInstrumentText(position),
                           style: _getTextStyle(context, color: textColor),
                         ),
-                        // Exchange (mutedForeground color, smaller font, fixed 10px) - show for equity stocks
+                        // Exchange (smaller font) - show for equity stocks
                         if (position.exch != null &&
                             position.exch!.isNotEmpty &&
                             (position.expDate == null ||
@@ -1195,100 +1397,155 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ),
               ),
             ),
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: () {},
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  padding: const EdgeInsets.only(left: 12),
+            // 3-dot menu button (appears on hover)
+            if (isRowHovered)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
                   alignment: Alignment.centerRight,
-                  decoration: BoxDecoration(
-                    gradient: (isRowHovered && !isClosed)
-                        ? LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [
-                              shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .background
-                                  .withValues(alpha: 0.0),
-                              shadcn.Theme.of(context)
-                                  .colorScheme
-                                  .background
-                                  .withValues(alpha: 0.95),
-                            ],
-                          )
-                        : null,
-                  ),
-                  child: HoverActionsContainer(
-                    isVisible: isRowHovered,
-                    actions: [
-                      if (!isClosed &&
-                          position.qty != "0" &&
-                          position.sPrdtAli != "BO" &&
-                          position.sPrdtAli != "CO" &&
-                          !positionBook.isDay) ...[
-                        HoverActionButton(
-                          label: 'Add',
-                          size: 44,
-                          borderRadius: 5,
-                          color: Colors.white,
-                          backgroundColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.primaryDark,
-                            light: MyntColors.primary,
-                          ),
-                          borderColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.primaryDark,
-                            light: MyntColors.primary,
-                          ),
-                          onPressed: () => _handleAddPosition(position),
-                        ),
-                        HoverActionButton(
-                          label: 'Exit',
-                          size: 44,
-                          borderRadius: 5,
-                          color: Colors.white,
-                          backgroundColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.tertiary,
-                            light: MyntColors.tertiary,
-                          ),
-                          borderColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.tertiary,
-                            light: MyntColors.tertiary,
-                          ),
-                          onPressed: () => _handleExitPosition(position),
-                        ),
-                      ],
-                      HoverActionButton.icon(
-                        context: context,
-                        icon: Icons.bar_chart,
-                        size: 30,
-                        iconColor: Colors.black,
-                        onPressed: () => _handleChartTap(position),
-                      ),
-                      if (!isClosed && position.qty != "0")
-                        HoverActionButton.icon(
-                          context: context,
-                          icon: Icons.swap_horiz,
-                          size: 30,
-                          iconColor: Colors.black,
-                          onPressed: () => _handleConvertPosition(position),
-                        ),
-                    ],
-                  ),
+                  child: _buildOptionsMenuButton(context, position, isClosed, positionBook, rowIndex: rowIndex),
                 ),
               ),
-            ),
           ],
         ),
       ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    BuildContext context,
+    PositionBookModel position,
+    bool isClosed,
+    PortfolioProvider positionBook, {
+    int? rowIndex,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Build menu items dynamically based on position state
+            List<shadcn.MenuItem> menuItems = [];
+
+            // Exit option (only for open positions, not BO/CO, not day positions)
+            if (!isClosed &&
+                position.qty != "0" &&
+                position.sPrdtAli != "BO" &&
+                position.sPrdtAli != "CO" &&
+                !positionBook.isDay) {
+              menuItems.add(
+                shadcn.MenuButton(
+                  leading: const Icon(Icons.remove_circle_outline, size: 16),
+                  onPressed: (ctx) {
+                    debugPrint('Exit pressed');
+                    _handleExitPosition(position);
+                  },
+                  child: const Text('Exit'),
+                ),
+              );
+            }
+
+            // Add option (only for open positions, not BO/CO, not day positions)
+            if (!isClosed &&
+                position.qty != "0" &&
+                position.sPrdtAli != "BO" &&
+                position.sPrdtAli != "CO" &&
+                !positionBook.isDay) {
+              menuItems.add(
+                shadcn.MenuButton(
+                  leading: const Icon(Icons.add_circle_outline, size: 16),
+                  onPressed: (ctx) {
+                    debugPrint('Add pressed');
+                    _handleAddPosition(position);
+                  },
+                  child: const Text('Add'),
+                ),
+              );
+            }
+
+            // Convert option (only for open positions)
+            if (!isClosed && position.qty != "0") {
+              menuItems.add(
+                shadcn.MenuButton(
+                  leading: const Icon(Icons.swap_horiz, size: 16),
+                  onPressed: (ctx) {
+                    debugPrint('Convert pressed');
+                    _handleConvertPosition(position);
+                  },
+                  child: const Text('Convert'),
+                ),
+              );
+            }
+
+            // Add divider if we have action items
+            if (menuItems.isNotEmpty) {
+              menuItems.add(const shadcn.MenuDivider());
+            }
+
+            // Info option (always available)
+            menuItems.add(
+              shadcn.MenuButton(
+                leading: const Icon(Icons.info_outline, size: 16),
+                onPressed: (ctx) {
+                  debugPrint('Info pressed');
+                  _showPositionDetail(position);
+                },
+                child: const Text('Info'),
+              ),
+            );
+
+            // Chart option (always available)
+            menuItems.add(
+              shadcn.MenuButton(
+                leading: const Icon(Icons.bar_chart, size: 16),
+                onPressed: (ctx) {
+                  debugPrint('Chart pressed');
+                  _handleChartTap(position);
+                },
+                child: const Text('Chart'),
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Close if not hovering the row either
+                    if (_hoveredRowIndex.value != _popoverRowIndex) {
+                      _closePopover();
+                    }
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+          },
+          child: Icon(
+            Icons.more_horiz,
+            size: 18,
+            color: resolveThemeColor(context,
+                dark: MyntColors.iconDark,
+                light: MyntColors.icon),
+          ),
+        );
+      },
     );
   }
 
