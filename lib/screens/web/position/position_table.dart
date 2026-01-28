@@ -207,7 +207,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               // Closed positions: show muted background, no hover effect
               backgroundColor = resolveThemeColor(context,
                   dark: MyntColors.textPrimary.withValues(alpha: 0.15),
-                  light: MyntColors.textPrimary.withValues(alpha: 0.09));
+                  light: const Color(0x8F121212).withValues(alpha: 0.09));
             } else if (isRowHovered) {
               // Open positions: show hover effect only
               backgroundColor = resolveThemeColor(context,

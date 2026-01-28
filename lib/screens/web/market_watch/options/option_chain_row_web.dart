@@ -86,16 +86,6 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
             .select((p) => p.socketDatas[widget.rowData.putOption!.token]))
         : null;
 
-    // ATM row highlight
-    final isATM = widget.rowData.isATM;
-    final atmColor = isATM
-        ? resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ).withOpacity(0.08)
-        : Colors.transparent;
-
     return RepaintBoundary(
       key: widget.atmKey,
       child: Row(
@@ -292,18 +282,11 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
   }
 
   Widget _buildStrikeCell() {
-    final isATM = widget.rowData.isATM;
-
     return SizedBox(
       width: 150,
       child: Container(
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isATM
-              ? resolveThemeColor(context,
-                      dark: MyntColors.primaryDark, light: MyntColors.primary)
-                  .withOpacity(0.15)
-              : Colors.transparent,
           border: Border.symmetric(
             vertical: BorderSide(
               color: resolveThemeColor(context,
@@ -316,13 +299,10 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
           widget.rowData.strikePrice,
           style: MyntWebTextStyles.body(
             context,
-            fontWeight: isATM ? FontWeight.w700 : FontWeight.w500,
-            color: isATM
-                ? resolveThemeColor(context,
-                    dark: MyntColors.primaryDark, light: MyntColors.primary)
-                : resolveThemeColor(context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary),
+            fontWeight: FontWeight.w500,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary),
           ),
         ),
       ),

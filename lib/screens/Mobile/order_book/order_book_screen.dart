@@ -65,45 +65,34 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                 children: [
                     _buildFilterSearchHeader(orderBook, theme),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      height: 35,
-                      // decoration: BoxDecoration(
-                      //   border: Border(
-                      //     bottom: BorderSide(
-                      //       color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                      //       width: 1,
-                      //     ),
-                      //   ),
-                      // ),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.all(4),
                       child: TabBar(
                         controller: orderBook.tabCtrl,
                         tabAlignment: TabAlignment.start,
                         isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.label,
-                        // indicatorColor:
-                        //    theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, // hide default underline
+                        indicatorSize: TabBarIndicatorSize.tab,
                         indicator: BoxDecoration(
-                          // pill-shaped highlight[4]
-                          color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
-                          borderRadius: BorderRadius.circular(5),
-                          // border: Border.all(
-                          //   color: theme.isDarkMode
-                          //       ? colors.darkColorDivider
-                          //       : colors.colorDivider,
-                          // ),
+                          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                          borderRadius: BorderRadius.circular(6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        // labelColor: theme.isDarkMode
-                        //     ? colors.colorLightBlue
-                        //     : colors.colorBlue,
+                        dividerColor: Colors.transparent,
+                        labelColor: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
                         unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        labelStyle: TextWidget.textStyle(
-                            fontSize: 14, theme: false, fw: 1, color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight),
-                        unselectedLabelStyle: TextWidget.textStyle(
-                            fontSize: 14,
-                            theme: false,
-                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                            fw: 0,
-                            letterSpacing: -0.28),
+                        labelStyle: TextWidget.textStyle(fontSize: 13, theme: false, fw: 2),
+                        unselectedLabelStyle: TextWidget.textStyle(fontSize: 13, theme: false, fw: 3),
                         labelPadding: const EdgeInsets.symmetric(horizontal: 4),
 
                         // build the "Open 4" badge and the rest of the tabs
@@ -124,33 +113,31 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                                 final isSelected = orderBook.tabCtrl.index == index;
                                 
                                 return Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10, top: 0, bottom: 0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      TextWidget.paraText(
-                                          text: title,
-                                          theme: false,
-                                           color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                                          fw: isSelected ? 2 : 2),
+                                      Text(
+                                          title,
+                                          style: TextWidget.textStyle(
+                                            fontSize: 13,
+                                            theme: false,
+                                             color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                            fw: isSelected ? 2 : 2),
+                                      ),
                                       if (badge != null) ...[
-                                        const SizedBox(width: 3),
+                                        const SizedBox(width: 4),
                                         Container(
-                                          margin: const EdgeInsets.only(bottom: 6),
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 4, vertical: 1),
-                                          // decoration: BoxDecoration(
-                                          //   color: colors.colorWhite,
-                                          //   borderRadius: BorderRadius.circular(4),
-                                          // ),
+                                              horizontal: 4, vertical: 0),
                                           child: Text(
                                             badge,
                                             style: TextWidget.textStyle(
-                                                fontSize: 12, theme: false, 
-                                                color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight, fw : isSelected ? 2 : 0),
-                                                
+                                                fontSize: 11,
+                                                theme: false, 
+                                                color: isSelected ? theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight :  theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                                                fw : isSelected ? 2 : 0),
                                           ),
                                         ),
                                       ],

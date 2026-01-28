@@ -482,7 +482,7 @@ class WebSocketProvider extends ChangeNotifier {
         "t": "c",
         "actid": clientId,
         "uid": clientId,
-        "source": "WEB",
+        "source": kIsWeb ? "WEB" : "MOBILE",
         "susertoken": clientSession,
       };
       
@@ -579,7 +579,8 @@ class WebSocketProvider extends ChangeNotifier {
     // PERFORMANCE FIX: Increased throttle from 330ms to 500ms for web performance
     // This reduces updates from 3/sec to 2/sec, lowering CPU usage by ~33%
     // For web apps with many widgets, less frequent updates = smoother experience
-    _throttleTimer = Timer(const Duration(milliseconds: 500), () {
+    final throttleDuration = kIsWeb ? const Duration(milliseconds: 500) : const Duration(milliseconds: 300);
+    _throttleTimer = Timer(throttleDuration, () {
       if (_hasPendingUpdates) {
         _hasPendingUpdates = false;
 
@@ -625,6 +626,10 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Notify market watch provider with the updated data
     _notifyMarketWatchProvider();
+
+    // CRITICAL: Notify Riverpod listeners after processing all buffered updates
+    // This ensures ref.watch().select() triggers rebuilds for new tokens
+    notifyListeners();
 
     // Clear the buffer after applying
     _pendingSocketUpdates.clear();
@@ -734,7 +739,11 @@ class WebSocketProvider extends ChangeNotifier {
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
-      successMessage(_context!, res['dmsg'].toString());
+      if (kIsWeb) {
+        ResponsiveSnackBar.showSuccess(_context!, res['dmsg'].toString());
+      } else {
+        successMessage(_context!, res['dmsg'].toString());
+      }
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen
@@ -929,6 +938,10 @@ class WebSocketProvider extends ChangeNotifier {
 
       _socketDataController.add(_socketDatas);
 
+      // CRITICAL: Notify Riverpod listeners so ref.watch().select() triggers rebuilds
+      // Without this, the .select() pattern won't detect changes even with new Map reference
+      notifyListeners();
+
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data
       if ((res.containsKey('lp') || res.containsKey('pc') || res.containsKey('c')) && data["lp"] != null && data["lp"] != "0" && data["lp"] != "0.00") {
@@ -1013,6 +1026,7 @@ class WebSocketProvider extends ChangeNotifier {
   // Format: "taskType:symbol" (e.g., "t:NSE|1234" or "d:NSE|1234")
   // This allows the same symbol to have both touchline and depth subscriptions
   final Set<String> _sentSubscriptions = {};
+  Set<String> get sentSubscriptions => Set.from(_sentSubscriptions);
   Timer? _subscriptionDebounce;
   final Map<String, List<String>> _pendingSubscriptions = {
     't': [],
@@ -1042,24 +1056,63 @@ class WebSocketProvider extends ChangeNotifier {
       subscriptionManager.addSubscription(input);
 
       // Filter out already sent subscriptions for THIS task type
+      // BUT: If socket data is missing for a "subscribed" token, we need to resubscribe
+      // This handles the case where socket data was cleared (e.g., _clearScreenCache)
+      // but _sentSubscriptions wasn't updated
       final taskKey = task.toLowerCase();
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      
+
       // Create task-specific subscription keys (e.g., "t:NSE|1234" or "d:NSE|1234")
-      final subscriptionKeys = symbols.map((s) => "$taskKey:$s").toList();
-      final newSubscriptionKeys = subscriptionKeys.where((key) => !_sentSubscriptions.contains(key)).toList();
-      
-      // Extract just the symbols from the new subscription keys
-      final newSymbols = newSubscriptionKeys.map((key) => key.split(':')[1]).toList();
+      final List<String> newSymbols = [];
+      final List<String> skippedSymbols = [];
+      final List<String> resubscribedSymbols = [];
+
+      for (final symbol in symbols) {
+        final subscriptionKey = "$taskKey:$symbol";
+
+        if (!_sentSubscriptions.contains(subscriptionKey)) {
+          // Not in sent subscriptions - definitely needs subscription
+          newSymbols.add(symbol);
+        } else {
+          // Already in sent subscriptions - check if socket data exists
+          // Extract token from symbol (format: EXCH|TOKEN)
+          final token = symbol.contains('|') ? symbol.split('|')[1] : symbol;
+          final hasSocketData = _socketDatas.containsKey(token) || _socketDatas.containsKey(symbol);
+
+          if (!hasSocketData) {
+            // Socket data was cleared but subscription tracking wasn't updated
+            // Need to resubscribe to get fresh data
+            newSymbols.add(symbol);
+            resubscribedSymbols.add(symbol);
+          } else {
+            // Has both subscription tracking and socket data - skip
+            skippedSymbols.add(symbol);
+          }
+        }
+      }
+
+      // DEBUG: Log which symbols are being skipped (already subscribed with data)
+      if (skippedSymbols.isNotEmpty) {
+        print('⚠️ [WEBSOCKET] SKIPPED ${skippedSymbols.length} symbols (already subscribed with data):');
+        print('   Skipped symbols: ${skippedSymbols.take(10).join(", ")}${skippedSymbols.length > 10 ? "..." : ""}');
+        print('   Total _sentSubscriptions count: ${_sentSubscriptions.length}');
+      }
+
+      // Log resubscribed symbols (socket data was missing)
+      if (resubscribedSymbols.isNotEmpty) {
+        print('🔄 [WEBSOCKET] RESUBSCRIBING ${resubscribedSymbols.length} symbols (socket data was cleared):');
+        print('   Resubscribed: ${resubscribedSymbols.take(10).join(", ")}${resubscribedSymbols.length > 10 ? "..." : ""}');
+      }
 
       if (newSymbols.isEmpty) {
         log("WebSocket: ℹ️ All ${symbols.length} symbols already subscribed for task '$taskKey', skipping");
         return;
       }
 
-      log("WebSocket: ➕ Adding ${newSymbols.length} new $taskKey subscriptions (${symbols.length - newSymbols.length} already subscribed)");
+      final freshCount = newSymbols.length - resubscribedSymbols.length;
+      log("WebSocket: ➕ Adding ${newSymbols.length} $taskKey subscriptions ($freshCount new, ${resubscribedSymbols.length} resubscribe, ${skippedSymbols.length} skipped)");
       if (newSymbols.length <= 10) {
-        log("  New symbols: ${newSymbols.join(', ')}");
+        log("  Symbols to subscribe: ${newSymbols.join(', ')}");
       }
 
       // Add to pending batch
@@ -1078,15 +1131,27 @@ class WebSocketProvider extends ChangeNotifier {
       // Unsubscribe tasks - remove from subscription manager and tracking
       subscriptionManager.removeSubscription(input);
       final symbols = input.split('#').where((s) => s.isNotEmpty).toList();
-      
+
       // Determine which task type to unsubscribe (touchline by default)
       final taskKey = task.toLowerCase() == "ud" ? "d" : "t";
-      
+
+      // DEBUG: Log before removing
+      print('🗑️ [WEBSOCKET] UNSUBSCRIBE: Removing ${symbols.length} $taskKey subscriptions');
+      print('   _sentSubscriptions BEFORE: ${_sentSubscriptions.length} entries');
+
       // Remove task-specific subscription keys
+      int removedCount = 0;
       for (final symbol in symbols) {
-        _sentSubscriptions.remove("$taskKey:$symbol");
+        final key = "$taskKey:$symbol";
+        if (_sentSubscriptions.contains(key)) {
+          _sentSubscriptions.remove(key);
+          removedCount++;
+        }
       }
-      
+
+      print('   Actually removed: $removedCount (${symbols.length - removedCount} were not in _sentSubscriptions)');
+      print('   _sentSubscriptions AFTER: ${_sentSubscriptions.length} entries');
+
       log("WebSocket: ➖ Removed ${symbols.length} $taskKey subscriptions for task '$task'");
       if (symbols.length <= 10) {
         log("  Symbols: ${symbols.join(', ')}");

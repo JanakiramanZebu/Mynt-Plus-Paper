@@ -90,7 +90,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0), // Reduced vertical padding to 0
         alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
         child: Text(
           label,
@@ -118,15 +118,13 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
       ),
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        // onExit: (_) => _hoveredRowIndex.value = null, // Don't clear on exit to keep last hovered if needed, usually we clear
         onExit: (_) => _hoveredRowIndex.value = null, 
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            // final isRowHovered = hoveredIndex == rowIndex; // Unused
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: null, // Removed hover color as requested
+              color: null,
               alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
             );
@@ -136,24 +134,17 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     );
   }
 
-  // --- Logic ---
-
   Future<void> _handleOrder(dynamic nfoItem, String type) async {
      final mf = ref.read(mfProvider);
      
-     // Show loader while fetching dependencies
-     showDialog(
-       context: context,
-       barrierDismissible: false,
-       builder: (context) => const Center(child: CircularProgressIndicator()),
-     );
-     
      try {
+      mf.setInvestLoader(true);
       // Fetch bank details to prevent null error in MFOrderScreen
       await ref.read(transcationProvider).fetchfundbank(context);
       
+      mf.setInvestLoader(false);
+
       if (!context.mounted) return;
-      Navigator.pop(context); // Dismiss loader
 
       final isin = nfoItem.iSIN;
       final schemeCode = nfoItem.schemeCode;
@@ -172,13 +163,17 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
       }
 
       if (context.mounted) {
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = screenSize.width * 0.25; // 25% width
+        final dialogHeight = screenSize.height * 0.60; // 60% height
+
         showDialog(
           context: context,
           builder: (context) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: SizedBox(
-              width: 450,
-              height: 650,
+              width: dialogWidth,
+              height: dialogHeight,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: MFOrderScreen(mfData: nfoItem),
@@ -191,6 +186,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         mf.orderpagetite("NFO");
       }
     } catch (e) {
+      mf.setInvestLoader(false);
       if (context.mounted) {
         showResponsiveErrorMessage(context, "Error: ${e.toString()}");
       }
@@ -223,13 +219,13 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
             children: [
               // --- Header Section ---
               Container(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-                    ),
-                  ),
+                  // border: Border(
+                  //   bottom: BorderSide(
+                  //     color: theme.isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+                  //   ),
+                  // ),
                 ),
                 child: Row(
                   children: [
@@ -239,18 +235,18 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                       icon: Icon(Icons.arrow_back_ios, size: 20, color: theme.isDarkMode ? Colors.white : Colors.black),
                       tooltip: "Back",
                     ),
-                    const SizedBox(width: 16),
-                    // Icon
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.card_giftcard, color: Colors.red, size: 28),
-                    ),
-                    const SizedBox(width: 16),
+                    // const SizedBox(width: 16),
+                    // // Icon
+                    // Container(
+                    //   width: 48,
+                    //   height: 48,
+                    //   decoration: BoxDecoration(
+                    //     color: Colors.red.withValues(alpha: 0.1),
+                    //     borderRadius: BorderRadius.circular(8),
+                    //   ),
+                    //   child: const Icon(Icons.card_giftcard, color: Colors.red, size: 28),
+                    // ),
+                    // const SizedBox(width: 16),
                     // Title and Subtitle
                     Expanded(
                       child: Column(
@@ -260,9 +256,10 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                             children: [
                               Text(
                                 "New Fund Offerings",
-                                style: MyntWebTextStyles.head(context, 
+                                style: MyntWebTextStyles.title(context, 
                                   darkColor: MyntColors.textPrimaryDark, 
-                                  lightColor: MyntColors.textPrimary),
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(width: 8),
                               Container(
@@ -273,7 +270,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                                 ),
                                 child: Text(
                                   filteredList.length.toString(),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
@@ -290,28 +287,28 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 24),
+                    // const SizedBox(width: 24),
                     // Search Bar
-                    SizedBox(
-                      width: 250,
-                      child: shadcn.Theme(
-                        data: shadcn.Theme.of(context).copyWith(
-                          colorScheme: () => shadcn.Theme.of(context).colorScheme.copyWith(
-                                ring: () => Colors.transparent,
-                              ),
-                        ),
-                        child: shadcn.TextField(
-                          controller: _searchController,
-                          placeholder: const Text('Search'),
-                          features: [
-                            shadcn.InputFeature.leading(
-                                const Icon(Icons.search, size: 16)),
-                          ],
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                        ),
-                      ),
-                    ),
+                    // SizedBox(
+                    //   width: 250,
+                    //   child: shadcn.Theme(
+                    //     data: shadcn.Theme.of(context).copyWith(
+                    //       colorScheme: () => shadcn.Theme.of(context).colorScheme.copyWith(
+                    //             ring: () => Colors.transparent,
+                    //           ),
+                    //     ),
+                    //     child: shadcn.TextField(
+                    //       controller: _searchController,
+                    //       placeholder: const Text('Search'),
+                    //       features: [
+                    //         shadcn.InputFeature.leading(
+                    //             const Icon(Icons.search, size: 16)),
+                    //       ],
+                    //       padding: const EdgeInsets.symmetric(
+                    //           horizontal: 12, vertical: 8),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -319,128 +316,168 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
               // --- Table Section ---
               Expanded(
                 child: filteredList.isEmpty
-                  ? NoDataFound(secondaryEnabled: false, title: "No NFOs Found")
-                  : shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(70),
-                      columnWidths: const {
-                        0: shadcn.FlexTableSize(flex: 3), // Fund name
-                        1: shadcn.FlexTableSize(flex: 1), // Opening
-                        2: shadcn.FlexTableSize(flex: 1), // Closing
-                        3: shadcn.FlexTableSize(flex: 1), // Min Invest
-                      },
-                      rows: [
-                        // Header
-                        shadcn.TableHeader(
-                          cells: [
-                            buildHeaderCell('Fund name'),
-                            buildHeaderCell('Opening'),
-                            buildHeaderCell('Closing'),
-                            buildHeaderCell('Min. Invest', true),
-                          ],
-                        ),
-                        // Data Rows
-                        ...filteredList.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final item = entry.value;
+                  ? const NoDataFound(secondaryEnabled: false, title: "No NFOs Found")
+                  : LayoutBuilder(builder: (context, constraints) {
+                      final double totalWidth = constraints.maxWidth;
+                      final double fundNameWidth = totalWidth * 0.55;
+                      final double otherColumnWidth = totalWidth * 0.15;
 
-                          return shadcn.TableRow(
-                            cells: [
-                              // Fund Name + Actions
-                              buildCellWithHover(
-                                rowIndex: index,
-                                child: Row(
-                                  children: [
-                                    // Logo
-                                    CircleAvatar(
-                                      radius: 16,
-                                      backgroundColor: Colors.grey[200],
-                                      backgroundImage: NetworkImage(
-                                        "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
-                                      ),
-                                      onBackgroundImageError: (_, __) {},
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // Name & Tags
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            item.name ?? "Unknown Fund",
-                                            style: _getTextStyle(context, 
-                                              color: null, // Changed from blue to default (black/theme)
-                                              fontSize: 14),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              _buildTag(item.sCHEMECATEGORY ?? "OTHER SCHEME", theme),
-                                            ],
-                                          ),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
+                        child: shadcn.OutlinedContainer(
+                          child: Scrollbar(
+                            controller: _verticalScrollController,
+                            thumbVisibility: false,
+                            child: SingleChildScrollView(
+                              controller: _verticalScrollController,
+                              child: Column(
+                                children: [
+                                  shadcn.Table(
+                                    defaultRowHeight: const shadcn.FixedTableSize(50), // Reduced Header
+                                    columnWidths: {
+                                      0: shadcn.FixedTableSize(fundNameWidth),
+                                      1: shadcn.FixedTableSize(otherColumnWidth), // Opening
+                                      2: shadcn.FixedTableSize(otherColumnWidth), // Closing
+                                      3: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
+                                    },
+                                    rows: [
+                                      // Header
+                                      shadcn.TableHeader(
+                                        cells: [
+                                          buildHeaderCell('Fund name', false),
+                                          buildHeaderCell('Opening', false),
+                                          buildHeaderCell('Closing', false),
+                                          buildHeaderCell('Min. Invest', true),
                                         ],
                                       ),
-                                    ),
-                                    // Hover Actions
-                                    ValueListenableBuilder<int?>(
-                                      valueListenable: _hoveredRowIndex,
-                                      builder: (context, hoveredIndex, _) {
-                                        // Show buttons if row is hovered
-                                        if (hoveredIndex == index) {
-                                          return Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              _buildActionButton(
-                                                context, 
-                                                "Buy", 
-                                                colors.colorBlue, 
-                                                Colors.white, 
-                                                () => _handleOrder(item, "One-time")),
-                                              if (item.sIPFLAG == "Y") ...[
-                                                const SizedBox(width: 8),
-                                                  _buildActionButton(
-                                                  context, 
-                                                  "SIP", 
-                                                  Colors.transparent, 
-                                                  colors.colorBlue, 
-                                                  () => _handleOrder(item, "SIP"),
-                                                  isOutlined: true),
-                                              ]
-                                            ],
-                                          );
-                                        }
-                                        return const SizedBox.shrink();
-                                      },
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                  shadcn.Table(
+                                    defaultRowHeight: const shadcn.FixedTableSize(70), // Data Body
+                                    columnWidths: {
+                                      0: shadcn.FixedTableSize(fundNameWidth),
+                                      1: shadcn.FixedTableSize(otherColumnWidth), // Opening
+                                      2: shadcn.FixedTableSize(otherColumnWidth), // Closing
+                                      3: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
+                                    },
+                                    rows: [
+                                      // Data Rows
+                                      ...filteredList.asMap().entries.map((entry) {
+                                        final index = entry.key;
+                                        final item = entry.value;
+
+                                        return shadcn.TableRow(
+                                          cells: [
+                                            // Fund Name + Actions
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              child: Row(
+                                                children: [
+                                                  // Logo
+                                                  CircleAvatar(
+                                                    radius: 14,
+                                                    backgroundColor: Colors.grey[200],
+                                                    backgroundImage: NetworkImage(
+                                                      "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                                                    ),
+                                                    onBackgroundImageError: (_, __) {},
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  // Name & Tags
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Text(
+                                                          item.name ?? "Unknown Fund",
+                                                          style: _getTextStyle(context,
+                                                              color: resolveThemeColor(context,
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary),
+                                                              fontSize: 14),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 2),
+                                                        Row(
+                                                          children: [
+                                                            _buildTag(item.sCHEMECATEGORY ?? "OTHER SCHEME", theme),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  // Hover Actions
+                                                  ValueListenableBuilder<int?>(
+                                                    valueListenable: _hoveredRowIndex,
+                                                    builder: (context, hoveredIndex, _) {
+                                                      if (hoveredIndex == index) {
+                                                        return Container(
+                                                          padding: const EdgeInsets.all(4),
+                                                          decoration: BoxDecoration(
+                                                            color: resolveThemeColor(context,
+                                                                dark: MyntColors.searchBgDark,
+                                                                light: MyntColors.backgroundColor),
+                                                            borderRadius: BorderRadius.circular(6),
+                                                            boxShadow: MyntShadows.card,
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisSize: MainAxisSize.min,
+                                                            children: [
+                                                              _buildActionButton(
+                                                                  "Buy",
+                                                                  const Color(0xff0037B7),
+                                                                  () => _handleOrder(item, "One-time")),
+                                                              if (item.sIPFLAG == "Y") ...[
+                                                                const SizedBox(width: 6),
+                                                                _buildActionButton(
+                                                                    "SIP",
+                                                                    const Color(0xff0037B7),
+                                                                    () => _handleOrder(item, "SIP")),
+                                                              ]
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }
+                                                      return const SizedBox.shrink();
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // Opening
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              child: Text(_formatDate(item.startDate),
+                                                  style: _getTextStyle(context)),
+                                            ),
+                                            // Closing
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              child: Text(_formatDate(item.endDate),
+                                                  style: _getTextStyle(context)),
+                                            ),
+                                            // Min Invest
+                                            buildCellWithHover(
+                                              rowIndex: index,
+                                              alignRight: true,
+                                              child: Text(
+                                                  "₹${double.tryParse(item.minimumPurchaseAmount ?? '0')?.toStringAsFixed(2) ?? '0.00'}",
+                                                  style: _getTextStyle(context)),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              // Opening
-                              buildCellWithHover(
-                                rowIndex: index,
-                                child: Text(_formatDate(item.startDate), style: _getTextStyle(context)),
-                              ),
-                              // Closing
-                              buildCellWithHover(
-                                rowIndex: index,
-                                child: Text(_formatDate(item.endDate), style: _getTextStyle(context)),
-                              ),
-                              // Min Invest
-                              buildCellWithHover(
-                                rowIndex: index,
-                                alignRight: true,
-                                child: Text(
-                                  "₹${double.tryParse(item.minimumPurchaseAmount ?? '0')?.toStringAsFixed(2) ?? '0.00'}", 
-                                  style: _getTextStyle(context)
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
               ),
             ],
           ),
@@ -449,12 +486,12 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     );
   }
 
+
   Widget _buildTag(String text, ThemesProvider theme) {
     return Container(
       margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2), 
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? Colors.grey[800] : Colors.grey[200],
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -468,19 +505,23 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, Color bg, Color fn, VoidCallback onTap, {bool isOutlined = false}) {
+  Widget _buildActionButton(String label, Color color, VoidCallback onTap, {bool filled = true}) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4), 
         decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(4),
-          border: isOutlined ? Border.all(color: fn) : null,
+          color: filled ? color : Colors.transparent,
+          border: filled ? null : Border.all(color: color, width: 1.5),
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           label,
-          style: TextStyle(color: fn, fontSize: 12, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: filled ? Colors.white : color,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

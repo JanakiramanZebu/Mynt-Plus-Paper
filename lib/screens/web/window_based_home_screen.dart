@@ -435,6 +435,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const MFSIPSCREEN();
       case ScreenType.cagrCalculator:
         return const MFCAGRCAL();
+      case ScreenType.mfStockDetail:
+        return const SizedBox.shrink();
     }
   }
 
@@ -482,6 +484,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'SIP Calculator';
       case ScreenType.cagrCalculator:
         return 'CAGR Calculator';
+      case ScreenType.mfStockDetail:
+        return 'Fund Details';
     }
   }
 

@@ -161,7 +161,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                         child: Material(
                           color: Colors.transparent,
                           child: Container(
-                            width: MediaQuery.of(dialogContext).size.width * 0.3, // 30% width
+                            width: 400, // Fixed width for side panel
                             height: MediaQuery.of(dialogContext).size.height,
                             decoration: BoxDecoration(
                               color: Theme.of(dialogContext).scaffoldBackgroundColor,

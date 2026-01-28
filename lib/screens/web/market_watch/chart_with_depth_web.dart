@@ -104,8 +104,14 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           final mw = ref.read(marketWatchProvider);
-          // Only show depth on Overview tab (index 0), hide on all other tabs
-          final isOverviewTab = (_tabController?.index ?? 0) == 0;
+          // Use _selectedTabIndex instead of _tabController?.index ?? 0
+          // This prevents defaulting to 0 (Overview) when tab controller isn't ready
+          // and preserves the user's current tab state
+          final isOverviewTab = _selectedTabIndex == 0;
+
+          // Only change depth visibility if we're on Overview tab
+          // For other tabs (Chart, Options, Stock Report), preserve current depth state
+          // This prevents depth from opening and closing when switching symbols
           if (isOverviewTab) {
             // Overview tab: show depth with new scrip data
             mw.setIsDepthVisibleWeb(
@@ -115,10 +121,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
               token: widget.wlValue.token,
               tsym: widget.wlValue.tsym,
             );
-          } else {
-            // Chart/Options/Stock Report tabs: hide depth
-            mw.setIsDepthVisibleWeb(false, context: context);
           }
+          // Note: We don't hide depth on other tabs here anymore
+          // Depth visibility is managed by the tab listener when user switches tabs
         }
       });
 

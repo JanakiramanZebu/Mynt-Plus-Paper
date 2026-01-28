@@ -12,6 +12,7 @@ import '../../../../provider/websocket_provider.dart';
 
 import '../../../../res/web_colors.dart';
 import '../../../../res/global_font_web.dart';
+import '../../../../res/responsive_extensions.dart';
 import 'index_bottom_sheet_web.dart';
 
 class DefaultIndexListWeb extends ConsumerStatefulWidget {
@@ -92,28 +93,36 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
           )
         : Container(
             margin: const EdgeInsets.only(bottom: 10),
-            height: 55, // Reduced height for Carbon Design
-            width: MediaQuery.of(context).size.width * 1.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(2, (i) {
-                if (i >= displayIndices.length) return const SizedBox.shrink();
-                final item = displayIndices[i];
-                return Expanded(
-                  child: Container(
-                    height: 48, // Reduced height for Carbon Design
-                    margin: const EdgeInsets.symmetric(horizontal: 0),
+            height: context.responsive(mobile: 48.0, tablet: 52.0, desktop: 55.0),
+            width: double.infinity,
+            // Always use horizontal scroll - cards never shrink
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(displayIndices.length.clamp(1, 2), (i) {
+                  if (i >= displayIndices.length) return const SizedBox.shrink();
+                  final item = displayIndices[i];
+                  // Fixed card width - never shrinks
+                  final cardWidth = context.responsive(mobile: 160.0, tablet: 170.0, desktop: 180.0);
+                  return Container(
+                    width: cardWidth,
+                    height: double.infinity,
+                    margin: EdgeInsets.only(
+                      right: i < displayIndices.length.clamp(1, 2) - 1 ? 4 : 0,
+                    ),
                     child: Material(
                       color: Colors.transparent,
                       shape: const RoundedRectangleBorder(),
                       child: InkWell(
                         customBorder: const RoundedRectangleBorder(),
                         splashColor: theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.1)
-                            : WebColors.primary.withOpacity(0.1),
+                            ? WebDarkColors.primary.withValues(alpha: 0.1)
+                            : WebColors.primary.withValues(alpha: 0.1),
                         highlightColor: theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.05)
-                            : WebColors.primary.withOpacity(0.05),
+                            ? WebDarkColors.primary.withValues(alpha: 0.05)
+                            : WebColors.primary.withValues(alpha: 0.05),
                         onTap: () {
                           _handleTap(
                               context,
@@ -124,49 +133,59 @@ class _DefaultIndexListWebState extends ConsumerState<DefaultIndexListWeb>
                         child: Container(
                           width: double.infinity,
                           height: double.infinity,
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0),
+                            vertical: context.responsive(mobile: 4.0, tablet: 6.0, desktop: 8.0),
+                          ),
                           decoration: const BoxDecoration(
-                            color: WebDarkColors.background, // Use web color system
+                            color: WebDarkColors.background,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                item.idxname ?? "",
-                                style: WebTextStyles.sub(
-                                  isDarkTheme: true,
-                                  color: WebDarkColors.textPrimary,
-                                  fontWeight: WebFonts.bold,
+                              Flexible(
+                                child: Text(
+                                  item.idxname ?? "",
+                                  style: WebTextStyles.sub(
+                                    isDarkTheme: true,
+                                    color: WebDarkColors.textPrimary,
+                                    fontWeight: WebFonts.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              _LivePriceWidgetWeb(
-                                key: ValueKey('price_${item.token ?? ""}'),
-                                token: item.token?.toString() ?? "",
-                                initialLtp:
-                                    (item.ltp == null || item.ltp == "null")
-                                        ? "0.00"
-                                        : item.ltp?.toString() ?? "0.00",
-                                initialChange: (item.change == null ||
-                                        item.change == "null")
-                                    ? "0.00"
-                                    : item.change?.toString() ?? "0.00",
-                                initialPerChange: (item.perChange == null ||
-                                        item.perChange == "null")
-                                    ? "0.00"
-                                    : item.perChange?.toString() ?? "0.00",
-                                isDarkMode: theme.isDarkMode,
-                                src: false,
+                              SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
+                              Flexible(
+                                child: _LivePriceWidgetWeb(
+                                  key: ValueKey('price_${item.token ?? ""}'),
+                                  token: item.token?.toString() ?? "",
+                                  initialLtp:
+                                      (item.ltp == null || item.ltp == "null")
+                                          ? "0.00"
+                                          : item.ltp?.toString() ?? "0.00",
+                                  initialChange: (item.change == null ||
+                                          item.change == "null")
+                                      ? "0.00"
+                                      : item.change?.toString() ?? "0.00",
+                                  initialPerChange: (item.perChange == null ||
+                                          item.perChange == "null")
+                                      ? "0.00"
+                                      : item.perChange?.toString() ?? "0.00",
+                                  isDarkMode: theme.isDarkMode,
+                                  src: false,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           );
   }
@@ -544,35 +563,45 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
         : RepaintBoundary(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "$_ltp  ",
-                  style: _getTextStyle(
-                    changeColor,
-                    13,
-                    2,
+                Flexible(
+                  child: Text(
+                    "$_ltp  ",
+                    style: _getTextStyle(
+                      changeColor,
+                      13,
+                      2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Text("$_change ",
-                        style: _getTextStyle(
-                          WebDarkColors.textSecondary, // Use web color for secondary text
-                          13,
-                          2,
-                        )),
-                    const SizedBox(
-                      width: 3,
+                const SizedBox(height: 2),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("$_change ",
+                            style: _getTextStyle(
+                              WebDarkColors.textSecondary,
+                              13,
+                              2,
+                            )),
+                        const SizedBox(width: 2),
+                        Text("($_perChange%)",
+                            style: _getTextStyle(
+                              WebDarkColors.textSecondary,
+                              13,
+                              2,
+                            )),
+                      ],
                     ),
-                    Text("($_perChange%)",
-                        style: _getTextStyle(
-                          WebDarkColors.textSecondary,
-                          13,
-                          2,
-                        )),
-                  ],
-                )
+                  ),
+                ),
               ],
             ),
           );

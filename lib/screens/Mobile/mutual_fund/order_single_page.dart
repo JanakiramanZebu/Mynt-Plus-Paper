@@ -10,9 +10,8 @@ import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-// import '../../../sharedWidget/custom_drag_handler.dart';
-// import '../../sharedWidget/loader_ui.dart';
-// import '../mutual_fund_old/mf_order_filter_sheet.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/mynt_web_text_styles.dart';
 import 'mf_cancel_alert.dart';
 import 'mf_order_bottomsheet.dart';
 
@@ -54,7 +53,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
       return SafeArea(
         child: Scaffold(
           backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : Colors.transparent,
+              theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SingleChildScrollView(
@@ -73,8 +72,8 @@ class _mforderdetscreen extends State<mforderdetscreen>
                         icon: Icon(
                           Icons.close,
                           color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
+                              ? MyntColors.iconDark
+                              : MyntColors.icon,
                         ),
                       ),
                     ],
@@ -96,18 +95,12 @@ class _mforderdetscreen extends State<mforderdetscreen>
                         ref.read(transcationProvider).initialdata(context);
                         mfdata.fetchUpiDetail('', context);
 
-                        final isUpi = mfdata.paymentName == 'UPI';
-                        final isNetBanking =
-                            mfdata.paymentName == 'NET BANKING';
-                        final isUpiValid =
-                            isUpi ? mfdata.upiError == '' : true;
+                        // final isUpi = mfdata.paymentName == 'UPI';
+                        // final isNetBanking =
+                        //     mfdata.paymentName == 'NET BANKING';
+                        // final isUpiValid =
+                        //     isUpi ? mfdata.upiError == '' : true;
 
-                        // mfdata.isValidUpiId(widget.data);
-                        // await mfdata.fetchUpiDetail('repop' , context);
-
-                        // Navigator.pop(context);
-
-                        // Set loading state immediately when button is pressed
                         Navigator.pop(context);
                         _showBottomSheet(
                             context,
@@ -115,146 +108,21 @@ class _mforderdetscreen extends State<mforderdetscreen>
                               data: mfdata.mforderdet?.data![0],
                               condval: 'reinitiatefromportfolio',
                             ));
-                        // await mfdata.upipaymenttrigger(
-                        //   context,
-                        //   mfdata.mforderdet?.data![0].orderId,
-                        //   mfdata.mforderdet?.data![0].orderVal,
-                        //   mfdata.mforderdet?.data![0].accVPA,
-                        //   mfdata.mforderdet?.data![0].paymentType,
-                        // );
-
-                        // if (mfdata.upiApiresponse != null &&
-                        //     mfdata.upiApiresponse?.stat == "Ok") {
-
-                        //     // showModalBottomSheet(
-                        //     //   context: context,
-                        //     //   isScrollControlled: true,
-                        //     //   isDismissible: false,
-                        //     //   enableDrag: false,
-                        //     //   shape: const RoundedRectangleBorder(
-                        //     //     borderRadius: BorderRadius.vertical(
-                        //     //       top: Radius.circular(15),
-                        //     //     ),
-                        //     //   ),
-                        //     //   builder: (context) => WillPopScope(
-                        //     //     onWillPop: () async =>
-                        //     //         mfdata.ispaymentcalled != true,
-                        //     //     child: MfUPIProcessingScreen(
-                        //     //       data: mfdata.mforderdet?.data![0].orderId,
-                        //     //     ),
-                        //     //   ),
-                        //     // );
-                        //   } else {
-                        //     showModalBottomSheet(
-                        //       context: context,
-                        //       isScrollControlled: true,
-                        //       isDismissible: false,
-                        //       enableDrag: false,
-                        //       shape: const RoundedRectangleBorder(
-                        //         borderRadius: BorderRadius.vertical(
-                        //           top: Radius.circular(15),
-                        //         ),
-                        //       ),
-                        //       builder: (context) => WillPopScope(
-                        //         onWillPop: () async =>
-                        //             mfdata.ispaymentcalled != true,
-                        //         child: MfPaymentRespAlert(
-                        //           upiData: mfdata.upiApiresponse?.emsg == '' ? mfdata.upiApiresponse!.data!.toJson() : mfdata.upiApiresponse!.toJson() ,
-                        //           conditionval : 'reinitiateerror'
-                        //         ),
-                        //       ),
-                        //     );
-                        //   }
-                        // else if (isNetBanking) {
-                        //   final url = Uri.parse(
-                        //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
-                        //   );
-                        //   //  mfdata.IsPaymentCalled(false);
-                        //   // Navigator.pop(context);
-
-                        //   // Navigate to a new screen showing InAppWebView
-                        //   Navigator.of(context).push(
-                        //     MaterialPageRoute(
-                        //       builder: (context) => Scaffold(
-                        //         appBar: AppBar(
-                        //           title:
-                        //               const Text("Net Banking"),
-                        //           leading: IconButton(
-                        //             icon: const Icon(
-                        //                 Icons.arrow_back_ios_new),
-                        //             onPressed: () {
-                        //               Navigator.pop(context);
-                        //               mfdata.threeSecondTimer
-                        //                   ?.cancel();
-                        //               mfdata.autoPopTimer
-                        //                   ?.cancel();
-                        //             },
-                        //           ),
-                        //         ),
-                        //         body: WillPopScope(
-                        //           onWillPop: () async {
-                        //             Navigator.pop(context);
-                        //             mfdata.threeSecondTimer
-                        //                 ?.cancel();
-                        //             mfdata.autoPopTimer?.cancel();
-                        //             // print("objectobjectobjectobjectobjectobjectobjectobject");
-                        //             return true;
-                        //           },
-                        //           child: InAppWebView(
-                        //             initialUrlRequest: URLRequest(
-                        //               url: WebUri(url.toString()),
-                        //             ),
-                        //             initialOptions:
-                        //                 InAppWebViewGroupOptions(
-                        //               crossPlatform:
-                        //                   InAppWebViewOptions(),
-                        //             ),
-                        //             onWebViewCreated:
-                        //                 (InAppWebViewController
-                        //                     controller) {
-                        //               ConstantName
-                        //                       .webViewController =
-                        //                   controller;
-                        //             },
-                        //             onProgressChanged:
-                        //                 (InAppWebViewController
-                        //                         controller,
-                        //                     int progress) {
-                        //               // Optional: add loading logic or progress indicator
-                        //             },
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ),
-                        //   );
-                        // }
                       },
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.6)
-                            : colors.btnBg,
-                        // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
-                        side: theme.isDarkMode
-                            ? null
-                            : BorderSide(
-                                color: colors.primaryLight,
-                                width: 1,
-                              ),
+                        backgroundColor: MyntColors.primary,
+                        foregroundColor: Colors.white,
                         minimumSize: const Size(
                             double.infinity, 45), // height: 48
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      child: TextWidget.subText(
-                          align: TextAlign.right,
-                          text: "Re-Initiate Payment",
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.primaryLight,
-                          theme: theme.isDarkMode,
-                          fw: 2),
+                      child: Text(
+                          "Re-Initiate Payment",
+                          style: MyntWebTextStyles.buttonXl(context, color: Colors.white),
+                        ),
                     ),
                   const SizedBox(height: 18),
                   _buildCancelButton(theme, mfdata, context),
@@ -262,27 +130,27 @@ class _mforderdetscreen extends State<mforderdetscreen>
                   _buildDetailsSection(theme, mfdata),
                   const SizedBox(height: 20),
                   if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
-                    TextWidget.subText(
-                        align: TextAlign.right,
-                        text: "Reason",
+                    Text(
+                        "Reason",
+                        style: MyntWebTextStyles.body(
+                        context,
                         color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 0),
+                            ? MyntColors.textSecondaryDark
+                            : MyntColors.textSecondary,
+                        ),
+                    ),
                     const SizedBox(height: 8),
-                    TextWidget.subText(
-                        align: TextAlign.start,
-                        text: mfdata.mforderdet?.data![0].remarks ??
+                    Text(
+                        mfdata.mforderdet?.data![0].remarks ??
                             "No remarks available",
+                        style: MyntWebTextStyles.body(
+                        context,
                         color: theme.isDarkMode
-                            ? colors.lossDark
-                            : colors.lossLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
+                            ? MyntColors.lossDark
+                            : MyntColors.loss,
+                        ),
                         maxLines: 3,
-                        fw: 0),
+                    ),
                   ],
                 ],
               ),
@@ -322,17 +190,18 @@ class _mforderdetscreen extends State<mforderdetscreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextWidget.titleText(
-                                  align: TextAlign.start,
-                                  text: mfdata.mforderdet?.data?[0].name ??
+                              Text(
+                                  mfdata.mforderdet?.data?[0].name ??
                                       "Unknown Scheme",
+                                  style: MyntWebTextStyles.title(
+                                  context,
                                   color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
+                                      ? MyntColors.textPrimaryDark
+                                      : MyntColors.textPrimary,
+                                  ),
                                   maxLines: 2,
-                                  theme: theme.isDarkMode,
-                                  fw: 1),
+                                  overflow: TextOverflow.ellipsis,
+                              ),
                             ],
                           ),
                         ),
@@ -354,56 +223,45 @@ class _mforderdetscreen extends State<mforderdetscreen>
             decoration: BoxDecoration(
               color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
                   ? theme.isDarkMode
-                      ? colors.profitDark.withOpacity(0.1)
-                      : colors.profitLight.withOpacity(0.1)
+                      ? MyntColors.profitDark.withOpacity(0.1)
+                      : MyntColors.profit.withOpacity(0.1)
                   : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                           mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                           mfdata.mforderdet?.data?[0].status ==
                               "PAYMENT DECLINED"
                       ? theme.isDarkMode
-                          ? colors.lossDark.withOpacity(0.1)
-                          : colors.lossLight.withOpacity(0.1)
+                          ? MyntColors.lossDark.withOpacity(0.1)
+                          : MyntColors.loss.withOpacity(0.1)
                       : mfdata.mforderdet?.data?[0].status ==
                               inProgressStatuses
                                   .contains(mfdata.mforderdet?.data?[0].status)
-                          ? colors.pending.withOpacity(0.1)
-                          : colors.pending.withOpacity(0.1), // default fallback
+                          ? MyntColors.pending.withOpacity(0.1)
+                          : MyntColors.pending.withOpacity(0.1), // default fallback
               borderRadius: BorderRadius.circular(4),
             ),
-            child: TextWidget.paraText(
-                text: _getListStatusText(mfdata.mforderdet?.data?[0].status),
-                theme: false,
+            child: Text(
+                _getListStatusText(mfdata.mforderdet?.data?[0].status),
+                style: MyntWebTextStyles.para(
+                context,
                 color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
                     ? theme.isDarkMode
-                        ? colors.profitDark
-                        : colors.profitLight
+                        ? MyntColors.profitDark
+                        : MyntColors.profit
                     : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                             mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                             mfdata.mforderdet?.data?[0].status ==
                                 "PAYMENT DECLINED"
                         ? theme.isDarkMode
-                            ? colors.lossDark
-                            : colors.lossLight
+                            ? MyntColors.lossDark
+                            : MyntColors.loss
                         : mfdata.mforderdet?.data?[0].status ==
                                 inProgressStatuses.contains(
                                     mfdata.mforderdet?.data?[0].status)
-                            ? colors.pending
-                            : colors.pending,
-                            fw: 0),
+                            ? MyntColors.pending
+                            : MyntColors.pending,
+                ),
+            ),
           ),
-
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 4.0),
-          //   child: TextWidget.paraText(
-          //       align: TextAlign.right,
-          //       text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
-          //       color: theme.isDarkMode
-          //           ? colors.textPrimaryDark
-          //           : colors.textPrimaryLight,
-          //       textOverflow: TextOverflow.ellipsis,
-          //       theme: theme.isDarkMode,
-          //       fw: 3),
-          // )
         ],
       ),
     ]);
@@ -494,13 +352,13 @@ class _mforderdetscreen extends State<mforderdetscreen>
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: theme.isDarkMode
-                          ? colors.textSecondaryDark.withOpacity(0.6)
-                          : colors.btnBg,
+                          ? MyntColors.textSecondaryDark.withOpacity(0.6)
+                          : MyntColors.primary,
                       // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                       side: theme.isDarkMode
                           ? null
                           : BorderSide(
-                              color: colors.primaryLight,
+                              color: MyntColors.primary,
                               width: 1,
                             ),
                 minimumSize: const Size(double.infinity, 40), // height: 48
@@ -508,15 +366,10 @@ class _mforderdetscreen extends State<mforderdetscreen>
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              child: TextWidget.subText(
-                  align: TextAlign.right,
-                  text: "Cancel Order",
-                   color: theme.isDarkMode
-                            ? colors.colorWhite
-                            : colors.primaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 2),
+              child: Text(
+                          "Cancel Order",
+                          style: MyntWebTextStyles.buttonXl(context, color: Colors.white)
+                      ),
             ),
           ),
         ),
@@ -530,32 +383,36 @@ class _mforderdetscreen extends State<mforderdetscreen>
         const SizedBox(height: 12),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Expanded(
-            child: TextWidget.subText(
-              align: TextAlign.start,
-              text: title1,
+            child: Text(
+              title1,
+              style: MyntWebTextStyles.body(
+              context,
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 0),
+                  ? MyntColors.textSecondaryDark
+                  : MyntColors.textSecondary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: TextWidget.subText(
-                align: TextAlign.right,
-                text: value1,
+            child: Text(
+                value1,
+                style: MyntWebTextStyles.body(
+                context,
                 color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 0),
+                    ? MyntColors.textPrimaryDark
+                    : MyntColors.textPrimary,
+                fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.right,
+            ),
           ),
         ]),
         const SizedBox(height: 8),
         Divider(
           thickness: 0,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
         )
       ],
     );
@@ -563,17 +420,23 @@ class _mforderdetscreen extends State<mforderdetscreen>
 }
 
 _showBottomSheet(BuildContext context, Widget bottomSheet) {
-  showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      useSafeArea: true,
-      isDismissible: true,
-      backgroundColor: Colors.white,
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: bottomSheet));
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) => Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Container(
+        width: MediaQuery.of(context).size.width >= 1100
+            ? MediaQuery.of(context).size.width * 0.25
+            : MediaQuery.of(context).size.width * 0.90,
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: bottomSheet,
+      ),
+    ),
+  );
 }

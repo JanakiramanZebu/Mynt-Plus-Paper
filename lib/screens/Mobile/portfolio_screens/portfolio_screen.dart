@@ -317,43 +317,41 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
 
 Widget _buildTabBar(BuildContext context, WidgetRef ref) {
   final theme = ref.watch(themeProvider);
-  return  Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
-            height: 35,
-              child: TabBar(
-                    controller: ref.read(portfolioProvider).holdingsTabController,
-                    tabAlignment: TabAlignment.start,
-                    isScrollable: true,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    indicatorColor: colors.colorWhite,
-                    indicator: BoxDecoration(
-                      color: theme.isDarkMode
-                          ? colors.searchBgDark
-                          : const Color(0xffF1F3F8),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    unselectedLabelColor: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    labelStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        fw: 2,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight),
-                    unselectedLabelStyle: TextWidget.textStyle(
-                        fontSize: 14,
-                        theme: false,
-                        fw: 3,
-                        color: colors.textSecondaryLight),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    tabs: const [
-                      Tab(text: "Equity"),
-                      Tab(text: "Mutual Fund"),
-                    ],
-                  ),
-                );
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    height: 40,
+    decoration: BoxDecoration(
+      color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    padding: const EdgeInsets.all(4),
+    child: TabBar(
+      controller: ref.read(portfolioProvider).holdingsTabController,
+      tabAlignment: TabAlignment.fill,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicator: BoxDecoration(
+        color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        borderRadius: BorderRadius.circular(6),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      dividerColor: Colors.transparent,
+      labelColor: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+      unselectedLabelColor: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+      labelStyle: TextWidget.textStyle(fontSize: 13, theme: false, fw: 2),
+      unselectedLabelStyle: TextWidget.textStyle(fontSize: 13, theme: false, fw: 3),
+      labelPadding: EdgeInsets.zero,
+      tabs: const [
+        Tab(text: "Equity"),
+        Tab(text: "Mutual Fund"),
+      ],
+    ),
+  );
 }
 
 // Orders tab view that embeds the OrderBook functionality

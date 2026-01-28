@@ -1017,6 +1017,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
   }
 
   showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
+    // Guard clause - don't show dialog if bank data is not available
+    if (fund.bankdetails == null || fund.bankdetails!.dATA == null || fund.bankdetails!.dATA!.isEmpty) {
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1048,23 +1053,25 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                   shrinkWrap: true,
                   itemCount: fund.bankdetails!.dATA!.length,
                   itemBuilder: (BuildContext context, int index) {
+                    final bankData = fund.bankdetails!.dATA![index];
+                    final bankName = bankData[1]?.toString() ?? '';
+                    final accountNo = bankData[2]?.toString() ?? '';
+
                     return InkWell(
                       onTap: () {
                         fund.bankselection(index);
-                        fund.setAccountslist(
-                            fund.bankdetails!.dATA![index][2].toString());
+                        fund.setAccountslist(accountNo);
 
                         Navigator.pop(context);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 15),
-                        color: fund.bankdetails!.dATA![index][1] == fund.bankname
+                        color: bankName == fund.bankname
                             ? const Color(0xff999999).withOpacity(0.2)
                             : Colors.transparent,
                         child: TextWidget.subText(
-                          text:
-                              '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                          text: '$bankName-${hideAccountNumber(accountNo)}',
                           theme: theme.isDarkMode,
                           fw: 0,
                         ),

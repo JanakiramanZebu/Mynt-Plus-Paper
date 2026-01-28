@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/mf_provider.dart';
@@ -11,6 +11,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import 'mf_sip_details_screen.dart';
 import 'mf_sip_order_history.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
 
 class MFSipdetScreen extends ConsumerStatefulWidget {
   const MFSipdetScreen({super.key});
@@ -27,6 +28,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
   // Scroll controllers
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -72,20 +74,32 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
-    if (mfData.mfsiporderlist?.data?.isEmpty ?? true) {
-      return const Center(
-        child: NoDataFound(
-          title: "No SIP Orders Found",
-          subtitle: "There's nothing here yet. Buy some SIP to see them here.",
-          secondaryEnabled: false,
-        ),
-      );
-    }
+
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              SizedBox(
+                width: 300,
+                height: 40,
+                child: MyntSearchTextField(
+                  controller: _searchController,
+                  placeholder: 'Search SIPs',
+                  leadingIcon: 'assets/icon/search.svg',
+                  onChanged: (value) {
+                    // Implement search logic
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
         Expanded(
-          child: TransparentLoaderScreen(
+          child: MyntLoaderOverlay(
             isLoading: mfData.bestmfloader ?? false,
             child: RefreshIndicator(
               onRefresh: () async {
@@ -220,18 +234,37 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
 
                 // Scrollable Body
                 Expanded(
-                  child: RawScrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    trackColor: Colors.grey.withValues(alpha: 0.1),
-                    thumbColor: Colors.grey.withValues(alpha: 0.3),
-                    thickness: 6,
-                    radius: const Radius.circular(3),
-                    interactive: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
+                  child: sortedOrders.isEmpty
+                      ? LayoutBuilder(
+                          builder: (context, constraints) => SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: const Center(
+                                child: NoDataFound(
+                                  title: "No SIP Orders Found",
+                                  subtitle:
+                                      "There's nothing here yet. Buy some SIP to see them here.",
+                                  secondaryEnabled: false,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : RawScrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          trackColor: Colors.grey.withValues(alpha: 0.1),
+                          thumbColor: Colors.grey.withValues(alpha: 0.3),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
                       child: shadcn.Table(
                         key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
                         columnWidths: {
@@ -710,7 +743,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+          child: MyntLoader(size: MyntLoaderSize.large),
         ),
       );
 

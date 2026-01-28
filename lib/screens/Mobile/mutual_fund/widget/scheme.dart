@@ -4,8 +4,9 @@ import 'package:readmore/readmore.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/mynt_web_text_styles.dart';
 
 class MFSchemeInfo extends ConsumerWidget {
   final MutualFundList mfStockData;
@@ -23,173 +24,248 @@ class MFSchemeInfo extends ConsumerWidget {
 
     final isDarkMode = theme.isDarkMode;
 
+    return Container(
+      color: isDarkMode ? Colors.black : Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Text(
+              "Scheme Information",
+              style: MyntWebTextStyles.title(
+                context,
+                color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Full width Scheme Information
+            _buildSchemeInfoSection(context, isDarkMode, factSheetData),
+
+            const SizedBox(height: 24),
+
+            // Fund Manager Section (25% width)
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.25,
+              child: _buildFundManagerSection(context, isDarkMode, factSheetData),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSchemeInfoSection(BuildContext context, bool isDarkMode, dynamic factSheetData) {
+    // Build investment objective description
+    final schemeObjective = factSheetData.schObjective ?? '';
+    final overview = factSheetData.overview ?? '';
+    final investmentObjective = schemeObjective.isNotEmpty ? schemeObjective : overview;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Investment Objective Title
+        Text(
+          "Investment Objective",
+          style: MyntWebTextStyles.body(
+            context,
+            color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Investment Objective Description
+        if (investmentObjective.isNotEmpty)
+          ReadMoreText(
+            investmentObjective,
+            style: MyntWebTextStyles.para(
+              context,
+              color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+            ),
+            trimLines: 4,
+            trimMode: TrimMode.Line,
+            trimCollapsedText: ' Read more',
+            trimExpandedText: ' Read less',
+            moreStyle: MyntWebTextStyles.para(
+              context,
+              color: MyntColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+            lessStyle: MyntWebTextStyles.para(
+              context,
+              color: MyntColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+
+        const SizedBox(height: 24),
+
+        // Info Grid - Row 1
+        Row(
+          children: [
+            _buildInfoItem(context, isDarkMode, "Launched", factSheetData.launchDate ?? "-"),
+            _buildInfoItem(context, isDarkMode, "SIP Minimum", factSheetData.sipMinAmount ?? "-"),
+            _buildInfoItem(context, isDarkMode, "Corpus (Cr.)", _formatCorpus(factSheetData.corpus)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Divider(color: isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 1),
+        const SizedBox(height: 16),
+
+        // Info Grid - Row 2
+        Row(
+          children: [
+            _buildInfoItem(context, isDarkMode, "Expense Ratio", "${factSheetData.expenseRatio ?? "-"}"),
+            _buildInfoItem(context, isDarkMode, "Lumpsum Min.", factSheetData.purchaseMinAmount ?? "-"),
+            _buildInfoItem(context, isDarkMode, "AMU (Cr.)", _formatAum(factSheetData.AUM)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Divider(color: isDarkMode ? colors.darkColorDivider : colors.colorDivider, height: 1),
+        const SizedBox(height: 16),
+
+        // Info Grid - Row 3
+        Row(
+          children: [
+            _buildInfoItem(context, isDarkMode, "Settlement type", "-"),
+            _buildInfoItem(context, isDarkMode, "Lock-in", _formatExitLoad(factSheetData.exitLoad)),
+            _buildInfoItem(context, isDarkMode, "Scheme type", factSheetData.category ?? "-"),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoItem(BuildContext context, bool isDarkMode, String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: MyntWebTextStyles.para(
+              context,
+              color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: MyntWebTextStyles.body(
+              context,
+              color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFundManagerSection(BuildContext context, bool isDarkMode, dynamic factSheetData) {
     // Safely parse numbers
     final aum = double.tryParse(factSheetData.managerActiveFundsAumSum?.trim() ?? "0.00") ?? 0.00;
     final fundsManaged = (double.tryParse(factSheetData.managerNumberOfActiveFunds?.trim() ?? "0.0") ?? 0.0).ceil();
 
-    // Check if manager description exists
-    final hasManagerDescription = factSheetData.managerDetailedDescription?.isNotEmpty == true;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Fund Manager Title
+        Text(
+          "Fund Manager",
+          style: MyntWebTextStyles.body(
+            context,
+            color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
 
-    return Container(
-        color: isDarkMode ? Colors.black : Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+        // Fund Manager Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+              width: 1,
+            ),
+          ),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 10),
-              TextWidget.subText(
-                  align: TextAlign.right,
-                  text: "Fund Manager",
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 1),
-              const SizedBox(height: 8),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                        color: isDarkMode
-                            ? const Color(0xFF2A2A2A)
-                            : const Color(0xffEEF0F2),
-                        width: 1.2)),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
+              // Manager Image
+              CircleAvatar(
+                radius: 24,
+                backgroundImage: NetworkImage(
+                  "https://v3.mynt.in/mfapi/get-image/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png",
+                ),
+                backgroundColor: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+              ),
+              const SizedBox(width: 12),
+              // Manager Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                        maxRadius: 24,
-                        backgroundImage: NetworkImage(
-                            "https://v3.mynt.in/mfapi/get-image/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png")),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          TextWidget.subText(
-                              text: factSheetData.fundManager ?? "N/A",
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              fw: 0),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              TextWidget.paraText(
-                                  align: TextAlign.right,
-                                  text: factSheetData
-                                              .managerDesignation?.isEmpty ==
-                                          true
-                                      ? "----"
-                                      : factSheetData.managerDesignation ??
-                                          "----",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                              const SizedBox(height: 2),
-                              TextWidget.paraText(
-                                  align: TextAlign.right,
-                                  text: "₹${aum.toStringAsFixed(2)} Cr",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextWidget.paraText(
-                                  align: TextAlign.right,
-                                  text:
-                                      "${factSheetData.managerTotalExperience?.isEmpty == true ? "0" : factSheetData.managerTotalExperience} experience",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                              TextWidget.paraText(
-                                  align: TextAlign.right,
-                                  text: "$fundsManaged funds managed",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
-                                  fw: 0),
-                            ],
-                          ),
-                        ],
+                    Text(
+                      factSheetData.fundManager ?? "N/A",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "₹${aum.toStringAsFixed(2)}",
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "$fundsManaged funds managed",
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              if (hasManagerDescription) ...[
-                TextWidget.titleText(
-                    align: TextAlign.right,
-                    text: "Manager Description",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0),
-                const SizedBox(height: 8),
-                ReadMoreText(factSheetData.managerDetailedDescription ?? "",
-                    style: TextWidget.textStyle(
-                           color : isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
-                           fontSize: 12,
-                           theme: false,
-                           height: 1.2,
-                           fw: 0
-                           )
-                        ,
-                    textAlign: TextAlign.left,
-                    trimLines: 3,
-                    moreStyle: TextWidget.textStyle(
-                      color: colors.primaryLight,
-                      fontSize: 12,
-                      theme: false,
-                      fw:2
-                    ),
-                    lessStyle: TextWidget.textStyle(
-                      color: colors.primaryLight,
-                      fontSize: 12,
-                      theme: false,
-                      fw:2
-                    ),
-                    colorClickableText: const Color(0xff0037B7),
-                    trimMode: TrimMode.Line,
-                    trimCollapsedText: 'Read more',
-                    trimExpandedText: ' Read less'),
-                const SizedBox(height: 40),
-              ]
-              // else
-              //   // const SizedBox(height: 47),
             ],
           ),
-        ));
+        ),
+      ],
+    );
+  }
+
+  String _formatCorpus(String? corpus) {
+    if (corpus == null || corpus.isEmpty) return "-";
+    try {
+      return double.parse(corpus).toStringAsFixed(0);
+    } catch (e) {
+      return corpus;
+    }
+  }
+
+  String _formatAum(String? aum) {
+    if (aum == null || aum.isEmpty) return "-";
+    try {
+      return double.parse(aum).toStringAsFixed(2);
+    } catch (e) {
+      return "-";
+    }
+  }
+
+  String _formatExitLoad(String? exitLoad) {
+    if (exitLoad == null || exitLoad.isEmpty || exitLoad == "null") return "-";
+    return exitLoad;
   }
 }

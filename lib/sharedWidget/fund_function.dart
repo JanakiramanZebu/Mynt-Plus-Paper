@@ -33,7 +33,14 @@ parseJson(String responseBody) {
 }
 
 String hideAccountNumber(String accountNumber) {
+  // Guard clause for empty or short account numbers
+  if (accountNumber.isEmpty) {
+    return '';
+  }
   const int visibleDigits = 4;
+  if (accountNumber.length <= visibleDigits) {
+    return accountNumber;
+  }
   final visiblePart =
       accountNumber.substring(accountNumber.length - visibleDigits);
   final hiddenPart = 'X' * (accountNumber.length - visibleDigits);

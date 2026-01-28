@@ -24,6 +24,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
+import '../../../res/responsive.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
@@ -147,8 +148,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       _isNavigating = true;
                     });
 
-                    // Show depth by default for Overview tab
-                    ref.read(marketWatchProvider).setIsDepthVisibleWeb(true);
+                    // Depth visibility is managed by chart_with_depth_web.dart based on current tab:
+                    // - Overview tab: shows depth automatically
+                    // - Chart/Options tab: preserves current depth state (respects user's hide action)
 
                     // Create proper DepthInputArgs object
                     DepthInputArgs depthArgs = DepthInputArgs(
@@ -1536,9 +1538,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Container(
-                  width: 600,
+                  width: context.responsive(
+                    mobile: context.screenWidth * 0.95,
+                    tablet: 550.0,
+                    desktop: 600.0,
+                  ),
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                    maxHeight: context.screenHeight * 0.4,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -1675,9 +1681,15 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Container(
-                      width: 700,
-                      constraints:
-                          const BoxConstraints(maxHeight: 800, minHeight: 400),
+                      width: context.responsive(
+                        mobile: context.screenWidth * 0.95,
+                        tablet: 600.0,
+                        desktop: 700.0,
+                      ),
+                      constraints: BoxConstraints(
+                        maxHeight: context.screenHeight * 0.8,
+                        minHeight: 400,
+                      ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [

@@ -639,7 +639,15 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 CellFormatters.getValidPrice(order),
-                style: _getTextStyle(context, color: MyntColors.primary),
+                style: _getTextStyle(
+                  context,
+                  color: order.trantype == "S"
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.lossDark, light: MyntColors.loss)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit),
+                ),
               ),
             ),
             buildCellWithHover(

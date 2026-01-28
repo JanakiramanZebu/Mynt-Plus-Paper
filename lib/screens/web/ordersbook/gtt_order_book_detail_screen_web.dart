@@ -744,8 +744,11 @@ class _GttOrderBookDetailScreenWebState
         return;
       }
 
-      // Get theme before closing sheet (widget might be disposed after)
+      // Save provider reference and data BEFORE closing sheet
+      // (widget might be disposed after sheet closes)
+      final orderProviderRef = ref.read(orderProvider);
       final theme = ref.read(themeProvider);
+      final gttOrderId = _gttOrder.alId ?? '';
 
       // Close the sheet first (exact same pattern as open order details)
       if (mounted) {
@@ -767,10 +770,8 @@ class _GttOrderBookDetailScreenWebState
         return;
       }
 
-      // Cancel the GTT order (provider already shows success message and refreshes order book)
-      await ref
-          .read(orderProvider)
-          .cancelGttOrder(_gttOrder.alId ?? '', targetContext);
+      // Cancel the GTT order using saved provider reference
+      await orderProviderRef.cancelGttOrder(gttOrderId, targetContext);
     } catch (e) {
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null && rootCtx.mounted) {
@@ -781,85 +782,122 @@ class _GttOrderBookDetailScreenWebState
   }
 
   Future<bool?> _showCancelGttOrderDialog(
-      ThemesProvider theme, BuildContext dialogContext) async {
+      ThemesProvider theme, BuildContext targetContext) async {
+    final symbol = _gttOrder.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+
     return showDialog<bool>(
-      context: dialogContext,
+      context: targetContext,
       builder: (BuildContext dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
           child: Container(
             width: 400,
-            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: resolveThemeColor(dialogContext,
-                  dark: const Color(0xFF0F172A), light: Colors.white),
-              borderRadius: BorderRadius.circular(10),
+              color: resolveThemeColor(
+                dialogContext,
+                dark: Colors.black,
+                light: Colors.white,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Close Button
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: InkWell(
-                    onTap: () => Navigator.of(dialogContext).pop(false),
-                    child: Icon(
-                      Icons.close,
-                      size: 24,
-                      color: resolveThemeColor(dialogContext,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary),
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          dialogContext,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                // Text Content
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ncancel this ',
-                    style: MyntWebTextStyles.title(
-                      dialogContext,
-                      color: resolveThemeColor(dialogContext,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'GTT order?',
+                      Text(
+                        'Cancel GTT Order',
                         style: MyntWebTextStyles.title(
                           dialogContext,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(
+                                dialogContext,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
-                // Delete Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to cancel "$symbol"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: MyntWebTextStyles.buttonMd(
-                        dialogContext,
-                        color: Colors.white,
-                      ).copyWith(fontSize: 16),
-                    ),
+
+                      // Red Cancel button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              dialogContext,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

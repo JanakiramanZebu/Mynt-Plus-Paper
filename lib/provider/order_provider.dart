@@ -215,6 +215,7 @@ class OrderProvider extends DefaultChangeNotifier {
     // }
     // Clear subscription tracking
     clearSubscriptions();
+    tabSize();
     notifyListeners();
   }
 
@@ -366,7 +367,11 @@ class OrderProvider extends DefaultChangeNotifier {
       debugPrint("📥 [Order Book] Lazy loading Trade Book data");
       fetchTradeBook(context);
     }
-    // Tab 3: GTT Orders - data is loaded with order book, no lazy load needed
+    // Tab 3: GTT Orders - lazy load if not already loaded
+    if (index == 3 && (_gttOrderBookModel == null || _gttOrderBookModel!.isEmpty)) {
+      debugPrint("📥 [Order Book] Lazy loading GTT Orders data");
+      fetchGTTOrderBook(context, "");
+    }
     // Tab 4 (web: 5): SIP Orders
     // else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
     //   debugPrint("📥 [Order Book] Lazy loading SIP Orders data");

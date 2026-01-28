@@ -12,8 +12,8 @@ import '../../../sharedWidget/list_divider.dart';
 class MutualFundNewScreen extends ConsumerStatefulWidget {
   final TabController tabController;
   final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
-  final Function(String)? onCollectionTap; // Callback when collection is tapped
-  final Function(String)? onCategoryTap; // Callback when category is tapped
+  final Function(String title, String subtitle, String icon)? onCollectionTap; // Callback when collection is tapped
+  final Function(String title, String subtitle, String icon)? onCategoryTap; // Callback when category is tapped
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
 
@@ -200,9 +200,20 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           //   ),
           // ),
 
-          nfoCard(context, mfData, theme),
-          // buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData, theme),
-          // const SizedBox(height: 16),
+          // NFO Card in half-width layout (cols 6)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: nfoCard(context, mfData, theme),
+                ),
+                const SizedBox(width: 32),
+                const Expanded(child: SizedBox()), // Empty column for balance
+              ],
+            ),
+          ),
 
           // Two-column layout for Collections and Categories
           Padding(
@@ -257,7 +268,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   onTap: () {
                                     mfData.changetitle(item['title']);
                                     if (widget.onCollectionTap != null) {
-                                      widget.onCollectionTap!(item['title']);
+                                      widget.onCollectionTap!(
+                                        item['title'] ?? '',
+                                        item['subtitle'] ?? '',
+                                        item['image'] ?? 'assets/explore/default.svg',
+                                      );
                                     } else {
                                       Navigator.pushNamed(
                                         context,
@@ -296,7 +311,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: TextWidget.subText(
-                          text: "Collections",
+                          text: "Categories",
                           color: theme.isDarkMode
                               ? colors.textSecondaryDark
                               : colors.textSecondaryLight,
@@ -339,7 +354,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                           item['title'], firstChip);
                                       mfData.changetitle(firstChip);
                                       if (widget.onCategoryTap != null) {
-                                        widget.onCategoryTap!(item['title']);
+                                        widget.onCategoryTap!(
+                                          item['title'] ?? '',
+                                          item['description'] ?? '',
+                                          item['dataIcon'] ?? '',
+                                        );
                                       } else {
                                         Navigator.pushNamed(
                                             context, Routes.mfCategoryList,
@@ -716,7 +735,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           mfData.fetchcatdatanew(title, firstChip);
           mfData.changetitle(firstChip);
           if (widget.onCategoryTap != null) {
-            widget.onCategoryTap!(title); // Pass the main category title
+            widget.onCategoryTap!(
+              title,
+              description ?? '',
+              dataIcon,
+            ); // Pass the main category title
           } else {
             Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
           }
@@ -760,7 +783,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   }
 
   Widget nfoCard(BuildContext context, MFProvider mf, ThemesProvider theme) {
-    return GestureDetector(
+    return InkWell(
       onTap: () async {
         // If callback is provided (web), use it to open in panel 2
         if (widget.onNfoTap != null) {
@@ -769,14 +792,12 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           Navigator.pushNamed(context, Routes.mfnfoscreen);
         }
       },
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.all(16.0),
-        margin: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
-          color: theme.isDarkMode
-              ? const Color.fromARGB(255, 0, 0, 0)
-              : Colors.white,
-          borderRadius: BorderRadius.circular(5.0),
+          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: theme.isDarkMode
                 ? colors.textSecondaryDark
@@ -784,94 +805,41 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             width: 1,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 0),
-                      child: TextWidget.paraText(
-                          align: TextAlign.left,
-                          text: "INVEST IN",
-                          color: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
-                          textOverflow: TextOverflow.ellipsis,
-                          theme: theme.isDarkMode,
-                          fw: 0),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        TextWidget.paraText(
-                            align: TextAlign.left,
-                            text: "New Fund Offerings",
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textPrimaryLight,
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            fw: 0),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
-                          size: 18,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SvgPicture.asset(
-                  'assets/explore/gift.svg',
-                  width: 38,
-                  height: 34,
-                ),
-              ],
+            SvgPicture.asset(
+              'assets/explore/gift.svg',
+              width: 24,
+              height: 24,
             ),
-            // const SizedBox(height: 10),
-            // TextWidget.paraText(
-            //     align: TextAlign.left,
-            //     text:
-            //         "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
-            //     color: theme.isDarkMode
-            //         ? colors.textSecondaryDark
-            //         : colors.textSecondaryLight,
-            //     maxLines: 2,
-            //     textOverflow: TextOverflow.ellipsis,
-            //     theme: theme.isDarkMode,
-            //     fw: 3),
-            // const SizedBox(height: 12),
-            // Row(
-            //   children: [
-            //     TextWidget.paraText(
-            //         align: TextAlign.left,
-            //         text: "See all NFOs",
-            //         color: theme.isDarkMode
-            //             ? colors.primaryDark
-            //             : colors.primaryLight,
-            //         textOverflow: TextOverflow.ellipsis,
-            //         theme: theme.isDarkMode,
-            //         fw: 3),
-            //     SizedBox(width: 4),
-            //     Icon(
-            //       Icons.arrow_forward,
-            //       color: theme.isDarkMode
-            //           ? colors.primaryDark
-            //           : colors.primaryLight,
-            //       size: 16,
-            //     ),
-            //   ],
-            // ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget.subText(
+                    text: "New Fund Offerings",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                  const SizedBox(height: 4),
+                  TextWidget.captionText(
+                    text: "Invest in new funds at launch price",
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    maxLines: 2,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 0,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -984,7 +952,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, __) => const ListDivider(),
-                      itemCount: mfData.bestMFListStaticnew.length ?? 0,
+                      itemCount: mfData.bestMFListStaticnew.length,
                       itemBuilder: (BuildContext context, int index) {
                         if (index >= mfData.bestMFListStaticnew.length) {
                           return const SizedBox.shrink();
@@ -996,7 +964,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             mfData.changetitle(title);
                             
                             if (widget.onCollectionTap != null) {
-                              widget.onCollectionTap!(title);
+                              widget.onCollectionTap!(
+                                title,
+                                mfData.bestMFListStaticnew[index]['subtitle'] ?? '',
+                                mfData.bestMFListStaticnew[index]['image'] ?? 'assets/explore/default.svg',
+                              );
                             } else {
                               Navigator.pushNamed(
                                 context,

@@ -1,11 +1,16 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../utils/responsive_snackbar.dart';
 
 //It serves to display information to the user.
 
-void error(BuildContext context, String error) =>
-    rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+void error(BuildContext context, String errorText) {
+  if (kIsWeb) {
+    ResponsiveSnackBar.showError(rootNavigatorKey.currentContext ?? context, errorText);
+    return;
+  }
+  rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
         content: Row(
           children: [
             Container(
@@ -21,7 +26,7 @@ void error(BuildContext context, String error) =>
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                error,
+                errorText,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -52,9 +57,14 @@ void error(BuildContext context, String error) =>
           right: 0,
         ),
         elevation: 4));
+}
 
-void successMessage(BuildContext context, String success) =>
-    rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+void successMessage(BuildContext context, String success) {
+  if (kIsWeb) {
+    ResponsiveSnackBar.showSuccess(rootNavigatorKey.currentContext ?? context, success);
+    return;
+  }
+  rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
         content: Row(
           children: [
             Container(
@@ -102,9 +112,14 @@ void successMessage(BuildContext context, String success) =>
           right: 0,
         ),
         elevation: 4));
+}
 
-void warningMessage(BuildContext context, String warning) =>
-    rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+void warningMessage(BuildContext context, String warning) {
+  if (kIsWeb) {
+    ResponsiveSnackBar.showWarning(rootNavigatorKey.currentContext ?? context, warning);
+    return;
+  }
+  rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
         content: Row(
           children: [
             Container(
@@ -154,8 +169,13 @@ void warningMessage(BuildContext context, String warning) =>
         // .symmetric(vertical: 0, horizontal: 0),
 
         elevation: 4));
+}
 
 void warningToaster(BuildContext context, String warningtoaster) {
+  if (kIsWeb) {
+    ResponsiveSnackBar.showWarning(rootNavigatorKey.currentContext ?? context, warningtoaster);
+    return;
+  }
   rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
       content: Row(
         children: [

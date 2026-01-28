@@ -32,6 +32,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive_extensions.dart';
 
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
@@ -329,17 +330,17 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 style: _getTitleStyle(resolveThemeColor(context,
                     dark: MyntColors.textSecondaryDark,
                     light: MyntColors.textSecondary))),
-            const SizedBox(height: 4),
+            SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
             Text(value1,
                 style: _getValueStyle(resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
                     light: MyntColors.textPrimary))),
-            const SizedBox(height: 4),
+            SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
             Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
       ),
-      const SizedBox(width: 24),
+      SizedBox(width: context.responsive(mobile: 12.0, tablet: 18.0, desktop: 24.0)),
       Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,12 +349,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 style: _getTitleStyle(resolveThemeColor(context,
                     dark: MyntColors.textSecondaryDark,
                     light: MyntColors.textSecondary))),
-            const SizedBox(height: 4),
+            SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
             Text(value2,
                 style: _getValueStyle(resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
                     light: MyntColors.textPrimary))),
-            const SizedBox(height: 4),
+            SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
             Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
@@ -388,14 +389,14 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                     color: resolveThemeColor(context,
                         dark: MyntColors.textSecondaryDark,
                         light: MyntColors.textSecondary))),
-            const SizedBox(height: 6),
+            SizedBox(height: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0)),
             Text(value,
                 style: MyntWebTextStyles.body(context,
                     fontWeight: MyntFonts.medium,
                     color: resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark,
                         light: MyntColors.textPrimary))),
-            const SizedBox(height: 4),
+            SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
             Divider(color: shadcn.Theme.of(context).colorScheme.border)
           ],
         ),
@@ -414,21 +415,21 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     if (!isCol1Empty) {
       columns.add(buildColumn(title1, value1, false));
       if (!isCol2Empty || !isCol3Empty || !isCol4Empty) {
-        columns.add(const SizedBox(width: 12));
+        columns.add(SizedBox(width: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)));
       }
     }
 
     if (!isCol2Empty) {
       columns.add(buildColumn(title2, value2, false));
       if (!isCol3Empty || !isCol4Empty) {
-        columns.add(const SizedBox(width: 12));
+        columns.add(SizedBox(width: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)));
       }
     }
 
     if (!isCol3Empty) {
       columns.add(buildColumn(title3, value3, false));
       if (!isCol4Empty) {
-        columns.add(const SizedBox(width: 12));
+        columns.add(SizedBox(width: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)));
       }
     }
 
@@ -2623,7 +2624,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               }
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+                vertical: context.responsive(mobile: 10.0, tablet: 11.0, desktop: 12.0)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -2641,7 +2644,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                         dark: MyntColors.iconDark,
                         light: MyntColors.icon,
                       ),
-                      size: 20,
+                      size: context.responsive(mobile: 18.0, tablet: 19.0, desktop: 20.0),
                     ),
                   ),
                 ],
@@ -2668,7 +2671,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       MarketWatchProvider scripInfo, ThemesProvider theme) {
     if (scripInfo.fut == null || scripInfo.fut!.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0)),
         child: Center(
           child: Text(
             "No futures data available",
@@ -2695,7 +2698,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           children: [
             // Info banner
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: EdgeInsets.symmetric(
+                vertical: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0),
+                horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0)),
               decoration: BoxDecoration(
                 color: resolveThemeColor(
                   context,
@@ -2713,10 +2718,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                       dark: MyntColors.textSecondaryDark,
                       light: MyntColors.textSecondary,
                     ),
-                    width: 14,
-                    height: 14,
+                    width: context.responsive(mobile: 12.0, tablet: 13.0, desktop: 14.0),
+                    height: context.responsive(mobile: 12.0, tablet: 13.0, desktop: 14.0),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0)),
                   Text(
                     "Long press to add to ${scripInfo.wlName} Watchlist",
                     style: MyntWebTextStyles.caption(
@@ -2829,7 +2834,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
           }
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(
+            horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+            vertical: context.responsive(mobile: 10.0, tablet: 11.0, desktop: 12.0)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2869,7 +2876,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                           ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
                     // Exchange and expiry
                     Row(
                       children: [
@@ -2915,7 +2922,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                       color: priceColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
                   // Change and percent change
                   Text(
                     "${change == "null" ? "0.00" : double.tryParse(change)?.toStringAsFixed(2) ?? "0.00"} "
@@ -2952,10 +2959,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               scripInfo.toggleFuturesExpansion();
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+                vertical: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
               child: Column(
                 children: [
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -2973,12 +2982,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                             dark: MyntColors.iconDark,
                             light: MyntColors.icon,
                           ),
-                          size: 20,
+                          size: context.responsive(mobile: 18.0, tablet: 19.0, desktop: 20.0),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)),
                 ],
               ),
             ),
@@ -2996,7 +3005,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   children: [
                     const ListDivider(),
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.symmetric(vertical: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -3071,10 +3080,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               }
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0)),
               child: Column(
                 children: [
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -3087,11 +3096,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                         color: shadcn.Theme.of(context)
                             .colorScheme
                             .mutedForeground,
-                        size: 20,
+                        size: context.responsive(mobile: 18.0, tablet: 19.0, desktop: 20.0),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: context.responsive(mobile: 8.0, tablet: 10.0, desktop: 12.0)),
                 ],
               ),
             ),
@@ -3115,7 +3124,9 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: context.responsive(mobile: 12.0, tablet: 14.0, desktop: 16.0),
+                vertical: context.responsive(mobile: 10.0, tablet: 11.0, desktop: 12.0)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -3131,7 +3142,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                         dark: MyntColors.iconDark,
                         light: MyntColors.icon,
                       ),
-                      size: 20,
+                      size: context.responsive(mobile: 18.0, tablet: 19.0, desktop: 20.0),
                     ),
                 ],
               ),
@@ -3146,7 +3157,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
   // Info item widget for grid layout (similar to image 2 style)
   Widget _buildInfoItem(ThemesProvider theme, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: EdgeInsets.symmetric(horizontal: context.responsive(mobile: 0.0, tablet: 0.0, desktop: 0.0)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -3159,7 +3170,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   light: MyntColors.textSecondary,
                 )),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: context.responsive(mobile: 4.0, tablet: 5.0, desktop: 6.0)),
           Text(
             value,
             style: MyntWebTextStyles.body(context,
@@ -3170,7 +3181,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 ),
                 fontWeight: MyntFonts.medium),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: context.responsive(mobile: 2.0, tablet: 3.0, desktop: 4.0)),
           Divider(
             color: shadcn.Theme.of(context).colorScheme.border,
           ),
@@ -3182,10 +3193,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
   // Add the data widget helper method
   Padding data(String name, String value, ThemesProvider theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
+      padding: EdgeInsets.symmetric(horizontal: context.responsive(mobile: 0.0, tablet: 0.0, desktop: 0.0)),
       child: Column(
         children: [
-          const SizedBox(height: 8),
+          SizedBox(height: context.responsive(mobile: 6.0, tablet: 7.0, desktop: 8.0)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -3207,7 +3218,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: context.responsive(mobile: 8.0, tablet: 9.0, desktop: 10.0)),
           Divider(
             color: shadcn.Theme.of(context).colorScheme.border,
           ),
