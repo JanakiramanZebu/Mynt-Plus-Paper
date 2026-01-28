@@ -45,6 +45,7 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
+import '../../../provider/sidebar_provider.dart';
 import '../../../res/mynt_web_color_styles.dart' hide WebColors;
 import '../../../res/web_colors.dart';
 
@@ -196,6 +197,9 @@ class _CustomizableSplitHomeScreenState
 
     // Initialize with default panels
     _initializeDefaultPanels();
+
+    // Register scaffold key for sidebar
+    ref.read(sidebarProvider.notifier).setScaffoldKey(_scaffoldKey);
 
     // Set up callback for showing scrip depth info in panel
     ref
@@ -714,6 +718,18 @@ class _CustomizableSplitHomeScreenState
 
         return Scaffold(
           key: _scaffoldKey,
+          drawerScrimColor: Colors.transparent, // Disable grey overlay
+          endDrawer: Consumer(
+            builder: (context, ref, _) {
+              final sidebarContent = ref.watch(sidebarProvider);
+              if (sidebarContent == null) return const SizedBox.shrink();
+              return Drawer(
+                width: 400,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                child: sidebarContent,
+              );
+            },
+          ),
           drawer: showDrawer
               ? NavigationDrawerWeb(
                   isDarkMode: theme.isDarkMode,

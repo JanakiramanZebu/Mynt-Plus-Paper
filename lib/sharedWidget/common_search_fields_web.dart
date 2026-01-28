@@ -45,6 +45,7 @@ class MyntSearchTextField extends StatelessWidget {
   final TextCapitalization textCapitalization;
   final VoidCallback? onClear;
   final shadcn.InputFeatureVisibility? clearButtonVisibility;
+  final Widget? trailingWidget;
 
   const MyntSearchTextField({
     super.key,
@@ -66,6 +67,7 @@ class MyntSearchTextField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.characters,
     this.onClear,
     this.clearButtonVisibility,
+    this.trailingWidget,
   }) : assert(
           placeholder != null || placeholderWidget != null,
           'Either placeholder or placeholderWidget must be provided',
@@ -91,6 +93,7 @@ class MyntSearchTextField extends StatelessWidget {
     List<TextInputFormatter>? inputFormatters,
     TextCapitalization textCapitalization = TextCapitalization.characters,
     VoidCallback? onClear,
+    Widget? trailingWidget,
   }) {
     // Smart clear button visibility: visible when text is not empty AND focused, OR when hovered
     final smartClearVisibility = (shadcn.InputFeatureVisibility.textNotEmpty &
@@ -118,6 +121,7 @@ class MyntSearchTextField extends StatelessWidget {
       textCapitalization: textCapitalization,
       onClear: onClear,
       clearButtonVisibility: smartClearVisibility,
+      trailingWidget: trailingWidget,
     );
   }
 
@@ -261,6 +265,11 @@ class MyntSearchTextField extends StatelessWidget {
       } else {
         features.add(shadcn.InputFeature.clear());
       }
+    }
+
+    // Trailing widget
+    if (trailingWidget != null) {
+      features.add(shadcn.InputFeature.trailing(trailingWidget!));
     }
 
     return features;

@@ -9,6 +9,9 @@ import '../../../../res/res.dart';
 import '../../../../sharedWidget/loader_ui.dart';
 import '../../../../res/global_state_text.dart';
 
+import '../../../../sharedWidget/common_search_fields_web.dart';
+
+
 class BondsExploreScreens extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   final int? initialTabIndex;
@@ -109,43 +112,65 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(
-                    tablistitems.length,
-                    (tab) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        // borderRadius: BorderRadius.circular(6),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.01)
-                            : Colors.black.withOpacity(0.01),
-                        onTap: () {
-                          setState(() {
-                            selectedTab = tab;
-                          });
-                          _allBondsTabController.animateTo(tab);
-                          // Also update the page controller to jump directly
-                          if (_allBondsTabController.index != tab) {
-                            _allBondsTabController.index = tab;
-                          }
-                          ref.read(bondsProvider).bondscommonsearchcontroller.clear();
-                          ref.read(bondsProvider).clearCommonBondsSearch();
-                          FocusScope.of(context).unfocus();
-                          
-
-                        },
-                        child: tabConstruce(
-                          tablistitems[tab]['title'].toString(),
-                          theme,
-                          tab,
-                          () {},
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        tablistitems.length,
+                        (tab) => Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            // borderRadius: BorderRadius.circular(6),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : Colors.black.withOpacity(0.05),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.01)
+                                : Colors.black.withOpacity(0.01),
+                            onTap: () {
+                              setState(() {
+                                selectedTab = tab;
+                              });
+                              _allBondsTabController.animateTo(tab);
+                              // Also update the page controller to jump directly
+                              if (_allBondsTabController.index != tab) {
+                                _allBondsTabController.index = tab;
+                              }
+                              ref
+                                  .read(bondsProvider)
+                                  .bondscommonsearchcontroller
+                                  .clear();
+                              ref.read(bondsProvider).clearCommonBondsSearch();
+                              FocusScope.of(context).unfocus();
+                            },
+                            child: tabConstruce(
+                              tablistitems[tab]['title'].toString(),
+                              theme,
+                              tab,
+                              () {},
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: selectedTab == 0
+                          ? SizedBox(
+                              width: 300,
+                              child: MyntSearchTextField(
+                                controller: bonds.bondscommonsearchcontroller,
+                                placeholder: "Search & add",
+                                leadingIcon: assets.searchIcon,
+                                onChanged: (value) {
+                                  bonds.searchCommonBonds(value, context);
+                                },
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -164,6 +189,8 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
       },
     );
   }
+
+
 
   Widget tabConstruce(
       String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
