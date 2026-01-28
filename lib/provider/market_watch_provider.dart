@@ -191,6 +191,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   MarketWatchScrip? get marketWatchScrip => _marketWatchScrip;
 
   PreDefinedMWlist? _preDefinedMWlist;
+  bool _isFetchingPreDefMW = false; // Prevent concurrent fetchPreDefMWScrip calls
 
   PreDefinedMWlist? get preDefinedMWlist => _preDefinedMWlist;
 
@@ -1826,7 +1827,13 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Force immediate UI update with the predefined tabs visible
         notifyListeners();
 
-        await fetchPreDefMWScrip(context); // Make sure to await this!
+        // Only fetch predefined data if not already loaded
+        if (_preDefinedMWlist == null ||
+            (_preDefinedMWlist?.nIFTY50NSE?.isEmpty ?? true) ||
+            (_preDefinedMWlist?.nIFTYBANKNSE?.isEmpty ?? true) ||
+            (_preDefinedMWlist?.sENSEXBSE?.isEmpty ?? true)) {
+          await fetchPreDefMWScrip(context);
+        }
 
         // Force another immediate UI update after predefined data is loaded
         notifyListeners();
@@ -1940,7 +1947,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   Future fetchPreDefMWScrip(BuildContext context) async {
+    // Prevent concurrent calls - if already fetching, skip
+    if (_isFetchingPreDefMW) {
+      print("fetchPreDefMWScrip: Already fetching, skipping duplicate call");
+      return;
+    }
+
     try {
+      _isFetchingPreDefMW = true;
       // requestWSMarketWatchScrip(context: context, isSubscribe: false);
       toggleLoadingOn(true);
 
@@ -2099,6 +2113,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       notifyListeners();
       print(e);
     } finally {
+      _isFetchingPreDefMW = false;
       toggleLoadingOn(false);
     }
   }
@@ -3310,10 +3325,23 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           print("Using cached data for predefined watchlist: $wName");
           _scrips = jsonDecode(_marketWatchScripData[wName]) ?? [];
 
-          // If the data is empty for some reason, force a refresh
+          // If the data is empty for some reason, use preDefinedMWlist if available
           if (_scrips.isEmpty) {
-            print("Cached data for $wName is empty, fetching fresh data...");
-            await fetchPreDefMWScrip(context);
+            // Only fetch if preDefinedMWlist doesn't have data for this watchlist
+            bool needsFetch = false;
+            if (wName == "Nifty50" && (_preDefinedMWlist?.nIFTY50NSE == null || _preDefinedMWlist!.nIFTY50NSE!.isEmpty)) {
+              needsFetch = true;
+            } else if (wName == "Niftybank" && (_preDefinedMWlist?.nIFTYBANKNSE == null || _preDefinedMWlist!.nIFTYBANKNSE!.isEmpty)) {
+              needsFetch = true;
+            } else if (wName == "Sensex" && (_preDefinedMWlist?.sENSEXBSE == null || _preDefinedMWlist!.sENSEXBSE!.isEmpty)) {
+              needsFetch = true;
+            }
+
+            if (needsFetch) {
+              print("Cached data for $wName is empty and no preDefinedMWlist data, fetching...");
+              await fetchPreDefMWScrip(context);
+            }
+
             if (wName == "Nifty50") {
               _scrips =
                   jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTY50NSE ?? []));
@@ -3326,8 +3354,21 @@ class MarketWatchProvider extends DefaultChangeNotifier {
             }
           }
         } else {
-          print("No cached data for $wName, fetching fresh data...");
-          await fetchPreDefMWScrip(context);
+          // Check if preDefinedMWlist already has data for this watchlist
+          bool needsFetch = false;
+          if (wName == "Nifty50" && (_preDefinedMWlist?.nIFTY50NSE == null || _preDefinedMWlist!.nIFTY50NSE!.isEmpty)) {
+            needsFetch = true;
+          } else if (wName == "Niftybank" && (_preDefinedMWlist?.nIFTYBANKNSE == null || _preDefinedMWlist!.nIFTYBANKNSE!.isEmpty)) {
+            needsFetch = true;
+          } else if (wName == "Sensex" && (_preDefinedMWlist?.sENSEXBSE == null || _preDefinedMWlist!.sENSEXBSE!.isEmpty)) {
+            needsFetch = true;
+          }
+
+          if (needsFetch) {
+            print("No cached data for $wName and no preDefinedMWlist data, fetching...");
+            await fetchPreDefMWScrip(context);
+          }
+
           if (wName == "Nifty50") {
             _scrips =
                 jsonDecode(jsonEncode(_preDefinedMWlist?.nIFTY50NSE ?? []));
@@ -3714,12 +3755,74 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Track old watchlist symbols for proper unsubscription on web
+  Set<String> _previousWatchlistSymbols = {};
+
 // websocket Connection Request for Market watch scrip
   requestMWScrip(
       {required bool isSubscribe, required BuildContext context}) async {
-    // On web, WebSubscriptionManager handles all subscriptions
-    // Skip unsubscribe here to avoid conflicts with multi-panel layout
-    if (kIsWeb && !isSubscribe) return;
+    // On web, handle watchlist tab switching via WebSubscriptionManager
+    if (kIsWeb) {
+      if (!isSubscribe) {
+        // When unsubscribing (before watchlist change), save current symbols
+        // These will be compared with new symbols when subscribing
+        _previousWatchlistSymbols.clear();
+        for (var element in _scrips) {
+          final exch = element['exch']?.toString() ?? '';
+          final token = element['token']?.toString() ?? '';
+          if (exch.isNotEmpty && token.isNotEmpty) {
+            _previousWatchlistSymbols.add('$exch|$token');
+          }
+        }
+        print('WebSocket: [Web] Saved ${_previousWatchlistSymbols.length} old watchlist symbols for unsubscription');
+        return;
+      }
+
+      // When subscribing on web, use WebSubscriptionManager to handle proper unsubscription
+      // of old symbols and subscription of new symbols
+      try {
+        final newSymbols = <String>{};
+        for (var element in _scrips) {
+          final exch = element['exch']?.toString() ?? '';
+          final token = element['token']?.toString() ?? '';
+          if (exch.isNotEmpty && token.isNotEmpty) {
+            newSymbols.add('$exch|$token');
+          }
+        }
+
+        // Also add index tokens
+        final indexProvider = ref.read(indexListProvider);
+        await indexProvider.requestdefaultIndex();
+        final indexToken = indexProvider.indexToken;
+        if (indexToken.isNotEmpty) {
+          final tokens = indexToken.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
+          newSymbols.addAll(tokens);
+        }
+
+        indexProvider.requestTopIndicesToken();
+        final topIndicesToken = indexProvider.topIndicesToken;
+        if (topIndicesToken.isNotEmpty) {
+          final tokens = topIndicesToken.split('#').where((t) => t.isNotEmpty && t.trim().isNotEmpty);
+          newSymbols.addAll(tokens);
+        }
+
+        print('WebSocket: [Web] Watchlist change - old: ${_previousWatchlistSymbols.length}, new: ${newSymbols.length}');
+
+        // Use WebSubscriptionManager to properly handle the subscription change
+        await ref.read(webSubscriptionManagerProvider).updateWatchlistSubscriptions(
+          oldSymbols: _previousWatchlistSymbols,
+          newSymbols: newSymbols,
+          context: context,
+        );
+
+        // Clear the previous symbols after processing
+        _previousWatchlistSymbols.clear();
+        return;
+      } catch (e) {
+        print('WebSocket: [Web] Error in watchlist subscription update: $e');
+        // Fall through to legacy behavior if something fails
+      }
+    }
 
     try {
       toggleLoadingOn(true);
@@ -3773,27 +3876,40 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
         }
 
-        // If still no data, force a refresh of predefined watchlists
+        // If still no data, try to use preDefinedMWlist if available
         if (_scrips.isEmpty) {
-          print(
-              "WebSocket: No cached data available, forcing refresh of predefined watchlists");
-          await fetchPreDefMWScrip(context);
+          // First check if we already have preDefinedMWlist data for this watchlist
+          bool hasDataForWatchlist = false;
+          if (_wlName == "Nifty50" && (_preDefinedMWlist?.nIFTY50NSE?.isNotEmpty ?? false)) {
+            hasDataForWatchlist = true;
+          } else if (_wlName == "Niftybank" && (_preDefinedMWlist?.nIFTYBANKNSE?.isNotEmpty ?? false)) {
+            hasDataForWatchlist = true;
+          } else if (_wlName == "Sensex" && (_preDefinedMWlist?.sENSEXBSE?.isNotEmpty ?? false)) {
+            hasDataForWatchlist = true;
+          }
 
-          // Now try to use the freshly loaded data
+          // Only fetch if we don't have data for this watchlist
+          if (!hasDataForWatchlist) {
+            print(
+                "WebSocket: No cached data available, forcing refresh of predefined watchlists");
+            await fetchPreDefMWScrip(context);
+          }
+
+          // Now try to use the loaded data
           if (_wlName == "Nifty50" && _preDefinedMWlist?.nIFTY50NSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTY50NSE!));
             print(
-                "WebSocket: Loaded ${_scrips.length} Nifty50 symbols from fresh data");
+                "WebSocket: Loaded ${_scrips.length} Nifty50 symbols from data");
           } else if (_wlName == "Niftybank" &&
               _preDefinedMWlist?.nIFTYBANKNSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.nIFTYBANKNSE!));
             print(
-                "WebSocket: Loaded ${_scrips.length} Niftybank symbols from fresh data");
+                "WebSocket: Loaded ${_scrips.length} Niftybank symbols from data");
           } else if (_wlName == "Sensex" &&
               _preDefinedMWlist?.sENSEXBSE != null) {
             _scrips = jsonDecode(jsonEncode(_preDefinedMWlist!.sENSEXBSE!));
             print(
-                "WebSocket: Loaded ${_scrips.length} Sensex symbols from fresh data");
+                "WebSocket: Loaded ${_scrips.length} Sensex symbols from data");
           }
 
           // Add the newly loaded symbols to the subscription

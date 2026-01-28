@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart'
     show
         InkWell,
@@ -206,8 +207,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             if (isClosed) {
               // Closed positions: show muted background, no hover effect
               backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.textPrimary.withValues(alpha: 0.15),
-                  light: const Color(0x8F121212).withValues(alpha: 0.09));
+                  dark: MyntColors.textPrimary.withValues(alpha: 0.05),
+                  light: const Color(0x8F121212).withValues(alpha: 0.03));
             } else if (isRowHovered) {
               // Open positions: show hover effect only
               backgroundColor = resolveThemeColor(context,
@@ -1028,9 +1029,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           child: Text(
             pnlValue,
             style: _getTextStyle(context,
-                color: isClosed
-                    ? textColor
-                    : _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
+                color: _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
           ),
         );
       case 'MTM':
@@ -1041,9 +1040,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           child: Text(
             mtmValue,
             style: _getTextStyle(context,
-                color: isClosed
-                    ? textColor
-                    : _getCellColor(double.tryParse(mtmValue) ?? 0.0, context)),
+                color: _getCellColor(double.tryParse(mtmValue) ?? 0.0, context)),
           ),
         );
       case 'Avg Price':
@@ -1456,9 +1453,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Handle convert position
   void _handleConvertPosition(PositionBookModel position) {
-    showDialog(
+        showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return ConvertPositionDialogueWeb(convertPosition: position);
       },
     );

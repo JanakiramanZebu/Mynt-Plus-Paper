@@ -521,7 +521,7 @@ class _OrderBookState extends ConsumerState<OrderBook> {
                 _navigateToOrderDetails(items[itemIndex], ref, itemContext),
             onLongPress: () {
               if (order.openOrder!.isNotEmpty &&
-                  (order.tabCtrl.index == 0 ||
+                  (order.tabCtrl?.index == 0 ||
                       !["COMPLETE", "CANCELED", "REJECTED"]
                           .contains(items[itemIndex].status))) {
                 Navigator.pushNamed(itemContext, Routes.orderExit,

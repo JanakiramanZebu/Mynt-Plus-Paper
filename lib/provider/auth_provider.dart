@@ -1947,6 +1947,7 @@ class AuthProvider extends DefaultChangeNotifier {
                 final essentialFutures = [
                   ref.read(portfolioProvider).fetchHoldings(context, ""),
                   ref.read(indexListProvider).getDeafultIndexList(context),
+                  ref.read(portfolioProvider).fetchOplist(context)
                 ];
                 await Future.wait(essentialFutures);
                 
@@ -1967,7 +1968,6 @@ class AuthProvider extends DefaultChangeNotifier {
                 // Batch 4: Portfolio additional data (load in background)
                 Future.microtask(() {
                   ref.read(portfolioProvider).fetchPositionBook(context, false);
-                  ref.read(portfolioProvider).fetchOplist(context);
                   ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
                 });
                 
@@ -2033,6 +2033,7 @@ class AuthProvider extends DefaultChangeNotifier {
               ref.read(orderProvider).fetchOrderBook(context, false),
               ref.read(portfolioProvider).fetchPositionBook(context, false),
               ref.read(orderProvider).fetchTradeBook(context),
+              ref.read(portfolioProvider).fetchOplist(context)
             ];
             await Future.wait(futures);
             
@@ -2040,7 +2041,6 @@ class AuthProvider extends DefaultChangeNotifier {
             ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
             ref.read(transcationProvider).fetchcwithdraw(context);
             ref.read(transcationProvider).fetchfundbank(context);
-            ref.read(portfolioProvider).fetchOplist(context);
             ref.read(userProfileProvider).fetchUserDetail(context);
             ref.read(portfolioProvider).fetchPosGroupSymbol("", false);
             ref.read(transcationProvider).fetchc(context);

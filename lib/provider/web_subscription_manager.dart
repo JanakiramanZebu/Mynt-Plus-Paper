@@ -186,6 +186,74 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     }
   }
 
+  /// Check and reconnect WebSocket if disconnected
+  /// Call this when navigating to a new page to ensure connection is active
+  Future<void> ensureConnected(BuildContext context) async {
+    if (!_isUserLoggedIn()) return;
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      if (!wsProvider.wsConnected) {
+        print('🔌 [WebSubscriptionManager] WebSocket disconnected, triggering reconnection');
+        log('WebSubscriptionManager: Triggering reconnection');
+
+        // Update context for future use
+        updateContext(context);
+
+        // Trigger reconnection
+        wsProvider.reconnect(context);
+      } else {
+        // Socket is connected - check if we have subscriptions that need to be sent
+        if (_activeSubscriptions.isNotEmpty && _currentWebSocketSubscriptions.isEmpty) {
+          print('📤 [WebSubscriptionManager] Socket connected but no subscriptions sent, restoring...');
+          log('WebSubscriptionManager: Restoring subscriptions after connection check');
+          _sendAllSubscriptionsFromMasterList();
+        }
+      }
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] Error in ensureConnected: $e');
+      log('WebSubscriptionManager: Error in ensureConnected: $e');
+    }
+  }
+
+  /// Force reconnection and resubscription
+  /// Use this when WebSocket seems stuck and not receiving data
+  Future<void> forceReconnect(BuildContext context) async {
+    if (!_isUserLoggedIn()) return;
+
+    print('═══════════════════════════════════════════════════════════');
+    print('🔄 [WebSubscriptionManager] FORCE RECONNECT');
+    print('   Active screens: ${_activeScreens.length}');
+    print('   Master list subscriptions: ${_activeSubscriptions.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    try {
+      final wsProvider = ref.read(websocketProvider);
+
+      // Close existing connection
+      wsProvider.closeSocket(true);
+
+      // Clear local tracking (but NOT the master list - we need it for restoration)
+      _currentWebSocketSubscriptions.clear();
+
+      // Wait a moment for cleanup
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Update context
+      updateContext(context);
+
+      // Reconnect
+      wsProvider.reconnect(context);
+
+      print('✅ [WebSubscriptionManager] Force reconnect initiated');
+      print('═══════════════════════════════════════════════════════════\n');
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] Error in forceReconnect: $e');
+      log('WebSubscriptionManager: Error in forceReconnect: $e');
+    }
+  }
+
   /// Check if WebSocket is ready for subscriptions
   bool _isWebSocketReady() {
     try {
@@ -969,6 +1037,147 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       print('═══════════════════════════════════════════════════════════\n');
       log('WebSubscriptionManager: Error unsubscribing from $screenType: $e');
     }
+  }
+
+  /// Update watchlist subscriptions when switching between watchlist tabs
+  /// This properly unsubscribes old watchlist symbols and subscribes to new ones
+  /// while protecting symbols used by other screens
+  Future<void> updateWatchlistSubscriptions({
+    required Set<String> oldSymbols,
+    required Set<String> newSymbols,
+    required BuildContext context,
+  }) async {
+    print('═══════════════════════════════════════════════════════════');
+    print('🔄 [WebSubscriptionManager] WATCHLIST TAB CHANGE');
+    print('   Old symbols: ${oldSymbols.length}');
+    print('   New symbols: ${newSymbols.length}');
+    print('═══════════════════════════════════════════════════════════');
+
+    // Collect all protected symbols (symbols used by other screens)
+    final protectedSymbols = <String>{};
+
+    try {
+      // 1. Protect symbols from all active screen subscriptions EXCEPT watchlist
+      for (var entry in _screenSubscriptions.entries) {
+        if (entry.key != ScreenType.watchlist) {
+          protectedSymbols.addAll(entry.value);
+        }
+      }
+      print('   🔒 Protected ${protectedSymbols.length} symbols from other screens');
+
+      // 2. Protect depth symbol
+      final marketWatch = ref.read(marketWatchProvider);
+      final depthSymbol = marketWatch.currentDepthSymbol;
+      if (depthSymbol != null && depthSymbol.isNotEmpty) {
+        protectedSymbols.add(depthSymbol);
+        print('   🔒 Protected depth symbol: $depthSymbol');
+      }
+
+      // 3. Protect index symbols
+      final indexSymbols = _getIndexSymbols();
+      if (indexSymbols.isNotEmpty) {
+        protectedSymbols.addAll(indexSymbols);
+        print('   🔒 Protected ${indexSymbols.length} index symbols');
+      }
+
+      // 4. Protect holdings symbols
+      final portfolio = ref.read(portfolioProvider);
+      final holdings = portfolio.holdingsModel ?? [];
+      for (var holding in holdings) {
+        final exchTsymList = holding.exchTsym ?? [];
+        for (var exchTsym in exchTsymList) {
+          if (exchTsym.exch != null && exchTsym.token != null) {
+            protectedSymbols.add('${exchTsym.exch}|${exchTsym.token}');
+          }
+        }
+      }
+
+      // 5. Protect positions symbols
+      final positions = portfolio.postionBookModel ?? [];
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          protectedSymbols.add('${position.exch}|${position.token}');
+        }
+      }
+    } catch (e) {
+      print('   ⚠️ Error getting protected symbols: $e');
+    }
+
+    // Find symbols to unsubscribe (in old but not in new, and not protected)
+    final symbolsToUnsubscribe = oldSymbols.where((symbol) =>
+      !newSymbols.contains(symbol) && !protectedSymbols.contains(symbol)
+    ).toSet();
+
+    // Find symbols to subscribe (in new but not currently subscribed)
+    final symbolsToSubscribe = newSymbols.where((symbol) =>
+      !_currentWebSocketSubscriptions.contains(symbol)
+    ).toSet();
+
+    print('   📤 Symbols to unsubscribe: ${symbolsToUnsubscribe.length}');
+    print('   📥 Symbols to subscribe: ${symbolsToSubscribe.length}');
+
+    final wsProvider = ref.read(websocketProvider);
+
+    // Unsubscribe old symbols
+    if (symbolsToUnsubscribe.isNotEmpty) {
+      if (symbolsToUnsubscribe.length <= 10) {
+        print('   🗑️ Unsubscribing: ${symbolsToUnsubscribe.join(", ")}');
+      } else {
+        print('   🗑️ Unsubscribing first 10: ${symbolsToUnsubscribe.take(10).join(", ")}...');
+      }
+
+      try {
+        final symbolString = symbolsToUnsubscribe.join('#');
+        wsProvider.connectTouchLine(
+          task: "ud",
+          input: symbolString,
+          context: context,
+        );
+
+        // Remove from tracking
+        _currentWebSocketSubscriptions.removeAll(symbolsToUnsubscribe);
+        _activeSubscriptions.removeAll(symbolsToUnsubscribe);
+      } catch (e) {
+        print('   ❌ Error unsubscribing: $e');
+      }
+    }
+
+    // Subscribe to new symbols
+    if (symbolsToSubscribe.isNotEmpty) {
+      if (symbolsToSubscribe.length <= 10) {
+        print('   ➕ Subscribing: ${symbolsToSubscribe.join(", ")}');
+      } else {
+        print('   ➕ Subscribing first 10: ${symbolsToSubscribe.take(10).join(", ")}...');
+      }
+
+      try {
+        final symbolString = symbolsToSubscribe.join('#');
+        wsProvider.connectTouchLine(
+          task: "d",
+          input: symbolString,
+          context: context,
+        );
+
+        // Add to tracking
+        _currentWebSocketSubscriptions.addAll(symbolsToSubscribe);
+        _activeSubscriptions.addAll(symbolsToSubscribe);
+      } catch (e) {
+        print('   ❌ Error subscribing: $e');
+      }
+    }
+
+    // Update the watchlist screen subscription record with new symbols
+    _screenSubscriptions[ScreenType.watchlist] = newSymbols;
+
+    print('   ✅ Watchlist subscriptions updated');
+    print('   Current total: ${_currentWebSocketSubscriptions.length}');
+    print('   Master list: ${_activeSubscriptions.length}');
+    print('═══════════════════════════════════════════════════════════\n');
+  }
+
+  /// Get current watchlist symbols as a set (for use in updateWatchlistSubscriptions)
+  Set<String> getCurrentWatchlistSymbols() {
+    return _screenSubscriptions[ScreenType.watchlist] ?? {};
   }
 
   /// Unsubscribe specific tokens (for option chain, futures symbol changes)

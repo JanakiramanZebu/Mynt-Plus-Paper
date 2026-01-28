@@ -166,6 +166,7 @@ class _CustomizableSplitHomeScreenState
   // Track WebSocket connection state for snackbar notifications
   bool _wasDisconnected = false;
   bool _showedDisconnectSnackbar = false;
+  bool _hasConnectedOnce = false; // Track if we've had first successful connection
 
   // Track ongoing API requests to prevent duplicate calls when user rapidly clicks the same screen
   // Key: screen identifier (e.g., 'holdings', 'positions')
@@ -566,20 +567,13 @@ class _CustomizableSplitHomeScreenState
     // Establish base WebSocket connection if not connected
     // Note: Subscriptions are now handled by WebSubscriptionManager
     if (!websocket.wsConnected) {
-      // Web uses depth subscription ("d") for all symbols to have depth data ready
-      if (ConstantName.lastSubscribe.isNotEmpty) {
-        websocket.establishConnection(
-            channelInput: ConstantName.lastSubscribe,
-            task: "d",
-            context: context);
-      }
-
-      if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-        websocket.establishConnection(
-            channelInput: ConstantName.lastSubscribeDepth,
-            task: "d",
-            context: context);
-      }
+      // ALWAYS establish base connection first, even without symbols
+      // This ensures WebSocket is connected before any subscriptions
+      // Previously, if lastSubscribe was empty, connection was never established!
+      websocket.establishConnection(
+          channelInput: "",
+          task: "c",
+          context: context);
     }
 
     // Note: Removed direct subscription calls (requestMWScrip, requestWSHoldings, etc.)
@@ -672,8 +666,10 @@ class _CustomizableSplitHomeScreenState
           });
         } else if (!isDisconnected && _wasDisconnected) {
           // Just reconnected - show success snackbar and refresh data
+          final wasActualReconnection = _hasConnectedOnce; // Only refresh if this is a real reconnection
           _wasDisconnected = false;
           _showedDisconnectSnackbar = false;
+          _hasConnectedOnce = true; // Mark that we've connected at least once
           Future.microtask(() {
             if (mounted) {
               ResponsiveSnackBar.showSuccess(
@@ -681,10 +677,15 @@ class _CustomizableSplitHomeScreenState
                 'Connected successfully',
                 duration: const Duration(seconds: 2),
               );
-              // Refresh data after reconnection
-              _refreshDataAfterReconnection();
+              // Only refresh data after actual reconnection, not initial connection
+              if (wasActualReconnection) {
+                _refreshDataAfterReconnection();
+              }
             }
           });
+        } else if (!isDisconnected && !_hasConnectedOnce) {
+          // First successful connection (not a reconnection)
+          _hasConnectedOnce = true;
         }
 
         // Auto-reconnect when network is available but websocket disconnected
@@ -2776,6 +2777,9 @@ class _CustomizableSplitHomeScreenState
   void _performSubscriptionManagerUpdate({bool forceRefresh = false}) {
     final subscriptionManager = ref.read(webSubscriptionManagerProvider);
 
+    // Ensure WebSocket is connected before attempting subscriptions
+    subscriptionManager.ensureConnected(context);
+
     // Update subscription manager for each panel
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
@@ -2820,9 +2824,11 @@ class _CustomizableSplitHomeScreenState
 
       // Ensure top indices are fetched before WebSubscriptionManager subscribes
       // Only fetch if not already available to avoid duplicate API calls
-      if (indexProvider.topIndicesForDashboard == null) {
+      if (indexProvider.topIndicesForDashboard == null && mounted) {
         await indexProvider.getTopIndicesForDashboard(context);
       }
+
+      if (!mounted) return;
 
       // Fetch trade action data only if not already available
       // This prevents duplicate TopList API calls when clicking dashboard multiple times
@@ -2831,10 +2837,15 @@ class _CustomizableSplitHomeScreenState
         await stocksProvider.fetchTradeAction(
             "NSE", "NSEALL", "topG_L", "topG_L");
       }
+
+      if (!mounted) return;
+
       if (stocksProvider.byValue.isEmpty && stocksProvider.byVolume.isEmpty) {
         await stocksProvider.fetchTradeAction(
             "NSE", "NSEALL", "mostActive", "mostActive");
       }
+
+      if (!mounted) return;
 
       // Fetch holdings for dashboard stats with "Refresh" to trigger websocket subscription
       await portfolio.fetchHoldings(context, "Refresh");
@@ -2848,6 +2859,8 @@ class _CustomizableSplitHomeScreenState
       if (mounted) {
         portfolio.pnlHoldCal();
       }
+
+      if (!mounted) return;
 
       // Fetch positions for dashboard stats and subscribe to WebSocket for live updates
       await portfolio.fetchPositionBook(context, false);
@@ -2882,14 +2895,17 @@ class _CustomizableSplitHomeScreenState
       // Fetch watchlist list if not available
       if (marketWatch.marketWatchlist == null ||
           (marketWatch.marketWatchlist?.values?.isEmpty ?? true)) {
+        if (!mounted) return;
         await marketWatch.fetchMWList(context, true);
       }
+
+      if (!mounted) return;
 
       // Fetch current watchlist scrips if not available
       final scrips = marketWatch.marketWatchScrip?.values;
       if (scrips == null || scrips.isEmpty) {
         final currentWL = marketWatch.wlName;
-        if (currentWL.isNotEmpty) {
+        if (currentWL.isNotEmpty && mounted) {
           await marketWatch.fetchMWScrip(currentWL, context);
         }
       }

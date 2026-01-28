@@ -87,10 +87,15 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   void initState() {
     super.initState();
 
-    FirebaseAnalytics.instance.logScreenView(
-      screenName: 'Watchlist screen web',
-      screenClass: 'WatchList_screen_web',
-    );
+    // Wrap in try-catch since Firebase may not be initialized yet (async init after runApp)
+    try {
+      FirebaseAnalytics.instance.logScreenView(
+        screenName: 'Watchlist screen web',
+        screenClass: 'WatchList_screen_web',
+      );
+    } catch (e) {
+      debugPrint('Firebase Analytics not ready: $e');
+    }
 
     _swipeController = SwipeActionController(
       selectedIndexPathsChangeCallback: (changed, selected, currentCount) =>
@@ -148,8 +153,8 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     // Set tab scroll position to the stored page index
     _scrollToSelectedTab(_currentPageIndex, force: true);
 
-    // Load additional data in background
-    _ensurePredefinedWatchlistsLoaded();
+    // Note: _ensurePredefinedWatchlistsLoaded() is already called from didChangeDependencies
+    // No need to call it again here to avoid duplicate API calls
 
     _safeSetState(() {});
   }
@@ -234,30 +239,39 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   /// Background loading - doesn't block UI
   Future<void> _ensurePredefinedWatchlistsLoaded() async {
-    if (_isDisposed) return;
+    if (_isDisposed || !mounted) return;
 
     try {
       final marketWatch =
           ProviderScope.containerOf(context).read(marketWatchProvider);
       final current = marketWatch.wlName;
 
-      await marketWatch.fetchPreDefMWScrip(context);
+      // Only fetch if predefined data not already loaded
+      if (marketWatch.preDefinedMWlist == null) {
+        await marketWatch.fetchPreDefMWScrip(context);
+        if (!mounted) return;
+      }
 
       const predefined = ['Nifty50', 'Niftybank', 'Sensex', 'My Stocks'];
 
       if (predefined.contains(current) && marketWatch.scrips.isEmpty) {
         await marketWatch.fetchMWScrip(current, context);
+        if (!mounted) return;
         await marketWatch.changeWLScrip(current, context);
+        if (!mounted) return;
       }
 
       for (final name in predefined) {
+        if (!mounted) return;
         if (name == current) continue;
         final cached = marketWatch.marketWatchScripData[name];
         if (cached == null || jsonDecode(cached).isEmpty) {
           await marketWatch.fetchMWScrip(name, context);
+          if (!mounted) return;
         }
       }
 
+      if (!mounted) return;
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
       debugPrint('Error preloading watchlists: $e');
@@ -265,7 +279,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   Future<void> _handlePageChanged(int pageIndex, WidgetRef ref) async {
-    if (_isDisposed) return;
+    if (_isDisposed || !mounted) return;
 
     final marketWatch = ref.read(marketWatchProvider);
     final watchList = marketWatch.marketWatchlist;
@@ -285,13 +299,16 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
     try {
       await marketWatch.requestMWScrip(context: context, isSubscribe: false);
+      if (!mounted) return;
 
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(newWatchlistName);
 
       await marketWatch.changeWlName(
           newWatchlistName, isPredefined ? 'Yes' : 'No');
+      if (!mounted) return;
       await marketWatch.changeWLScrip(newWatchlistName, context);
+      if (!mounted) return;
 
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
@@ -1431,17 +1448,21 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   Future<void> _handleWatchlistSelection(
       String watchlistName, WidgetRef ref) async {
+    if (!mounted) return;
     final marketWatch = ref.read(marketWatchProvider);
 
     try {
       await marketWatch.requestMWScrip(context: context, isSubscribe: false);
+      if (!mounted) return;
 
       const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
       final isPredefined = predefined.contains(watchlistName);
 
       await marketWatch.changeWlName(
           watchlistName, isPredefined ? 'Yes' : 'No');
+      if (!mounted) return;
       await marketWatch.changeWLScrip(watchlistName, context);
+      if (!mounted) return;
 
       await marketWatch.requestMWScrip(context: context, isSubscribe: true);
 
@@ -1900,10 +1921,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   Future<void> _handleWatchlistRename(String oldName, String newName,
-      WidgetRef ref, BuildContext context) async {
+      WidgetRef ref, BuildContext dialogContext) async {
+    if (!mounted) return;
     final marketWatch = ref.read(marketWatchProvider);
     try {
-      await marketWatch.fetchWatchListRename(oldName, newName, context);
+      await marketWatch.fetchWatchListRename(oldName, newName, dialogContext);
     } catch (e) {
       debugPrint('Error renaming watchlist: $e');
     }
@@ -1911,6 +1933,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   Future<void> _handleWatchlistDelete(
       String watchlistName, WidgetRef ref) async {
+    if (!mounted) return;
     final marketWatch = ref.read(marketWatchProvider);
     try {
       await marketWatch.deleteWatchList(watchlistName, context);
@@ -1920,6 +1943,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   }
 
   Future<void> _handleWatchlistCreate(String name, WidgetRef ref) async {
+    if (!mounted) return;
     final marketWatch = ref.read(marketWatchProvider);
     try {
       await marketWatch.addWatchList(name, context);
@@ -1991,9 +2015,11 @@ class _WatchlistIndexSlotWebState
   bool _isHovered = false;
 
   Future<void> _handleTap(BuildContext context) async {
+    if (!mounted) return;
     try {
       // Fetch index list before opening bottom sheet
       await widget.indexProvider.fetchIndexList("NSE", context);
+      if (!mounted) return;
 
       // Open the bottom sheet dialog
       showDialog(
@@ -2011,7 +2037,9 @@ class _WatchlistIndexSlotWebState
       );
 
       // Clean up after dialog closes
+      if (!mounted) return;
       await widget.indexProvider.fetchIndexList("exit", context);
+      if (!mounted) return;
       await widget.marketWatch
           .requestMWScrip(context: context, isSubscribe: true);
     } catch (e) {
@@ -2020,12 +2048,14 @@ class _WatchlistIndexSlotWebState
   }
 
   Future<void> _handleIndexClick(BuildContext context) async {
+    if (!mounted) return;
     try {
       // First, safely fetch the quote data
       await widget.marketWatch.fetchScripQuoteIndex(
           widget.indexItem.token?.toString() ?? "",
           widget.indexItem.exch?.toString() ?? "",
           context);
+      if (!mounted) return;
 
       final quots = widget.marketWatch.getQuotes;
 

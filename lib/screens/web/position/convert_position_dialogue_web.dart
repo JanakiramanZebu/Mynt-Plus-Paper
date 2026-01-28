@@ -1,19 +1,22 @@
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../models/portfolio_model/position_convertion_model.dart';
 import '../../../provider/portfolio_provider.dart';
-import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive_extensions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
 
 class ConvertPositionDialogueWeb extends ConsumerStatefulWidget {
@@ -27,33 +30,46 @@ class ConvertPositionDialogueWeb extends ConsumerStatefulWidget {
 
 class _ConvertPositionDialogueWebState
     extends ConsumerState<ConvertPositionDialogueWeb> {
-  late TextEditingController qty;
-  late TextEditingController maxQty;
+  late TextEditingController _qtyController;
+  late String _maxQty;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     // Disable chart iframe pointer events when dialog opens
+    ChartIframeGuard.acquire();
     _disableAllChartIframes();
 
-    maxQty = TextEditingController(
-        text: widget.convertPosition.netqty!.replaceAll("-", ""));
-    qty = TextEditingController(text: maxQty.text);
-    int lotSize = int.parse("${widget.convertPosition.ls ?? 0}");
+    _maxQty = widget.convertPosition.netqty!.replaceAll("-", "");
+    String initialQty = _maxQty;
+    int lotSize = int.parse("${widget.convertPosition.ls ?? 1}");
 
     if (widget.convertPosition.exch == "MCX") {
-      maxQty.text = (int.parse(maxQty.text) ~/ lotSize).toString();
+      _maxQty = (int.parse(_maxQty) ~/ lotSize).toString();
+      initialQty = _maxQty;
     }
 
-    if (widget.convertPosition.exch == "MCX") {
-      qty.text = (int.parse(qty.text) ~/ lotSize).toString();
-    }
+    _qtyController = TextEditingController(text: initialQty);
+
+    // Request focus after dialog animation completes
+    Future.delayed(const Duration(milliseconds: 250), () {
+      _focusNode.requestFocus();
+      // Position cursor at end
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (_qtyController.text.isNotEmpty) {
+          _qtyController.selection = TextSelection.collapsed(
+            offset: _qtyController.text.length,
+          );
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
-    qty.dispose();
-    maxQty.dispose();
+    _qtyController.dispose();
+    _focusNode.dispose();
     // Re-enable chart iframe pointer events when dialog closes
     ChartIframeGuard.release();
     _enableAllChartIframes();
@@ -65,7 +81,8 @@ class _ConvertPositionDialogueWebState
     try {
       final iframes = html.document.querySelectorAll('iframe');
       for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
           iframe.style.pointerEvents = 'none';
           iframe.style.cursor = 'default';
         }
@@ -81,7 +98,8 @@ class _ConvertPositionDialogueWebState
     try {
       final iframes = html.document.querySelectorAll('iframe');
       for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
           iframe.style.pointerEvents = 'auto';
           iframe.style.cursor = '';
         }
@@ -90,284 +108,6 @@ class _ConvertPositionDialogueWebState
     } catch (e) {
       debugPrint('Error enabling iframes: $e');
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ref.watch(themeProvider);
-
-    return Center(
-      child: Container(
-        width: 380,
-        margin: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: resolveThemeColor(context,
-              dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with close button
-            _buildHeader(context),
-
-            // Content
-            Flexible(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Order Type Section
-                      _buildOrderTypeSection(context),
-                      const SizedBox(height: 20),
-
-                      // Quantity Section
-                      _buildQuantitySection(context, theme),
-                      const SizedBox(height: 24),
-
-                      // Convert Position Button
-                      _buildConvertButton(context),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              "${widget.convertPosition.symbol} ${widget.convertPosition.option ?? ''} ${widget.convertPosition.exch}",
-              style: MyntWebTextStyles.title(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-                fontWeight: MyntFonts.medium,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          shadcn.IconButton(
-            icon: const Icon(Icons.close, size: 20),
-            onPressed: () => Navigator.of(context).pop(),
-            variance: shadcn.ButtonVariance.ghost,
-            size: shadcn.ButtonSize.small,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderTypeSection(BuildContext context) {
-    final targetProduct = _getTargetProduct();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Order Type",
-          style: MyntWebTextStyles.body(
-            context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Current product (NRML/MIS/CNC)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.listItemBgDark,
-                  light: MyntColors.listItemBg,
-                ),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                "${widget.convertPosition.sPrdtAli}",
-                style: MyntWebTextStyles.body(
-                  context,
-                  fontWeight: MyntFonts.semiBold,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                ),
-              ),
-            ),
-
-            // Arrow icon
-            SvgPicture.asset(
-              assets.rightarrow,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary,
-              ),
-              width: 18,
-              height: 18,
-            ),
-
-            // Target product
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              decoration: BoxDecoration(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ),
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                targetProduct,
-                style: MyntWebTextStyles.body(
-                  context,
-                  fontWeight: MyntFonts.semiBold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuantitySection(BuildContext context, ThemesProvider theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Quantity (${widget.convertPosition.ls})",
-          style: MyntWebTextStyles.body(
-            context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 44,
-          child: shadcn.TextField(
-            controller: qty,
-            placeholder: const Text("0"),
-            textAlign: TextAlign.left,
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary,
-              ),
-            ),
-            onChanged: (value) {
-              if (value.isNotEmpty) {
-                int number = int.tryParse(qty.text) ?? 0;
-                if (number > 999999) {
-                  qty.text = qty.text.substring(0, 6);
-                }
-                String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
-                if (newValue != value) {
-                  qty.text = newValue;
-                  qty.selection = TextSelection.fromPosition(
-                    TextPosition(offset: newValue.length),
-                  );
-                }
-              }
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildConvertButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: MyntPrimaryButton(
-        label: "Convert Position",
-        isFullWidth: true,
-        onPressed: () async {
-          if (qty.text.isEmpty || qty.text == "0") {
-            showResponsiveWarningMessage(
-                context,
-                qty.text.isEmpty
-                    ? 'Quantity can not be empty'
-                    : "Quantity can not be 0");
-          } else if (int.parse(qty.text) > int.parse(maxQty.text)) {
-            setState(() {
-              qty.text = maxQty.text;
-            });
-            showResponsiveWarningMessage(
-                context, 'Quantity can not be greater than Max Quantity');
-          } else {
-            PositionConvertionInput positionConvertionInput =
-                PositionConvertionInput(
-                    exch: "${widget.convertPosition.exch}",
-                    postype: "DAY",
-                    prd: _getTargetProductCode(),
-                    prevprd: "${widget.convertPosition.prd}",
-                    qty: widget.convertPosition.exch == 'MCX'
-                        ? (int.parse(qty.text) *
-                                int.parse(widget.convertPosition.ls.toString()))
-                            .toInt()
-                            .toString()
-                        : qty.text,
-                    trantype: widget.convertPosition.netqty!.startsWith('-')
-                        ? "S"
-                        : "B",
-                    tsym: "${widget.convertPosition.tsym}");
-            ref
-                .read(portfolioProvider)
-                .fetchPositionConverstion(positionConvertionInput, context);
-          }
-        },
-      ),
-    );
   }
 
   String _getTargetProduct() {
@@ -396,5 +136,323 @@ class _ConvertPositionDialogueWebState
     } else {
       return "I";
     }
+  }
+
+  Future<void> _handleConvert() async {
+    debugPrint('=== CONVERT BUTTON PRESSED ===');
+    debugPrint('Position data: ${widget.convertPosition.tsym}');
+    debugPrint('Current product: ${widget.convertPosition.sPrdtAli}');
+    debugPrint('Target product code: ${_getTargetProductCode()}');
+    debugPrint('Qty text: ${_qtyController.text}');
+    debugPrint('Max qty: $_maxQty');
+
+    if (_qtyController.text.isEmpty || _qtyController.text == "0") {
+      debugPrint('ERROR: Quantity validation failed - empty or zero');
+      showResponsiveWarningMessage(
+        context,
+        _qtyController.text.isEmpty
+            ? 'Quantity cannot be empty'
+            : "Quantity cannot be 0",
+      );
+      return;
+    }
+
+    if (int.parse(_qtyController.text) > int.parse(_maxQty)) {
+      debugPrint('ERROR: Quantity exceeds max qty');
+      setState(() {
+        _qtyController.text = _maxQty;
+      });
+      showResponsiveWarningMessage(
+        context,
+        'Quantity cannot be greater than Max Quantity',
+      );
+      return;
+    }
+
+    final finalQty = widget.convertPosition.exch == 'MCX'
+        ? (int.parse(_qtyController.text) *
+                int.parse(widget.convertPosition.ls.toString()))
+            .toInt()
+            .toString()
+        : _qtyController.text;
+
+    debugPrint('Final qty for API: $finalQty');
+
+    PositionConvertionInput positionConvertionInput = PositionConvertionInput(
+      exch: "${widget.convertPosition.exch}",
+      postype: "DAY",
+      prd: _getTargetProductCode(),
+      prevprd: "${widget.convertPosition.prd}",
+      qty: finalQty,
+      trantype: widget.convertPosition.netqty!.startsWith('-') ? "S" : "B",
+      tsym: "${widget.convertPosition.tsym}",
+    );
+
+    debugPrint('Calling fetchPositionConverstion...');
+    await ref
+        .read(portfolioProvider)
+        .fetchPositionConverstion(positionConvertionInput, context);
+    debugPrint('fetchPositionConverstion completed');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Responsive dialog sizing
+    final dialogWidth = context.responsiveValue<double>(
+      mobile: context.screenWidth * 0.9,
+      smallTablet: 360,
+      tablet: 380,
+      desktop: 400,
+    );
+    final contentPadding = context.responsive<double>(
+      mobile: 12,
+      tablet: 14,
+      desktop: 16,
+    );
+    final sectionSpacing = context.responsive<double>(
+      mobile: 16,
+      tablet: 20,
+      desktop: 24,
+    );
+
+    final targetProduct = _getTargetProduct();
+
+    return PointerInterceptor(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.basic,
+        onEnter: (_) {
+          ChartIframeGuard.acquire();
+          _disableAllChartIframes();
+        },
+        onHover: (_) {
+          _disableAllChartIframes();
+        },
+        onExit: (_) {
+          ChartIframeGuard.release();
+          _enableAllChartIframes();
+        },
+        child: Listener(
+          onPointerMove: (_) {
+            _disableAllChartIframes();
+          },
+          child: Center(
+            child: shadcn.Card(
+              borderRadius: BorderRadius.circular(8),
+              padding: EdgeInsets.zero,
+              child: Container(
+                width: dialogWidth,
+                constraints: const BoxConstraints(maxHeight: 400),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: contentPadding,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: shadcn.Theme.of(context).colorScheme.border,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "${widget.convertPosition.symbol} ${widget.convertPosition.option ?? ''} ${widget.convertPosition.exch}",
+                              style: context.isMobile
+                                  ? MyntWebTextStyles.body(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                      fontWeight: MyntFonts.medium,
+                                    )
+                                  : MyntWebTextStyles.title(
+                                      context,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                      fontWeight: MyntFonts.medium,
+                                    ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          MyntCloseButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Content
+                    Flexible(
+                      child: Padding(
+                        padding: EdgeInsets.all(contentPadding),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Order Type Section
+                            Text(
+                              "Order Type",
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: MyntFonts.semiBold,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: context.responsive<double>(
+                              mobile: 8,
+                              tablet: 9,
+                              desktop: 10,
+                            )),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Current product (NRML/MIS/CNC)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.listItemBgDark,
+                                      light: MyntColors.listItemBg,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    "${widget.convertPosition.sPrdtAli}",
+                                    style: MyntWebTextStyles.body(
+                                      context,
+                                      fontWeight: MyntFonts.semiBold,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // Arrow icon
+                                SvgPicture.asset(
+                                  assets.rightarrow,
+                                  colorFilter: ColorFilter.mode(
+                                    resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary,
+                                    ),
+                                    BlendMode.srcIn,
+                                  ),
+                                  width: 18,
+                                  height: 18,
+                                ),
+
+                                // Target product
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    targetProduct,
+                                    style: MyntWebTextStyles.body(
+                                      context,
+                                      fontWeight: MyntFonts.semiBold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: sectionSpacing),
+
+                            // Quantity Section
+                            Text(
+                              "Quantity (Lot Size: ${widget.convertPosition.ls})",
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: MyntFonts.semiBold,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: context.responsive<double>(
+                              mobile: 8,
+                              tablet: 9,
+                              desktop: 10,
+                            )),
+                            MyntFormTextField(
+                              controller: _qtyController,
+                              focusNode: _focusNode,
+                              placeholder: 'Enter quantity',
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(6),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              "Max Qty: $_maxQty",
+                              style: MyntWebTextStyles.para(
+                                context,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: sectionSpacing),
+
+                            // Convert Position Button
+                            MyntPrimaryButton(
+                              size: context.isMobile
+                                  ? MyntButtonSize.medium
+                                  : MyntButtonSize.large,
+                              label: 'Convert Position',
+                              isFullWidth: true,
+                              onPressed: _handleConvert,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -107,7 +107,8 @@ Future<void> initializeFirebaseAsync() async {
 
   try {
     // Initialize Firebase with appropriate platform options
-    if (TargetPlatform.android == defaultTargetPlatform) {
+    // This is needed for all platforms including web (for Analytics)
+    if (!kIsWeb && TargetPlatform.android == defaultTargetPlatform) {
       await Firebase.initializeApp(
           name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
     } else {
@@ -119,21 +120,27 @@ Future<void> initializeFirebaseAsync() async {
     final coreInitDuration = coreInitTime.difference(firebaseStartTime);
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
-    final Preferences pref = locator<Preferences>();
-
-    // Only enable Crashlytics on mobile platforms (not web)
-    if (!kIsWeb) {
-      FlutterError.onError =
-          FirebaseCrashlytics.instance.recordFlutterFatalError;
-      PlatformDispatcher.instance.onError = (error, stack) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        return true;
-      };
-      FirebaseCrashlytics.instance
-          .setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+    // Web only needs Firebase core for Analytics - skip Crashlytics and Messaging
+    if (kIsWeb) {
+      FirebaseHelper.setInitialized(true);
+      print("Firebase initialized for web (Analytics only)");
+      return;
     }
 
-    // Configure messaging
+    // Mobile-only: Crashlytics and Messaging
+    final Preferences pref = locator<Preferences>();
+
+    // Enable Crashlytics (mobile only)
+    FlutterError.onError =
+        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true;
+    };
+    FirebaseCrashlytics.instance
+        .setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+
+    // Configure messaging (mobile only)
     final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission(
       alert: true,
@@ -149,11 +156,9 @@ Future<void> initializeFirebaseAsync() async {
     ConstantName.msgToken = await messaging.getToken();
     log("Token ${ConstantName.msgToken}");
 
-    // Configure background messaging handler (not supported on web)
-    if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
-    }
+    // Configure background messaging handler
+    FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler);
 
     // Handle notification click when app was terminated
     FirebaseMessaging.instance.getInitialMessage().then((message) async {
@@ -179,14 +184,12 @@ Future<void> initializeFirebaseAsync() async {
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (!kIsWeb) {
-        print("Message $message");
-        print('Handling a foreground message: ${message.messageId}');
-        print('Message data: ${message.data}');
-        print('Message notification: ${message.notification?.title}');
-        print('Message notification: ${message.notification?.body}');
-        print('Message notification: ${message.data["imageUrl"]}');
-      }
+      print("Message $message");
+      print('Handling a foreground message: ${message.messageId}');
+      print('Message data: ${message.data}');
+      print('Message notification: ${message.notification?.title}');
+      print('Message notification: ${message.notification?.body}');
+      print('Message notification: ${message.data["imageUrl"]}');
 
       handleNotificationMessage(message);
       _messageStreamController.sink.add(message);
@@ -225,14 +228,22 @@ void main() async {
     applyHttpOverrides();
   }
   setupLocator();
-  await NotificationService.initializeNotification();
+
+  // Skip notification initialization for web - not needed
+  if (!kIsWeb) {
+    await NotificationService.initializeNotification();
+  }
 
   final Preferences pref = locator<Preferences>();
   await pref.init();
-  try {
-    _clearBadgeOnStartup();
-  } catch (e) {
-    print("Error in notification clearing $e");
+
+  // Skip badge clearing for web - not needed
+  if (!kIsWeb) {
+    try {
+      _clearBadgeOnStartup();
+    } catch (e) {
+      print("Error in notification clearing $e");
+    }
   }
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
@@ -249,6 +260,8 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 
   // Initialize Firebase after the app has started (non-blocking)
+  // Web: Firebase core only (for Analytics)
+  // Mobile: Full Firebase (Analytics, Crashlytics, Messaging)
   initializeFirebaseAsync();
 }
 

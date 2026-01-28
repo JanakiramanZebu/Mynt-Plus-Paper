@@ -42,7 +42,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Ref ref;
-  late TabController portTab;
+  TabController? portTab;
   final TextEditingController holdingSearchCtrl = TextEditingController();
   final TextEditingController holdingMFSearchCtrl = TextEditingController();
   final TextEditingController positionSearchCtrl = TextEditingController();
@@ -248,11 +248,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // Animate the TabController to the new index
 
     // Animate the TabController to the new index if initialized
-    try {
-      portTab.animateTo(index);
-    } catch (e) {
-      // Silently handle if portTab is not yet initialized
-    }
+    portTab?.animateTo(index);
 
     notifyListeners();
   }
@@ -1993,11 +1989,41 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Cache expiry duration: 12 hours in milliseconds
+  static const int _oplistCacheExpiryMs = 12 * 60 * 60 * 1000;
+
   Future fetchOplist(context) async {
     try {
+      // Check if cached data exists and is not expired
+      final cachedData = pref.oplistCache;
+      final cachedTimestamp = pref.oplistCacheTimestamp;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+      if (cachedData != null &&
+          cachedData.isNotEmpty &&
+          cachedTimestamp != null &&
+          (currentTime - cachedTimestamp) < _oplistCacheExpiryMs) {
+        // Use cached data
+        _oplists = jsonDecode(cachedData) as List;
+        notifyListeners();
+        return;
+      }
+
+      // Cache expired or doesn't exist, fetch from API
       List oplist = await api.getOptionlist();
       _oplists = oplist;
+
+      // Store in cache with current timestamp
+      await pref.setOplistCache(jsonEncode(oplist));
+      await pref.setOplistCacheTimestamp(currentTime);
+
+      notifyListeners();
     } catch (e) {
+      // If API fails, try to use cached data regardless of expiry
+      final cachedData = pref.oplistCache;
+      if (cachedData != null && cachedData.isNotEmpty && _oplists.isEmpty) {
+        _oplists = jsonDecode(cachedData) as List;
+      }
       ref
           .read(indexListProvider)
           .logError
@@ -2302,45 +2328,101 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Helper to get product display name from code
+  String _getProductDisplayName(String? code) {
+    switch (code) {
+      case 'I':
+        return 'MIS';
+      case 'C':
+        return 'CNC';
+      case 'M':
+        return 'NRML';
+      default:
+        return code ?? '';
+    }
+  }
+
   // Position conversion
   Future<void> fetchPositionConverstion(
       PositionConvertionInput input, BuildContext context) async {
+    debugPrint('=== PROVIDER: fetchPositionConverstion STARTED ===');
+    debugPrint('Input - exch: ${input.exch}, prd: ${input.prd}, prevprd: ${input.prevprd}');
+    debugPrint('Input - qty: ${input.qty}, trantype: ${input.trantype}, tsym: ${input.tsym}');
+    debugPrint('Context mounted: ${context.mounted}');
+
+    // Get display names for toast message
+    final fromProduct = _getProductDisplayName(input.prevprd);
+    final toProduct = _getProductDisplayName(input.prd);
+
     try {
       toggleLoadingOn(true);
+      debugPrint('Calling API getPositionConvertion...');
+
       _positionConvertionModel = await api.getPositionConvertion(input);
 
+      debugPrint('API Response received');
+      debugPrint('Response stat: ${_positionConvertionModel?.stat}');
+      debugPrint('Response emsg: ${_positionConvertionModel?.emsg}');
+
       if (_positionConvertionModel!.stat == "Ok") {
+        debugPrint('Conversion SUCCESS - refreshing position book...');
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
-        Navigator.pop(context);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(
-              context, "Position converted successfully");
+        debugPrint('Position book refreshed, popping dialog...');
+        debugPrint('Context still mounted before pop: ${context.mounted}');
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          debugPrint('Dialog popped successfully');
+
+          // Show success message with from/to product details
+          final successMsg = "Position converted from $fromProduct to $toProduct";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, successMsg);
+          } else {
+            successMessage(context, successMsg);
+          }
         } else {
-          successMessage(context, "Position converted successfully");
+          debugPrint('ERROR: Context not mounted, cannot pop dialog');
         }
       } else {
-        Navigator.pop(context);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(
-              context, "${_positionConvertionModel!.emsg}");
+        debugPrint('Conversion FAILED - stat not Ok');
+        debugPrint('Error message: ${_positionConvertionModel!.emsg}');
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          // Show error message from API
+          final errorMsg = _positionConvertionModel!.emsg ?? "Conversion failed";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         } else {
-          warningMessage(context, "${_positionConvertionModel!.emsg}");
+          debugPrint('ERROR: Context not mounted, cannot show warning');
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== PROVIDER: EXCEPTION in fetchPositionConverstion ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-      if (kIsWeb) {
-        ResponsiveSnackBar.showWarning(
-            context, "Failed to convert position: $e");
-      } else {
-        warningMessage(context, "Failed to convert position: $e");
+
+      if (context.mounted) {
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(
+              context, "Failed to convert position: $e");
+        } else {
+          warningMessage(context, "Failed to convert position: $e");
+        }
       }
     } finally {
       toggleLoadingOn(false);
+      debugPrint('=== PROVIDER: fetchPositionConverstion FINISHED ===');
     }
   }
 
