@@ -409,6 +409,22 @@ class Preferences {
       await _prefInstance!.remove(key);
     }
   }
+
+  // Oplist cache methods with time-based expiry
+  Future setOplistCache(String data) async =>
+      await _prefInstance!.setString(_oplistCache, data);
+
+  Future setOplistCacheTimestamp(int timestamp) async =>
+      await _prefInstance!.setInt(_oplistCacheTimestamp, timestamp);
+
+  String? get oplistCache => _prefInstance?.getString(_oplistCache);
+
+  int? get oplistCacheTimestamp => _prefInstance?.getInt(_oplistCacheTimestamp);
+
+  Future clearOplistCache() async {
+    await _prefInstance?.remove(_oplistCache);
+    await _prefInstance?.remove(_oplistCacheTimestamp);
+  }
 }
 
 const String _userTheme = 'userTheme';
@@ -439,6 +455,8 @@ const String _cameraPermissionDeniedCount = 'cameraPermissionDeniedCount';
 const String _bannerImageCache = 'bannerImageCache';
 const String _bannerSeen = 'bannerSeen';
 const String _textNuggetSeen = 'textNuggetSeen';
+const String _oplistCache = 'oplistCache';
+const String _oplistCacheTimestamp = 'oplistCacheTimestamp';
 
 ////MARKET WATCH Filter
 const String _isMWScripName = "isMWScripName";
