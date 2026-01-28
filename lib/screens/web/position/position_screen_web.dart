@@ -15,6 +15,7 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../res/responsive_extensions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
@@ -146,14 +147,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               await positionBook.fetchPositionBook(context, false);
             },
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(context.responsive(
+                mobile: 8.0,
+                tablet: 12.0,
+                desktop: 16.0,
+              )),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Summary Cards Section (includes Trade Positions)
                   _buildSummaryCards(theme, positionBook),
-                  const SizedBox(height: 20),
+                  SizedBox(height: context.responsive(
+                    mobile: 12.0,
+                    tablet: 16.0,
+                    desktop: 20.0,
+                  )),
 
                   // Main Content Area - Expanded to take remaining space
                   Expanded(
@@ -179,17 +188,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         final totPnL = portfolio.totPnL;
         final totMtM = portfolio.totMtM;
 
+        final cardSpacing = context.responsive<double>(
+          mobile: 8.0,
+          tablet: 10.0,
+          desktop: 12.0,
+        );
+
         return Row(children: [
-          // Expanded(
-          //   child: _buildStatCard(
-          //     label: 'Trade Value',
-          //     value: _calculateTradeValue(positionBook),
-          //     valueColor:
-          //         _getStatValueColor(_calculateTradeValue(positionBook), theme),
-          //     theme: theme,
-          //   ),
-          // ),
-          const SizedBox(width: 12),
+          SizedBox(width: cardSpacing),
           Expanded(
             child: _buildStatCard(
               label: 'Total P&L',
@@ -198,7 +204,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
               theme: theme,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: cardSpacing),
           Expanded(
             child: _buildStatCard(
               label: 'Total MTM',
@@ -219,11 +225,25 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     required Color valueColor,
     required ThemesProvider theme,
   }) {
+    final horizontalPadding = context.responsive<double>(
+      mobile: 8.0,
+      tablet: 10.0,
+      desktop: 12.0,
+    );
+    final verticalPadding = context.responsive<double>(
+      mobile: 6.0,
+      tablet: 7.0,
+      desktop: 8.0,
+    );
+
     return shadcn.Theme(
       data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
       child: shadcn.Card(
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
           child: Row(
             children: [
               const SizedBox(width: 1),
@@ -235,15 +255,25 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   children: [
                     Text(
                       label,
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary,
-                        ),
-                        fontWeight: MyntFonts.medium,
-                      ),
+                      style: context.isMobile
+                          ? MyntWebTextStyles.para(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                              fontWeight: MyntFonts.medium,
+                            )
+                          : MyntWebTextStyles.bodySmall(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                              fontWeight: MyntFonts.medium,
+                            ),
                     ),
                     const SizedBox(height: 1),
                     Row(
@@ -252,11 +282,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                         Flexible(
                           child: Text(
                             value,
-                            style: MyntWebTextStyles.head(
-                              context,
-                              color: valueColor,
-                              fontWeight: MyntFonts.medium,
-                            ),
+                            style: context.isMobile
+                                ? MyntWebTextStyles.title(
+                                    context,
+                                    color: valueColor,
+                                    fontWeight: MyntFonts.medium,
+                                  )
+                                : MyntWebTextStyles.head(
+                                    context,
+                                    color: valueColor,
+                                    fontWeight: MyntFonts.medium,
+                                  ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -315,8 +351,14 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
       ThemesProvider theme, PortfolioProvider positionBook) {
     final openPositionsCount = _getOpenPositionsCount(positionBook);
 
+    final horizontalPadding = context.responsive<double>(
+      mobile: 8.0,
+      tablet: 12.0,
+      desktop: 16.0,
+    );
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 0, horizontal: horizontalPadding),
       child: Row(
         children: [
           // Custom chip-style tabs matching the design
@@ -378,7 +420,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                                     ? MyntFonts.semiBold
                                     : MyntFonts.medium,
                               ).copyWith(
-                                fontSize: 13,
+                                fontSize: context.responsive<double>(
+                                  mobile: 10,
+                                  tablet: 11,
+                                  desktop: 12,
+                                ),
                                 color: _selectedTabIndex == 0
                                     ? shadcn.Theme.of(context)
                                         .colorScheme
@@ -400,33 +446,25 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           // Spacer to push action items to the right
           const Spacer(),
           // Search Bar - Use shadcn.TextField to match Holdings exactly
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Responsive search bar width
-              final screenWidth = MediaQuery.of(context).size.width;
-              double searchWidth;
-              if (screenWidth >= 1200) {
-                searchWidth = 400;
-              } else if (screenWidth >= 800) {
-                searchWidth = 300;
-              } else {
-                searchWidth = 200;
-              }
-
-              return SizedBox(
-                width: searchWidth,
-                child: MyntSearchTextField.withSmartClear(
-                  controller: _searchController,
-                  placeholder: 'Search positions',
-                  leadingIcon: assets.searchIcon,
-                  onClear: () => _searchController.clear(),
-                ),
-              );
-            },
+          SizedBox(
+            width: context.responsiveValue<double>(
+              mobile: 140,
+              smallTablet: 180,
+              tablet: 220,
+              desktop: 300,
+              largeDesktop: 350,
+              widescreen: 400,
+            ),
+            child: MyntSearchTextField.withSmartClear(
+              controller: _searchController,
+              placeholder: context.isMobile ? 'Search' : 'Search positions',
+              leadingIcon: assets.searchIcon,
+              onClear: () => _searchController.clear(),
+            ),
           ),
 
           // Filter dropdown button
-          const SizedBox(width: 12),
+          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
           _buildFilterButton(theme),
 
           // Exit All Button - only show if there are open positions
@@ -447,8 +485,19 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 return const SizedBox.shrink();
               }
 
+              final buttonHeight = context.responsive<double>(
+                mobile: 30,
+                tablet: 32,
+                desktop: 35,
+              );
+              final buttonPadding = context.responsive<double>(
+                mobile: 12,
+                tablet: 16,
+                desktop: 20,
+              );
+
               return SizedBox(
-                height: 35,
+                height: buttonHeight,
                 child: ElevatedButton(
                   onPressed: () => _exitAllPositions(),
                   style: ElevatedButton.styleFrom(
@@ -458,8 +507,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       light: MyntColors.primary,
                     ),
                     foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+                    padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -467,22 +515,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   ),
                   child: Text(
                     selectedCount == 0
-                        ? 'Exit All'
-                        : (selectedCount == 1
-                            ? 'Exit (1)'
-                            : 'Exit ($selectedCount)'),
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: Colors.white,
-                      fontWeight: MyntFonts.semiBold,
-                    ),
+                        ? (context.isMobile ? 'Exit' : 'Exit All')
+                        : 'Exit ($selectedCount)',
+                    style: context.isMobile
+                        ? MyntWebTextStyles.para(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold,
+                          )
+                        : MyntWebTextStyles.body(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
                   ),
                 ),
               );
             },
           ),
 
-          const SizedBox(width: 12),
+          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
           // Refresh Button
           _buildIconButton(
             icon: Icons.refresh,
@@ -491,7 +543,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             },
             theme: theme,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
         ],
       ),
     );
@@ -503,9 +555,20 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     required VoidCallback onPressed,
     required ThemesProvider theme,
   }) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 22,
+      tablet: 25,
+      desktop: 28,
+    );
+
     return Container(
-      width: 40,
-      height: 40,
+      width: buttonSize,
+      height: buttonSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
       ),
@@ -517,7 +580,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           child: Center(
             child: Icon(
               icon,
-              size: 28,
+              size: iconSize,
               color: resolveThemeColor(
                 context,
                 dark: MyntColors.iconDark,
@@ -532,6 +595,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
 
   // Filter dropdown button matching Holdings
   Widget _buildFilterButton(ThemesProvider theme) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 16,
+      tablet: 18,
+      desktop: 20,
+    );
+
     return Builder(
       builder: (buttonContext) {
         return MouseRegion(
@@ -539,19 +613,22 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           child: GestureDetector(
             onTap: () => _showFilterPopup(buttonContext, theme),
             child: Container(
-              width: 40,
-              height: 40,
+              width: buttonSize,
+              height: buttonSize,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
                 child: SvgPicture.asset(
                   assets.searchFilter,
-                  width: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.iconDark,
-                    light: MyntColors.icon,
+                  width: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    resolveThemeColor(
+                      context,
+                      dark: MyntColors.iconDark,
+                      light: MyntColors.icon,
+                    ),
+                    BlendMode.srcIn,
                   ),
                 ),
               ),
