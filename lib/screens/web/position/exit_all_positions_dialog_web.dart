@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 
 import '../../../models/portfolio_model/position_book_model.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive_extensions.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
 
@@ -38,6 +40,7 @@ class _ExitAllPositionsDialogWebState
   void initState() {
     super.initState();
     // Disable chart iframe pointer events when dialog opens
+    ChartIframeGuard.acquire();
     _disableAllChartIframes();
   }
 
@@ -79,7 +82,8 @@ class _ExitAllPositionsDialogWebState
     try {
       final iframes = html.document.querySelectorAll('iframe');
       for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
           iframe.style.pointerEvents = 'none';
           iframe.style.cursor = 'default';
         }
@@ -95,7 +99,8 @@ class _ExitAllPositionsDialogWebState
     try {
       final iframes = html.document.querySelectorAll('iframe');
       for (var iframe in iframes) {
-        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+        if (iframe is html.IFrameElement &&
+            iframe.id.contains('chart-iframe')) {
           iframe.style.pointerEvents = 'auto';
           iframe.style.cursor = '';
         }
@@ -108,89 +113,164 @@ class _ExitAllPositionsDialogWebState
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 380,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: resolveThemeColor(context,
-              dark: MyntColors.listItemBgDark, light: MyntColors.textWhite),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 30,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Close icon in top right
-            Align(
-              alignment: Alignment.centerRight,
-              child: shadcn.IconButton(
-                icon: const Icon(Icons.close, size: 22),
-                onPressed: () => Navigator.of(context).pop(),
-                variance: shadcn.ButtonVariance.ghost,
-                size: shadcn.ButtonSize.small,
-              ),
-            ),
+    final positionCount = widget.selectedPositions.length;
 
-            const SizedBox(height: 2),
+    // Responsive dialog sizing
+    final dialogWidth = context.responsiveValue<double>(
+      mobile: context.screenWidth * 0.9,
+      smallTablet: 350,
+      tablet: 380,
+      desktop: 400,
+    );
+    final contentPadding = context.responsive<double>(
+      mobile: 12,
+      tablet: 14,
+      desktop: 16,
+    );
+    final headerHorizontalPadding = context.responsive<double>(
+      mobile: 12,
+      tablet: 14,
+      desktop: 16,
+    );
+    final buttonSpacing = context.responsive<double>(
+      mobile: 18,
+      tablet: 21,
+      desktop: 24,
+    );
 
-            // Confirmation Text
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: MyntWebTextStyles.title(
-                    context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                    fontWeight: MyntFonts.regular,
-                  ).copyWith(fontSize: 18),
+    return PointerInterceptor(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.basic,
+        onEnter: (_) {
+          ChartIframeGuard.acquire();
+          _disableAllChartIframes();
+        },
+        onHover: (_) {
+          _disableAllChartIframes();
+        },
+        onExit: (_) {
+          ChartIframeGuard.release();
+          _enableAllChartIframes();
+        },
+        child: Listener(
+          onPointerMove: (_) {
+            _disableAllChartIframes();
+          },
+          child: Center(
+            child: shadcn.Card(
+              borderRadius: BorderRadius.circular(8),
+              padding: EdgeInsets.zero,
+              child: Container(
+                width: dialogWidth,
+                constraints: const BoxConstraints(maxHeight: 250),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const TextSpan(text: 'Do you want to '),
-                    TextSpan(
-                      text: 'Square Off all',
-                      style: TextStyle(fontWeight: MyntFonts.bold),
+                    // Header
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: headerHorizontalPadding,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                shadcn.Theme.of(context).colorScheme.border,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Exit Positions',
+                            style: context.isMobile
+                                ? MyntWebTextStyles.body(
+                                    context,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary,
+                                    ),
+                                    fontWeight: MyntFonts.medium,
+                                  )
+                                : MyntWebTextStyles.title(
+                                    context,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary,
+                                    ),
+                                  ),
+                          ),
+                          MyntCloseButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
                     ),
-                    const TextSpan(text: ' open positions?'),
+                    // Content
+                    Flexible(
+                      child: Padding(
+                        padding: EdgeInsets.all(contentPadding),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              widget.isExitAll
+                                  ? 'Are you sure you want to square off all $positionCount open positions?'
+                                  : 'Are you sure you want to square off $positionCount selected position${positionCount > 1 ? 's' : ''}?',
+                              textAlign: TextAlign.center,
+                              style: context.isMobile
+                                  ? MyntWebTextStyles.bodySmall(
+                                      context,
+                                      fontWeight: FontWeight.w500,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    )
+                                  : MyntWebTextStyles.body(
+                                      context,
+                                      fontWeight: FontWeight.w500,
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                            ),
+                            SizedBox(height: buttonSpacing),
+                            MyntButton(
+                              type: MyntButtonType.primary,
+                              size: context.isMobile
+                                  ? MyntButtonSize.medium
+                                  : MyntButtonSize.large,
+                              label: 'Exit Order',
+                              isFullWidth: true,
+                              isLoading: _isLoading,
+                              backgroundColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.tertiary,
+                                light: MyntColors.tertiary,
+                              ),
+                              onPressed:
+                                  _isLoading || widget.selectedPositions.isEmpty
+                                      ? null
+                                      : _handleExitAllPositions,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
-
-            const SizedBox(height: 15),
-
-            // Exit Order Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 45,
-                child: MyntPrimaryButton(
-                  onPressed: _isLoading || widget.selectedPositions.isEmpty
-                      ? null
-                      : _handleExitAllPositions,
-                  label: 'Exit Order',
-                  isLoading: _isLoading,
-                  backgroundColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
-                  isFullWidth: true,
-                  size: MyntButtonSize.large,
-                ),
-              ),
-            ),
-            const SizedBox(height: 2),
-          ],
+          ),
         ),
       ),
     );

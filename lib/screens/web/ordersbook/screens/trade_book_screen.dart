@@ -100,7 +100,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
         );
       } else {
         return SizedBox(
-          height: 400,
+          // height: 400,
           child: Align(
             alignment: Alignment.center,
             child: Padding(

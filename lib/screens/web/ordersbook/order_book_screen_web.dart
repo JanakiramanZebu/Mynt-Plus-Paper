@@ -146,8 +146,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       _tabController = TabController(
         length: orderProviderRef.orderTabName.length,
         vsync: this,
-        initialIndex: orderProviderRef.selectedTab, // Preserve previously selected tab
+        initialIndex: orderProviderRef.selectedTab, // Use current selected tab from provider
       );
+
+      // Sync the provider's tab controller with this local one
+      orderProviderRef.tabCtrl = _tabController!;
 
       _tabController!.addListener(() {
         if (!_tabController!.indexIsChanging) {
@@ -231,7 +234,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildInitializedContent(ThemesProvider theme) {
-    final orderBook = ref.read(orderProvider);
+    final orderBook = ref.watch(orderProvider);
 
     return SizedBox.expand(
       child: RefreshIndicator(
@@ -331,13 +334,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: orderBook.orderTabName.map((tabString) {
+                          children: List.generate(orderBook.orderTabName.length, (tabIndex) {
+                            final tabString = orderBook.orderTabName[tabIndex];
                             final parts = tabString.text?.split(' ') ?? [];
                             final title = parts.first;
                             final badge = parts.length > 1 ? parts[1] : null;
 
-                            final tabIndex =
-                                orderBook.orderTabName.indexOf(tabString);
                             final isActive =
                                 (_tabController?.index ?? 0) == tabIndex;
 
@@ -412,7 +414,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                                 ),
                               ),
                             );
-                          }).toList(),
+                          }),
                         ),
                       ),
                     ),

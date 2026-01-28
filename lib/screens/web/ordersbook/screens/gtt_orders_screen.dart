@@ -169,7 +169,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         );
       } else {
         return SizedBox(
-          height: 400,
+          // height: 400,
           child: Align(
             alignment: Alignment.center,
             child: Padding(
@@ -1011,6 +1011,8 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
   Future<bool?> _showCancelGttOrderDialog(
       GttOrderBookModel gttOrderData) async {
+    final symbol = gttOrderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+
     return showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -1021,79 +1023,100 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
                   dark: colors.colorBlack, light: colors.colorWhite),
-              borderRadius: BorderRadius.circular(10), // Rounded corners
+              borderRadius: BorderRadius.circular(8),
             ),
-            padding: const EdgeInsets.all(24), // Consistent padding
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Close button (Top Right)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: Icon(
-                        Icons.close,
-                        size: 24,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: shadcn.Border(
+                      bottom: shadcn.BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
                       ),
                     ),
                   ),
-                ),
-
-                // Text Content
-                const SizedBox(height: 12),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ncancel this ',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'GTT order?',
+                      Text(
+                        'Cancel GTT Order',
                         style: MyntWebTextStyles.title(
                           context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700, // Bold
-                          fontSize: 18,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const shadcn.CircleBorder(),
+                        child: InkWell(
+                          customBorder: const shadcn.CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textSecondaryDark,
+                                  light: MyntColors.textSecondary),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Button
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48, // Slightly taller button
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7), // Primary Blue
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to cancel "$symbol"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: Colors.white,
-                      ).copyWith(fontSize: 16),
-                    ),
+
+                      // Red Cancel button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

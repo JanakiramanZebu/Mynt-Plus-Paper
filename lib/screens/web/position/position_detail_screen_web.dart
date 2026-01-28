@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -11,6 +12,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive_extensions.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
@@ -211,6 +213,23 @@ class _PositionDetailScreenWebState
       option: _positionData.option ?? '',
     );
 
+    // Responsive padding values
+    final headerPadding = context.responsive<double>(
+      mobile: 10,
+      tablet: 11,
+      desktop: 12,
+    );
+    final contentPadding = context.responsive<double>(
+      mobile: 12,
+      tablet: 16,
+      desktop: 20,
+    );
+    final sectionSpacing = context.responsive<double>(
+      mobile: 16,
+      tablet: 20,
+      desktop: 24,
+    );
+
     return Container(
       color: Colors.transparent,
       child: Column(
@@ -219,7 +238,10 @@ class _PositionDetailScreenWebState
         children: [
           // Header: Close icon and "Position Details" title
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: headerPadding,
+              vertical: headerPadding,
+            ),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -232,21 +254,37 @@ class _PositionDetailScreenWebState
             child: Row(
               children: [
                 shadcn.IconButton(
-                  icon: const Icon(Icons.close, size: 20),
+                  icon: Icon(Icons.close, size: context.responsive<double>(
+                    mobile: 18,
+                    tablet: 19,
+                    desktop: 20,
+                  )),
                   onPressed: () => shadcn.closeSheet(context),
                   variance: shadcn.ButtonVariance.ghost,
                   size: shadcn.ButtonSize.small,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: context.responsive<double>(
+                  mobile: 8,
+                  tablet: 10,
+                  desktop: 12,
+                )),
                 Text(
                   "Position Details",
-                  style: MyntWebTextStyles.title(
-                    context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                    fontWeight: MyntFonts.medium,
-                  ),
+                  style: context.isMobile
+                      ? MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                          fontWeight: MyntFonts.medium,
+                        )
+                      : MyntWebTextStyles.title(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                          fontWeight: MyntFonts.medium,
+                        ),
                 ),
               ],
             ),
@@ -255,17 +293,17 @@ class _PositionDetailScreenWebState
           // Content
           Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(contentPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Symbol and Price Section
                   _buildSymbolSection(theme, scripInfo, depthArgs),
-                  const SizedBox(height: 24),
+                  SizedBox(height: sectionSpacing),
 
                   // Action Buttons: Exit and Conversion
                   _buildActionButtons(theme, scripInfo, positions),
-                  const SizedBox(height: 24),
+                  SizedBox(height: sectionSpacing),
 
                   // Details Section with Dividers
                   _buildDetailsSection(theme, positions),
@@ -495,29 +533,65 @@ class _PositionDetailScreenWebState
 
   // Handle convert position
   Future<void> _handleConvert() async {
+    debugPrint('=== POSITION DETAIL: _handleConvert STARTED ===');
+    debugPrint('Position data: ${_positionData.tsym}');
+    debugPrint('Position token: ${_positionData.token}');
+    debugPrint('Position product: ${_positionData.sPrdtAli}');
+    debugPrint('Position netqty: ${_positionData.netqty}');
+    debugPrint('Widget mounted: $mounted');
+
     try {
+      // Get root context before closing the sheet
+      final rootContext = rootNavigatorKey.currentContext;
+      debugPrint('Root context obtained: ${rootContext != null}');
+
+      if (rootContext == null) {
+        debugPrint('ERROR: rootContext is null');
+        if (mounted) {
+          showResponsiveWarningMessage(context, "Unable to access root context");
+        }
+        return;
+      }
+
+      debugPrint('Root context mounted: ${rootContext.mounted}');
+
       // Close the sheet first
-      if (!mounted) return;
-      await shadcn.closeSheet(context);
+      if (!mounted) {
+        debugPrint('ERROR: Widget not mounted before closing sheet');
+        return;
+      }
+
+      debugPrint('Closing sheet...');
+      shadcn.closeSheet(context);
+      debugPrint('Sheet close called');
 
       // Show dialog after sheet closes using post-frame callback
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final rootContext = rootNavigatorKey.currentContext;
-        if (rootContext != null) {
+        debugPrint('=== POST FRAME CALLBACK ===');
+        debugPrint('Root context still mounted: ${rootContext.mounted}');
+
+        if (rootContext.mounted) {
+          debugPrint('Showing convert dialog...');
           showDialog(
             context: rootContext,
-            barrierColor: resolveThemeColor(context,
+            barrierColor: resolveThemeColor(rootContext,
                 dark: MyntColors.modalBarrierDark,
                 light: MyntColors.modalBarrierLight),
-            builder: (BuildContext context) {
+            builder: (BuildContext dialogContext) {
+              debugPrint('Dialog builder called');
+              debugPrint('Dialog context mounted: ${dialogContext.mounted}');
               return ConvertPositionDialogueWeb(convertPosition: _positionData);
             },
           );
+          debugPrint('showDialog called successfully');
+        } else {
+          debugPrint('ERROR: Root context not mounted in post-frame callback');
         }
       });
-    } catch (e) {
-      if (!mounted) return;
-      print("Error opening convert dialog: $e");
+    } catch (e, stackTrace) {
+      debugPrint('=== POSITION DETAIL: EXCEPTION in _handleConvert ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
     }
   }
 

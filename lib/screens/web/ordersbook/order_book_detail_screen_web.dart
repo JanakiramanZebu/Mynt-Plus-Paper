@@ -846,8 +846,11 @@ class _OrderBookDetailScreenWebState
         return;
       }
 
-      // Get theme before closing sheet (widget might be disposed after)
+      // Save provider reference and order data BEFORE closing sheet
+      // (widget might be disposed after sheet closes)
+      final orderProviderRef = ref.read(orderProvider);
       final theme = ref.read(themeProvider);
+      final orderNo = _orderData.norenordno;
 
       // Close the sheet first
       if (mounted) {
@@ -865,35 +868,25 @@ class _OrderBookDetailScreenWebState
       final shouldCancel = await _showCancelOrderDialog(theme, targetContext);
 
       if (shouldCancel != true) {
-        if (mounted) {
-          setState(() {
-            _isProcessingCancel = false;
-          });
-        }
         return;
       }
 
-      await ref.read(orderProvider).fetchOrderCancel(
-            "${_orderData.norenordno}",
+      // Use saved provider reference instead of ref.read()
+      await orderProviderRef.fetchOrderCancel(
+            "$orderNo",
             targetContext,
             false,
           );
 
       if (targetContext.mounted) {
         ResponsiveSnackBar.showSuccess(targetContext, 'Order Cancelled');
-        await ref.read(orderProvider).fetchOrderBook(targetContext, true);
+        await orderProviderRef.fetchOrderBook(targetContext, true);
       }
     } catch (e) {
       final rootCtx = rootNavigatorKey.currentContext;
       if (rootCtx != null && rootCtx.mounted) {
         ResponsiveSnackBar.showError(
             rootCtx, 'Failed to cancel order: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingCancel = false;
-        });
       }
     }
   }
@@ -1114,8 +1107,6 @@ class _OrderBookDetailScreenWebState
   Future<bool?> _showCancelOrderDialog(
       ThemesProvider theme, BuildContext targetContext) async {
     final symbol = _orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-    final exchange = _orderData.exch ?? '';
-    final displayText = '$symbol $exchange'.trim();
 
     return showDialog<bool>(
       context: targetContext,
@@ -1130,16 +1121,15 @@ class _OrderBookDetailScreenWebState
                 dark: Colors.black,
                 light: Colors.white,
               ),
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
+                // Header row with title and close button
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 8),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
@@ -1165,21 +1155,40 @@ class _OrderBookDetailScreenWebState
                           ),
                         ),
                       ),
-                      MyntCloseButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(false),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(
+                                dialogContext,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                // Content
+
+                // Content area
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
+                      // Confirmation text with symbol in quotes
                       Text(
-                        'Are you sure you want to cancel this order?',
+                        'Are you sure you want to cancel "$symbol"?',
                         textAlign: TextAlign.center,
-                        style: MyntWebTextStyles.bodySmall(
+                        style: MyntWebTextStyles.body(
                           dialogContext,
                           color: resolveThemeColor(
                             dialogContext,
@@ -1188,24 +1197,28 @@ class _OrderBookDetailScreenWebState
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        displayText,
-                        textAlign: TextAlign.center,
-                        style: MyntWebTextStyles.bodySmall(
-                          dialogContext,
-                          color: resolveThemeColor(
-                            dialogContext,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary,
+
+                      // Red Cancel button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              dialogContext,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      MyntPrimaryButton(
-                        label: 'Cancel Order',
-                        onPressed: () => Navigator.of(dialogContext).pop(true),
-                        isFullWidth: true,
                       ),
                     ],
                   ),

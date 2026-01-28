@@ -215,6 +215,7 @@ class OrderProvider extends DefaultChangeNotifier {
     // }
     // Clear subscription tracking
     clearSubscriptions();
+    tabSize();
     notifyListeners();
   }
 

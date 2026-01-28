@@ -741,16 +741,30 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 lightColor: MyntColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () async {
-              await ref.read(apikeyprovider).fetchTotp();
-              setState(() {});
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primaryLight,
-              foregroundColor: Colors.white,
+          SizedBox(
+            width: 200,
+            height: 45,
+            child: ElevatedButton(
+              onPressed: () async {
+                await ref.read(apikeyprovider).fetchTotp();
+                setState(() {});
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: MyntColors.primary,
+                foregroundColor: MyntColors.backgroundColor,
+                  // padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                ),
+              child: Text(
+                        "Generate TOTP",
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold),
+                      ),
             ),
-            child: const Text('Generate TOTP'),
           ),
         ],
       ),
@@ -774,6 +788,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
           const SizedBox(height: 16),
           SizedBox(
             width: 200,
+            height: 45,
             child: ElevatedButton(
               onPressed: () {
                 final pref = locator<Preferences>();
@@ -781,15 +796,20 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: colors.primaryLight,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                backgroundColor: MyntColors.primary,
+                foregroundColor: MyntColors.backgroundColor,
+                // padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
-              child: const Text('Change Password'),
+              child: Text(
+                        "Change Password",
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.semiBold),
+                      ),
             ),
           ),
         ],

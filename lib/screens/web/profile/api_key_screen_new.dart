@@ -254,428 +254,425 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+        body: Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            border: Border(
+              top: BorderSide(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.backgroundColor),
               ),
-              color: resolveThemeColor(context,
-                  dark: MyntColors.backgroundColorDark,
-                  light: MyntColors.backgroundColor),
-              border: Border(
-                top: BorderSide(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.backgroundColor),
-                ),
-                left: BorderSide(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.backgroundColor),
-                ),
-                right: BorderSide(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.backgroundColor),
-                ),
+              left: BorderSide(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.backgroundColor),
+              ),
+              right: BorderSide(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.backgroundColor),
               ),
             ),
-            child: Column(
-              children: [
-                // Scrollable content
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Scrollable content
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  // Client ID Section - Always show if we have API data
+                  if (apiData != null) ...[
+                    Row(
                       children: [
-                        // Client ID Section - Always show if we have API data
-                        if (apiData != null) ...[
-                          Row(
-                            children: [
-                              Text(
-                                'Client Id :',
-                                style: MyntWebTextStyles.bodySmall(context,
-                                    darkColor: MyntColors.textPrimaryDark,
-                                    lightColor: MyntColors.textPrimary,
-                                    fontWeight: MyntFonts.medium),
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        "${apiData.appKey}",
-                                        style: MyntWebTextStyles.title(context,
-                                            darkColor: MyntColors.textPrimaryDark,
-                                            lightColor: MyntColors.textPrimary,
-                                            fontWeight: MyntFonts.medium),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Material(
-                                      color: Colors.transparent,
-                                      shape: const CircleBorder(),
-                                      clipBehavior: Clip.hardEdge,
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        onTap: () => _copyToClipboard(apiData.appKey),
-                                        child: SizedBox(
-                                          height: 28,
-                                          width: 28,
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.copy,
-                                              size: 16,
-                                              color: resolveThemeColor(context,
-                                                  dark: MyntColors.textSecondaryDark,
-                                                  light: MyntColors.textSecondary),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-
-                        // Form Fields (always visible but disabled when no API data)
-                        // Redirect URL Label
                         Text(
-                          'Redirect URL',
+                          'Client Id :',
                           style: MyntWebTextStyles.bodySmall(context,
                               darkColor: MyntColors.textPrimaryDark,
                               lightColor: MyntColors.textPrimary,
                               fontWeight: MyntFonts.medium),
                         ),
-                        const SizedBox(height: 8),
-                        // URL Input Field (project-styled)
-                        CustomTextFormField(
-                          textCtrl: provider.urlController,
-                          textAlign: TextAlign.start,
-                          keyboardType: TextInputType.url,
-                          fillColor: resolveThemeColor(context,
-                              dark: MyntColors.listItemBgDark,
-                              light: MyntColors.listItemBg),
-                          hintText: 'URL',
-                          hintStyle: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textSecondaryDark,
-                              lightColor: MyntColors.textSecondary),
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary),
-                          onChanged: (value) {
-                            _validateUrl(value);
-                          },
-                        ),
-                        // Custom error message display like margin_calculator.dart
-                        if (_errorMessageUrl != null) ...[
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              _errorMessageUrl!,
-                              style: MyntWebTextStyles.caption(context,
-                                  color: MyntColors.loss),
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-
-                        // IP Address Fields
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Primary IP Address',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        darkColor: MyntColors.textPrimaryDark,
-                                        lightColor: MyntColors.textPrimary,
-                                        fontWeight: MyntFonts.medium),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  CustomTextFormField(
-                                    textCtrl: provider.primaryIpController,
-                                    textAlign: TextAlign.start,
-                                    keyboardType: TextInputType.number,
-                                    hintText: 'Primary IP Address',
-                                    fillColor: resolveThemeColor(context,
-                                        dark: MyntColors.listItemBgDark,
-                                        light: MyntColors.listItemBg),
-                                    hintStyle: MyntWebTextStyles.para(context,
-                                        darkColor: MyntColors.textSecondaryDark,
-                                        lightColor: MyntColors.textSecondary),
-                                    style: MyntWebTextStyles.para(context,
-                                        darkColor: MyntColors.textPrimaryDark,
-                                        lightColor: MyntColors.textPrimary),
-                                    inputFormate: [
-                                      FilteringTextInputFormatter.allow(
-                                          RegExp(r'[0-9.]')),
-                                    ],
-                                    onChanged: (value) {
-                                      _validatePrimaryIp(value);
-                                    },
-                                  ),
-                                  // Custom error message display for Primary IP
-                                  if (_errorMessagePrimaryIp != null) ...[
-                                    const SizedBox(height: 8),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        _errorMessagePrimaryIp!,
-                                        style: MyntWebTextStyles.caption(context,
-                                            color: MyntColors.loss),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Backup IP Address',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        darkColor: MyntColors.textPrimaryDark,
-                                        lightColor: MyntColors.textPrimary,
-                                        fontWeight: MyntFonts.medium),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  CustomTextFormField(
-                                    textCtrl: provider.backupIpController,
-                                    textAlign: TextAlign.start,
-                                    keyboardType: TextInputType.number,
-                                    hintText: 'Backup IP Address',
-                                    fillColor: resolveThemeColor(context,
-                                        dark: MyntColors.listItemBgDark,
-                                        light: MyntColors.listItemBg),
-                                    hintStyle: MyntWebTextStyles.para(context,
-                                        darkColor: MyntColors.textSecondaryDark,
-                                        lightColor: MyntColors.textSecondary),
-                                    style: MyntWebTextStyles.para(context,
-                                        darkColor: MyntColors.textPrimaryDark,
-                                        lightColor: MyntColors.textPrimary),
-                                    errorStyle: MyntWebTextStyles.caption(context,
-                                        color: MyntColors.loss),
-                                    onChanged: (value) {
-                                      _validateBackupIp(value);
-                                    },
-                                  ),
-                                  // Custom error message display for Backup IP
-                                  if (_errorMessageBackupIp != null) ...[
-                                    const SizedBox(height: 8),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        _errorMessageBackupIp!,
-                                        style: MyntWebTextStyles.caption(context,
-                                            color: MyntColors.loss),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-
-                        if (apiData != null) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'Secret Code',
-                                style: MyntWebTextStyles.bodySmall(context,
-                                    darkColor: MyntColors.textPrimaryDark,
-                                    lightColor: MyntColors.textPrimary,
-                                    fontWeight: MyntFonts.medium),
+                              Flexible(
+                                child: Text(
+                                  "${apiData.appKey}",
+                                  style: MyntWebTextStyles.title(context,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary,
+                                      fontWeight: MyntFonts.medium),
+                                ),
                               ),
-                              // Regenerate button (only show for existing data)
-                              if (apiData.stat == "Ok")
-                                Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(5),
-                                    onTap: () {
-                                      _showRegenerateConfirmation();
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        'Regenerate',
-                                        style: MyntWebTextStyles.para(context,
-                                            color: MyntColors.primary,
-                                            fontWeight: MyntFonts.semiBold),
+                              const SizedBox(width: 8),
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.hardEdge,
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () => _copyToClipboard(apiData.appKey),
+                                  child: SizedBox(
+                                    height: 28,
+                                    width: 28,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.copy,
+                                        size: 16,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary),
                                       ),
                                     ),
                                   ),
                                 ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: resolveThemeColor(context,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                              
+                  // Form Fields (always visible but disabled when no API data)
+                  // Redirect URL Label
+                  Text(
+                    'Redirect URL',
+                    style: MyntWebTextStyles.bodySmall(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.medium),
+                  ),
+                  const SizedBox(height: 8),
+                  // URL Input Field (project-styled)
+                  CustomTextFormField(
+                    textCtrl: provider.urlController,
+                    textAlign: TextAlign.start,
+                    keyboardType: TextInputType.url,
+                    fillColor: resolveThemeColor(context,
+                        dark: MyntColors.listItemBgDark,
+                        light: MyntColors.listItemBg),
+                    hintText: 'URL',
+                    hintStyle: MyntWebTextStyles.para(context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary),
+                    style: MyntWebTextStyles.para(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary),
+                    onChanged: (value) {
+                      _validateUrl(value);
+                    },
+                  ),
+                  // Custom error message display like margin_calculator.dart
+                  if (_errorMessageUrl != null) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _errorMessageUrl!,
+                        style: MyntWebTextStyles.caption(context,
+                            color: MyntColors.loss),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                              
+                  // IP Address Fields
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Primary IP Address',
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: MyntFonts.medium),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextFormField(
+                              textCtrl: provider.primaryIpController,
+                              textAlign: TextAlign.start,
+                              keyboardType: TextInputType.number,
+                              hintText: 'Primary IP Address',
+                              fillColor: resolveThemeColor(context,
                                   dark: MyntColors.listItemBgDark,
                                   light: MyntColors.listItemBg),
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: MyntColors.primary,
-                                width: 1,
-                              ),
+                              hintStyle: MyntWebTextStyles.para(context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary),
+                              style: MyntWebTextStyles.para(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary),
+                              inputFormate: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9.]')),
+                              ],
+                              onChanged: (value) {
+                                _validatePrimaryIp(value);
+                              },
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      provider.hideSecret
-                                          ? "•" *
-                                              ((provider.generatedSecretCode
-                                                              ?.length ??
-                                                          0) >
-                                                      0
-                                                  ? provider
-                                                      .generatedSecretCode!.length
-                                                  : (apiData.stat == "Ok"
-                                                      ? apiData.secretCode.length
-                                                      : 0))
-                                          : (provider.generatedSecretCode ??
-                                              (apiData.stat == "Ok"
-                                                  ? apiData.secretCode
-                                                  : "")),
-                                      overflow: TextOverflow.ellipsis,
-                                      style: MyntWebTextStyles.para(context,
-                                          darkColor: MyntColors.textPrimaryDark,
-                                          lightColor: MyntColors.textPrimary),
-                                    ),
-                                  ),
-                                  Material(
-                                    color: Colors.transparent,
-                                    shape: const CircleBorder(),
-                                    clipBehavior: Clip.hardEdge,
-                                    child: InkWell(
-                                      customBorder: const CircleBorder(),
-                                      splashColor: resolveThemeColor(context,
-                                          dark: MyntColors.rippleDark,
-                                          light: MyntColors.rippleLight),
-                                      highlightColor: resolveThemeColor(context,
-                                          dark: MyntColors.highlightDark,
-                                          light: MyntColors.highlightLight),
-                                      onTap: _toggleSecretVisibility,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Icon(
-                                          provider.hideSecret
-                                              ? Icons.visibility_off
-                                              : Icons.visibility,
-                                          size: 20,
-                                          color: resolveThemeColor(context,
-                                              dark: MyntColors.textSecondaryDark,
-                                              light: MyntColors.textSecondary),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Material(
-                                    color: Colors.transparent,
-                                    shape: const CircleBorder(),
-                                    clipBehavior: Clip.hardEdge,
-                                    child: InkWell(
-                                      customBorder: const CircleBorder(),
-                                      splashColor: resolveThemeColor(context,
-                                          dark: MyntColors.rippleDark,
-                                          light: MyntColors.rippleLight),
-                                      highlightColor: resolveThemeColor(context,
-                                          dark: MyntColors.highlightDark,
-                                          light: MyntColors.highlightLight),
-                                      onTap: () => _copyToClipboard(
-                                          provider.generatedSecretCode ??
-                                              (apiData.stat == "Ok"
-                                                  ? apiData.secretCode
-                                                  : "")),
-                                      child: SizedBox(
-                                        height: 32,
-                                        width: 32,
-                                        child: Center(
-                                          child: Icon(
-                                            Icons.copy,
-                                            size: 18,
-                                            color: resolveThemeColor(context,
-                                                dark: MyntColors.textSecondaryDark,
-                                                light: MyntColors.textSecondary),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                            // Custom error message display for Primary IP
+                            if (_errorMessagePrimaryIp != null) ...[
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _errorMessagePrimaryIp!,
+                                  style: MyntWebTextStyles.caption(context,
+                                      color: MyntColors.loss),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Backup IP Address',
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                  fontWeight: MyntFonts.medium),
+                            ),
+                            const SizedBox(height: 8),
+                            CustomTextFormField(
+                              textCtrl: provider.backupIpController,
+                              textAlign: TextAlign.start,
+                              keyboardType: TextInputType.number,
+                              hintText: 'Backup IP Address',
+                              fillColor: resolveThemeColor(context,
+                                  dark: MyntColors.listItemBgDark,
+                                  light: MyntColors.listItemBg),
+                              hintStyle: MyntWebTextStyles.para(context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary),
+                              style: MyntWebTextStyles.para(context,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary),
+                              errorStyle: MyntWebTextStyles.caption(context,
+                                  color: MyntColors.loss),
+                              onChanged: (value) {
+                                _validateBackupIp(value);
+                              },
+                            ),
+                            // Custom error message display for Backup IP
+                            if (_errorMessageBackupIp != null) ...[
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _errorMessageBackupIp!,
+                                  style: MyntWebTextStyles.caption(context,
+                                      color: MyntColors.loss),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                              
+                  if (apiData != null) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Secret Code',
+                          style: MyntWebTextStyles.bodySmall(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary,
+                              fontWeight: MyntFonts.medium),
+                        ),
+                        // Regenerate button (only show for existing data)
+                        if (apiData.stat == "Ok")
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(5),
+                              onTap: () {
+                                _showRegenerateConfirmation();
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Text(
+                                  'Regenerate',
+                                  style: MyntWebTextStyles.para(context,
+                                      color: MyntColors.primary,
+                                      fontWeight: MyntFonts.semiBold),
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                        ],
-                        // Add extra padding at bottom for keyboard
-                        SizedBox(
-                            height: MediaQuery.of(context).viewInsets.bottom > 0
-                                ? 100
-                                : 20),
                       ],
                     ),
-                  ),
-                ),
-
-                // Fixed bottom button
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.backgroundColorDark,
-                        light: MyntColors.backgroundColor),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: apiData == null ? null : _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        minimumSize: const Size(double.infinity, 45),
-                        backgroundColor: MyntColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.listItemBgDark,
+                            light: MyntColors.listItemBg),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: MyntColors.primary,
+                          width: 1,
                         ),
                       ),
-                      child: Text(
-                        apiData?.stat == "Ok" ? "Update" : "Create",
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: Colors.white,
-                            fontWeight: MyntFonts.semiBold),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                provider.hideSecret
+                                    ? "•" *
+                                        ((provider.generatedSecretCode
+                                                        ?.length ??
+                                                    0) >
+                                                0
+                                            ? provider
+                                                .generatedSecretCode!.length
+                                            : (apiData.stat == "Ok"
+                                                ? apiData.secretCode.length
+                                                : 0))
+                                    : (provider.generatedSecretCode ??
+                                        (apiData.stat == "Ok"
+                                            ? apiData.secretCode
+                                            : "")),
+                                overflow: TextOverflow.ellipsis,
+                                style: MyntWebTextStyles.para(context,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary),
+                              ),
+                            ),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: resolveThemeColor(context,
+                                    dark: MyntColors.rippleDark,
+                                    light: MyntColors.rippleLight),
+                                highlightColor: resolveThemeColor(context,
+                                    dark: MyntColors.highlightDark,
+                                    light: MyntColors.highlightLight),
+                                onTap: _toggleSecretVisibility,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: Icon(
+                                    provider.hideSecret
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    size: 20,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Material(
+                              color: Colors.transparent,
+                              shape: const CircleBorder(),
+                              clipBehavior: Clip.hardEdge,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: resolveThemeColor(context,
+                                    dark: MyntColors.rippleDark,
+                                    light: MyntColors.rippleLight),
+                                highlightColor: resolveThemeColor(context,
+                                    dark: MyntColors.highlightDark,
+                                    light: MyntColors.highlightLight),
+                                onTap: () => _copyToClipboard(
+                                    provider.generatedSecretCode ??
+                                        (apiData.stat == "Ok"
+                                            ? apiData.secretCode
+                                            : "")),
+                                child: SizedBox(
+                                  height: 32,
+                                  width: 32,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.copy,
+                                      size: 18,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Add extra padding at bottom for keyboard
+                  // SizedBox(
+                  //     height: MediaQuery.of(context).viewInsets.bottom > 0
+                  //         ? 100
+                  //         : 20),
+                  Container(
+                              // padding: const EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
+                              ),
+                              child: SizedBox(
+              width: 200,
+              height: 45,
+              child: ElevatedButton(
+                onPressed: apiData == null ? null : _submitForm,
+                style: ElevatedButton.styleFrom(
+                backgroundColor: MyntColors.primary,
+                foregroundColor: MyntColors.backgroundColor,
+                // padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
                 ),
-              ],
-            ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              ),
+                child: Text(
+                  apiData?.stat == "Ok" ? "Update" : "Create",
+                  style: MyntWebTextStyles.bodySmall(context,
+                      color: Colors.white,
+                      fontWeight: MyntFonts.semiBold),
+                ),
+              ),
+                              ),
+                            ),
+                ],
+              ),
+        
+              // Fixed bottom button
+              
+            ],
           ),
         ),
       ),

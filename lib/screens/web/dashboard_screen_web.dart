@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../../provider/index_list_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/websocket_provider.dart';
@@ -219,17 +220,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
         return Container(
           width: width,
-          // padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.card,
-            // boxShadow: [
-            //   BoxShadow(
-            //     color: Colors.black.withOpacity(0.02),
-            //     blurRadius: 10,
-            //     offset: const Offset(0, 4),
-            //   ),
-            // ],
-          ),
+          color: Colors.transparent,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -374,9 +365,11 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
+            color: shadcn.Theme.of(context).colorScheme.card,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: shadcn.Theme.of(context).colorScheme.border,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
             ),
           ),
           child: Column(
@@ -464,15 +457,12 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final bool isPnl = metric['isPnl'] ?? false;
     final Color valueColor = (isPnl && value != 0)
         ? (value > 0
-            ? (shadcn.Theme.of(context).brightness == Brightness.dark
-                ? MyntColors.profitDark
-                : MyntColors.profit)
-            : (shadcn.Theme.of(context).brightness == Brightness.dark
-                ? MyntColors.lossDark
-                : MyntColors.loss))
-        : (shadcn.Theme.of(context).brightness == Brightness.dark
-            ? MyntColors.textPrimaryDark
-            : MyntColors.textPrimary);
+            ? resolveThemeColor(context,
+                dark: MyntColors.profitDark, light: MyntColors.profit)
+            : resolveThemeColor(context,
+                dark: MyntColors.lossDark, light: MyntColors.loss))
+        : resolveThemeColor(context,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
 
     final bool isLeftAligned = index % 2 == 0;
     final alignment =
@@ -709,16 +699,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           )
         else
           SizedBox(
-            height: 120,
+            height: 100,
             child: Center(
-              child: Text(
-                'Loading indices...',
-                style: MyntWebTextStyles.para(
-                  context,
-                  darkColor: MyntColors.textSecondaryDark,
-                  lightColor: MyntColors.textSecondary,
-                ),
-              ),
+              child: MyntLoader.simple(size: MyntLoaderSize.small),
             ),
           ),
       ],
@@ -830,7 +813,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         title: 'Volume breakout',
                         stocks: byVolume,
                         icon: Icons.bar_chart,
-                        iconColor: Colors.blue,
+                        iconColor: resolveThemeColor(context,
+                            dark: MyntColors.secondary,
+                            light: MyntColors.secondary),
                         width: cardWidth,
                       ),
                       const SizedBox(width: cardSpacing),
@@ -841,7 +826,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                         title: 'Most active',
                         stocks: byValue,
                         icon: Icons.star,
-                        iconColor: Colors.amber,
+                        iconColor: resolveThemeColor(context,
+                            dark: MyntColors.pending,
+                            light: MyntColors.pending),
                         showPrice: true,
                         width: cardWidth,
                       ),
@@ -1011,7 +998,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         color: shadcn.Theme.of(context).colorScheme.card,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: shadcn.Theme.of(context).colorScheme.border,
+          color: resolveThemeColor(context,
+              dark: MyntColors.dividerDark, light: MyntColors.divider),
           width: 1,
         ),
       ),
@@ -1102,14 +1090,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           else
             Expanded(
               child: Center(
-                child: Text(
-                  'Loading...',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    darkColor: MyntColors.textSecondaryDark,
-                    lightColor: MyntColors.textSecondary,
-                  ),
-                ),
+                child: MyntLoader.simple(),
               ),
             ),
         ],
@@ -1600,7 +1581,8 @@ class _DashboardStockCardState extends ConsumerState<_DashboardStockCard> {
                 : shadcn.Theme.of(context).colorScheme.card,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: shadcn.Theme.of(context).colorScheme.border,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
               width: 1,
             ),
           ),

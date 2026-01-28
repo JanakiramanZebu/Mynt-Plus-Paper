@@ -38,6 +38,7 @@ import 'package:flutter/material.dart'
         BoxDecoration,
         BorderRadius,
         Border,
+        BorderSide,
         Center,
         Widget,
         BuildContext,
@@ -470,7 +471,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFound(secondaryEnabled: false),
           ),
         ),
       );
@@ -702,7 +703,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     return MyntWebTextStyles.body(
       context,
       color: color,
-      fontWeight: fontWeight,
+      fontWeight: fontWeight ?? MyntFonts.medium,
     ).copyWith(fontSize: fontSize);
   }
 
@@ -1128,19 +1129,19 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       switch (alert.aiT) {
         case 'LTP_A':
           alertType = 'LTP Above';
-          alertColor = colorScheme.chart2; // Green
+          alertColor = MyntColors.profit; // Green
           break;
         case 'LTP_B':
           alertType = 'LTP Below';
-          alertColor = colorScheme.destructive; // Red
+          alertColor = MyntColors.loss; // Red
           break;
         case 'CH_PER_A':
           alertType = 'Perc.Change Above';
-          alertColor = colorScheme.chart2; // Green
+          alertColor = MyntColors.profit; // Green
           break;
         case 'CH_PER_B':
           alertType = 'Perc.Change Below';
-          alertColor = colorScheme.destructive; // Red
+          alertColor = MyntColors.loss; // Red
           break;
         default:
           alertType = 'Unknown';
@@ -1302,6 +1303,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   Future<bool?> _showCancelAlertDialog(AlertPendingModel alert) async {
+    final symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+
     return showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -1313,79 +1316,100 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               color: resolveThemeColor(context,
                   dark: styles.MyntColors.backgroundColorDark,
                   light: styles.MyntColors.backgroundColor),
-              borderRadius: BorderRadius.circular(10), // Rounded corners
+              borderRadius: BorderRadius.circular(8),
             ),
-            padding: const EdgeInsets.all(24), // Consistent padding
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Close button (Top Right)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Navigator.of(dialogContext).pop(false),
-                      child: Icon(
-                        Icons.close,
-                        size: 24,
-                        color: resolveThemeColor(context,
-                            dark: styles.MyntColors.textSecondaryDark,
-                            light: styles.MyntColors.textSecondary),
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
                       ),
                     ),
                   ),
-                ),
-
-                // Text Content
-                const SizedBox(height: 12),
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'Are you sure you want to \ncancel this ',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: styles.MyntColors.textPrimaryDark,
-                          light: styles.MyntColors.textPrimary),
-                    ).copyWith(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 18,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextSpan(
-                        text: 'Alert?',
+                      Text(
+                        'Cancel Alert',
                         style: MyntWebTextStyles.title(
                           context,
-                        ).copyWith(
-                          fontWeight: FontWeight.w700, // Bold
-                          fontSize: 18,
+                          color: resolveThemeColor(context,
+                              dark: styles.MyntColors.textPrimaryDark,
+                              light: styles.MyntColors.textPrimary),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const shadcn.CircleBorder(),
+                        child: InkWell(
+                          customBorder: const shadcn.CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(context,
+                                  dark: styles.MyntColors.textSecondaryDark,
+                                  light: styles.MyntColors.textSecondary),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Button
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48, // Slightly taller button
-                  child: TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(true),
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7), // Primary Blue
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to cancel "$symbol"?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: styles.MyntColors.textPrimaryDark,
+                              light: styles.MyntColors.textPrimary),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Delete',
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: Colors.white,
-                      ).copyWith(fontSize: 16),
-                    ),
+
+                      // Red Cancel button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: styles.MyntColors.tertiary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

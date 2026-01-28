@@ -525,7 +525,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-  Future<void> setPortfolioupdate(String mode) async {
+  Future<void> setPortfolioupdate(String mode, context) async {
     Map<String, dynamic> result;
     if (mode == 'H') {
       result = await api.getHolding();
@@ -534,6 +534,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (result['stat'] == 'no data') {
           _holdingsModel = [];
+        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+          ref.read(authProvider).ifSessionExpired(context);
         }
         _tholdingsModel = [];
       }
@@ -546,6 +548,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (result['stat'] == 'no data') {
           _postionBookModel = [];
+        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+          ref.read(authProvider).ifSessionExpired(context);
         }
         _tpostionBookModel = [];
       }
@@ -586,7 +590,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     final theme = ref.read(themeProvider);
     double invest = 0.0;
     try {
-      await setPortfolioupdate('H');
+      await setPortfolioupdate('H',context);
       // if (_holdingsModel!.isNotEmpty) {
       //   if (_tholdingsModel!.isNotEmpty) {
       //     _holdingsModel = _tholdingsModel;
@@ -736,7 +740,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
     try {
-      await setPortfolioupdate('P');
+      await setPortfolioupdate('P',context);
       if (_postionBookModel!.isNotEmpty) {
         if (_tpostionBookModel!.isNotEmpty) {
           _postionBookModel = _tpostionBookModel;
@@ -2294,45 +2298,101 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Helper to get product display name from code
+  String _getProductDisplayName(String? code) {
+    switch (code) {
+      case 'I':
+        return 'MIS';
+      case 'C':
+        return 'CNC';
+      case 'M':
+        return 'NRML';
+      default:
+        return code ?? '';
+    }
+  }
+
   // Position conversion
   Future<void> fetchPositionConverstion(
       PositionConvertionInput input, BuildContext context) async {
+    debugPrint('=== PROVIDER: fetchPositionConverstion STARTED ===');
+    debugPrint('Input - exch: ${input.exch}, prd: ${input.prd}, prevprd: ${input.prevprd}');
+    debugPrint('Input - qty: ${input.qty}, trantype: ${input.trantype}, tsym: ${input.tsym}');
+    debugPrint('Context mounted: ${context.mounted}');
+
+    // Get display names for toast message
+    final fromProduct = _getProductDisplayName(input.prevprd);
+    final toProduct = _getProductDisplayName(input.prd);
+
     try {
       toggleLoadingOn(true);
+      debugPrint('Calling API getPositionConvertion...');
+
       _positionConvertionModel = await api.getPositionConvertion(input);
 
+      debugPrint('API Response received');
+      debugPrint('Response stat: ${_positionConvertionModel?.stat}');
+      debugPrint('Response emsg: ${_positionConvertionModel?.emsg}');
+
       if (_positionConvertionModel!.stat == "Ok") {
+        debugPrint('Conversion SUCCESS - refreshing position book...');
         // Refresh position book after conversion
         await fetchPositionBook(context, _isDay);
-        Navigator.pop(context);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(
-              context, "Position converted successfully");
+        debugPrint('Position book refreshed, popping dialog...');
+        debugPrint('Context still mounted before pop: ${context.mounted}');
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          debugPrint('Dialog popped successfully');
+
+          // Show success message with from/to product details
+          final successMsg = "Position converted from $fromProduct to $toProduct";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showSuccess(context, successMsg);
+          } else {
+            successMessage(context, successMsg);
+          }
         } else {
-          successMessage(context, "Position converted successfully");
+          debugPrint('ERROR: Context not mounted, cannot pop dialog');
         }
       } else {
-        Navigator.pop(context);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(
-              context, "${_positionConvertionModel!.emsg}");
+        debugPrint('Conversion FAILED - stat not Ok');
+        debugPrint('Error message: ${_positionConvertionModel!.emsg}');
+
+        if (context.mounted) {
+          Navigator.pop(context);
+          // Show error message from API
+          final errorMsg = _positionConvertionModel!.emsg ?? "Conversion failed";
+          if (kIsWeb) {
+            ResponsiveSnackBar.showWarning(context, errorMsg);
+          } else {
+            warningMessage(context, errorMsg);
+          }
         } else {
-          warningMessage(context, "${_positionConvertionModel!.emsg}");
+          debugPrint('ERROR: Context not mounted, cannot show warning');
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== PROVIDER: EXCEPTION in fetchPositionConverstion ===');
+      debugPrint('Error: $e');
+      debugPrint('Stack trace: $stackTrace');
+
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "Position Conversion", "Error": "$e"});
-      if (kIsWeb) {
-        ResponsiveSnackBar.showWarning(
-            context, "Failed to convert position: $e");
-      } else {
-        warningMessage(context, "Failed to convert position: $e");
+
+      if (context.mounted) {
+        if (kIsWeb) {
+          ResponsiveSnackBar.showWarning(
+              context, "Failed to convert position: $e");
+        } else {
+          warningMessage(context, "Failed to convert position: $e");
+        }
       }
     } finally {
       toggleLoadingOn(false);
+      debugPrint('=== PROVIDER: fetchPositionConverstion FINISHED ===');
     }
   }
 
