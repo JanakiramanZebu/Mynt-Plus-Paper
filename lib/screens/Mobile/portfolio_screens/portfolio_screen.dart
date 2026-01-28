@@ -46,11 +46,11 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
       ref.read(portfolioProvider).changeHoldingsTabIndex(_holdingsTabController.index);
     });
 
-    ref.read(portfolioProvider).portTab.addListener(() {
+    ref.read(portfolioProvider).portTab?.addListener(() {
       if (!mounted) return;
       ref
           .read(portfolioProvider)
-          .changeTabIndex(ref.read(portfolioProvider).portTab.index);
+          .changeTabIndex(ref.read(portfolioProvider).portTab?.index ?? 0);
 
       // ref.read(portfolioProvider).tabSize(ref.read(themeProvider));
       if (ref.read(portfolioProvider).selectedTab == 0) {
@@ -97,6 +97,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
         // Load order-related data
         ref.read(orderProvider).fetchOrderBook(context, false);
         ref.read(orderProvider).fetchTradeBook(context);
+        ref.read(orderProvider).fetchGTTOrderBook(context, "");
         ref.read(orderProvider).fetchSipOrderHistory(context);
         ref.read(marketWatchProvider).fetchPendingAlert(context);
         ref
@@ -149,11 +150,11 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
       final portfolio = ref.watch(portfolioProvider);
       final theme = ref.read(themeProvider);
       String countText;
-      if (portfolio.portTab.index == 0) {
+      if (portfolio.portTab?.index == 0) {
         countText = portfolio.allPostionList.isNotEmpty
             ? "${portfolio.allPostionList.length}"
             : "";
-      } else if (portfolio.portTab.index == 1) {
+      } else if (portfolio.portTab?.index == 1) {
         final holdings = portfolio.holdingsModel;
         countText = (holdings != null && holdings.isNotEmpty)
             ? "${holdings.length}"
@@ -200,11 +201,21 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                       TextWidget.textStyle(fontSize: 14, theme: false, fw: 3),
                   controller: portfolio.portTab,
                   tabs: List.generate(portfolio.portTabName.length, (index) {
+                    final tabController = portfolio.portTab;
+                    if (tabController == null) {
+                      return Tab(
+                        child: TextWidget.subText(
+                          text: index == 0 ? "Holdings" : index == 1 ? "Positions" : index == 2 ? "Orders" : "Funds",
+                          theme: false,
+                          fw: 2,
+                        ),
+                      );
+                    }
                     return AnimatedBuilder(
-                      animation: portfolio.portTab.animation!,
+                      animation: tabController.animation!,
                       builder: (context, child) {
-                        final isSelected = portfolio.portTab.index == index;
-                        final animationValue = portfolio.portTab.animation!.value;
+                        final isSelected = tabController.index == index;
+                        final animationValue = tabController.animation!.value;
                         final isTransitioning =
                             (animationValue - index).abs() < 1;
         

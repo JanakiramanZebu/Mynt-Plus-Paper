@@ -152,6 +152,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   FlSpot? touchedSpot;
   Timer? _hideTooltipTimer;
 
+  // Track last converted data to avoid unnecessary re-conversions
+  String? _lastConvertedTimeframe;
+  int? _lastConvertedDataLength;
+
   // Event colors for each type
   static const Map<String, Color> eventColors = {
     'Announcement': Color(0xFF2196F3), // Blue
@@ -312,11 +316,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
   void _convertApiDataToPriceData(
       List<EodChartData> eodDataList, String selectedTimeframe) {
-    print(
-        "Converting API data: ${eodDataList.length} items for timeframe: $selectedTimeframe");
-
     if (eodDataList.isEmpty) {
-      print("EOD data list is empty");
       priceData = [];
       return;
     }
@@ -390,9 +390,6 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     } else {
       priceData = allPriceData.sublist(allPriceData.length - dataPointsToShow);
     }
-
-    print(
-        "Converted ${priceData.length} price data points for $selectedTimeframe timeframe");
   }
 
   int _getMonthNumber(String month) {
@@ -621,17 +618,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       final theme = ref.read(themeProvider);
       final marketWatch = ref.watch(marketWatchProvider);
       
-      // Convert API data to PriceData format when provider data changes
+      // Convert API data to PriceData format only when data actually changes
       if (marketWatch.eodChartData.isNotEmpty) {
-        print(
-            "EOD Chart Data from provider: ${marketWatch.eodChartData.length} items for timeframe: ${marketWatch.selectedTimeframe}");
-        _convertApiDataToPriceData(
-            marketWatch.eodChartData, marketWatch.selectedTimeframe);
-        print("Converted price data length: ${priceData.length}");
+        // Only convert if timeframe or data length changed to avoid repeated conversions
+        if (_lastConvertedTimeframe != marketWatch.selectedTimeframe ||
+            _lastConvertedDataLength != marketWatch.eodChartData.length) {
+          _convertApiDataToPriceData(
+              marketWatch.eodChartData, marketWatch.selectedTimeframe);
+          _lastConvertedTimeframe = marketWatch.selectedTimeframe;
+          _lastConvertedDataLength = marketWatch.eodChartData.length;
+        }
       } else {
-        print(
-            "EOD Chart Data is empty for timeframe: ${marketWatch.selectedTimeframe}");
         priceData = [];
+        _lastConvertedTimeframe = null;
+        _lastConvertedDataLength = null;
       }
 
       // Convert market watch event data when available
@@ -1823,10 +1823,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         _hideTooltipTimer?.cancel();
                         FocusScope.of(context).unfocus();
               
-                        print("Filtering data for timeframe: $timeframe");
                         if (marketWatch.eodChartData.isNotEmpty) {
                           _convertApiDataToPriceData(marketWatch.eodChartData, timeframe);
-                          print("Converted price data length: ${priceData.length}");
+                          _lastConvertedTimeframe = timeframe;
+                          _lastConvertedDataLength = marketWatch.eodChartData.length;
                         }
                       },
                       child: Container(
@@ -2078,7 +2078,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   },
                   touchCallback:
                       (FlTouchEvent event, LineTouchResponse? touchResponse) {
-                    if (event is FlTapUpEvent ||
+                    // Handle hover events for web support
+                    if (event is FlPointerHoverEvent ||
+                        event is FlTapUpEvent ||
                         event is FlPanUpdateEvent ||
                         event is FlPanStartEvent ||
                         event is FlTapDownEvent ||
@@ -2111,15 +2113,11 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             final eventDotIndex =
                                 eventData.indexOf(nearbyEvents.first);
                             marketWatch.updateSelectedEventDot(eventDotIndex);
-                            print(
-                                "Event dot highlighted: ${nearbyEvents.first.title}");
                           } else {
                             marketWatch.updateSelectedEventDot(null);
-                            print(
-                                "No nearby events found for date: $touchedDate");
                           }
 
-                          // Only set auto-hide timer for tap events, not for continuous interactions
+                          // Only set auto-hide timer for tap events, not for hover/continuous interactions
                           if (event is FlTapUpEvent ||
                               event is FlPanEndEvent ||
                               event is FlLongPressEnd) {
@@ -2132,10 +2130,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               }
                             });
                           } else {
+                            // Cancel any existing timer during hover/continuous interaction
                             _hideTooltipTimer?.cancel();
                           }
                         }
                       }
+                    } else if (event is FlPointerExitEvent) {
+                      // Handle mouse exit for web - hide tooltip after short delay
+                      _hideTooltipTimer?.cancel();
+                      _hideTooltipTimer = Timer(const Duration(milliseconds: 200), () {
+                        if (mounted) {
+                          marketWatch.clearChartInteractionState();
+                          touchedSpot = null;
+                        }
+                      });
                     } else if (event is FlPanEndEvent ||
                         event is FlTapCancelEvent) {
                       // Handle touch end/cancel events

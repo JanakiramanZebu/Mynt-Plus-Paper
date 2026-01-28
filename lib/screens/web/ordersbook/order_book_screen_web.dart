@@ -146,7 +146,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       _tabController = TabController(
         length: orderProviderRef.orderTabName.length,
         vsync: this,
-        initialIndex: 0, // Always start with Open Orders tab
+        initialIndex: orderProviderRef.selectedTab, // Preserve previously selected tab
       );
 
       _tabController!.addListener(() {

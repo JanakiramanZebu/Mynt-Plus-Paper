@@ -19,23 +19,15 @@ mixin NotificationApi on ApiCore {
       final List<ExchangeMessageModel> data = [];
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        try {
-          if (json['stat'] == 'Not_Ok') {
-            final ExchangeMessageModel ord =
-                ExchangeMessageModel.fromJson(json as Map<String, dynamic>);
-            return [ord];
-          } else {
-            for (final item in json) {
-              data.add(
-                  ExchangeMessageModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
-        } catch (e) {
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(
-                  ExchangeMessageModel.fromJson(item as Map<String, dynamic>));
-            }
+        // Check if response is an error (Map with stat field) or success (List of items)
+        if (json is Map && json['stat']?.toString() == 'Not_Ok') {
+          final ExchangeMessageModel ord =
+              ExchangeMessageModel.fromJson(json as Map<String, dynamic>);
+          return [ord];
+        } else if (json is List) {
+          for (final item in json) {
+            data.add(
+                ExchangeMessageModel.fromJson(item as Map<String, dynamic>));
           }
         }
       }
@@ -59,23 +51,15 @@ mixin NotificationApi on ApiCore {
       //log("Exchange Status=>${res.body} ");
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        try {
-          if (json['stat'] == 'Not_Ok') {
-            final ExchangeStatusModel ord =
-                ExchangeStatusModel.fromJson(json as Map<String, dynamic>);
-            return [ord];
-          } else {
-            for (final item in json) {
-              data.add(
-                  ExchangeStatusModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
-        } catch (e) {
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(
-                  ExchangeStatusModel.fromJson(item as Map<String, dynamic>));
-            }
+        // Check if response is an error (Map with stat field) or success (List of items)
+        if (json is Map && json['stat']?.toString() == 'Not_Ok') {
+          final ExchangeStatusModel ord =
+              ExchangeStatusModel.fromJson(json as Map<String, dynamic>);
+          return [ord];
+        } else if (json is List) {
+          for (final item in json) {
+            data.add(
+                ExchangeStatusModel.fromJson(item as Map<String, dynamic>));
           }
         }
       }
@@ -99,21 +83,14 @@ mixin NotificationApi on ApiCore {
       // log("broker msg=>${res.body} ");
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        try {
-          if (json['stat'] == 'Not_Ok') {
-            final BrokerMessage ord =
-                BrokerMessage.fromJson(json as Map<String, dynamic>);
-            return [ord];
-          } else {
-            for (final item in json) {
-              data.add(BrokerMessage.fromJson(item as Map<String, dynamic>));
-            }
-          }
-        } catch (e) {
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(BrokerMessage.fromJson(item as Map<String, dynamic>));
-            }
+        // Check if response is an error (Map with stat field) or success (List of items)
+        if (json is Map && json['stat']?.toString() == 'Not_Ok') {
+          final BrokerMessage ord =
+              BrokerMessage.fromJson(json as Map<String, dynamic>);
+          return [ord];
+        } else if (json is List) {
+          for (final item in json) {
+            data.add(BrokerMessage.fromJson(item as Map<String, dynamic>));
           }
         }
       }

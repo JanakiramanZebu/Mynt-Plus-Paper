@@ -42,7 +42,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Ref ref;
-  late TabController portTab;
+  TabController? portTab;
   final TextEditingController holdingSearchCtrl = TextEditingController();
   final TextEditingController holdingMFSearchCtrl = TextEditingController();
   final TextEditingController positionSearchCtrl = TextEditingController();
@@ -248,11 +248,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // Animate the TabController to the new index
 
     // Animate the TabController to the new index if initialized
-    try {
-      portTab.animateTo(index);
-    } catch (e) {
-      // Silently handle if portTab is not yet initialized
-    }
+    portTab?.animateTo(index);
 
     notifyListeners();
   }

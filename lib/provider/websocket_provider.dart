@@ -1598,33 +1598,49 @@ class WebSocketProvider extends ChangeNotifier {
       // After connection, subscribe to stored channels if they exist
       // Give a slight delay to ensure connection is established
       Future.delayed(const Duration(milliseconds: 500), () {
-        // Verify we're still in reconnection process before continuing
-        if (_reconnecting && !_wsConnected) {
-          print('📡 [WEBSOCKET] Restoring previous subscriptions...');
-          log('📡 WebSocket: Restoring subscriptions');
-          
-          if (ConstantName.lastSubscribe.isNotEmpty) {
-            print('   ➕ Restoring ${ConstantName.lastSubscribe.split('#').length} tick subscriptions');
-            log('   ➕ Restoring tick subscriptions');
-            connectTouchLine(
-              input: ConstantName.lastSubscribe,
-              task: kIsWeb ? "d" : "t",  // Web uses depth subscription
-              context: context,
-            );
-          }
-
-          if (ConstantName.lastSubscribeDepth.isNotEmpty) {
-            print('   ➕ Restoring ${ConstantName.lastSubscribeDepth.split('#').length} depth subscriptions');
-            log('   ➕ Restoring depth subscriptions');
-            connectTouchLine(
-              input: ConstantName.lastSubscribeDepth,
-              task: "d",
-              context: context,
-            );
-          }
-        } else if (_wsConnected) {
-          print('✅ [WEBSOCKET] Reconnection successful, subscriptions already active');
+        // Check connection status after delay
+        if (_wsConnected) {
+          print('✅ [WEBSOCKET] Reconnection successful!');
           log('✅ WebSocket: Reconnection successful');
+
+          // On web, WebSubscriptionManager handles subscription restoration via its listener
+          // which is triggered by notifyListeners() in _handleConnectionSuccess
+          if (kIsWeb) {
+            print('   📱 [Web] WebSubscriptionManager will handle subscription restoration');
+            log('   WebSubscriptionManager handles restoration on web');
+          } else {
+            // On mobile, restore from saved constants
+            print('📡 [WEBSOCKET] Restoring previous subscriptions (mobile)...');
+            log('📡 WebSocket: Restoring subscriptions (mobile)');
+
+            if (ConstantName.lastSubscribe.isNotEmpty) {
+              print('   ➕ Restoring ${ConstantName.lastSubscribe.split('#').length} tick subscriptions');
+              log('   ➕ Restoring tick subscriptions');
+              connectTouchLine(
+                input: ConstantName.lastSubscribe,
+                task: "t",
+                context: context,
+              );
+            }
+
+            if (ConstantName.lastSubscribeDepth.isNotEmpty) {
+              print('   ➕ Restoring ${ConstantName.lastSubscribeDepth.split('#').length} depth subscriptions');
+              log('   ➕ Restoring depth subscriptions');
+              connectTouchLine(
+                input: ConstantName.lastSubscribeDepth,
+                task: "d",
+                context: context,
+              );
+            }
+          }
+        } else if (_reconnecting) {
+          // Connection still in progress or failed
+          print('⏳ [WEBSOCKET] Connection not yet established after 500ms');
+          log('⏳ WebSocket: Connection pending');
+
+          // Don't reset _reconnecting here - let it continue trying
+          // The connection handler will set it to false on success/failure
+          return;
         }
 
         // Reset reconnecting flag after attempt, regardless of success
@@ -1632,7 +1648,7 @@ class WebSocketProvider extends ChangeNotifier {
         _reconnecting = false;
         print('🔄 [WEBSOCKET] Reconnection attempt completed');
         log('🔄 WebSocket: Reconnection attempt completed');
-        
+
         // Use post-frame callback to avoid modifying provider during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
           notifyListeners();

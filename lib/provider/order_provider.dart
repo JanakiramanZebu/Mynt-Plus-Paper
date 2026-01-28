@@ -54,7 +54,7 @@ class OrderProvider extends DefaultChangeNotifier {
   final FToast _fToast = FToast();
   FToast get fToast => _fToast;
   final Ref ref;
-  late TabController tabCtrl;
+  TabController? tabCtrl;
   PlaceOrderModel? _placeOrderModel;
   PlaceOrderModel? get placeOrderModel => _placeOrderModel;
   OrderMarginModel? _orderMarginModel;
@@ -334,12 +334,8 @@ class OrderProvider extends DefaultChangeNotifier {
     final previousTab = _selectedTab;
     _selectedTab = index;
 
-    // Animate the TabController to the new index
-    try {
-      tabCtrl.animateTo(index);
-    } catch (e) {
-      print("TabController not ready for animation: $e");
-    }
+    // Animate the TabController to the new index if initialized
+    tabCtrl?.animateTo(index);
 
     tabSize();
     showOrderSearch(false);
@@ -366,7 +362,11 @@ class OrderProvider extends DefaultChangeNotifier {
       debugPrint("📥 [Order Book] Lazy loading Trade Book data");
       fetchTradeBook(context);
     }
-    // Tab 3: GTT Orders - data is loaded with order book, no lazy load needed
+    // Tab 3: GTT Orders - always fetch to get latest data
+    if (index == 3) {
+      debugPrint("📥 [Order Book] Fetching GTT Orders data");
+      fetchGTTOrderBook(context, "");
+    }
     // Tab 4 (web: 5): SIP Orders
     // else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
     //   debugPrint("📥 [Order Book] Lazy loading SIP Orders data");

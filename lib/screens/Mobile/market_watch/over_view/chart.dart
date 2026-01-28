@@ -18,16 +18,22 @@ class MyHomePageState extends State<ShareHoldChart> {
 
   @override
   void initState() {
-    _tooltip = TooltipBehavior(enable: true, color: Colors.transparent);
+    _tooltip = TooltipBehavior(
+      enable: true,
+      duration: 3000, // Keep tooltip visible for 3 seconds
+      animationDuration: 200,
+      shouldAlwaysShow: true, // Keep showing while hovering
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final funData = ref.watch(marketWatchProvider).fundamentalData!.shareholdings;
+      // Use select() to only watch specific fields to avoid unnecessary rebuilds from unrelated provider changes
+      final funData = ref.watch(marketWatchProvider.select((p) => p.fundamentalData?.shareholdings));
       final theme = ref.read(themeProvider);
-      final selctedShareHold = ref.watch(marketWatchProvider).selctedShareHold;
+      final selctedShareHold = ref.watch(marketWatchProvider.select((p) => p.selctedShareHold));
       
       // Sort data in specific order: Jun 24, Sep 24, Dec 24, Mar 25, Jun 25
       final sortedData = _sortDataBySpecificOrder(funData!);
@@ -135,23 +141,24 @@ class FBalSheetCahrtState extends State<FBalSheetCahrt> {
 
   @override
   void initState() {
-    _tooltip = TooltipBehavior(enable: true, color: Colors.transparent);
+    _tooltip = TooltipBehavior(
+      enable: true,
+      duration: 3000, // Keep tooltip visible for 3 seconds
+      animationDuration: 200,
+      shouldAlwaysShow: true, // Keep showing while hovering
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final balanceSheetData =
-          ref.watch(marketWatchProvider).selcteBalanceSheetFinType == "Standalone"
-              ? ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsStandalone!
-                  .balanceSheet
-              : ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsConsolidated!
-                  .balanceSheet;
+      // Use select() to only watch specific fields to avoid unnecessary rebuilds
+      final finType = ref.watch(marketWatchProvider.select((p) => p.selcteBalanceSheetFinType));
+      final fundamentalData = ref.watch(marketWatchProvider.select((p) => p.fundamentalData));
+      final balanceSheetData = finType == "Standalone"
+          ? fundamentalData?.stockFinancialsStandalone?.balanceSheet
+          : fundamentalData?.stockFinancialsConsolidated?.balanceSheet;
       
       // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
       final balanceSheet = List<BalanceSheet>.from(balanceSheetData!);
@@ -245,23 +252,24 @@ class FIncomeChartState extends State<FIncomeChart> {
 
   @override
   void initState() {
-    _tooltip = TooltipBehavior(enable: true, color: Colors.transparent);
+    _tooltip = TooltipBehavior(
+      enable: true,
+      duration: 3000, // Keep tooltip visible for 3 seconds
+      animationDuration: 200,
+      shouldAlwaysShow: true, // Keep showing while hovering
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final incomeSheetData =
-          ref.watch(marketWatchProvider).selcteIncomeFinType == "Standalone"
-              ? ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsStandalone!
-                  .incomeSheet
-              : ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsConsolidated!
-                  .incomeSheet;
+      // Use select() to only watch specific fields to avoid unnecessary rebuilds
+      final finType = ref.watch(marketWatchProvider.select((p) => p.selcteIncomeFinType));
+      final fundamentalData = ref.watch(marketWatchProvider.select((p) => p.fundamentalData));
+      final incomeSheetData = finType == "Standalone"
+          ? fundamentalData?.stockFinancialsStandalone?.incomeSheet
+          : fundamentalData?.stockFinancialsConsolidated?.incomeSheet;
       
       // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
       final incomeSheet = List<IncomeSheet>.from(incomeSheetData!);
@@ -370,7 +378,12 @@ class FCashFlowChartState extends State<FCashFlowChart> {
 
   @override
   void initState() {
-    _tooltip = TooltipBehavior(enable: true, color: Colors.transparent);
+    _tooltip = TooltipBehavior(
+      enable: true,
+      duration: 3000, // Keep tooltip visible for 3 seconds
+      animationDuration: 200,
+      shouldAlwaysShow: true, // Keep showing while hovering
+    );
     super.initState();
   }
 
@@ -378,16 +391,12 @@ class FCashFlowChartState extends State<FCashFlowChart> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.read(themeProvider);
-      final cashflowSheetData =
-          ref.watch(marketWatchProvider).selcteCashFlowFinType == "Standalone"
-              ? ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsStandalone!
-                  .cashflowSheet
-              : ref.watch(marketWatchProvider)
-                  .fundamentalData!
-                  .stockFinancialsConsolidated!
-                  .cashflowSheet;
+      // Use select() to only watch specific fields to avoid unnecessary rebuilds
+      final finType = ref.watch(marketWatchProvider.select((p) => p.selcteCashFlowFinType));
+      final fundamentalData = ref.watch(marketWatchProvider.select((p) => p.fundamentalData));
+      final cashflowSheetData = finType == "Standalone"
+          ? fundamentalData?.stockFinancialsStandalone?.cashflowSheet
+          : fundamentalData?.stockFinancialsConsolidated?.cashflowSheet;
       
       // Sort data by date (oldest first - Mar 21, Mar 22, Mar 23)
       final cashflowSheet = List<CashflowSheet>.from(cashflowSheetData!);
@@ -493,14 +502,25 @@ class PriceComChartState extends State<PriceComChart> {
 
   @override
   void initState() {
-    _tooltip = TooltipBehavior(enable: true, color: Colors.transparent);
+    _tooltip = TooltipBehavior(
+      enable: true,
+      duration: 3000, // Keep tooltip visible for 3 seconds
+      animationDuration: 200,
+      shouldAlwaysShow: true, // Keep showing while hovering
+    );
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final priceCompare = ref.watch(marketWatchProvider);
+      // Use select() to only watch specific fields to avoid unnecessary rebuilds
+      final prcComChrtData1 = ref.watch(marketWatchProvider.select((p) => p.prcComChrtData1));
+      final prcComChrtData2 = ref.watch(marketWatchProvider.select((p) => p.prcComChrtData2));
+      final prcComChrtData3 = ref.watch(marketWatchProvider.select((p) => p.prcComChrtData3));
+      final prcComChrtData4 = ref.watch(marketWatchProvider.select((p) => p.prcComChrtData4));
+      final prcComChrtData5 = ref.watch(marketWatchProvider.select((p) => p.prcComChrtData5));
+      final peersChartKeys = ref.watch(marketWatchProvider.select((p) => p.peersChartKeys));
       final theme = ref.read(themeProvider);
       return SizedBox(
           height: 200,
@@ -530,7 +550,7 @@ class PriceComChartState extends State<PriceComChart> {
                   majorGridLines: const MajorGridLines(width: 0)),
               tooltipBehavior: _tooltip,
               series: <CartesianSeries<PrcComparisionChartData, String>>[
-                if (priceCompare.prcComChrtData1.isNotEmpty)
+                if (prcComChrtData1.isNotEmpty)
                   AreaSeries(
                     borderColor: const Color(0xff2e8564),
                     gradient: LinearGradient(
@@ -547,18 +567,18 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     // isVisible: true,
                     enableTooltip: true,
-                    legendItemText: priceCompare.peersChartKeys.isNotEmpty?
-                        priceCompare.peersChartKeys[0].toString().substring(4) : '',
+                    legendItemText: peersChartKeys.isNotEmpty?
+                        peersChartKeys[0].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
-                    dataSource: priceCompare.prcComChrtData1,
+                    dataSource: prcComChrtData1,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                       data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: priceCompare.peersChartKeys.isNotEmpty?
-                        priceCompare.peersChartKeys[0].toString().substring(4) : '',
+                    name: peersChartKeys.isNotEmpty?
+                        peersChartKeys[0].toString().substring(4) : '',
                   ),
-                if (priceCompare.prcComChrtData2.isNotEmpty)
+                if (prcComChrtData2.isNotEmpty)
                   AreaSeries(
                     borderColor: const Color(0xff7cd36f),
                     gradient: LinearGradient(
@@ -575,18 +595,18 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     // isVisible: true,
                     enableTooltip: true,
-                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[1].toString().substring(4) : '',
+                    legendItemText: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[1].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
-                    dataSource: priceCompare.prcComChrtData2,
+                    dataSource: prcComChrtData2,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                        data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[1].toString().substring(4) : '',
+                    name: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[1].toString().substring(4) : '',
                   ),
-                if (priceCompare.prcComChrtData3.isNotEmpty)
+                if (prcComChrtData3.isNotEmpty)
                   AreaSeries(
                     borderColor: const Color(0XFFfbebc4),
                     gradient: LinearGradient(
@@ -603,17 +623,17 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     // isVisible: true,
                     enableTooltip: true,
-                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[2].toString().substring(4) : '',
+                    legendItemText: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[2].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
-                    dataSource: priceCompare.prcComChrtData3,
+                    dataSource: prcComChrtData3,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                         data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: "${priceCompare.peersChartKeys.isNotEmpty ? priceCompare.peersChartKeys[2] : ''}",
+                    name: "${peersChartKeys.isNotEmpty ? peersChartKeys[2] : ''}",
                   ),
-                if (priceCompare.prcComChrtData4.isNotEmpty)
+                if (prcComChrtData4.isNotEmpty)
                   AreaSeries(
                     borderColor: const Color(0XFFfbebc4),
                     gradient: LinearGradient(
@@ -630,18 +650,18 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     // isVisible: true,
                     enableTooltip: true,
-                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[3].toString().substring(4) : '',
+                    legendItemText: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[3].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
-                    dataSource: priceCompare.prcComChrtData4,
+                    dataSource: prcComChrtData4,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                        data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[3].toString().substring(4) : '',
+                    name: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[3].toString().substring(4) : '',
                   ),
-                if (priceCompare.prcComChrtData5.isNotEmpty)
+                if (prcComChrtData5.isNotEmpty)
                   AreaSeries(
                     borderColor: const Color(0XFFdedede),
                     gradient: LinearGradient(
@@ -658,16 +678,16 @@ class PriceComChartState extends State<PriceComChart> {
                     isVisibleInLegend: true,
                     // isVisible: true,
                     enableTooltip: true,
-                    legendItemText: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[4].toString().substring(4) : '',
+                    legendItemText: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[4].toString().substring(4) : '',
                     legendIconType: LegendIconType.image,
-                    dataSource: priceCompare.prcComChrtData5,
+                    dataSource: prcComChrtData5,
                     xValueMapper: (PrcComparisionChartData data, _) =>
                         data.yValue,
                     yValueMapper: (PrcComparisionChartData data, _) =>
                         data.xValue,
-                    name: priceCompare.peersChartKeys.isNotEmpty ?
-                        priceCompare.peersChartKeys[4].toString().substring(4) : '',
+                    name: peersChartKeys.isNotEmpty ?
+                        peersChartKeys[4].toString().substring(4) : '',
                   ),
               ]));
     });

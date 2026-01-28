@@ -46,38 +46,41 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     // This prevents duplicate API calls when dashboard button is clicked
     // WebSocket bodyscription is handled by WebbodyscriptionManager
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) {
-        final indexProvider = ref.read(indexListProvider);
+      if (!mounted) return;
 
-        // Get top indices for dashboard (8 specific indices) if not already fetched
-        // This ensures tokens are available for WebbodyscriptionManager
-        // Only fetch if not already available to avoid duplicate calls
-        if (indexProvider.topIndicesForDashboard == null) {
-          await indexProvider.getTopIndicesForDashboard(context);
-        }
+      final indexProvider = ref.read(indexListProvider);
 
-        // Fetch MF holdings for the dashboard portfolio tab using the same API as holdings tab
-        // This avoids race condition with the old fetchMFHoldings API which can cause double data
-        await ref.read(mfProvider).fetchmfholdingnew();
+      // Get top indices for dashboard (8 specific indices) if not already fetched
+      // This ensures tokens are available for WebbodyscriptionManager
+      // Only fetch if not already available to avoid duplicate calls
+      if (indexProvider.topIndicesForDashboard == null) {
+        await indexProvider.getTopIndicesForDashboard(context);
+        if (!mounted) return;
+      }
 
-        // Trade action data is fetched by _handleDashboardTap() before this screen is shown
-        // No need to fetch here to avoid duplicate TopList API calls
+      // Fetch MF holdings for the dashboard portfolio tab using the same API as holdings tab
+      // This avoids race condition with the old fetchMFHoldings API which can cause double data
+      await ref.read(mfProvider).fetchmfholdingnew();
+      if (!mounted) return;
 
-        // Set up WebSocket subscription for live position updates
-        _setupPositionSocketSubscription();
-        // Set up WebSocket subscription for live holdings updates
-        _setupHoldingsSocketSubscription();
+      // Trade action data is fetched by _handleDashboardTap() before this screen is shown
+      // No need to fetch here to avoid duplicate TopList API calls
 
-        // Calculate holdings totals on initial load to ensure correct values
-        final portfolio = ref.read(portfolioProvider);
-        if (portfolio.holdingsModel != null && portfolio.holdingsModel!.isNotEmpty) {
-          portfolio.pnlHoldCal();
-        }
+      // Set up WebSocket subscription for live position updates
+      _setupPositionSocketSubscription();
+      // Set up WebSocket subscription for live holdings updates
+      _setupHoldingsSocketSubscription();
+
+      // Calculate holdings totals on initial load to ensure correct values
+      final portfolio = ref.read(portfolioProvider);
+      if (portfolio.holdingsModel != null && portfolio.holdingsModel!.isNotEmpty) {
+        portfolio.pnlHoldCal();
       }
     });
   }
 
   void _setupPositionSocketSubscription() {
+    if (!mounted) return;
     final websocket = ref.read(websocketProvider);
     // Store provider reference at setup time - the provider itself doesn't get
     // disposed when widget disposes, only the widget's ref access becomes invalid
@@ -116,6 +119,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   }
 
   void _setupHoldingsSocketSubscription() {
+    if (!mounted) return;
     final websocket = ref.read(websocketProvider);
     final portfolio = ref.read(portfolioProvider);
 

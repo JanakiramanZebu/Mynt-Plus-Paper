@@ -34,10 +34,10 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
           vsync: this,
           initialIndex: ref.read(orderProvider).selectedTab);
 
-      ref.read(orderProvider).tabCtrl.addListener(() {
+      ref.read(orderProvider).tabCtrl?.addListener(() {
         ref
             .read(orderProvider)
-            .changeTabIndex(ref.read(orderProvider).tabCtrl.index, context);
+            .changeTabIndex(ref.read(orderProvider).tabCtrl?.index ?? 0, context);
       });
 
     FirebaseAnalytics.instance.logScreenView(
@@ -110,7 +110,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                           return Tab(
                             child: Builder(
                               builder: (context) {
-                                final isSelected = orderBook.tabCtrl.index == index;
+                                final isSelected = orderBook.tabCtrl?.index == index;
                                 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -152,7 +152,7 @@ class _OrderBookScreenState extends ConsumerState<OrderBookScreen>
                     ),
                     Expanded(
                         child: _CustomTabBarView(
-                            controller: orderBook.tabCtrl,
+                            controller: orderBook.tabCtrl!,
                             children: [
                           // OrderBook(orderBook: orderBook.allOrder!),
                           OrderBook(
@@ -448,7 +448,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 current: portfolio.selectedTab,
                 target: portfolio.selectedTab - 1,
                 action: () {
-                  portfolio.portTab.animateTo(portfolio.selectedTab - 1);
+                  portfolio.portTab?.animateTo(portfolio.selectedTab - 1);
                   FocusScope.of(context).unfocus();
                 },
               );
@@ -461,7 +461,7 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
                 current: portfolio.selectedTab,
                 target: portfolio.selectedTab + 1,
                 action: () {
-                  portfolio.portTab.animateTo(portfolio.selectedTab + 1);
+                  portfolio.portTab?.animateTo(portfolio.selectedTab + 1);
                   FocusScope.of(context).unfocus();
                 },
               );
