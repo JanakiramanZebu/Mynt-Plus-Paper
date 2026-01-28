@@ -1933,6 +1933,8 @@ class AuthProvider extends DefaultChangeNotifier {
             
             // Turn off global loader immediately so screen shows
             // initLaod(false);
+            await ref.read(portfolioProvider).fetchOplist(context);
+
             ref.read(userProfileProvider).profileloaderfun(false);
             
             // Load data asynchronously in the background (non-blocking)
@@ -1947,7 +1949,6 @@ class AuthProvider extends DefaultChangeNotifier {
                 final essentialFutures = [
                   ref.read(portfolioProvider).fetchHoldings(context, ""),
                   ref.read(indexListProvider).getDeafultIndexList(context),
-                  ref.read(portfolioProvider).fetchOplist(context)
                 ];
                 await Future.wait(essentialFutures);
                 
