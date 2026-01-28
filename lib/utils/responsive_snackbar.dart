@@ -78,19 +78,42 @@ class ResponsiveSnackBar {
           child: _ToastStackWidget(),
         ),
       );
-      // Try to get overlay, fallback silently if not available
-      final overlay = Overlay.maybeOf(context);
+
+      // Try multiple ways to find an overlay
+      OverlayState? overlay;
+
+      // Method 1: Try Navigator's overlay from rootNavigatorKey
+      final navigatorState = rootNavigatorKey.currentState;
+      if (navigatorState != null) {
+        overlay = navigatorState.overlay;
+      }
+
+      // Method 2: Try Overlay.maybeOf from context
+      overlay ??= Overlay.maybeOf(context);
+
+      // Method 3: Try from rootNavigatorKey context
+      if (overlay == null) {
+        final rootContext = rootNavigatorKey.currentContext;
+        if (rootContext != null) {
+          overlay = Overlay.maybeOf(rootContext);
+        }
+      }
+
+      // Insert if we found an overlay
       if (overlay != null) {
         overlay.insert(_overlayEntry!);
       } else {
-        // If no overlay found, try with rootNavigatorKey context
-        final rootContext = rootNavigatorKey.currentContext;
-        if (rootContext != null) {
-          final rootOverlay = Overlay.maybeOf(rootContext);
-          if (rootOverlay != null) {
-            rootOverlay.insert(_overlayEntry!);
+        // Schedule for next frame in case Navigator isn't ready yet
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_overlayEntry != null && !_overlayEntry!.mounted) {
+            final navigatorState = rootNavigatorKey.currentState;
+            if (navigatorState?.overlay != null) {
+              navigatorState!.overlay!.insert(_overlayEntry!);
+            } else {
+              debugPrint('ResponsiveSnackBar: No overlay found for toast display');
+            }
           }
-        }
+        });
       }
     }
   }
@@ -106,7 +129,7 @@ class ResponsiveSnackBar {
     VoidCallback? onActionPressed,
   }) {
     final colorScheme = _getColorScheme(type);
-    
+
     final snackBar = SnackBar(
       content: Text(
         message,
@@ -131,9 +154,16 @@ class ResponsiveSnackBar {
             )
           : null,
     );
-    
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    // Try to use ScaffoldMessenger from context first, fallback to root key
+    try {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    } catch (e) {
+      // Fallback to root scaffold messenger key
+      rootScaffoldMessengerKey.currentState?.clearSnackBars();
+      rootScaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+    }
   }
   
   /// Gets color scheme based on SnackBar type
@@ -276,7 +306,7 @@ class _ToastStackWidgetState extends ConsumerState<_ToastStackWidget> {
     final double itemsHeight = _isHovering ? ((visibleToasts.length * 120.0) + 50) : 150;
 
     return Positioned(
-      bottom: 24,
+      top: 24,
       right: 24,
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovering = true),
@@ -287,7 +317,7 @@ class _ToastStackWidgetState extends ConsumerState<_ToastStackWidget> {
           width: 360,
           height: itemsHeight,
           child: Stack(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.topCenter,
             clipBehavior: Clip.none,
             children: visibleToasts.map((entry) {
               final index = entry.key; // 0 is newest
@@ -395,7 +425,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
     return AnimatedPositioned(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeOutCubic,
-      bottom: topOffset,
+      top: topOffset,
       left: 0,
       right: 0,
       // Removed fixed height to allow text expansion
@@ -403,7 +433,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
         scale: scale,
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutCubic,
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.topCenter,
         child: AnimatedOpacity(
           opacity: opacity,
           duration: const Duration(milliseconds: 300),
