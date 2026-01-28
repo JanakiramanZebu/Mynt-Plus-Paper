@@ -529,7 +529,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
 
-  Future<void> setPortfolioupdate(String mode) async {
+  Future<void> setPortfolioupdate(String mode, context) async {
     Map<String, dynamic> result;
     if (mode == 'H') {
       result = await api.getHolding();
@@ -538,6 +538,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (result['stat'] == 'no data') {
           _holdingsModel = [];
+        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+          ref.read(authProvider).ifSessionExpired(context);
         }
         _tholdingsModel = [];
       }
@@ -550,6 +552,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       } else {
         if (result['stat'] == 'no data') {
           _postionBookModel = [];
+        }else if(result['emsg'] == "Session Expired :  Invalid Session Key"){
+          ref.read(authProvider).ifSessionExpired(context);
         }
         _tpostionBookModel = [];
       }
@@ -590,7 +594,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     final theme = ref.read(themeProvider);
     double invest = 0.0;
     try {
-      await setPortfolioupdate('H');
+      await setPortfolioupdate('H',context);
       // if (_holdingsModel!.isNotEmpty) {
       //   if (_tholdingsModel!.isNotEmpty) {
       //     _holdingsModel = _tholdingsModel;
@@ -738,7 +742,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
   Future fetchPositionBook(BuildContext context, bool isDay) async {
     try {
-      await setPortfolioupdate('P');
+      await setPortfolioupdate('P',context);
       if (_postionBookModel!.isNotEmpty) {
         if (_tpostionBookModel!.isNotEmpty) {
           _postionBookModel = _tpostionBookModel;

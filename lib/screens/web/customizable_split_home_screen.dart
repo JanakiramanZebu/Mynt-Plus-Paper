@@ -937,6 +937,9 @@ class _CustomizableSplitHomeScreenState
             _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
                 () => _handleIPOTap()),
             const SizedBox(width: 12),
+            _buildNavItem('Bonds', isDarkMode, ScreenType.bond,
+                () => _handleBondTap()),
+            const SizedBox(width: 12),
             _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
                 () => _handleOptionZTap()),
             
@@ -2961,7 +2964,12 @@ class _CustomizableSplitHomeScreenState
   }
 
   void _handleBondTap() async {
+    setState(() {
+      _screenLoadingStates[ScreenType.bond] = true;
+    });
     final portfolio = ref.read(portfolioProvider);
+    _replaceScreenInPanel(ScreenType.bond);
+    WidgetsBinding.instance.addPostFrameCallback((_) async{
 
     portfolio.cancelTimer();
 
@@ -2977,7 +2985,13 @@ class _CustomizableSplitHomeScreenState
     Future.microtask(() {
       if (mounted) {
         ref.read(bondsProvider).fetchAllBonds();
+        if (mounted) {
+          setState(() {
+            _screenLoadingStates[ScreenType.bond] = false;
+          });
+        }
       }
+    });
     });
   }
 
@@ -3506,123 +3520,124 @@ class _CustomizableSplitHomeScreenState
       ref.read(marketWatchProvider).setChartScript('NSE', '26000', 'Nifty 50');
       return false;
     } else {
-      return await showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                final theme = ref.read(themeProvider);
-                return AlertDialog(
-                    backgroundColor: resolveThemeColor(context,
-                        dark: MyntColors.backgroundColorDark,
-                        light: MyntColors.backgroundColor),
-                    titlePadding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(8))),
-                    scrollable: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    actionsPadding: const EdgeInsets.only(
-                        bottom: 16, right: 16, left: 16, top: 8),
-                    insetPadding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 12),
-                    title: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Material(
-                              color: Colors.transparent,
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                onTap: () async {
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 150));
-                                  Navigator.of(context).pop(false);
-                                },
-                                borderRadius: BorderRadius.circular(20),
-                                splashColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.rippleDark,
-                                  light: MyntColors.rippleLight,
-                                ),
-                                highlightColor: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.highlightDark,
-                                  light: MyntColors.highlightLight,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6.0),
-                                  child: Icon(
-                                    Icons.close_rounded,
-                                    size: 22,
-                                    color: resolveThemeColor(
-                                      context,
-                                      dark: MyntColors.iconDark,
-                                      light: MyntColors.icon,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: Center(
-                            child: Text(
-                              "Do you want to Exit the App?",
-                              style: MyntWebTextStyles.body(
-                                context,
-                                color: resolveThemeColor(
-                                  context,
-                                  dark: MyntColors.textPrimaryDark,
-                                  light: MyntColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: const Size(0, 45),
-                            side: BorderSide(
-                                color: shadcn.Theme.of(context)
-                                    .colorScheme
-                                    .border),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            backgroundColor: resolveThemeColor(
-                              context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary,
-                            ),
-                          ),
-                          child: Text(
-                            "Exit",
-                            style: MyntWebTextStyles.title(
-                              context,
-                              fontWeight: MyntFonts.bold,
-                              color: resolveThemeColor(
-                                context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ]);
-              }) ??
+      return 
+      //await showDialog(
+      //         context: context,
+      //         builder: (BuildContext context) {
+      //           final theme = ref.read(themeProvider);
+      //           return AlertDialog(
+      //               backgroundColor: resolveThemeColor(context,
+      //                   dark: MyntColors.backgroundColorDark,
+      //                   light: MyntColors.backgroundColor),
+      //               titlePadding:
+      //                   const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      //               shape: const RoundedRectangleBorder(
+      //                   borderRadius: BorderRadius.all(Radius.circular(8))),
+      //               scrollable: true,
+      //               contentPadding: const EdgeInsets.symmetric(
+      //                 horizontal: 12,
+      //                 vertical: 12,
+      //               ),
+      //               actionsPadding: const EdgeInsets.only(
+      //                   bottom: 16, right: 16, left: 16, top: 8),
+      //               insetPadding: const EdgeInsets.symmetric(
+      //                   horizontal: 30, vertical: 12),
+      //               title: Column(
+      //                 children: [
+      //                   Row(
+      //                     mainAxisAlignment: MainAxisAlignment.end,
+      //                     children: [
+      //                       Material(
+      //                         color: Colors.transparent,
+      //                         shape: const CircleBorder(),
+      //                         child: InkWell(
+      //                           onTap: () async {
+      //                             await Future.delayed(
+      //                                 const Duration(milliseconds: 150));
+      //                             Navigator.of(context).pop(false);
+      //                           },
+      //                           borderRadius: BorderRadius.circular(20),
+      //                           splashColor: resolveThemeColor(
+      //                             context,
+      //                             dark: MyntColors.rippleDark,
+      //                             light: MyntColors.rippleLight,
+      //                           ),
+      //                           highlightColor: resolveThemeColor(
+      //                             context,
+      //                             dark: MyntColors.highlightDark,
+      //                             light: MyntColors.highlightLight,
+      //                           ),
+      //                           child: Padding(
+      //                             padding: const EdgeInsets.all(6.0),
+      //                             child: Icon(
+      //                               Icons.close_rounded,
+      //                               size: 22,
+      //                               color: resolveThemeColor(
+      //                                 context,
+      //                                 dark: MyntColors.iconDark,
+      //                                 light: MyntColors.icon,
+      //                               ),
+      //                             ),
+      //                           ),
+      //                         ),
+      //                       ),
+      //                     ],
+      //                   ),
+      //                   const SizedBox(height: 12),
+      //                   SizedBox(
+      //                     width: MediaQuery.of(context).size.width,
+      //                     child: Center(
+      //                       child: Text(
+      //                         "Do you want to Exit the App?",
+      //                         style: MyntWebTextStyles.body(
+      //                           context,
+      //                           color: resolveThemeColor(
+      //                             context,
+      //                             dark: MyntColors.textPrimaryDark,
+      //                             light: MyntColors.textPrimary,
+      //                           ),
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ],
+      //               ),
+      //               actions: [
+      //                 SizedBox(
+      //                   width: double.infinity,
+      //                   child: OutlinedButton(
+      //                     onPressed: () => Navigator.of(context).pop(true),
+      //                     style: OutlinedButton.styleFrom(
+      //                       minimumSize: const Size(0, 45),
+      //                       side: BorderSide(
+      //                           color: shadcn.Theme.of(context)
+      //                               .colorScheme
+      //                               .border),
+      //                       shape: RoundedRectangleBorder(
+      //                         borderRadius: BorderRadius.circular(5),
+      //                       ),
+      //                       backgroundColor: resolveThemeColor(
+      //                         context,
+      //                         dark: MyntColors.primaryDark,
+      //                         light: MyntColors.primary,
+      //                       ),
+      //                     ),
+      //                     child: Text(
+      //                       "Exit",
+      //                       style: MyntWebTextStyles.title(
+      //                         context,
+      //                         fontWeight: MyntFonts.bold,
+      //                         color: resolveThemeColor(
+      //                           context,
+      //                           dark: MyntColors.textPrimaryDark,
+      //                           light: MyntColors.textPrimary,
+      //                         ),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ),
+      //               ]);
+      //         }) ??
           false;
     }
   }

@@ -46,10 +46,10 @@ mixin PortfolioAPI on ApiCore {
           // print(
               // 'qwqwqw hold start T ${json.runtimeType} E ${json.isNotEmpty} L ${json.length}');
           if (json.isNotEmpty && json.length > 0) {
-            stat = 'success';
-            for (final item in json) {
-              data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
-            }
+              stat = 'success';
+              for (final item in json) {
+                data.add(HoldingsModel.fromJson(item as Map<String, dynamic>));
+              }
           } else if (json.isEmpty && json.toString() == '[]') {
             stat = 'no data';
           } else if (json['stat'] == 'Not_Ok') {
@@ -73,9 +73,10 @@ mixin PortfolioAPI on ApiCore {
           }
         }
       } else {
-        final json = jsonDecode(res.body);
+          final json = jsonDecode(res.body);
         if (json['emsg'].contains('Session Expired')) {
           data.add(HoldingsModel.fromJson(json as Map<String, dynamic>));
+          return json;
         }
       }
       return {"stat": stat, "data": data};
@@ -126,6 +127,7 @@ mixin PortfolioAPI on ApiCore {
         final json = jsonDecode(res.body);
         if (json['emsg'].contains('Session Expired')) {
           data.add(MFHoldingsModel.fromJson(json as Map<String, dynamic>));
+          return data;
         }
       }
 
@@ -267,6 +269,7 @@ mixin PortfolioAPI on ApiCore {
         final json = jsonDecode(res.body);
         if (json['emsg'].contains('Session Expired')) {
           data.add(PositionBookModel.fromJson(json as Map<String, dynamic>));
+          return json;
         }
       }
       return {"stat": stat, "data": data};
