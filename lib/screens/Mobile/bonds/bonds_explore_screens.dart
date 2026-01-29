@@ -100,16 +100,21 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
             children: [
               Container(
                 width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  top: 8,
+                  bottom: 8,
+                ),
+
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: widget.theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider,
-                      width: 0,
-                    ),
-                  ),
+                  // border: Border(
+                  //   bottom: BorderSide(
+                  //     color: widget.theme.isDarkMode
+                  //         ? colors.darkColorDivider
+                  //         : colors.colorDivider,
+                  //     width: 0,
+                  //   ),
+                  // ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
