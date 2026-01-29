@@ -2249,7 +2249,7 @@ class AuthProvider extends DefaultChangeNotifier {
       local = {
         "clientid": pref.clientId,
         "metadata": jsonDecode(getapplocal),
-        "source": "WEB"
+        "source": "FWEB"
       };
       _savedOrderPreference = jsonDecode(getapplocal);
       await api.setOrderprefer(local, true, context);
@@ -2266,7 +2266,7 @@ class AuthProvider extends DefaultChangeNotifier {
           "expos": "Market",
           "stickysrc": false,
         },
-        "source": "WEB"
+        "source": "FWEB"
       };
       _savedOrderPreference = local['metadata'];
       await api.setOrderprefer(local, true, context);
