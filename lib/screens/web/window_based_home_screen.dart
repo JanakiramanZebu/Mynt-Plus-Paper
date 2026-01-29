@@ -437,6 +437,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const MFCAGRCAL();
       case ScreenType.mfStockDetail:
         return const SizedBox.shrink();
+      case ScreenType.notification:
+        return const SizedBox.shrink(); // Not implemented in window mode
     }
   }
 
@@ -486,6 +488,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'CAGR Calculator';
       case ScreenType.mfStockDetail:
         return 'Fund Details';
+      case ScreenType.notification:
+        return 'Notification';
     }
   }
 
@@ -789,10 +793,10 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
 
         Future.microtask(() async {
           try {
-            await ref.read(indexListProvider).checkSession(context);
-            if (mounted &&
-                ref.read(indexListProvider).checkSess?.stat == "Ok" &&
-                shouldFetchPortfolio) {
+            // Session validation removed - APIs return "Session Expired" errors
+            // which are handled by ifSessionExpired(). This avoids unnecessary
+            // DeleteMultiMWScrips API calls on every lifecycle resume.
+            if (mounted && shouldFetchPortfolio) {
               _lastPortfolioFetch = now;
 
               final futures = <Future>[];

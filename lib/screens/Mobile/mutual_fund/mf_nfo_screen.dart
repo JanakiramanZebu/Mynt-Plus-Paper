@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -30,10 +31,17 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
+    _hoveredRowIndex.addListener(_onHoverChanged);
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
@@ -41,8 +49,53 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     });
   }
 
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _searchController.dispose();
@@ -50,7 +103,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   }
 
   // --- Style Helpers ---
-  TextStyle _getTextStyle(BuildContext context, {Color? color, double? fontSize}) {
+  TextStyle _getTextStyle(BuildContext context,
+      {Color? color, double? fontSize}) {
     return MyntWebTextStyles.tableCell(
       context,
       color: color,
@@ -90,7 +144,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0), // Reduced vertical padding to 0
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 0), // Reduced vertical padding to 0
         alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
         child: Text(
           label,
@@ -118,14 +173,15 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
       ),
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null, 
+        onExit: (_) => _hoveredRowIndex.value = null,
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: null,
-              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+              alignment:
+                  alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
             );
           },
@@ -135,24 +191,24 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   }
 
   Future<void> _handleOrder(dynamic nfoItem, String type) async {
-     final mf = ref.read(mfProvider);
-     
-     try {
+    final mf = ref.read(mfProvider);
+
+    try {
       mf.setInvestLoader(true);
       // Fetch bank details to prevent null error in MFOrderScreen
       await ref.read(transcationProvider).fetchfundbank(context);
-      
+
       mf.setInvestLoader(false);
 
       if (!context.mounted) return;
 
       final isin = nfoItem.iSIN;
       final schemeCode = nfoItem.schemeCode;
-      
+
       if ((nfoItem.sIPFLAG == "Y" && isin != null && schemeCode != null)) {
         mf.invertfun(isin, schemeCode, context);
       }
-      
+
       // Pre-fill amount
       if (type == "One-time") {
         String amt = nfoItem.minimumPurchaseAmount ?? "0";
@@ -170,7 +226,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         showDialog(
           context: context,
           builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: SizedBox(
               width: dialogWidth,
               height: dialogHeight,
@@ -198,11 +255,267 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     return date.replaceAll(RegExp(r'\s+'), ' ');
   }
 
+  // Build fund name cell with hover dropdown menu
+  shadcn.TableCell _buildFundNameCellWithActions({
+    required dynamic item,
+    required int rowIndex,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Fund info
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: NetworkImage(
+                          "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                        ),
+                        onBackgroundImageError: (_, __) {},
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.name ?? "Unknown Fund",
+                                style: _getTextStyle(
+                                    context,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                                    fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                (item.sCHEMECATEGORY ?? "Other Scheme").toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // 3-dot dropdown button on hover
+                  if (isHovered)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildOptionsMenuButton(
+                          item: item,
+                          rowIndex: rowIndex,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic item,
+    required int rowIndex,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // One-Time option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.payments_outlined,
+                title: 'One-Time',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleOrder(item, 'One-time');
+                },
+              ),
+            );
+
+            // SIP option (only if SIP is allowed)
+            if (item.sIPFLAG == "Y") {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.autorenew,
+                  title: 'SIP',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    _handleOrder(item, 'SIP');
+                  },
+                ),
+              );
+            }
+
+            // Divider
+            menuItems.add(const shadcn.MenuDivider());
+
+            // Details option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Details',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  // Navigate to details - can be implemented later
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mf = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
-    
+
     // Data filtering
     final nfoList = mf.mfNFOList?.mutualFundList ?? [];
     final filteredList = nfoList.where((item) {
@@ -211,7 +524,9 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: theme.isDarkMode ? colors.kColorDarkThemeBackground : colors.kColorlightThemeBackground,
+      backgroundColor: theme.isDarkMode
+          ? colors.kColorDarkThemeBackground
+          : colors.kColorlightThemeBackground,
       body: SafeArea(
         child: TransparentLoaderScreen(
           isLoading: mf.investloader,
@@ -219,20 +534,26 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
             children: [
               // --- Header Section ---
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0, vertical: 24.0),
                 decoration: BoxDecoration(
-                  // border: Border(
-                  //   bottom: BorderSide(
-                  //     color: theme.isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
-                  //   ),
-                  // ),
-                ),
+                    // border: Border(
+                    //   bottom: BorderSide(
+                    //     color: theme.isDarkMode ? Colors.grey[800]! : Colors.grey[200]!,
+                    //   ),
+                    // ),
+                    ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Back Button (Left side)
                     IconButton(
                       onPressed: widget.onBack ?? () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back_ios, size: 20, color: theme.isDarkMode ? Colors.white : Colors.black),
+                      icon: Icon(Icons.arrow_back_ios_new,
+                          size: 20,
+                          color:
+                              theme.isDarkMode ? Colors.white : Colors.black),
+                      alignment: Alignment.center,
                       tooltip: "Back",
                     ),
                     // const SizedBox(width: 16),
@@ -256,21 +577,25 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                             children: [
                               Text(
                                 "New Fund Offerings",
-                                style: MyntWebTextStyles.title(context, 
-                                  darkColor: MyntColors.textPrimaryDark, 
-                                  lightColor: MyntColors.textPrimary,
-                                  fontWeight: FontWeight.bold),
+                                style: MyntWebTextStyles.tableCell(context,
+                                    darkColor: MyntColors.textPrimaryDark,
+                                    lightColor: MyntColors.textPrimary,
+                                    fontWeight: FontWeight.w500),
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: colors.colorBlue,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   filteredList.length.toString(),
-                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ],
@@ -278,8 +603,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                           const SizedBox(height: 4),
                           Text(
                             "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
-                            style: MyntWebTextStyles.bodySmall(context, 
-                                darkColor: MyntColors.textSecondaryDark, 
+                            style: MyntWebTextStyles.para(context,
+                                darkColor: MyntColors.textSecondaryDark,
                                 lightColor: MyntColors.textSecondary),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -316,168 +641,110 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
               // --- Table Section ---
               Expanded(
                 child: filteredList.isEmpty
-                  ? const NoDataFound(secondaryEnabled: false, title: "No NFOs Found")
-                  : LayoutBuilder(builder: (context, constraints) {
-                      final double totalWidth = constraints.maxWidth;
-                      final double fundNameWidth = totalWidth * 0.55;
-                      final double otherColumnWidth = totalWidth * 0.15;
+                    ? const NoDataFound(
+                        secondaryEnabled: false, title: "No NFOs Found")
+                    : LayoutBuilder(builder: (context, constraints) {
+                        final double totalWidth = constraints.maxWidth;
+                        final double fundNameWidth = totalWidth * 0.55;
+                        final double otherColumnWidth = totalWidth * 0.15;
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0),
-                        child: shadcn.OutlinedContainer(
-                          child: Scrollbar(
-                            controller: _verticalScrollController,
-                            thumbVisibility: false,
-                            child: SingleChildScrollView(
-                              controller: _verticalScrollController,
-                              child: Column(
-                                children: [
-                                  shadcn.Table(
-                                    defaultRowHeight: const shadcn.FixedTableSize(50), // Reduced Header
-                                    columnWidths: {
-                                      0: shadcn.FixedTableSize(fundNameWidth),
-                                      1: shadcn.FixedTableSize(otherColumnWidth), // Opening
-                                      2: shadcn.FixedTableSize(otherColumnWidth), // Closing
-                                      3: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
-                                    },
-                                    rows: [
-                                      // Header
-                                      shadcn.TableHeader(
-                                        cells: [
-                                          buildHeaderCell('Fund name', false),
-                                          buildHeaderCell('Opening', false),
-                                          buildHeaderCell('Closing', false),
-                                          buildHeaderCell('Min. Invest', true),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                          child: shadcn.OutlinedContainer(
+                            child: Column(
+                              children: [
+                                // Fixed Header
+                                shadcn.Table(
+                                  defaultRowHeight:
+                                      const shadcn.FixedTableSize(50),
+                                  columnWidths: {
+                                    0: shadcn.FixedTableSize(fundNameWidth),
+                                    1: shadcn.FixedTableSize(otherColumnWidth),
+                                    2: shadcn.FixedTableSize(otherColumnWidth),
+                                    3: shadcn.FixedTableSize(otherColumnWidth),
+                                  },
+                                  rows: [
+                                    shadcn.TableHeader(
+                                      cells: [
+                                        buildHeaderCell('Fund name', false),
+                                        buildHeaderCell('Opening', false),
+                                        buildHeaderCell('Closing', false),
+                                        buildHeaderCell('Min. Invest', true),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                // Scrollable Body
+                                Expanded(
+                                  child: Scrollbar(
+                                    controller: _verticalScrollController,
+                                    thumbVisibility: false,
+                                    child: SingleChildScrollView(
+                                      controller: _verticalScrollController,
+                                      child: shadcn.Table(
+                                        defaultRowHeight:
+                                            const shadcn.FixedTableSize(70),
+                                        columnWidths: {
+                                          0: shadcn.FixedTableSize(
+                                              fundNameWidth),
+                                          1: shadcn.FixedTableSize(
+                                              otherColumnWidth),
+                                          2: shadcn.FixedTableSize(
+                                              otherColumnWidth),
+                                          3: shadcn.FixedTableSize(
+                                              otherColumnWidth),
+                                        },
+                                        rows: [
+                                          ...filteredList
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                            final index = entry.key;
+                                            final item = entry.value;
+
+                                            return shadcn.TableRow(
+                                              cells: [
+                                                _buildFundNameCellWithActions(
+                                                  item: item,
+                                                  rowIndex: index,
+                                                  theme: theme,
+                                                ),
+                                                buildCellWithHover(
+                                                  rowIndex: index,
+                                                  child: Text(
+                                                      _formatDate(
+                                                          item.startDate),
+                                                      style: _getTextStyle(
+                                                          context)),
+                                                ),
+                                                buildCellWithHover(
+                                                  rowIndex: index,
+                                                  child: Text(
+                                                      _formatDate(item.endDate),
+                                                      style: _getTextStyle(
+                                                          context)),
+                                                ),
+                                                buildCellWithHover(
+                                                  rowIndex: index,
+                                                  alignRight: true,
+                                                  child: Text(
+                                                      "₹${double.tryParse(item.minimumPurchaseAmount ?? '0')?.toStringAsFixed(2) ?? '0.00'}",
+                                                      style: _getTextStyle(
+                                                          context)),
+                                                ),
+                                              ],
+                                            );
+                                          }),
                                         ],
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                  shadcn.Table(
-                                    defaultRowHeight: const shadcn.FixedTableSize(70), // Data Body
-                                    columnWidths: {
-                                      0: shadcn.FixedTableSize(fundNameWidth),
-                                      1: shadcn.FixedTableSize(otherColumnWidth), // Opening
-                                      2: shadcn.FixedTableSize(otherColumnWidth), // Closing
-                                      3: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
-                                    },
-                                    rows: [
-                                      // Data Rows
-                                      ...filteredList.asMap().entries.map((entry) {
-                                        final index = entry.key;
-                                        final item = entry.value;
-
-                                        return shadcn.TableRow(
-                                          cells: [
-                                            // Fund Name + Actions
-                                            buildCellWithHover(
-                                              rowIndex: index,
-                                              child: Row(
-                                                children: [
-                                                  // Logo
-                                                  CircleAvatar(
-                                                    radius: 14,
-                                                    backgroundColor: Colors.grey[200],
-                                                    backgroundImage: NetworkImage(
-                                                      "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
-                                                    ),
-                                                    onBackgroundImageError: (_, __) {},
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  // Name & Tags
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Text(
-                                                          item.name ?? "Unknown Fund",
-                                                          style: _getTextStyle(context,
-                                                              color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary),
-                                                              fontSize: 14),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                        ),
-                                                        const SizedBox(height: 2),
-                                                        Row(
-                                                          children: [
-                                                            _buildTag(item.sCHEMECATEGORY ?? "OTHER SCHEME", theme),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  // Hover Actions
-                                                  ValueListenableBuilder<int?>(
-                                                    valueListenable: _hoveredRowIndex,
-                                                    builder: (context, hoveredIndex, _) {
-                                                      if (hoveredIndex == index) {
-                                                        return Container(
-                                                          padding: const EdgeInsets.all(4),
-                                                          decoration: BoxDecoration(
-                                                            color: resolveThemeColor(context,
-                                                                dark: MyntColors.searchBgDark,
-                                                                light: MyntColors.backgroundColor),
-                                                            borderRadius: BorderRadius.circular(6),
-                                                            boxShadow: MyntShadows.card,
-                                                          ),
-                                                          child: Row(
-                                                            mainAxisSize: MainAxisSize.min,
-                                                            children: [
-                                                              _buildActionButton(
-                                                                  "Buy",
-                                                                  const Color(0xff0037B7),
-                                                                  () => _handleOrder(item, "One-time")),
-                                                              if (item.sIPFLAG == "Y") ...[
-                                                                const SizedBox(width: 6),
-                                                                _buildActionButton(
-                                                                    "SIP",
-                                                                    const Color(0xff0037B7),
-                                                                    () => _handleOrder(item, "SIP")),
-                                                              ]
-                                                            ],
-                                                          ),
-                                                        );
-                                                      }
-                                                      return const SizedBox.shrink();
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            // Opening
-                                            buildCellWithHover(
-                                              rowIndex: index,
-                                              child: Text(_formatDate(item.startDate),
-                                                  style: _getTextStyle(context)),
-                                            ),
-                                            // Closing
-                                            buildCellWithHover(
-                                              rowIndex: index,
-                                              child: Text(_formatDate(item.endDate),
-                                                  style: _getTextStyle(context)),
-                                            ),
-                                            // Min Invest
-                                            buildCellWithHover(
-                                              rowIndex: index,
-                                              alignRight: true,
-                                              child: Text(
-                                                  "₹${double.tryParse(item.minimumPurchaseAmount ?? '0')?.toStringAsFixed(2) ?? '0.00'}",
-                                                  style: _getTextStyle(context)),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
               ),
             ],
           ),
@@ -486,44 +753,4 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     );
   }
 
-
-  Widget _buildTag(String text, ThemesProvider theme) {
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2), 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text.toUpperCase(),
-        style: TextStyle(
-          fontSize: 10,
-          color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(String label, Color color, VoidCallback onTap, {bool filled = true}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4), 
-        decoration: BoxDecoration(
-          color: filled ? color : Colors.transparent,
-          border: filled ? null : Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: filled ? Colors.white : color,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 }

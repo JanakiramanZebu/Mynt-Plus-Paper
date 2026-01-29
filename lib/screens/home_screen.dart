@@ -124,15 +124,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         print("app resumed - enabling WebSocket auto-reconnect");
         
         // Don't use await to avoid blocking the UI thread
-        // Check session status in the background to prevent freezing
+        // Refresh data in the background when app resumes
         Future.microtask(() async {
           try {
-            // Check session status without loading indicators
-            await ref.read(indexListProvider).checkSession(context);
-
-            // Only load data if session is valid and app is still mounted
-            if (mounted &&
-                ref.read(indexListProvider).checkSess?.stat == "Ok") {
+            // Session validation removed - APIs return "Session Expired" errors
+            // which are handled by ifSessionExpired(). This avoids unnecessary
+            // DeleteMultiMWScrips API calls on every lifecycle resume.
+            if (mounted) {
               // Load these in parallel for better performance
               final futures = [
                 ref.read(portfolioProvider).fetchPositionBook(context, false),
@@ -151,7 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               }
             }
 
-            // Handle WebSocket connections after session validation
+            // Handle WebSocket connections
             _handleWebSocketConnections();
           } catch (e) {
             print("Error during app resume: $e");
@@ -406,7 +404,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       //   // ref.read(mfProvider).mfExTabchange(2);
       //   break;
       case 1: // Watchlist
-        ref.read(marketWatchProvider).fetchMWList(context, false);
+        // Use waitis=true: loads first watchlist immediately, others in background
+        ref.read(marketWatchProvider).fetchMWList(context, true);
         break;
       case 2: // Portfolio
         ref.read(portfolioProvider).fetchHoldings(context, "");

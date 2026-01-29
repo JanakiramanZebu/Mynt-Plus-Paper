@@ -2331,19 +2331,18 @@ class _WatchlistLivePriceWidgetState
   @override
   Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    // Match default_index_list_web.dart _LivePriceWidgetWeb exactly (src: false)
+    // Use Wrap for responsive layout - wraps to next line when no space
     return RepaintBoundary(
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 0,
-        runSpacing: 2,
+        spacing: 4, // Space between items on same line
+        runSpacing: 2, // Space between lines when wrapped
         children: [
           Text(
-            "$_ltp  ",
+            _ltp,
             style: _getTextStyle(
               changeColor,
-              13, // Slightly smaller for better fit
+              13,
               1,
             ),
           ),

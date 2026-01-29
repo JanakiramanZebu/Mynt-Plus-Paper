@@ -214,7 +214,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
                     7: shadcn.FixedTableSize(columnWidths[7]!),
                     8: shadcn.FixedTableSize(columnWidths[8]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
@@ -236,7 +236,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
                 Expanded(
                   child: sortedOrders.isEmpty
                       ? LayoutBuilder(
-                          builder: (context, constraints) => SingleChildScrollView(
+                          builder: (context, constraints) =>
+                              SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
@@ -265,155 +266,169 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
                           child: SingleChildScrollView(
                             controller: _verticalScrollController,
                             scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
-                          8: shadcn.FixedTableSize(columnWidths[8]!),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(75),
-                        rows: [
-                          // Data Rows
-                          ...sortedOrders.asMap().entries.map((entry) {
-                            final rowIndex = entry.key;
-                            final item = entry.value;
+                            child: shadcn.Table(
+                              key: ValueKey(
+                                  'table_${_sortColumnIndex}_$_sortAscending'),
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                                3: shadcn.FixedTableSize(columnWidths[3]!),
+                                4: shadcn.FixedTableSize(columnWidths[4]!),
+                                5: shadcn.FixedTableSize(columnWidths[5]!),
+                                6: shadcn.FixedTableSize(columnWidths[6]!),
+                                7: shadcn.FixedTableSize(columnWidths[7]!),
+                                8: shadcn.FixedTableSize(columnWidths[8]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                              rows: [
+                                // Data Rows
+                                ...sortedOrders.asMap().entries.map((entry) {
+                                  final rowIndex = entry.key;
+                                  final item = entry.value;
 
-                            return shadcn.TableRow(
-                              cells: [
-                                // SIP Register Date
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 0,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    _formatDate(item.sIPRegnDate ?? "-"),
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // Start Date
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 1,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    _formatDate(item.startDate ?? "-"),
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // End Date
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 2,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    _formatDate(item.endDate ?? "-"),
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // Next SIP Date
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 3,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    _formatDate(item.NextSIPDate ?? "-"),
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // Fund name
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 4,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    item.name ?? "Unknown Scheme",
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                  ),
-                                ),
-                                // Frequency Type
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 5,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    item.frequencyType ?? "-",
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // Installment amt
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 6,
-                                  alignRight: true,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    "₹${item.installmentAmount ?? 'N/A'}",
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // SIP Register No.
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 7,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Text(
-                                    item.sIPRegnNo ?? "-",
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                                // Status
-                                buildCellWithHover(
-                                  rowIndex: rowIndex,
-                                  columnIndex: 8,
-                                  onTap: () => _showSipDetail(mfData, item, context),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: _getStatusColor(item.status, theme)
-                                          .withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      _getStatusText(item.status).toUpperCase(),
-                                      style: MyntWebTextStyles.bodySmall(
-                                        context,
-                                        color: _getStatusColor(item.status, theme),
-                                        fontWeight: MyntFonts.medium,
+                                  return shadcn.TableRow(
+                                    cells: [
+                                      // SIP Register Date
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 0,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          _formatDate(item.sIPRegnDate ?? "-"),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
                                       ),
-                                      overflow: TextOverflow.visible,
-                                      softWrap: false,
-                                    ),
-                                  ),
-                                ),
+                                      // Start Date
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 1,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          _formatDate(item.startDate ?? "-"),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      // End Date
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 2,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          _formatDate(item.endDate ?? "-"),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      // Next SIP Date
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 3,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          _formatDate(item.NextSIPDate ?? "-"),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      // Fund name
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 4,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          item.name ?? "Unknown Scheme",
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 2,
+                                        ),
+                                      ),
+                                      // Frequency Type
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 5,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          item.frequencyType ?? "-",
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      // Installment amt
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 6,
+                                        alignRight: true,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          "₹${item.installmentAmount ?? 'N/A'}",
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ),
+                                      // SIP Register No.
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 7,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Text(
+                                          item.sIPRegnNo ?? "-",
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                      // Status
+                                      buildCellWithHover(
+                                        rowIndex: rowIndex,
+                                        columnIndex: 8,
+                                        onTap: () => _showSipDetail(
+                                            mfData, item, context),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(
+                                                    item.status, theme)
+                                                .withValues(alpha: 0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            _getStatusText(item.status)
+                                                .toUpperCase(),
+                                            style: MyntWebTextStyles.bodySmall(
+                                              context,
+                                              color: _getStatusColor(
+                                                  item.status, theme),
+                                              fontWeight: MyntFonts.medium,
+                                            ),
+                                            overflow: TextOverflow.visible,
+                                            softWrap: false,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
                               ],
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ),
+                            ),
+                          ),
+                        ),
                 ),
               ],
             );
@@ -634,7 +649,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
     final minWidths = <int, double>{};
 
     for (int col = 0; col < headers.length; col++) {
-      double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
+      double maxWidth =
+          _measureTextWidth(headers[col], textStyle) + sortIconWidth;
 
       for (final order in orders.take(5)) {
         String cellText = '';
@@ -734,7 +750,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
     return sorted;
   }
 
-  void _showSipDetail(MFProvider mfData, dynamic item, BuildContext context) async {
+  void _showSipDetail(
+      MFProvider mfData, dynamic item, BuildContext context) async {
     final sIPRegnNo = item.sIPRegnNo;
 
     if (sIPRegnNo != null) {
@@ -788,7 +805,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
                 ),
               );
             },
-            transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+            transitionBuilder:
+                (dialogContext, animation, secondaryAnimation, child) {
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(1, 0),
@@ -809,7 +827,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen> {
         // Show error message
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to load SIP details: ${e.toString()}")),
+            SnackBar(
+                content: Text("Failed to load SIP details: ${e.toString()}")),
           );
         }
       }

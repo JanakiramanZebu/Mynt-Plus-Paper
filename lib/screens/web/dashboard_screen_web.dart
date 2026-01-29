@@ -272,112 +272,131 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         const totalSpacing = cardSpacing * (totalCards - 1);
         const totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
 
-        // Calculate card width
-        double cardWidth;
-        bool needsScrolling = false;
+        // Threshold for 2x2 grid layout (2 cards per row)
+        const gridThreshold = (minCardWidth * 2) + cardSpacing;
 
-        if (availableWidth >= totalMinWidth) {
-          // All cards fit, distribute evenly
-          cardWidth = (availableWidth - totalSpacing) / totalCards;
-        } else {
-          // Need scrolling, use min width
-          cardWidth = minCardWidth;
-          needsScrolling = true;
-        }
+        // Build card widgets
+        Widget equityCard = _buildPortfolioSection(
+          context,
+          'Equity',
+          _getEquityMetrics(context, portfolio),
+          onTap: () {
+            if (WebNavigationHelper.isAvailable) {
+              WebNavigationHelper.navigateTo(Routes.holdingscreen);
+            }
+          },
+        );
 
-        Widget content = SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: needsScrolling
-              ? const ClampingScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: cardWidth,
-                child: _buildPortfolioSection(
+        Widget mutualFundCard = _buildPortfolioSection(
+          context,
+          'Mutual Fund',
+          _getMutualFundMetrics(context, mfData),
+          onTap: () {
+            if (WebNavigationHelper.isAvailable) {
+              WebNavigationHelper.navigateTo(Routes.mfmainscreen);
+            }
+          },
+        );
+
+        Widget positionCard = _buildPortfolioSection(
+          context,
+          'Position',
+          _getPositionMetrics(context, portfolio),
+          onTap: () {
+            if (WebNavigationHelper.isAvailable) {
+              WebNavigationHelper.navigateTo(Routes.positionscreen);
+            }
+          },
+        );
+
+        Widget fundsCard = _buildPortfolioSection(
+          context,
+          'Funds',
+          _getFundsMetrics(context, fund),
+          onTap: () {
+            if (WebNavigationHelper.isAvailable) {
+              WebNavigationHelper.navigateTo(Routes.fundscreen);
+            }
+          },
+          trailing: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                if (WebNavigationHelper.isAvailable) {
+                  WebNavigationHelper.navigateTo(Routes.fundscreen,
+                      arguments: 'addMoney');
+                }
+              },
+              child: Text(
+                'Add Money',
+                style: MyntWebTextStyles.symbol(
                   context,
-                  'Equity',
-                  _getEquityMetrics(context, portfolio),
-                  onTap: () {
-                    if (WebNavigationHelper.isAvailable) {
-                      WebNavigationHelper.navigateTo(Routes.holdingscreen);
-                    }
-                  },
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary),
                 ),
               ),
-              const SizedBox(width: cardSpacing),
-              SizedBox(
-                width: cardWidth,
-                child: _buildPortfolioSection(
-                  context,
-                  'Mutual Fund',
-                  _getMutualFundMetrics(context, mfData),
-                  onTap: () {
-                    if (WebNavigationHelper.isAvailable) {
-                      WebNavigationHelper.navigateTo(Routes.mfmainscreen);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: cardSpacing),
-              SizedBox(
-                width: cardWidth,
-                child: _buildPortfolioSection(
-                  context,
-                  'Position',
-                  _getPositionMetrics(context, portfolio),
-                  onTap: () {
-                    if (WebNavigationHelper.isAvailable) {
-                      WebNavigationHelper.navigateTo(Routes.positionscreen);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: cardSpacing),
-              SizedBox(
-                width: cardWidth,
-                child: _buildPortfolioSection(
-                  context,
-                  'Funds',
-                  _getFundsMetrics(context, fund),
-                  onTap: () {
-                    if (WebNavigationHelper.isAvailable) {
-                      WebNavigationHelper.navigateTo(Routes.fundscreen);
-                    }
-                  },
-                  trailing: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () {
-                        if (WebNavigationHelper.isAvailable) {
-                          WebNavigationHelper.navigateTo(Routes.fundscreen,
-                              arguments: 'addMoney');
-                        }
-                      },
-                      child: Text(
-                        'Add Money',
-                        style: MyntWebTextStyles.symbol(
-                          context,
-                          color: resolveThemeColor(context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         );
 
-        // If scrolling not needed, wrap in a row to fill width
-        if (!needsScrolling) {
-          return content;
+        if (availableWidth >= totalMinWidth) {
+          // All 4 cards fit in a single row
+          return IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: equityCard),
+                const SizedBox(width: cardSpacing),
+                Expanded(child: mutualFundCard),
+                const SizedBox(width: cardSpacing),
+                Expanded(child: positionCard),
+                const SizedBox(width: cardSpacing),
+                Expanded(child: fundsCard),
+              ],
+            ),
+          );
+        } else if (availableWidth >= gridThreshold) {
+          // 2x2 grid layout
+          return Column(
+            children: [
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: equityCard),
+                    const SizedBox(width: cardSpacing),
+                    Expanded(child: mutualFundCard),
+                  ],
+                ),
+              ),
+              const SizedBox(height: cardSpacing),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(child: positionCard),
+                    const SizedBox(width: cardSpacing),
+                    Expanded(child: fundsCard),
+                  ],
+                ),
+              ),
+            ],
+          );
+        } else {
+          // Single column layout for very small screens
+          return Column(
+            children: [
+              equityCard,
+              const SizedBox(height: cardSpacing),
+              mutualFundCard,
+              const SizedBox(height: cardSpacing),
+              positionCard,
+              const SizedBox(height: cardSpacing),
+              fundsCard,
+            ],
+          );
         }
-
-        return content;
       },
     );
   }
@@ -511,8 +530,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final bool isLeftAligned = index % 2 == 0;
     final alignment =
         isLeftAligned ? CrossAxisAlignment.start : CrossAxisAlignment.end;
-    final rowAlignment =
-        isLeftAligned ? MainAxisAlignment.start : MainAxisAlignment.end;
+    final wrapAlignment =
+        isLeftAligned ? WrapAlignment.start : WrapAlignment.end;
 
     return Column(
       crossAxisAlignment: alignment,
@@ -531,8 +550,11 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           textAlign: isLeftAligned ? TextAlign.left : TextAlign.right,
         ),
         const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: rowAlignment,
+        Wrap(
+          spacing: 4,
+          runSpacing: 2,
+          alignment: wrapAlignment,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               metric['value'],
@@ -541,8 +563,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                 color: valueColor,
               ),
             ),
-            if (metric['subValue'] != null) ...[
-              const SizedBox(width: 4),
+            if (metric['subValue'] != null)
               Text(
                 metric['subValue'],
                 style: MyntWebTextStyles.priceChange(
@@ -550,7 +571,6 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                   color: valueColor,
                 ),
               ),
-            ],
           ],
         ),
       ],

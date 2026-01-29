@@ -237,7 +237,7 @@ mixin AuthApi on ApiCore {
 
   Future setOrderprefer(Map data, bool head, BuildContext context) async {
     try {
-      final uri = Uri.parse(head ? apiLinks.setpref : "${apiLinks.getpref}?clientid=${prefs.clientId}&source=WEB");
+      final uri = Uri.parse(head ? apiLinks.setpref : "${apiLinks.getpref}?clientid=${prefs.clientId}&source=FWEB");
       final res = head ? await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(data)) : await apiClient.get(uri, headers: defaultHeaders);
       final json = jsonDecode(res.body);
       // print("object pref $json");

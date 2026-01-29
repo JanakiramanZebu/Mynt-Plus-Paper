@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
@@ -40,6 +43,12 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
   final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
+  // Popover state management for 3-dot dropdown menu
+  shadcn.PopoverController? _activePopoverController;
+  String? _popoverRowId;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +56,41 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).fetchmfholdingnew();
     });
+    // Add listener for hover changes to manage popover
+    _hoveredRowToken.addListener(_onHoverChanged);
+  }
+
+  // Listener for hover changes to manage popover closing
+  void _onHoverChanged() {
+    final currentHoveredId = _hoveredRowToken.value;
+    // If we have an active popover and the user hovers over a different row
+    if (_popoverRowId != null &&
+        currentHoveredId != null &&
+        currentHoveredId != _popoverRowId &&
+        !_isHoveringDropdown) {
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowToken.value != _popoverRowId) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _activePopoverController?.close();
+    _activePopoverController = null;
+    _popoverRowId = null;
+    _isHoveringDropdown = false;
   }
 
   // ✅ REMOVED: didUpdateWidget - no longer needed since we use widget.searchQuery directly
@@ -57,6 +101,8 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     _verticalScrollController.dispose();
     _hoveredRowToken.dispose();
     _hoveredColumnIndex.dispose();
+    _hoveredRowToken.removeListener(_onHoverChanged);
+    _popoverCloseTimer?.cancel();
     super.dispose();
   }
 
@@ -718,6 +764,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
       valueListenable: _hoveredRowToken,
       builder: (context, hoveredToken, child) {
         final rowIsHovered = hoveredToken == uniqueId;
+        final showDropdown = rowIsHovered || _popoverRowId == uniqueId;
 
         return Row(
           children: [
@@ -743,34 +790,26 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
               ),
             ),
 
-            // ✅ Action buttons - appear on hover, stay within bounds
+            // ✅ 3-dot dropdown menu - appears on hover
             AnimatedContainer(
               duration: const Duration(milliseconds: 140),
-              width: rowIsHovered ? null : 0,
+              width: showDropdown ? null : 0,
               curve: Curves.easeInOut,
               child: IgnorePointer(
-                ignoring: !rowIsHovered,
+                ignoring: !showDropdown,
                 child: AnimatedOpacity(
-                  opacity: rowIsHovered ? 1 : 0,
+                  opacity: showDropdown ? 1 : 0,
                   duration: const Duration(milliseconds: 140),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const SizedBox(width: 8),
-                      // Redeem button - only show if holding has units
-                      if (avgQty > 0) ...[
-                        _buildHoverButton(
-                          label: 'Redeem',
-                          color: Colors.white,
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.error
-                              : WebColors.error,
-                          onPressed: () async {
-                            await _handleRedeem(context, holding);
-                          },
-                          theme: theme,
-                        ),
-                      ],
+                      _buildOptionsMenuButton(
+                        holding: holding,
+                        theme: theme,
+                        uniqueId: uniqueId,
+                        hasUnits: avgQty > 0,
+                      ),
                     ],
                   ),
                 ),
@@ -779,6 +818,135 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildOptionsMenuButton({
+    required dynamic holding,
+    required ThemesProvider theme,
+    required String uniqueId,
+    required bool hasUnits,
+  }) {
+    return MouseRegion(
+      onEnter: (_) {
+        _isHoveringDropdown = true;
+        _cancelPopoverCloseTimer();
+      },
+      onExit: (_) {
+        _isHoveringDropdown = false;
+        _startPopoverCloseTimer();
+      },
+      child: Builder(
+        builder: (buttonContext) {
+          return GestureDetector(
+            onTap: () {
+              // Close any existing popover
+              _closePopover();
+
+              // Create new controller
+              final controller = shadcn.PopoverController();
+              _activePopoverController = controller;
+              _popoverRowId = uniqueId;
+
+              // Build menu items
+              List<shadcn.MenuItem> menuItems = [];
+
+              // Redeem option - only if has units
+              if (hasUnits) {
+                menuItems.add(
+                  _buildMenuButton(
+                    icon: Icons.currency_exchange,
+                    title: 'Redeem',
+                    onPressed: (ctx) async {
+                      _closePopover();
+                      await _handleRedeem(ctx, holding);
+                    },
+                  ),
+                );
+              }
+
+              // Details option
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.info_outline,
+                  title: 'Details',
+                  onPressed: (ctx) {
+                    _closePopover();
+                    _showHoldingDetail(holding);
+                  },
+                ),
+              );
+
+              // Show the dropdown menu
+              controller.show(
+                context: buttonContext,
+                builder: (ctx) {
+                  return MouseRegion(
+                    onEnter: (_) {
+                      _isHoveringDropdown = true;
+                      _cancelPopoverCloseTimer();
+                    },
+                    onExit: (_) {
+                      _isHoveringDropdown = false;
+                      _startPopoverCloseTimer();
+                    },
+                    child: shadcn.DropdownMenu(
+                      children: menuItems,
+                    ),
+                  );
+                },
+                alignment: Alignment.topRight,
+                offset: const Offset(0, 4),
+              );
+            },
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? WebDarkColors.backgroundSecondary
+                    : WebColors.backgroundSecondary,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: theme.isDarkMode
+                      ? WebDarkColors.divider
+                      : WebColors.divider,
+                ),
+              ),
+              child: Icon(
+                Icons.more_vert,
+                size: 16,
+                color: theme.isDarkMode
+                    ? WebDarkColors.textPrimary
+                    : WebColors.textPrimary,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  shadcn.MenuItem _buildMenuButton({
+    required IconData icon,
+    required String title,
+    Color? iconColor,
+    Color? textColor,
+    required Function(BuildContext) onPressed,
+  }) {
+    return shadcn.MenuButton(
+      leading: Icon(
+        icon,
+        size: 16,
+        color: iconColor,
+      ),
+      onPressed: (ctx) => onPressed(ctx),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: textColor,
+        ),
+      ),
     );
   }
 
@@ -964,65 +1132,6 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     showDialog(
       context: context,
       builder: (context) => const RedemptionBottomSheetWeb(),
-    );
-  }
-
-  Widget _buildHoverButton({
-    String? label,
-    IconData? icon,
-    required Color color,
-    Color? backgroundColor,
-    Color? borderColor,
-    double? borderRadius,
-    double? iconWeight,
-    required VoidCallback? onPressed,
-    required ThemesProvider theme,
-  }) {
-    final isLongLabel = label != null && label.length > 1;
-    final borderRadiusValue = borderRadius ?? 5.0;
-    return SizedBox(
-      width: isLongLabel ? null : 25,
-      height: 25,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(borderRadiusValue),
-          splashColor: color.withOpacity(0.15),
-          highlightColor: color.withOpacity(0.08),
-          onTap: onPressed,
-          child: Container(
-            padding:
-                isLongLabel ? const EdgeInsets.symmetric(horizontal: 8) : null,
-            decoration: BoxDecoration(
-              color: backgroundColor ?? Colors.transparent,
-              borderRadius: BorderRadius.circular(borderRadiusValue),
-              border: borderColor != null
-                  ? Border.all(
-                      color: borderColor,
-                      width: 1.3,
-                    )
-                  : null,
-            ),
-            child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 16,
-                      color: color,
-                      weight: iconWeight ?? 400,
-                    )
-                  : Text(
-                      label ?? "",
-                      style: WebTextStyles.buttonXs(
-                        isDarkTheme: theme.isDarkMode,
-                        color: color,
-                        fontWeight: WebFonts.medium,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 

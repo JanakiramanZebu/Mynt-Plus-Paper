@@ -317,6 +317,9 @@ class _PendingAlertDetailScreenWebState
                             alertId, targetContext);
                         await marketWatchProviderRef
                             .fetchPendingAlert(targetContext);
+                        if (targetContext.mounted) {
+                          showResponsiveSuccess(targetContext, "Alert Cancelled");
+                        }
                       } catch (e) {
                         if (targetContext.mounted) {
                           showResponsiveErrorMessage(targetContext,
@@ -509,6 +512,7 @@ class _PendingAlertDetailScreenWebState
             textAlign: TextAlign.start,
             inputFormate: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              LengthLimitingTextInputFormatter(15), // Limit to 15 characters for price values
             ],
             style: MyntWebTextStyles.tableCell(
               context,

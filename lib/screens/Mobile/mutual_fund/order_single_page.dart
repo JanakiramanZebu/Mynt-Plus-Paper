@@ -8,7 +8,6 @@ import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -51,33 +50,70 @@ class _mforderdetscreen extends State<mforderdetscreen>
       }
 
       return SafeArea(
-        child: Scaffold(
-          backgroundColor:
-              theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-          body: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border(
+              top: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              left: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              right: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+            ),
+          ),
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
-              // controller: scrollController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: Icon(
-                          Icons.close,
-                          color: theme.isDarkMode
-                              ? MyntColors.iconDark
-                              : MyntColors.icon,
+                  // Header section
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Order Details",
+                          style: MyntWebTextStyles.title(
+                            context,
+                            color: theme.isDarkMode
+                                ? MyntColors.textPrimaryDark
+                                : MyntColors.textPrimary,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
                         ),
-                      ),
-                    ],
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.close,
+                            color: theme.isDarkMode
+                                ? MyntColors.iconDark
+                                : MyntColors.icon,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  Divider(
+                    thickness: 0,
+                    color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
+                  ),
+                  const SizedBox(height: 16),
                   _buildOrderHeader(theme, mfdata),
                   const SizedBox(height: 18),
                   if (mfdata.mforderdet?.data![0].status ==

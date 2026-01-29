@@ -4,6 +4,8 @@ import 'dart:io' show SocketException, HttpException; // Used in non-web builds
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:go_router/go_router.dart';
+import '../routes/web_router.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +36,7 @@ import '../models/auth_model/logout_model.dart';
 import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
 import '../models/profile_model/client_detail_model.dart';
-import '../res/global_state_text.dart';
+import '../res/mynt_web_text_styles.dart';
 import '../res/res.dart';
 import '../routes/app_routes.dart';
 import '../routes/route_names.dart';
@@ -160,14 +162,16 @@ class AuthProvider extends DefaultChangeNotifier {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextWidget.subText(
-                      text: "Do you like to remove this account from devices?",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                      align: TextAlign.center,
+                    Text(
+                      "Do you like to remove this account from devices?",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -197,11 +201,13 @@ class AuthProvider extends DefaultChangeNotifier {
                   ),
                   backgroundColor: colors.primaryDark,
                 ),
-                child: TextWidget.titleText(
-                  text: "Remove",
-                  theme: theme.isDarkMode,
-                  color: colors.colorWhite,
-                  fw: 2,
+                child: Text(
+                  "Remove",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: colors.colorWhite,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -1437,14 +1443,16 @@ class AuthProvider extends DefaultChangeNotifier {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 10),
-                    TextWidget.subText(
-                      text: "Authentication is required to proceed further!",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                      align: TextAlign.center,
+                    Text(
+                      "Authentication is required to proceed further!",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -1479,11 +1487,14 @@ class AuthProvider extends DefaultChangeNotifier {
                   ),
                   backgroundColor: colors.primaryDark, // Transparent background
                 ),
-                child: TextWidget.titleText(
-                    text: "Try Again",
-                    theme: theme.isDarkMode,
+                child: Text(
+                  "Try Again",
+                  style: MyntWebTextStyles.title(
+                    context,
                     color: colors.colorWhite,
-                    fw: 2),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1560,14 +1571,16 @@ class AuthProvider extends DefaultChangeNotifier {
                     //   fw: 3,
                     // ),
                     const SizedBox(height: 10),
-                    TextWidget.subText(
-                      text: "Authentication is required to proceed further!",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                      align: TextAlign.center,
+                    Text(
+                      "Authentication is required to proceed further!",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -1592,12 +1605,15 @@ class AuthProvider extends DefaultChangeNotifier {
                   ),
                   backgroundColor: colors.primaryDark,
                 ),
-                child: TextWidget.titleText(
-                  text: "Proceed",
-                  theme: theme.isDarkMode,
-                  color:
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                child: Text(
+                  "Proceed",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: !theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ),
             ),
@@ -1674,15 +1690,16 @@ class AuthProvider extends DefaultChangeNotifier {
                     //   fw: 3,
                     // ),
                     const SizedBox(height: 10),
-                    TextWidget.subText(
-                      text:
-                          "Please setup biometric authentication in your device settings.",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 3,
-                      align: TextAlign.center,
+                    Text(
+                      "Please setup biometric authentication in your device settings.",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -1705,12 +1722,15 @@ class AuthProvider extends DefaultChangeNotifier {
                   ),
                   backgroundColor: colors.primaryDark,
                 ),
-                child: TextWidget.titleText(
-                  text: "Continue",
-                  theme: theme.isDarkMode,
-                  color:
-                      !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-                  fw: 0,
+                child: Text(
+                  "Continue",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: !theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
               ),
             ),
@@ -1787,14 +1807,16 @@ class AuthProvider extends DefaultChangeNotifier {
                     //       : colors.textPrimaryLight,
                     //   fw: 3,
                     // ),
-                    TextWidget.subText(
-                      text: "An error occurred: $error",
-                      theme: theme.isDarkMode,
-                      color: !theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      align: TextAlign.center,
-                      fw: 3,
+                    Text(
+                      "An error occurred: $error",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: !theme.isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
@@ -1819,11 +1841,13 @@ class AuthProvider extends DefaultChangeNotifier {
                   ),
                   backgroundColor: colors.primaryDark,
                 ),
-                child: TextWidget.titleText(
-                  text: "Retry",
-                  theme: theme.isDarkMode,
-                  color: colors.colorWhite,
-                  fw: 2,
+                child: Text(
+                  "Retry",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    color: colors.colorWhite,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -1873,12 +1897,16 @@ class AuthProvider extends DefaultChangeNotifier {
           if (kIsWeb || s.isEmpty) {
             // Navigate to home screen IMMEDIATELY without waiting for data
             if (s.isEmpty) {
-              final targetRoute = getResponsiveWidth(context) == 600
-                  ? Routes.mainControlerScreenForWeb
-                  : Routes.homeScreen;
-              
-              Navigator.pushNamedAndRemoveUntil(
-                  context, targetRoute, (route) => false);
+              // For web, use GoRouter for URL-based navigation
+              if (kIsWeb) {
+                if (context.mounted) context.go(WebRoutes.home);
+              } else {
+                final targetRoute = getResponsiveWidth(context) == 600
+                    ? Routes.mainControlerScreenForWeb
+                    : Routes.homeScreen;
+                Navigator.pushNamedAndRemoveUntil(
+                    context, targetRoute, (route) => false);
+              }
               
               // Show risk disclosure if needed (non-blocking)
               if (pref.showRiskDis != 'true') {
@@ -1946,15 +1974,16 @@ class AuthProvider extends DefaultChangeNotifier {
                 
                 // Load data in parallel batches for better performance
                 // Batch 1: Essential portfolio data (for first tab)
+                // Note: getDeafultIndexList already awaited above, no need to call again
                 final essentialFutures = [
                   ref.read(portfolioProvider).fetchHoldings(context, ""),
-                  ref.read(indexListProvider).getDeafultIndexList(context),
                 ];
                 await Future.wait(essentialFutures);
                 
                 // Batch 2: Market watch and stocks data
+                // Use waitis=true for watchlist: loads first watchlist immediately, others in background
                 final marketFutures = [
-                  ref.read(marketWatchProvider).fetchMWList(context, false),
+                  ref.read(marketWatchProvider).fetchMWList(context, true),
                   ref.read(stocksProvide).fetchCAevents(),
                 ];
                 Future.wait(marketFutures); // Don't await - let it run in background
@@ -2024,7 +2053,8 @@ class AuthProvider extends DefaultChangeNotifier {
             await ref.read(indexListProvider).getDeafultIndexList(context);
             ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
             await ref.read(stocksProvide).fetchCAevents();
-            await ref.read(marketWatchProvider).fetchMWList(context, false);
+            // Use waitis=true: loads first watchlist immediately, others in background
+            await ref.read(marketWatchProvider).fetchMWList(context, true);
             
             ref.read(ledgerProvider).setterfornullallSwitch = null;
             ref.read(userProfileProvider).getProfileimage();
@@ -2054,12 +2084,17 @@ class AuthProvider extends DefaultChangeNotifier {
             ref.read(orderProvider).setOrderIp();
             
             if (s.isEmpty) {
-              getResponsiveWidth(context) == 600
-                  ? Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.mainControlerScreenForWeb, (route) => false)
-                  : Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.homeScreen, (route) => false);
-              
+              // For web, use GoRouter for URL-based navigation
+              if (kIsWeb) {
+                if (context.mounted) context.go(WebRoutes.home);
+              } else {
+                getResponsiveWidth(context) == 600
+                    ? Navigator.pushNamedAndRemoveUntil(
+                        context, Routes.mainControlerScreenForWeb, (route) => false)
+                    : Navigator.pushNamedAndRemoveUntil(
+                        context, Routes.homeScreen, (route) => false);
+              }
+
               if (pref.showRiskDis != 'true') {
                 getResponsiveWidth(context) == 600
                     ? showDialog(
@@ -2085,8 +2120,8 @@ class AuthProvider extends DefaultChangeNotifier {
                       )
                     : showModalBottomSheet(
                         shape: const RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.vertical(top: Radius.circular(16))),
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(16))),
                         backgroundColor: const Color(0xffffffff),
                         isDismissible: false,
                         enableDrag: false,
@@ -2104,7 +2139,7 @@ class AuthProvider extends DefaultChangeNotifier {
                         });
               }
             }
-            
+
             await ref.read(fundProvider).fetchFunds(context);
             Map data = {
               "uid": "${pref.clientId}_${pref.imei}",
@@ -2227,7 +2262,7 @@ class AuthProvider extends DefaultChangeNotifier {
       local = {
         "clientid": pref.clientId,
         "metadata": jsonDecode(getapplocal),
-        "source": "WEB"
+        "source": "FWEB"
       };
       _savedOrderPreference = jsonDecode(getapplocal);
       await api.setOrderprefer(local, true, context);
@@ -2244,7 +2279,7 @@ class AuthProvider extends DefaultChangeNotifier {
           "expos": "Market",
           "stickysrc": false,
         },
-        "source": "WEB"
+        "source": "FWEB"
       };
       _savedOrderPreference = local['metadata'];
       await api.setOrderprefer(local, true, context);
@@ -2313,8 +2348,7 @@ class AuthProvider extends DefaultChangeNotifier {
               ResponsiveSnackBar.showWarning(
                   context, "Session Expired, Please log in again");
             } else {
-              warningMessage(
-                  context, "Session Expired, Please log in again");
+              warningMessage(context, "Session Expired, Please log in again");
             }
           }
 

@@ -6,6 +6,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/market_watch_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -59,15 +60,29 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   bool _canScrollLeft = false;
   bool _canScrollRight = true;
 
+  // Refresh state
+  bool _isRefreshing = false;
+
   void _updateScrollArrows() {
     if (!mounted) return;
-    setState(() {
-      _canScrollLeft =
-          _tabScrollController.hasClients && _tabScrollController.offset > 0;
-      _canScrollRight = _tabScrollController.hasClients &&
-          _tabScrollController.offset <
-              _tabScrollController.position.maxScrollExtent;
-    });
+    // Additional safety check to prevent setState after dispose
+    try {
+      if (!_tabScrollController.hasClients) return;
+      final newCanScrollLeft = _tabScrollController.offset > 0;
+      final newCanScrollRight =
+          _tabScrollController.offset < _tabScrollController.position.maxScrollExtent;
+
+      // Only call setState if values actually changed
+      if (_canScrollLeft != newCanScrollLeft || _canScrollRight != newCanScrollRight) {
+        setState(() {
+          _canScrollLeft = newCanScrollLeft;
+          _canScrollRight = newCanScrollRight;
+        });
+      }
+    } catch (e) {
+      // Silently handle any errors during scroll position access
+      // This prevents crashes when widget is being disposed
+    }
   }
 
   void _scrollTabs({required bool left}) {
@@ -91,10 +106,53 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
+  // Refresh orders based on current tab
+  Future<void> _refreshOrders() async {
+    if (_isRefreshing) return;
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      final orderBook = ref.read(orderProvider);
+      final currentTab = _tabController?.index ?? orderBook.selectedTab;
+
+      switch (currentTab) {
+        case 0: // Open Orders
+        case 1: // Executed Orders
+          await orderBook.fetchOrderBook(context, true);
+          break;
+        case 2: // Trade Book
+          await orderBook.fetchTradeBook(context);
+          break;
+        case 3: // GTT Orders
+          await orderBook.fetchGTTOrderBook(context, "");
+          break;
+        case 4: // Basket
+          await orderBook.getBasketName();
+          break;
+        case 5: // Pending Alerts
+          await ref.read(marketWatchProvider).fetchPendingAlert(context);
+          break;
+      }
+    } catch (e) {
+      debugPrint("Error refreshing orders: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
+  }
+
   void _setupListeners() {
     _tabScrollController.addListener(_updateScrollArrows);
-    // Initial check
-    Future.delayed(const Duration(milliseconds: 500), _updateScrollArrows);
+    // Initial check - use addPostFrameCallback for safer initial update
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _updateScrollArrows();
+    });
   }
 
   @override
@@ -200,6 +258,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void dispose() {
     // Remove search listener using stored reference (safe during dispose)
     _orderSearchCtrl?.removeListener(_onSearchChanged);
+
+    // Remove scroll listener BEFORE disposing the controller to prevent
+    // "Trying to render a disposed EngineFlutterView" error
+    _tabScrollController.removeListener(_updateScrollArrows);
 
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();
@@ -457,6 +519,42 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                     FocusScope.of(context).unfocus();
                     orderBook.clearOrderSearch();
                   },
+                ),
+              ),
+              // Gap between search and refresh
+              const SizedBox(width: 12),
+              // Refresh Button
+              SizedBox(
+                height: 40,
+                width: 40,
+                child: IconButton(
+                  onPressed: _isRefreshing ? null : _refreshOrders,
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.isDarkMode
+                        ? WebDarkColors.surfaceVariant
+                        : WebColors.surfaceVariant,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  icon: _isRefreshing
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: theme.isDarkMode
+                                ? WebDarkColors.textSecondary
+                                : WebColors.textSecondary,
+                          ),
+                        )
+                      : Icon(
+                          Icons.refresh,
+                          size: 20,
+                          color: theme.isDarkMode
+                              ? WebDarkColors.textSecondary
+                              : WebColors.textSecondary,
+                        ),
                 ),
               ),
             ],

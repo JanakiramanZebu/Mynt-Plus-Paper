@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,7 +17,6 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import '../../../../sharedWidget/hover_actions_web.dart';
 import '../../../Mobile/ipo/preclose_ipo/preclose_ipo_screen.dart';
 import '../IPO_order_screen/ipo_order_screen_web.dart';
 import '../ipo_details_sheet_web.dart';
@@ -35,11 +35,46 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
   final ScrollController _verticalScrollController = ScrollController();
   String? _hoveredRowId;
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  String? _popoverRowId;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowId != _popoverRowId) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowId != null;
+    _activePopoverController = null;
+    _popoverRowId = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -308,98 +343,16 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
     return shadcn.TableRow(
       cells: [
-        // Stock Name Cell
-        _buildShadcnCell(
+        // Stock Name Cell with dropdown menu
+        _buildNameCellWithActions(
+          ipo: ipo,
           uniqueId: uniqueId,
-          rowIsHovered: rowIsHovered,
+          rowIsHovered: rowIsHovered || _popoverRowId == uniqueId,
           theme: theme,
-          padding: const EdgeInsets.only(
-              left: 15.0, right: 8.0, top: 8.0, bottom: 8.0),
-          onTap: () => _onIPOTap(context, ipo, ipoProvider),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _toTitleCase(ipo.name ?? ""),
-                      style: MyntWebTextStyles.bodyMedium(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: rowIsHovered
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.primary,
-                                light: MyntColors.primary)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.textPrimaryDark,
-                                light: MyntColors.textPrimary),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        if (ipo.symbol != null) ...[
-                          Text(
-                            ipo.symbol ?? "",
-                            style: MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary),
-                              fontWeight: MyntFonts.medium,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        Text(
-                          ipo is SMEIPO ? "SME" : "IPO",
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary),
-                            fontWeight: MyntFonts.medium,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          status,
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary),
-                            fontWeight: MyntFonts.medium,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Apply button on hover
-              HoverActionsContainer(
-                isVisible: rowIsHovered,
-                actions: [
-                  HoverActionButton(
-                    label: isPreOpen ? 'Pre Apply' : 'Apply',
-                    color: Colors.white,
-                    backgroundColor: resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary),
-                    onPressed: () =>
-                        _onApplyPressed(context, ipo, ipoProvider, upiProvider),
-                    width: isPreOpen ? 75 : 55,
-                    height: 26,
-                  ),
-                ],
-              ),
-            ],
-          ),
+          status: status,
+          isPreOpen: isPreOpen,
+          ipoProvider: ipoProvider,
+          upiProvider: upiProvider,
         ),
         // IPO Date Cell
         _buildShadcnCell(
@@ -526,6 +479,287 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
               child: child,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Build name cell with hover dropdown menu
+  shadcn.TableCell _buildNameCellWithActions({
+    required dynamic ipo,
+    required String uniqueId,
+    required bool rowIsHovered,
+    required ThemesProvider theme,
+    required String status,
+    required bool isPreOpen,
+    required IPOProvider ipoProvider,
+    required TranctionProvider upiProvider,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) {
+          setState(() => _hoveredRowId = uniqueId);
+          if (_activePopoverController != null && _popoverRowId == uniqueId) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          setState(() => _hoveredRowId = null);
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: GestureDetector(
+          onTap: () => _onIPOTap(context, ipo, ipoProvider),
+          child: Container(
+            color: rowIsHovered
+                ? resolveThemeColor(context,
+                        dark: MyntColors.primary, light: MyntColors.primary)
+                    .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
+                : Colors.transparent,
+            padding: const EdgeInsets.only(
+                left: 15.0, right: 8.0, top: 8.0, bottom: 8.0),
+            width: double.infinity,
+            height: double.infinity,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // IPO name and details
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: rowIsHovered ? 40.0 : 0.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _toTitleCase(ipo.name ?? ""),
+                          style: MyntWebTextStyles.bodyMedium(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: rowIsHovered
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.primary,
+                                    light: MyntColors.primary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            if (ipo.symbol != null) ...[
+                              Text(
+                                ipo.symbol ?? "",
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  fontWeight: MyntFonts.medium,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Text(
+                              ipo is SMEIPO ? "SME" : "IPO",
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                                fontWeight: MyntFonts.medium,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              status,
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                                fontWeight: MyntFonts.medium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Dropdown button on hover
+                if (rowIsHovered)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: _buildOptionsMenuButton(
+                        ipo: ipo,
+                        uniqueId: uniqueId,
+                        isPreOpen: isPreOpen,
+                        ipoProvider: ipoProvider,
+                        upiProvider: upiProvider,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic ipo,
+    required String uniqueId,
+    required bool isPreOpen,
+    required IPOProvider ipoProvider,
+    required TranctionProvider upiProvider,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // Apply option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.check_circle_outline,
+                title: isPreOpen ? 'Pre Apply' : 'Apply',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _onApplyPressed(context, ipo, ipoProvider, upiProvider);
+                },
+              ),
+            );
+
+            // Divider
+            menuItems.add(const shadcn.MenuDivider());
+
+            // Details option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Details',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _onIPOTap(context, ipo, ipoProvider);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowId = uniqueId;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
         ),
       ),
     );

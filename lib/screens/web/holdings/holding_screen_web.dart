@@ -215,54 +215,124 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     final dayChange = portfolioData.oneDayChng.toStringAsFixed(2);
     final dayChangePercent = portfolioData.oneDayChngPer.toStringAsFixed(2);
 
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            label: 'Invested',
-            value: invested.toIndianRupee(),
-            valueColor: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Use 2 cards per row when width is less than 800
+        final useCompactLayout = constraints.maxWidth < 800;
+
+        if (useCompactLayout) {
+          // 2x2 grid layout for small screens
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Invested',
+                      value: invested,
+                      valueColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                      theme: theme,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Current Value',
+                      value: currentValue,
+                      valueColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                      theme: theme,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Profit/Loss',
+                      value: totalPnL,
+                      percentage: totalPnLPercent,
+                      valueColor: getValueColor(context, totalPnL),
+                      theme: theme,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStatCard(
+                      label: 'Day Change',
+                      value: dayChange,
+                      percentage: dayChangePercent,
+                      valueColor: getValueColor(context, dayChange),
+                      theme: theme,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        }
+
+        // Default: 4 cards in one row for larger screens
+        return Row(
+          children: [
+            Expanded(
+              child: _buildStatCard(
+                label: 'Invested',
+                value: invested.toIndianRupee(),
+                valueColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                theme: theme,
+              ),
             ),
-            theme: theme,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            label: 'Current Value',
-            value: currentValue.toIndianRupee(),
-            valueColor: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                label: 'Current Value',
+                value: currentValue.toIndianRupee(),
+                valueColor: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                theme: theme,
+              ),
             ),
-            theme: theme,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            label: 'Profit/Loss',
-            value: totalPnL.toIndianRupee(),
-            percentage: totalPnLPercent,
-            valueColor: getValueColor(context, totalPnL),
-            theme: theme,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            label: 'Day Change',
-            value: dayChange.toIndianRupee(),
-            percentage: dayChangePercent,
-            valueColor: getValueColor(context, dayChange),
-            theme: theme,
-          ),
-        ),
-      ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                label: 'Profit/Loss',
+                value: totalPnL.toIndianRupee(),
+                percentage: totalPnLPercent,
+                valueColor: getValueColor(context, totalPnL),
+                theme: theme,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildStatCard(
+                label: 'Day Change',
+                value: dayChange.toIndianRupee(),
+                percentage: dayChangePercent,
+                valueColor: getValueColor(context, dayChange),
+                theme: theme,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -373,47 +443,107 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         final absReturnPercent =
             _formatValue(summary?.absReturnPercent?.toString());
 
-        return Row(
-          children: [
-            Expanded(
-              child: _buildStatCard(
-                // icon: Icons.account_balance_wallet_outlined,
-                label: 'Invested',
-                value: investedValue.toIndianRupee(),
-                valueColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Use 2 cards per row when width is less than 800
+            final useCompactLayout = constraints.maxWidth < 800;
+
+            if (useCompactLayout) {
+              // Compact layout: 2 cards top row, 1 card bottom row
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          label: 'Invested',
+                          value: investedValue,
+                          valueColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                          theme: theme,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard(
+                          label: 'Current Value',
+                          value: currentValue,
+                          valueColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                          theme: theme,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          label: 'Returns',
+                          value: absReturnValue,
+                          percentage: absReturnPercent,
+                          valueColor: getValueColor(context, absReturnValue),
+                          theme: theme,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Empty expanded to maintain grid alignment
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            // Default: 3 cards in one row for larger screens
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    label: 'Invested',
+                    value: investedValue.toIndianRupee(),
+                    valueColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
+                    theme: theme,
+                  ),
                 ),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                // icon: Icons.pie_chart_outline,
-                label: 'Current Value',
-                value: currentValue.toIndianRupee(),
-                valueColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    label: 'Current Value',
+                    value: currentValue.toIndianRupee(),
+                    valueColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
+                    theme: theme,
+                  ),
                 ),
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                // icon: Icons.trending_up,
-                label: 'Returns',
-                value: absReturnValue.toIndianRupee(),
-                percentage: absReturnPercent,
-                valueColor: getValueColor(context, absReturnValue),
-                theme: theme,
-              ),
-            ),
-          ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    label: 'Returns',
+                    value: absReturnValue.toIndianRupee(),
+                    percentage: absReturnPercent,
+                    valueColor: getValueColor(context, absReturnValue),
+                    theme: theme,
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -468,12 +598,14 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     final mutualFundsCount =
         ref.read(mfProvider).mfholdingnew?.data?.length ?? 0;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      child: Row(
-        children: [
-          // Custom chip-style tabs matching the design
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Use compact layout when width is less than 800
+        final useCompactLayout = constraints.maxWidth < 800;
+
+        // Build tabs widget (reused in both layouts)
+        Widget buildTabs() {
+          return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Equity tab
@@ -499,7 +631,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                               : Colors.black.withOpacity(0.05))
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
-                      border: null, // ✅ no border
+                      border: null,
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -626,90 +758,116 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 ),
               ),
             ],
-          ),
-          // Spacer to push action items to the right
-          const Spacer(),
-          // Search Bar - Show different search based on selected tab
-          if (_selectedTabIndex == 0) ...[
-            // Stocks tab search
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // Responsive search bar width
-                final screenWidth = MediaQuery.of(context).size.width;
-                double searchWidth;
-                if (screenWidth >= 1200) {
-                  searchWidth = 400;
-                } else if (screenWidth >= 800) {
-                  searchWidth = 300;
-                } else {
-                  searchWidth = 200;
-                }
+          );
+        }
 
-                return SizedBox(
-                  width: searchWidth,
-                  child: MyntSearchTextField.withSmartClear(
-                    controller: _stocksSearchController,
-                    placeholder: 'Search on holdings',
-                    leadingIcon: assets.searchIcon,
-                    onClear: () => _stocksSearchController.clear(),
-                  ),
-                );
-              },
-            ),
-            // const SizedBox(width: 16),
-          ] else if (_selectedTabIndex == 1) ...[
-            // Mutual Funds tab search
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // Responsive search bar width
-                final screenWidth = MediaQuery.of(context).size.width;
-                double searchWidth;
-                if (screenWidth >= 1200) {
-                  searchWidth = 400;
-                } else if (screenWidth >= 800) {
-                  searchWidth = 300;
-                } else {
-                  searchWidth = 200;
-                }
+        // Build search widget
+        Widget buildSearch() {
+          final screenWidth = MediaQuery.of(context).size.width;
+          double searchWidth;
+          if (useCompactLayout) {
+            // In compact layout, search takes remaining space
+            searchWidth = double.infinity;
+          } else if (screenWidth >= 1200) {
+            searchWidth = 400;
+          } else if (screenWidth >= 800) {
+            searchWidth = 300;
+          } else {
+            searchWidth = 200;
+          }
 
-                return SizedBox(
-                  width: searchWidth,
-                  child: MyntSearchTextField.withSmartClear(
-                    controller: _mfSearchController,
-                    placeholder: 'Search on mutual funds',
-                    leadingIcon: assets.searchIcon,
-                    onClear: () => _mfSearchController.clear(),
-                  ),
-                );
-              },
+          if (_selectedTabIndex == 0) {
+            return SizedBox(
+              width: useCompactLayout ? null : searchWidth,
+              child: MyntSearchTextField.withSmartClear(
+                controller: _stocksSearchController,
+                placeholder: 'Search on holdings',
+                leadingIcon: assets.searchIcon,
+                onClear: () => _stocksSearchController.clear(),
+              ),
+            );
+          } else {
+            return SizedBox(
+              width: useCompactLayout ? null : searchWidth,
+              child: MyntSearchTextField.withSmartClear(
+                controller: _mfSearchController,
+                placeholder: 'Search on mutual funds',
+                leadingIcon: assets.searchIcon,
+                onClear: () => _mfSearchController.clear(),
+              ),
+            );
+          }
+        }
+
+        // Build action buttons
+        Widget buildActionButtons() {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Filter dropdown button (only for Equity tab)
+              if (_selectedTabIndex == 0) ...[
+                _buildFilterButton(theme),
+                const SizedBox(width: 12),
+              ],
+              // E-DIS button (only for Stocks tab)
+              if (_selectedTabIndex == 0) ...[
+                _buildEdisButton(theme, portfolioData),
+                const SizedBox(width: 12),
+              ],
+              // Reload button
+              _buildIconButton(
+                icon: Icons.refresh,
+                onPressed: () async {
+                  if (_selectedTabIndex == 0) {
+                    await portfolioData.fetchHoldings(context, "Refresh");
+                  } else {
+                    await ref.read(mfProvider).fetchmfholdingnew();
+                  }
+                },
+                theme: theme,
+              ),
+            ],
+          );
+        }
+
+        if (useCompactLayout) {
+          // Compact layout: Tabs on first row, Search + Actions on second row
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Row 1: Tabs
+                buildTabs(),
+                const SizedBox(height: 12),
+                // Row 2: Search + Actions
+                Row(
+                  children: [
+                    Expanded(child: buildSearch()),
+                    const SizedBox(width: 12),
+                    buildActionButtons(),
+                  ],
+                ),
+              ],
             ),
-            // const SizedBox(width: 16),
-          ],
-          // Filter dropdown button (only for Equity tab)
-          if (_selectedTabIndex == 0) ...[
-            const SizedBox(width: 12),
-            _buildFilterButton(theme),
-          ],
-          // E-DIS button (only for Stocks tab)
-          if (_selectedTabIndex == 0) ...[
-            const SizedBox(width: 12),
-            _buildEdisButton(theme, portfolioData),
-          ],
-          // Reload button
-          const SizedBox(width: 12),
-          _buildIconButton(
-            icon: Icons.refresh,
-            onPressed: () async {
-              if (_selectedTabIndex == 0) {
-                await portfolioData.fetchHoldings(context, "Refresh");
-              } else {
-                await ref.read(mfProvider).fetchmfholdingnew();
-              }
-            },
-            theme: theme,
+          );
+        }
+
+        // Default layout: All in one row
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+          child: Row(
+            children: [
+              buildTabs(),
+              const Spacer(),
+              buildSearch(),
+              const SizedBox(width: 12),
+              buildActionButtons(),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

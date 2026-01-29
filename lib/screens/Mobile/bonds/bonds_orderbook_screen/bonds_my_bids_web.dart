@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -31,10 +32,17 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
   bool _sortAscending = false; // Default newest first
   int _selectedSubTab = 0; // 0: Open, 1: Close
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
+    _hoveredRowIndex.addListener(_onHoverChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(bondsProvider).fetchBondsOrderBook();
     });
@@ -42,9 +50,54 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _verticalScrollController.dispose();
     _hoveredRowIndex.dispose();
     super.dispose();
+  }
+
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   void _onSort(int columnIndex) {
@@ -120,12 +173,12 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: resolveThemeColor(context, dark: Colors.white10, light: Colors.grey[200]!),
-                width: 1,
-              ),
-            ),
+            // border: Border(
+            //   bottom: BorderSide(
+            //     color: resolveThemeColor(context, dark: Colors.white10, light: Colors.grey[200]!),
+            //     width: 1,
+            //   ),
+            // ),
           ),
           child: Row(
             children: [
@@ -180,7 +233,9 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
 
         // Table
         Expanded(
-          child: LayoutBuilder(builder: (context, constraints) {
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: LayoutBuilder(builder: (context, constraints) {
                   final width = constraints.maxWidth;
                   // Distribute width
                   // Symbol: 20%
@@ -195,7 +250,8 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                   final col4 = width * 0.20;
                   final col5 = width * 0.14;
 
-                  return Column(
+                  return shadcn.OutlinedContainer(
+                    child: Column(
                     children: [
                       // Fixed Header Table
                       shadcn.Table(
@@ -264,34 +320,10 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                                 final order = entry.value;
                                 return shadcn.TableRow(
                                   cells: [
-                                    _buildCellWithHover(
+                                    _buildSymbolCellWithActions(
+                                        order: order,
                                         rowIndex: index,
-                                        columnIndex: 0,
-                                        onTap: () => _openDetails(order),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(order.symbol ?? '',
-                                                style: MyntWebTextStyles.body(
-                                                    context,
-                                                    fontWeight:
-                                                        MyntFonts.medium)),
-                                            Text(
-                                                (order.symbol?.contains('T') ==
-                                                            true &&
-                                                        !(order.symbol?.contains('GS') ==
-                                                            true))
-                                                    ? 'T-BILL'
-                                                    : 'G-SEC',
-                                                style: MyntWebTextStyles
-                                                    .caption(context,
-                                                        color: WebColors
-                                                            .textSecondary)),
-                                          ],
-                                        )),
+                                        onTap: () => _openDetails(order)),
                                     _buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 1,
@@ -346,8 +378,10 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                         ),
                       ),
                     ],
+                  ),
                   );
                 }),
+          ),
         ),
       ],
     );
@@ -510,6 +544,103 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
     ref.read(sidebarProvider.notifier).openSidebar();
   }
 
+  // Build symbol cell with hover dropdown button
+  shadcn.TableCell _buildSymbolCellWithActions({
+    required BondsOrderBookModel order,
+    required int rowIndex,
+    VoidCallback? onTap,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isHovered
+                        ? resolveThemeColor(context,
+                            dark: WebColors.primary.withValues(alpha: 0.08),
+                            light: WebColors.primary.withValues(alpha: 0.08))
+                        : null,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(context,
+                            dark: Colors.white10,
+                            light: Colors.grey.withOpacity(0.1)),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Symbol content
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(order.symbol ?? '',
+                                    style: MyntWebTextStyles.body(context,
+                                        fontWeight: MyntFonts.medium)),
+                                Text(
+                                    (order.symbol?.contains('T') == true &&
+                                            !(order.symbol?.contains('GS') == true))
+                                        ? 'T-BILL'
+                                        : 'G-SEC',
+                                    style: MyntWebTextStyles.caption(context,
+                                        color: WebColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Dropdown button on hover
+                        if (isHovered)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: _buildOptionsMenuButton(order, rowIndex),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   String _getReasonText(BondsOrderBookModel order) {
       if (order.failReason != null && order.failReason!.isNotEmpty) return order.failReason!;
       if (order.clearingReason != null && order.clearingReason!.isNotEmpty) return order.clearingReason!;
@@ -556,5 +687,119 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
     } catch (e) {
       return dateTimeStr;
     }
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(BondsOrderBookModel order, int rowIndex) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: WebColors.textPrimaryDark,
+                light: WebColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: WebColors.textPrimaryDark,
+                light: WebColors.textPrimary);
+
+            // Info option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _openDetails(order);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: WebColors.textPrimaryDark,
+                  light: WebColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

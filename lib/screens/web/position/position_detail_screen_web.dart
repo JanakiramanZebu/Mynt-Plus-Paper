@@ -642,6 +642,17 @@ class _PositionDetailScreenWebState
           ),
           theme,
         ),
+         _rowOfInfoData(
+          "Product",
+          Text(
+            _positionData.sPrdtAli != "null"
+                ? "${_positionData.sPrdtAli}"
+                : "--",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
         _rowOfInfoData(
           "Net Qty",
           Text(
@@ -660,17 +671,16 @@ class _PositionDetailScreenWebState
           ),
           theme,
         ),
-        _rowOfInfoData(
-          "Product",
+          _rowOfInfoData(
+          "Actual Avg Price",
           Text(
-            _positionData.sPrdtAli != "null"
-                ? "${_positionData.sPrdtAli}"
-                : "--",
+            "${_positionData.upldprc ?? 0.00}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
           theme,
         ),
+       
         _rowOfInfoData(
           "Buy Qty ( Day / CF )",
           Text(
@@ -707,15 +717,7 @@ class _PositionDetailScreenWebState
           ),
           theme,
         ),
-        _rowOfInfoData(
-          "Actual Avg Price",
-          Text(
-            "${_positionData.upldprc ?? 0.00}",
-            style:
-                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
-          ),
-          theme,
-        ),
+      
         _rowOfInfoData(
           "Buy / Sell Value",
           Text(

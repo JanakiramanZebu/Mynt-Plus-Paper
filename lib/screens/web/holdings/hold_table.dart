@@ -3,8 +3,10 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
+        IconData,
         Icon,
         BoxDecoration,
+        BorderRadius,
         TextPainter,
         TextSpan,
         TextStyle,
@@ -40,7 +42,6 @@ import 'package:flutter/material.dart'
         Tooltip,
         RichText,
         Stack,
-        LinearGradient,
         Clip,
         ValueNotifier,
         ValueListenableBuilder,
@@ -48,7 +49,6 @@ import 'package:flutter/material.dart'
         MediaQuery,
         Builder,
         BoxShadow,
-        Border,
         Offset,
         RawScrollbar,
         Radius;
@@ -66,7 +66,6 @@ import '../../../utils/responsive_navigation.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import 'holding_detail_screen_web.dart';
-import '../../../sharedWidget/hover_actions_web.dart';
 
 // Table Example 1 with real Holdings data and WebSocket LTP updates
 // This demonstrates the simplest Shadcn table implementation with live data
@@ -88,6 +87,18 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -97,10 +108,74 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
+
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild =
+        _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -186,12 +261,28 @@ class _TableExample1State extends ConsumerState<TableExample1> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null,
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          // Cancel any pending close if re-entering the popover's row
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          // If popover is open and not hovering dropdown, start close timer
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+          child: child,
+          builder: (context, hoveredIndex, cachedChild) {
+            // Row is hovered if mouse is over it OR if its dropdown menu is open
+            final isRowHovered = hoveredIndex == rowIndex ||
+                (_activePopoverController != null &&
+                    _popoverRowIndex == rowIndex);
 
             return Container(
               padding: cellPadding,
@@ -201,7 +292,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                       light: MyntColors.primary.withValues(alpha: 0.08))
                   : null,
               alignment: alignRight ? Alignment.topRight : null,
-              child: child,
+              child: cachedChild,
             );
           },
         ),
@@ -560,9 +651,9 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           final totalMinWidth = columnWidths.values
               .fold<double>(0.0, (sum, width) => sum + width);
 
-          // Step 3: If there's extra space, distribute it proportionally
-          // This prevents unnecessary horizontal scroll while using available space efficiently
+          // Step 3: Handle width adjustment based on available space
           if (totalMinWidth < availableWidth) {
+            // Extra space available - distribute it proportionally
             final extraSpace = availableWidth - totalMinWidth;
 
             // Define which columns can grow and their growth priorities
@@ -604,19 +695,64 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 }
               }
             }
+
+            // Cap Net Qty column to prevent it from being too wide
+            if (columnWidths[1] != null && columnWidths[1]! > 120) {
+              columnWidths[1] = 120.0;
+            }
+          } else if (totalMinWidth > availableWidth) {
+            // Not enough space - shrink columns proportionally to eliminate scroll
+            final excessWidth = totalMinWidth - availableWidth;
+
+            // Define absolute minimum widths (cannot shrink below these)
+            final absoluteMinWidths = <int, double>{
+              0: 120.0, // Instrument (needs space for 3-dot menu)
+              1: 50.0,  // Net Qty
+              2: 65.0,  // Avg Price
+              3: 50.0,  // LTP
+              4: 70.0,  // Invested
+              5: 80.0,  // Current Value
+              6: 80.0,  // Day P&L
+              7: 80.0,  // Overall P&L
+            };
+
+            // Calculate how much each column can shrink
+            final shrinkableAmounts = <int, double>{};
+            double totalShrinkable = 0.0;
+
+            for (int i = 0; i < 8; i++) {
+              final currentWidth = columnWidths[i]!;
+              final absoluteMin = absoluteMinWidths[i] ?? 50.0;
+              final shrinkable = currentWidth - absoluteMin;
+              if (shrinkable > 0) {
+                shrinkableAmounts[i] = shrinkable;
+                totalShrinkable += shrinkable;
+              } else {
+                shrinkableAmounts[i] = 0.0;
+              }
+            }
+
+            // Shrink proportionally if we have enough shrinkable space
+            if (totalShrinkable > 0) {
+              // Calculate shrink factor (cap at 1.0 if excess > shrinkable)
+              final shrinkFactor = excessWidth < totalShrinkable
+                  ? excessWidth / totalShrinkable
+                  : 1.0;
+
+              for (int i = 0; i < 8; i++) {
+                if (shrinkableAmounts[i]! > 0) {
+                  final shrinkAmount = shrinkableAmounts[i]! * shrinkFactor;
+                  columnWidths[i] = columnWidths[i]! - shrinkAmount;
+                }
+              }
+            }
           }
 
-          // Step 4: Set maximum width for Net Qty column to prevent it from being too wide
-          // Net Qty has small content, so cap it at a reasonable max width
-          if (columnWidths[1] != null && columnWidths[1]! > 120) {
-            columnWidths[1] = 120.0; // Max width for Net Qty column
-          }
-
-          // Calculate total required width
+          // Calculate total required width after adjustment
           final totalRequiredWidth = columnWidths.values
               .fold<double>(0.0, (sum, width) => sum + width);
 
-          // If total width exceeds available width, enable horizontal scrolling
+          // Only enable horizontal scroll if columns are at absolute minimum and still don't fit
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
           // Build table content
@@ -737,11 +873,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                         children: [
                                                           Flexible(
                                                             child: RichText(
-                                                              overflow: isRowHovered
-                                                                  ? TextOverflow
-                                                                      .ellipsis
-                                                                  : TextOverflow
-                                                                      .visible,
+                                                              overflow: TextOverflow.ellipsis,
                                                               maxLines: 1,
                                                               softWrap: false,
                                                               text: TextSpan(
@@ -848,122 +980,37 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                     ),
                                                   ),
                                                 ),
-                                                Positioned(
-                                                  right: 0,
-                                                  top: 0,
-                                                  bottom: 0,
-                                                  child: GestureDetector(
-                                                    onTap: () {},
-                                                    behavior:
-                                                        HitTestBehavior.opaque,
-                                                    child: Container(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 12),
+                                                // Exit button + 3-dot options menu - positioned on the right
+                                                if (isRowHovered ||
+                                                    (_activePopoverController !=
+                                                            null &&
+                                                        _popoverRowIndex ==
+                                                            index))
+                                                  Positioned(
+                                                    right: 0,
+                                                    top: 0,
+                                                    bottom: 0,
+                                                    child: Align(
                                                       alignment:
                                                           Alignment.centerRight,
-                                                      decoration: BoxDecoration(
-                                                        gradient:
-                                                            LinearGradient(
-                                                          begin: Alignment
-                                                              .centerLeft,
-                                                          end: Alignment
-                                                              .centerRight,
-                                                          colors: [
-                                                            shadcn.Theme.of(
-                                                                    context)
-                                                                .colorScheme
-                                                                .background
-                                                                .withOpacity(
-                                                                    0.0),
-                                                            shadcn.Theme.of(
-                                                                    context)
-                                                                .colorScheme
-                                                                .background
-                                                                .withOpacity(
-                                                                    0.95),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      child:
-                                                          HoverActionsContainer(
-                                                        isVisible: isRowHovered,
-                                                        actions: [
-                                                          if (qty > 0) ...[
-                                                            HoverActionButton(
-                                                              label: 'Add',
-                                                              size: 44,
-                                                              borderRadius: 5,
-                                                              color:
-                                                                  Colors.white,
-                                                              backgroundColor:
-                                                                  resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .primaryDark,
-                                                                light: MyntColors
-                                                                    .primary,
-                                                              ),
-                                                              borderColor:
-                                                                  resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .primaryDark,
-                                                                light: MyntColors
-                                                                    .primary,
-                                                              ),
-                                                              onPressed: () =>
-                                                                  _handleAddHolding(
-                                                                      holding,
-                                                                      exchTsym),
-                                                            ),
-                                                            HoverActionButton(
-                                                              label: 'Exit',
-                                                              size: 44,
-                                                              borderRadius: 5,
-                                                              color:
-                                                                  Colors.white,
-                                                              backgroundColor:
-                                                                  resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .tertiary,
-                                                                light: MyntColors
-                                                                    .tertiary,
-                                                              ),
-                                                              borderColor:
-                                                                  resolveThemeColor(
-                                                                context,
-                                                                dark: MyntColors
-                                                                    .tertiary,
-                                                                light: MyntColors
-                                                                    .tertiary,
-                                                              ),
-                                                              onPressed: () =>
-                                                                  _handleExitHolding(
-                                                                      holding,
-                                                                      exchTsym),
-                                                            ),
-                                                          ],
-                                                          HoverActionButton
-                                                              .icon(
-                                                            context: context,
-                                                            icon:
-                                                                Icons.bar_chart,
-                                                            size: 30,
-                                                            iconSize: 18,
-                                                            iconColor:
-                                                                Colors.black,
-                                                            onPressed: () =>
-                                                                _handleChartTap(
-                                                                    holding,
-                                                                    exchTsym),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          // Exit button (only for holdings with qty)
+                                                          if (qty > 0)
+                                                            _buildExitButton(holding, exchTsym),
+                                                          if (qty > 0)
+                                                            const SizedBox(width: 6),
+                                                          _buildOptionsMenuButton(
+                                                            holding,
+                                                            exchTsym,
+                                                            index,
+                                                            qty,
                                                           ),
                                                         ],
                                                       ),
                                                     ),
                                                   ),
-                                                ),
                                               ],
                                             ),
                                           ),
@@ -1381,6 +1428,185 @@ class _TableExample1State extends ConsumerState<TableExample1> {
       scripData.scripdepthsize(false);
       await scripData.calldepthApis(context, depthArgs, "");
     }
+  }
+
+  // Build styled menu button matching profile dropdown
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Exit button (X icon with red/tertiary color)
+  Widget _buildExitButton(dynamic holding, dynamic exchTsym) {
+    return GestureDetector(
+      onTap: () {
+        _handleExitHolding(holding, exchTsym);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark,
+              light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    dynamic holding,
+    dynamic exchTsym,
+    int rowIndex,
+    int qty,
+  ) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // Add option (only for holdings with qty > 0)
+            if (qty > 0) {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.add_circle_outline,
+                  title: 'Add',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    _handleAddHolding(holding, exchTsym);
+                  },
+                ),
+              );
+            }
+
+            // Add divider if we have action items
+            if (menuItems.isNotEmpty) {
+              menuItems.add(const shadcn.MenuDivider());
+            }
+
+            // Info option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _showHoldingDetail(holding, exchTsym);
+                },
+              ),
+            );
+
+            // Chart option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.bar_chart,
+                title: 'Chart',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleChartTap(holding, exchTsym);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

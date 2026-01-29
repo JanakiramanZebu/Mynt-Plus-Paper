@@ -3,8 +3,10 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
+        IconData,
         Icon,
         BoxDecoration,
+        BorderRadius,
         TextPainter,
         TextSpan,
         TextStyle,
@@ -43,13 +45,14 @@ import 'package:flutter/material.dart'
         Clip,
         MediaQuery,
         Tooltip,
-        Visibility,
+        Positioned,
         BoxShadow,
         Offset,
         ValueNotifier,
         ValueListenableBuilder,
         RawScrollbar,
-        Radius;
+        Radius,
+        Builder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -57,7 +60,6 @@ import '../../../provider/mf_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import '../../../sharedWidget/hover_actions_web.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import 'mf_holding_detail_screen_web.dart';
 import '../ordersbook/mf/redeem_bottom_sheet_web.dart';
@@ -76,6 +78,18 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
 
   // Helper method to get appropriate text style for table cells
   TextStyle _getTextStyle(BuildContext context, {Color? color}) {
@@ -106,6 +120,76 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).fetchmfholdingnew();
     });
+
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild =
+        _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
+    _hoveredRowIndex.dispose();
+    super.dispose();
   }
 
   // Builds a cell with hover detection that covers the entire cell including padding
@@ -144,12 +228,28 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null,
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          // Cancel any pending close if re-entering the popover's row
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          // If popover is open and not hovering dropdown, start close timer
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+          child: child,
+          builder: (context, hoveredIndex, cachedChild) {
+            // Row is hovered if mouse is over it OR if its dropdown menu is open
+            final isRowHovered = hoveredIndex == rowIndex ||
+                (_activePopoverController != null &&
+                    _popoverRowIndex == rowIndex);
 
             return Container(
               padding: cellPadding,
@@ -159,7 +259,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                       light: MyntColors.primary.withValues(alpha: 0.08))
                   : null,
               alignment: alignRight ? Alignment.topRight : null,
-              child: child,
+              child: cachedChild,
             );
           },
         ),
@@ -440,6 +540,145 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     );
   }
 
+  // Build styled menu button matching profile dropdown
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    dynamic holding,
+    int rowIndex,
+    double avgQty,
+  ) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // Redeem option (only for holdings with units > 0)
+            if (avgQty > 0) {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: shadcn.LucideIcons.gift,
+                  title: 'Redeem',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    _handleRedeem(holding);
+                  },
+                ),
+              );
+            }
+
+            // Add divider if we have action items
+            if (menuItems.isNotEmpty) {
+              menuItems.add(const shadcn.MenuDivider());
+            }
+
+            // Info option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _showHoldingDetail(holding);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
@@ -578,6 +817,48 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 }
               }
             }
+          } else if (totalMinWidth > availableWidth) {
+            // Step 3b: If content exceeds available width, shrink proportionally
+            final excessWidth = totalMinWidth - availableWidth;
+
+            // Define absolute minimum widths (cannot go below these)
+            final absoluteMinWidths = <int, double>{
+              0: 120.0, // Fund Name (needs space for 3-dot menu)
+              1: 60.0, // Units
+              2: 70.0, // Avg NAV
+              3: 80.0, // Current NAV
+              4: 70.0, // Invested
+              5: 80.0, // Current Value
+              6: 70.0, // P&L
+            };
+
+            // Calculate how much each column can shrink
+            final shrinkableAmounts = <int, double>{};
+            double totalShrinkable = 0.0;
+
+            for (int i = 0; i < 7; i++) {
+              final currentWidth = columnWidths[i]!;
+              final absoluteMin = absoluteMinWidths[i] ?? 50.0;
+              final shrinkable = currentWidth - absoluteMin;
+              if (shrinkable > 0) {
+                shrinkableAmounts[i] = shrinkable;
+                totalShrinkable += shrinkable;
+              } else {
+                shrinkableAmounts[i] = 0.0;
+              }
+            }
+
+            // Distribute the shrinkage proportionally
+            if (totalShrinkable > 0) {
+              final shrinkRatio =
+                  (excessWidth / totalShrinkable).clamp(0.0, 1.0);
+              for (int i = 0; i < 7; i++) {
+                if (shrinkableAmounts[i]! > 0) {
+                  final shrinkAmount = shrinkableAmounts[i]! * shrinkRatio;
+                  columnWidths[i] = columnWidths[i]! - shrinkAmount;
+                }
+              }
+            }
           }
 
           // Calculate total required width
@@ -705,30 +986,24 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                                   ),
                                                 ),
                                               ),
-                                              // Action button - overlay on the right side, covering only half the text
-                                              // Use Visibility to ensure buttons don't take space when not hovered
-                                              if (avgQty > 0)
-                                                Visibility(
-                                                  visible: isRowHovered,
-                                                  maintainSize: false,
-                                                  maintainAnimation: false,
-                                                  maintainState: false,
+                                              // 3-dot options menu - positioned on the right
+                                              if (isRowHovered ||
+                                                  (_activePopoverController !=
+                                                          null &&
+                                                      _popoverRowIndex ==
+                                                          index))
+                                                Positioned(
+                                                  right: 0,
+                                                  top: 0,
+                                                  bottom: 0,
                                                   child: Align(
                                                     alignment:
                                                         Alignment.centerRight,
                                                     child:
-                                                        HoverActionsContainer(
-                                                      isVisible: isRowHovered,
-                                                      actions: [
-                                                        HoverActionButton
-                                                            .redeem(
-                                                          context: context,
-                                                          borderRadius: 5.0,
-                                                          onPressed: () =>
-                                                              _handleRedeem(
-                                                                  holding),
-                                                        ),
-                                                      ],
+                                                        _buildOptionsMenuButton(
+                                                      holding,
+                                                      index,
+                                                      avgQty,
                                                     ),
                                                   ),
                                                 ),
