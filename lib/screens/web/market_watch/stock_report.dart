@@ -14,6 +14,7 @@ import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../Mobile/market_watch/over_view/financial.dart';
 import '../../Mobile/market_watch/over_view/price_comparision.dart';
 
@@ -1777,11 +1778,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 ),
                 child: marketWatch.chartDataLoading
                     ? Center(
-                        child: CircularProgressIndicator(
-                          color: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                        ),
+                        child: MyntLoader.simple(),
                       )
                     : priceData.isEmpty
                         ? Center(
@@ -2278,9 +2275,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-          ),
+          MyntLoader.simple(),
           const SizedBox(height: 16),
           TextWidget.paraText(
             text: "Loading stock data...",

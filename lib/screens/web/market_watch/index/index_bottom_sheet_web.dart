@@ -16,6 +16,7 @@ import '../../../../res/responsive.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../utils/responsive_snackbar.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../tv_chart/chart_iframe_guard.dart';
 
 class IndexBottomSheetWeb extends ConsumerStatefulWidget {
@@ -314,7 +315,7 @@ class _IndexBottomSheetWebState extends ConsumerState<IndexBottomSheetWeb> {
                     final scrollController = _scrollControllers[pageIndex]!;
 
                     return indexProvide.isLoad
-                        ? const Center(child: CircularProgressIndicator())
+                        ? Center(child: MyntLoader.simple())
                         : indexProvide.indValuesList.isNotEmpty
                             ? ScrollConfiguration(
                                 behavior: const MaterialScrollBehavior()

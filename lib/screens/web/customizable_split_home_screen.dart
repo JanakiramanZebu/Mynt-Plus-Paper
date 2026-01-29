@@ -23,7 +23,7 @@ import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -54,7 +54,7 @@ import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
-// import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+// import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
 
@@ -1779,7 +1779,7 @@ class _CustomizableSplitHomeScreenState
                 color: resolveThemeColor(context,
                     dark: MyntColors.backgroundColorDark,
                     light: MyntColors.backgroundColor),
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return HoldingScreenWeb(
@@ -1807,7 +1807,7 @@ class _CustomizableSplitHomeScreenState
                 color: resolveThemeColor(context,
                     dark: MyntColors.backgroundColorDark,
                     light: MyntColors.backgroundColor),
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return PositionScreenWeb(listofPosition: allPostionList);
@@ -4299,7 +4299,7 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
       color: resolveThemeColor(context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor),
-      child: const CircularLoaderImage(),
+      child: MyntLoader.branded(),
     );
   }
 }
@@ -4737,7 +4737,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
       color: resolveThemeColor(context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor),
-      child: const CircularLoaderImage(),
+      child: MyntLoader.branded(),
     );
   }
 }
