@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -30,10 +31,17 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
+    _hoveredRowIndex.addListener(_onHoverChanged);
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
@@ -41,8 +49,53 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     });
   }
 
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _searchController.dispose();
@@ -200,6 +253,262 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   String _formatDate(String? date) {
     if (date == null || date.isEmpty) return "N/A";
     return date.replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  // Build fund name cell with hover dropdown menu
+  shadcn.TableCell _buildFundNameCellWithActions({
+    required dynamic item,
+    required int rowIndex,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Fund info
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: NetworkImage(
+                          "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                        ),
+                        onBackgroundImageError: (_, __) {},
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.name ?? "Unknown Fund",
+                                style: _getTextStyle(
+                                    context,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary),
+                                    fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                (item.sCHEMECATEGORY ?? "Other Scheme").toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // 3-dot dropdown button on hover
+                  if (isHovered)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildOptionsMenuButton(
+                          item: item,
+                          rowIndex: rowIndex,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic item,
+    required int rowIndex,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // One-Time option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.payments_outlined,
+                title: 'One-Time',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleOrder(item, 'One-time');
+                },
+              ),
+            );
+
+            // SIP option (only if SIP is allowed)
+            if (item.sIPFLAG == "Y") {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.autorenew,
+                  title: 'SIP',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    _handleOrder(item, 'SIP');
+                  },
+                ),
+              );
+            }
+
+            // Divider
+            menuItems.add(const shadcn.MenuDivider());
+
+            // Details option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Details',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  // Navigate to details - can be implemented later
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -395,124 +704,10 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
 
                                             return shadcn.TableRow(
                                               cells: [
-                                                buildCellWithHover(
+                                                _buildFundNameCellWithActions(
+                                                  item: item,
                                                   rowIndex: index,
-                                                  child: Row(
-                                                    children: [
-                                                      CircleAvatar(
-                                                        radius: 14,
-                                                        backgroundColor:
-                                                            Colors.grey[200],
-                                                        backgroundImage:
-                                                            NetworkImage(
-                                                          "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
-                                                        ),
-                                                        onBackgroundImageError:
-                                                            (_, __) {},
-                                                      ),
-                                                      const SizedBox(width: 12),
-                                                      Expanded(
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Text(
-                                                              item.name ??
-                                                                  "Unknown Fund",
-                                                              style: _getTextStyle(
-                                                                  context,
-                                                                  color: resolveThemeColor(
-                                                                      context,
-                                                                      dark: MyntColors
-                                                                          .textPrimaryDark,
-                                                                      light: MyntColors
-                                                                          .textPrimary),
-                                                                  fontSize: 14),
-                                                              maxLines: 1,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 2),
-                                                            Row(
-                                                              children: [
-                                                                _buildTag(
-                                                                    item.sCHEMECATEGORY ??
-                                                                        "Other Scheme",
-                                                                    theme),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      ValueListenableBuilder<
-                                                          int?>(
-                                                        valueListenable:
-                                                            _hoveredRowIndex,
-                                                        builder: (context,
-                                                            hoveredIndex, _) {
-                                                          if (hoveredIndex ==
-                                                              index) {
-                                                            return Container(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(4),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: resolveThemeColor(
-                                                                    context,
-                                                                    dark: MyntColors
-                                                                        .searchBgDark,
-                                                                    light: MyntColors
-                                                                        .backgroundColor),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            6),
-                                                                boxShadow:
-                                                                    MyntShadows
-                                                                        .card,
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .min,
-                                                                children: [
-                                                                  _buildActionButton(
-                                                                      "One-time",
-                                                                      const Color(
-                                                                          0xff0037B7),
-                                                                      () => _handleOrder(
-                                                                          item,
-                                                                          "One-time")),
-                                                                  if (item.sIPFLAG ==
-                                                                      "Y") ...[
-                                                                    const SizedBox(
-                                                                        width:
-                                                                            6),
-                                                                    _buildActionButton(
-                                                                        "SIP",
-                                                                        const Color(
-                                                                            0xff0037B7),
-                                                                        () => _handleOrder(
-                                                                            item,
-                                                                            "SIP")),
-                                                                  ]
-                                                                ],
-                                                              ),
-                                                            );
-                                                          }
-                                                          return const SizedBox
-                                                              .shrink();
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
+                                                  theme: theme,
                                                 ),
                                                 buildCellWithHover(
                                                   rowIndex: index,
@@ -558,44 +753,4 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     );
   }
 
-  Widget _buildTag(String text, ThemesProvider theme) {
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        text.toUpperCase(),
-        style: TextStyle(
-          fontSize: 10,
-          color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(String label, Color color, VoidCallback onTap,
-      {bool filled = true}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        decoration: BoxDecoration(
-          color: filled ? color : Colors.transparent,
-          border: filled ? null : Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: filled ? Colors.white : color,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 }

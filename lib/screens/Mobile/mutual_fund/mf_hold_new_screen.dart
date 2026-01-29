@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/web/ordersbook/mf/redeem_bottom_sheet_web.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -25,6 +26,12 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
   int? _sortColumnIndex;
   bool _sortAscending = true;
 
+  // Popover state management for 3-dot dropdown menu
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   // Scroll controllers
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
@@ -36,12 +43,60 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mfProvider).fetchmfholdingnew();
     });
+    // Listen to hover changes for popover management
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
+    _hoveredRowIndex.dispose();
     super.dispose();
   }
 
@@ -508,33 +563,22 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                                                                 ),
                                                               ),
                                                             ),
-                                                            // Action button - overlay on the right side
-                                                             if (avgQty > 0)
-                                                Visibility(
-                                                  visible: isRowHovered,
-                                                  maintainSize: false,
-                                                  maintainAnimation: false,
-                                                  maintainState: false,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child:
-                                                        HoverActionsContainer(
-                                                      isVisible: isRowHovered,
-                                                      actions: [
-                                                        HoverActionButton
-                                                            .redeem(
-                                                          context: context,
-                                                          borderRadius: 5.0,
-                                                          height: 60.0,
-                                                          onPressed: () =>
-                                                              _handleRedeem(
-                                                                  mfData,item),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
+                                                            // 3-dot dropdown menu - overlay on the right side
+                                                            if (isRowHovered || _popoverRowIndex == index)
+                                                              Positioned(
+                                                                right: 0,
+                                                                top: 0,
+                                                                bottom: 0,
+                                                                child: Align(
+                                                                  alignment: Alignment.centerRight,
+                                                                  child: _buildOptionsMenuButton(
+                                                                    item: item,
+                                                                    rowIndex: index,
+                                                                    mfData: mfData,
+                                                                    hasUnits: avgQty > 0,
+                                                                  ),
+                                                                ),
+                                                              ),
                                                           ],
                                                         ),
                                                       ),
@@ -998,6 +1042,132 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     });
 
     return sorted;
+  }
+
+  // Build 3-dot options menu button with dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic item,
+    required int rowIndex,
+    required MFProvider mfData,
+    required bool hasUnits,
+  }) {
+    final theme = ref.watch(themeProvider);
+
+    return Builder(
+      builder: (buttonContext) {
+        return MouseRegion(
+          onEnter: (_) {
+            _isHoveringDropdown = true;
+            _cancelPopoverCloseTimer();
+          },
+          onExit: (_) {
+            _isHoveringDropdown = false;
+            _startPopoverCloseTimer();
+          },
+          child: GestureDetector(
+            onTap: () {
+              // Close any existing popover first
+              if (_activePopoverController != null) {
+                _closePopover();
+              }
+
+              // Create new controller and show popover
+              final controller = shadcn.PopoverController();
+              _activePopoverController = controller;
+              _popoverRowIndex = rowIndex;
+
+              // Build menu items
+              final List<shadcn.MenuItem> menuItems = [
+                if (hasUnits)
+                  _buildMenuButton(
+                    icon: Icons.money_off_outlined,
+                    label: 'Redeem',
+                    onPressed: () {
+                      _closePopover();
+                      _handleRedeem(mfData, item);
+                    },
+                    theme: theme,
+                  ),
+                _buildMenuButton(
+                  icon: Icons.info_outline,
+                  label: 'Details',
+                  onPressed: () {
+                    _closePopover();
+                    _showHoldingDetail(mfData, item);
+                  },
+                  theme: theme,
+                ),
+              ];
+
+              controller.show(
+                context: buttonContext,
+                builder: (popoverContext) {
+                  return MouseRegion(
+                    onEnter: (_) {
+                      _isHoveringDropdown = true;
+                      _cancelPopoverCloseTimer();
+                    },
+                    onExit: (_) {
+                      _isHoveringDropdown = false;
+                      _startPopoverCloseTimer();
+                    },
+                    child: shadcn.DropdownMenu(
+                      children: menuItems,
+                    ),
+                  );
+                },
+                alignment: Alignment.topRight,
+                offset: const Offset(0, 4),
+              );
+
+              setState(() {});
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? MyntColors.primary.withValues(alpha: 0.15)
+                    : MyntColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                Icons.more_vert,
+                size: 18,
+                color: MyntColors.primary,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Build individual menu button
+  shadcn.MenuItem _buildMenuButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.MenuButton(
+      leading: Icon(
+        icon,
+        size: 16,
+        color: theme.isDarkMode
+            ? MyntColors.textPrimaryDark
+            : MyntColors.textPrimary,
+      ),
+      onPressed: (context) => onPressed(),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          color: theme.isDarkMode
+              ? MyntColors.textPrimaryDark
+              : MyntColors.textPrimary,
+        ),
+      ),
+    );
   }
 
   // Handler: Redeem mutual fund
