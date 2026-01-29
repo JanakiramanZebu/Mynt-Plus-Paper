@@ -268,7 +268,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                             children: [
                               Text(
                                 "New Fund Offerings",
-                                style: MyntWebTextStyles.title(context,
+                                style: MyntWebTextStyles.tableCell(context,
                                     darkColor: MyntColors.textPrimaryDark,
                                     lightColor: MyntColors.textPrimary,
                                     fontWeight: FontWeight.w500),

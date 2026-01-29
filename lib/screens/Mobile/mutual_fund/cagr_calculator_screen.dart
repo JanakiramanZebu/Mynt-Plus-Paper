@@ -1,14 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../provider/thems.dart';
-import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
-
-import '../../../res/global_state_text.dart';
+import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 
 class MFCAGRCAL extends StatefulWidget {
@@ -125,342 +123,368 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 ? IconButton(
                     onPressed: widget.onBack,
                     icon: Icon(
-                      Icons.arrow_back,
+                      Icons.arrow_back_ios_new,
+                      size: 15,
                       color: isDarkMode
-                          ? colors.darkiconcolor
-                          : colors.iconColor,
+                          ? Colors.white
+                          : Colors.black,
                     ),
                   )
                 : const CustomBackBtn(),
-            title: TextWidget.titleText(
-              text: "CAGR Calculator",
-              theme: isDarkMode,
-              fw: 1,
+            title: Text(
+              "CAGR Calculator",
+              style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.2)
+                    : colors.textSecondaryLight.withOpacity(0.2),
+              ),
             ),
           ),
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // CAGR Donut Chart
-                  Container(
-                    padding: EdgeInsets.zero,
-                    margin: EdgeInsets.zero,
-                    height: 230,
-                    child: SfCircularChart(
-                      margin: EdgeInsets.zero,
-                      annotations: <CircularChartAnnotation>[
-                        CircularChartAnnotation(
-                          widget: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextWidget.paraText(
-                                text: 'CAGR',
-                                align: TextAlign.center,
-                                color: Colors.grey,
-                                theme: false,
-                                fw: 0,
+            padding: const EdgeInsets.only(left: 40, right: 40, top: 40),
+            child: IntrinsicHeight(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDarkMode ? colors.darkGrey : colors.colorWhite,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.2)
+                        : colors.textSecondaryLight.withOpacity(0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                // Left side - Input controls
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Initial Investment
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Initial Investment",
+                              style: MyntWebTextStyles.bodyMedium(
+                                context,
+                                color: isDarkMode
+                                    ? WebColors.textPrimaryDark
+                                    : WebColors.textPrimary,
                               ),
-                              const SizedBox(height: 4),
-                              TextWidget.titleText(
-                                text: "$_cagrResult %",
-                                align: TextAlign.center,
-                                color: colors.colorBlack,
-                                theme: false,
-                                fw: 2,
+                            ),
+                            const SizedBox(width: 6),
+                            SizedBox(
+                              width: 150,
+                              child: MyntTextField(
+                                controller: _principalCtrl,
+                                placeholder: '10000',
+                                textAlign: TextAlign.start,
+                                height: 40,
+                                backgroundColor: isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                leadingIcon: assets.ruppeIcon,
+                                onChanged: (value) {
+                                  _onPrincipalChanged();
+                                },
                               ),
-                            ],
-                          ),
+                            )
+                          ],
                         ),
-                      ],
-                      series: <DoughnutSeries<ChartData, String>>[
-                        DoughnutSeries<ChartData, String>(
-                          animationDuration: 0,
-                          radius: '96',
-                          innerRadius: '70%',
-                          dataSource: donutChart,
-                          pointColorMapper: (ChartData data, _) => data.color,
-                          dataLabelMapper: (ChartData data, _) => '${data.y}%',
-                          xValueMapper: (ChartData data, _) => data.x,
-                          yValueMapper: (ChartData data, _) => data.y,
-                          dataLabelSettings: DataLabelSettings(
-                            isVisible: true,
-                            textStyle: textStyle(
-                              !isDarkMode ? colors.colorWhite : colors.colorBlack,
-                              0,
-                              FontWeight.w600,
+
+                        const SizedBox(height: 6),
+
+                        // Initial Investment Slider
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4.0,
+                            activeTrackColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            inactiveTrackColor: theme.isDarkMode
+                                ? colors.textSecondaryDark.withOpacity(0.3)
+                                : colors.textSecondaryLight.withOpacity(0.1),
+                            thumbColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            overlayColor: const Color(0xFFCCCCCC),
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8.0,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 0.0,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(0.0),
+                            child: Slider(
+                              min: 1,
+                              max: 10000000,
+                              value: _principalSliderValue.clamp(1, 10000000),
+                              label: _principalSliderValue.toStringAsFixed(0),
+                              onChanged: (value) {
+                                setState(() {
+                                  _principalSliderValue = value;
+                                  _principalCtrl.text = value.toStringAsFixed(0);
+                                });
+                                calculateCAGR();
+                              },
                             ),
                           ),
                         ),
+
+                        const SizedBox(height: 16),
+
+                        // Final Investment
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Final Investment",
+                              style: MyntWebTextStyles.bodyMedium(
+                                context,
+                                color: isDarkMode
+                                    ? WebColors.textPrimaryDark
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            SizedBox(
+                              width: 150,
+                              child: MyntTextField(
+                                controller: _finalAmountCtrl,
+                                placeholder: '10000',
+                                textAlign: TextAlign.start,
+                                height: 40,
+                                backgroundColor: isDarkMode
+                                    ? colors.darkGrey
+                                    : const Color(0xffF1F3F8),
+                                leadingIcon: assets.ruppeIcon,
+                                onChanged: (value) {
+                                  _onFinalAmountChanged();
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        // Final Investment Slider
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4.0,
+                            activeTrackColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            inactiveTrackColor: theme.isDarkMode
+                                ? colors.textSecondaryDark.withOpacity(0.3)
+                                : colors.textSecondaryLight.withOpacity(0.1),
+                            thumbColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            overlayColor: const Color(0xFFCCCCCC),
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8.0,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 0.0,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(0.0),
+                            child: Slider(
+                              min: 1,
+                              max: 10000000,
+                              value: _finalAmountSliderValue.clamp(1, 10000000),
+                              label: _finalAmountSliderValue.toStringAsFixed(0),
+                              onChanged: (value) {
+                                setState(() {
+                                  _finalAmountSliderValue = value;
+                                  _finalAmountCtrl.text = value.toStringAsFixed(0);
+                                });
+                                calculateCAGR();
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Duration of Investment
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Duration of Investment (Years)",
+                              style: MyntWebTextStyles.bodyMedium(
+                                context,
+                                color: isDarkMode
+                                    ? WebColors.textPrimaryDark
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              "${_tenureYears.toStringAsFixed(0)} Yr",
+                              style: MyntWebTextStyles.bodyMedium(
+                                context,
+                                color: isDarkMode
+                                    ? WebColors.textPrimaryDark
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Duration Slider
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4.0,
+                            activeTrackColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            inactiveTrackColor: theme.isDarkMode
+                                ? colors.textSecondaryDark.withOpacity(0.3)
+                                : colors.textSecondaryLight.withOpacity(0.1),
+                            thumbColor: theme.isDarkMode
+                                ? colors.primaryDark
+                                : colors.primaryLight,
+                            overlayColor: const Color(0xFFCCCCCC),
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 8.0),
+                            overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 0.0),
+                          ),
+                          child: Slider(
+                            value: _tenureYears.clamp(1, 50),
+                            min: 1,
+                            max: 50,
+                            divisions: 49,
+                            label: "${_tenureYears.toStringAsFixed(0)} Yr",
+                            onChanged: (value) {
+                              setState(() {
+                                _tenureYears = value;
+                              });
+                              calculateCAGR();
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Estimation Section
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Estimation",
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: isDarkMode
+                                    ? WebColors.textPrimaryDark
+                                    : WebColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Initial and Final Values
+                            resultRow("Initial Value",
+                                int.tryParse(_principalCtrl.text) ?? 0, theme, context),
+                            const SizedBox(height: 8),
+                            resultRow("Final Value",
+                                int.tryParse(_finalAmountCtrl.text) ?? 0, theme, context),
+                            const SizedBox(height: 4),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                
-                  const SizedBox(height: 16),
-                
-                  // Initial Investment
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                        text: "Initial Investment",
-                        color: isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: isDarkMode,
-                        fw: 1,
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 150,
-                        height: 40,
-                        child: CustomTextFormField(
-                          textAlign: TextAlign.start,
-                          fillColor: isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                          hintText: '10000',
-                          textCtrl: _principalCtrl,
-                        style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 0,
-                                    ),
-                                     hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                      fw: 0,
-                                      ),
-                          prefixIcon: SvgPicture.asset(
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            assets.ruppeIcon,
-                            fit: BoxFit.scaleDown,
-                          ),
+
+                  const SizedBox(width: 24),
+
+                // Right side - Chart
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: SizedBox(
+                      width: 380,
+                      height: 380,
+                      child: SfCircularChart(
+                    margin: EdgeInsets.zero,
+                    annotations: <CircularChartAnnotation>[
+                      CircularChartAnnotation(
+                        widget: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'CAGR',
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.para(
+                                context,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$_cagrResult %",
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: FontWeight.w700,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
+                      ),
                     ],
-                  ),
-                
-                  const SizedBox(height: 6),
-                
-                  // Initial Investment Slider
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 4.0,
-                     activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
-              thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                      overlayColor: const Color(0xFFCCCCCC),
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 8.0,
-                      ),
-                      overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 0.0,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Slider(
-                        min: 1,
-                        max: 10000000,
-                        value: _principalSliderValue.clamp(1, 10000000),
-                        label: _principalSliderValue.toStringAsFixed(0),
-                        onChanged: (value) {
-                          setState(() {
-                            _principalSliderValue = value;
-                            _principalCtrl.text = value.toStringAsFixed(0);
-                          });
-                          calculateCAGR();
-                        },
-                      ),
-                    ),
-                  ),
-                
-                  const SizedBox(height: 16),
-                
-                  // Final Investment
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                        text: "Final Investment",
-                        color: isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: isDarkMode,
-                        fw: 1,
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 150,
-                        height: 40,
-                        child: CustomTextFormField(
-                          textAlign: TextAlign.start,
-                          fillColor: isDarkMode
-                              ? colors.darkGrey
-                              : const Color(0xffF1F3F8),
-                               hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                      fw: 0,
-                                      ),
-                          hintText: '10000',
-                          textCtrl: _finalAmountCtrl,
-                         style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 0,
-                                    ),
-                          prefixIcon: SvgPicture.asset(
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
-                            assets.ruppeIcon,
-                            fit: BoxFit.scaleDown,
+                    series: <DoughnutSeries<ChartData, String>>[
+                      DoughnutSeries<ChartData, String>(
+                        animationDuration: 0,
+                        radius: '140',
+                        innerRadius: '70%',
+                            dataSource: donutChart,
+                            pointColorMapper: (ChartData data, _) => data.color,
+                            dataLabelMapper: (ChartData data, _) => '${data.y}%',
+                            xValueMapper: (ChartData data, _) => data.x,
+                            yValueMapper: (ChartData data, _) => data.y,
+                            dataLabelSettings: const DataLabelSettings(
+                              isVisible: false,
+                            ),
                           ),
-                        ),
-                      )
                     ],
                   ),
-                
-                  const SizedBox(height: 6),
-                
-                  // Final Investment Slider
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 4.0,
-                     activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
-              thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                      overlayColor: const Color(0xFFCCCCCC),
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 8.0,
-                      ),
-                      overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 0.0,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Slider(
-                        min: 1,
-                        max: 10000000,
-                        value: _finalAmountSliderValue.clamp(1, 10000000),
-                        label: _finalAmountSliderValue.toStringAsFixed(0),
-                        onChanged: (value) {
-                          setState(() {
-                            _finalAmountSliderValue = value;
-                            _finalAmountCtrl.text = value.toStringAsFixed(0);
-                          });
-                          calculateCAGR();
-                        },
-                      ),
-                    ),
-                  ),
-                
-                  const SizedBox(height: 24),
-                
-                  // Duration of Investment
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextWidget.subText(
-                        text: "Duration of Investment (Years)",
-                        color: isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: isDarkMode,
-                        fw: 1,
-                      ),
-                      TextWidget.subText(
-                        text: "${_tenureYears.toStringAsFixed(0)} Yr",
-                        color: isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: isDarkMode,
-                        fw: 0,
-                      ),
-                    ],
-                  ),
-                
-                  const SizedBox(height: 16),
-                
-                  // Duration Slider
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 4.0,
-                     activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-              inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
-              thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
-                      overlayColor: const Color(0xFFCCCCCC),
-                      thumbShape:
-                          const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                      overlayShape:
-                          const RoundSliderOverlayShape(overlayRadius: 0.0),
-                    ),
-                    child: Slider(
-                      value: _tenureYears.clamp(1, 50),
-                      min: 1,
-                      max: 50,
-                      divisions: 49,
-                      label: "${_tenureYears.toStringAsFixed(0)} Yr",
-                      onChanged: (value) {
-                        setState(() {
-                          _tenureYears = value;
-                        });
-                        calculateCAGR();
-                      },
-                    ),
-                  ),
-                
-                  const SizedBox(height: 16),
-                
-                  // Estimation Section
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextWidget.subText(
-                        text: "Estimation",
-                        color: isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        theme: isDarkMode,
-                        fw: 0,
-                      ),
-                      const SizedBox(height: 16),
-                
-                      // Initial and Final Values
-                      resultRow("Initial Value",
-                          int.tryParse(_principalCtrl.text) ?? 0, theme),
-                      resultRow("Final Value",
-                          int.tryParse(_finalAmountCtrl.text) ?? 0, theme),
-                      const SizedBox(height: 4),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
+              ],
+            ),
+          ),
+        ),
           ),
         ),
       );
     });
   }
 
-  Widget resultRow(String label, int value, ThemesProvider theme) {
+  Widget resultRow(String label, int value, ThemesProvider theme, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -474,23 +498,25 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       : const Color(0xff015FEC),
                   size: 14),
               const SizedBox(width: 4),
-              TextWidget.subText(
-                text: label,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 0,
+              Text(
+                label,
+                style: MyntWebTextStyles.bodyMedium(
+                  context,
+                  color: theme.isDarkMode
+                      ? WebColors.textPrimaryDark
+                      : WebColors.textPrimary,
+                ),
               ),
             ],
           ),
-          TextWidget.subText(
-            text: "₹ ${value.toStringAsFixed(0)}",
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            theme: theme.isDarkMode,
-            fw: 0,
+          Text(
+            "₹ ${value.toStringAsFixed(0)}",
+            style: MyntWebTextStyles.bodyMedium(
+              context,
+              color: theme.isDarkMode
+                  ? WebColors.textPrimaryDark
+                  : WebColors.textPrimary,
+            ),
           ),
         ],
       ),
