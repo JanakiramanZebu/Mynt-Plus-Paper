@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
-import 'package:flutter_svg/svg.dart';
+
 
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -203,29 +203,13 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         children: [
           CustomBackBtn(onBack: widget.onBack),
           const SizedBox(width: 8),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFFFFF6E5), // Light orange background
-            ),
-            child: widget.icon.contains('.svg')
-                ? Center(
-                    child: SvgPicture.asset(widget.icon, width: 22, height: 22))
-                : widget.icon.contains('.png') || widget.icon.contains('.jpg')
-                    ? Center(
-                        child: Image.asset(widget.icon, width: 22, height: 22))
-                    : const Icon(Icons.savings_outlined,
-                        color: Color(0xFFECAE14), size: 22),
-          ),
-          const SizedBox(width: 16),
+
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 widget.title,
-                style: MyntWebTextStyles.title(context,
+                style: MyntWebTextStyles.tableCell(context,
                     darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textPrimary,
                     fontWeight: FontWeight.w500),
