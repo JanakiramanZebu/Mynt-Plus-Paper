@@ -4,6 +4,7 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
+        IconData,
         BorderRadius,
         Icon,
         BoxDecoration,
@@ -22,6 +23,7 @@ import 'package:flutter/material.dart'
         EdgeInsets,
         Alignment,
         MainAxisAlignment,
+        MainAxisSize,
         TextOverflow,
         Axis,
         Container,
@@ -202,12 +204,17 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Helper method to format instrument display text (without exchange - exchange shown separately)
   String _formatInstrumentText(PositionBookModel position) {
-    // Use tsym directly if available (remove -EQ, but don't include exchange - it's shown separately)
+    // Priority 1: Use dname (display name) if available
+    if (position.dname != null && position.dname!.isNotEmpty) {
+      return position.dname!.replaceAll("-EQ", "").trim();
+    }
+
+    // Priority 2: Use tsym if dname is not available
     if (position.tsym != null && position.tsym!.isNotEmpty) {
       return position.tsym!.replaceAll("-EQ", "").trim();
     }
 
-    // Fallback: build from components if tsym is not available
+    // Fallback: build from components if both are not available
     final symbol = (position.symbol ?? '').replaceAll("-EQ", "").trim();
     final expDate = position.expDate ?? '';
     final option = position.option ?? '';
@@ -429,7 +436,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         return 2;
       case 'Qty':
         return 3;
-      case 'Act Avg Price':
+      case 'Act Avg':
         return 4;
       case 'LTP':
         return 5;
@@ -581,7 +588,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       'Product',
       'Instrument',
       'Qty',
-      'Act Avg Price',
+      'Act Avg',
       'LTP',
       'P&L',
     ];
@@ -644,7 +651,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           case 'Qty':
             cellText = _formatQty(position.qty ?? '0');
             break;
-          case 'Act Avg Price':
+          case 'Act Avg':
             cellText = position.avgPrc ?? '0.00';
             break;
           case 'LTP':
@@ -730,7 +737,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       'Product',
       'Instrument',
       'Qty',
-      'Act Avg Price',
+      'Act Avg',
       'LTP',
       'P&L',
     ];
@@ -1116,7 +1123,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     : _getQtyColor(position.qty ?? '0', context)),
           ),
         );
-      case 'Act Avg Price':
+      case 'Act Avg':
         return Align(
           alignment: alignment,
           child: Text(
@@ -1245,7 +1252,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     );
   }
 
-  // Build product cell with colored badge
+  // Build product cell - simple text with subtle colors
   Widget _buildProductCell(
     BuildContext context,
     PositionBookModel position,
@@ -1254,70 +1261,20 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   ) {
     final product = position.sPrdtAli ?? 'N/A';
 
-    // Get product badge color
-    Color badgeColor;
-    Color badgeTextColor;
-    if (isClosed) {
-      badgeColor = resolveThemeColor(context,
-          dark: MyntColors.textSecondaryDark.withValues(alpha: 0.2),
-          light: MyntColors.textSecondary.withValues(alpha: 0.15));
-      badgeTextColor = textColor ?? resolveThemeColor(context,
-          dark: MyntColors.textSecondaryDark,
-          light: MyntColors.textSecondary);
-    } else {
-      switch (product) {
-        case 'CNC':
-          badgeColor = resolveThemeColor(context,
-              dark: MyntColors.primaryDark.withValues(alpha: 0.15),
-              light: MyntColors.primary.withValues(alpha: 0.12));
-          badgeTextColor = resolveThemeColor(context,
-              dark: MyntColors.primaryDark,
-              light: MyntColors.primary);
-          break;
-        case 'MIS':
-          badgeColor = resolveThemeColor(context,
-              dark: MyntColors.warning.withValues(alpha: 0.15),
-              light: MyntColors.warning.withValues(alpha: 0.12));
-          badgeTextColor = resolveThemeColor(context,
-              dark: MyntColors.warning,
-              light: MyntColors.warning);
-          break;
-        case 'NRML':
-          badgeColor = resolveThemeColor(context,
-              dark: MyntColors.profitDark.withValues(alpha: 0.15),
-              light: MyntColors.profit.withValues(alpha: 0.12));
-          badgeTextColor = resolveThemeColor(context,
-              dark: MyntColors.profitDark,
-              light: MyntColors.profit);
-          break;
-        default:
-          badgeColor = resolveThemeColor(context,
-              dark: MyntColors.textSecondaryDark.withValues(alpha: 0.15),
-              light: MyntColors.textSecondary.withValues(alpha: 0.12));
-          badgeTextColor = resolveThemeColor(context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary);
-      }
-    }
+    // Use secondary text color for all products - clean and subtle
+    final productTextColor = isClosed
+        ? (textColor ?? resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary))
+        : resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary);
 
     return Align(
       alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: badgeColor,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          product,
-          style: MyntWebTextStyles.tableCell(
-            context,
-            color: badgeTextColor,
-            darkColor: badgeTextColor,
-            lightColor: badgeTextColor,
-            fontWeight: MyntFonts.semiBold,
-          ).copyWith(fontSize: 11),
-        ),
+      child: Text(
+        product,
+        style: _getTextStyle(context, color: productTextColor),
       ),
     );
   }
@@ -1385,7 +1342,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ),
               ),
             ),
-            // 3-dot menu button (appears on hover)
+            // Exit button + 3-dot menu button (appears on hover)
             if (isRowHovered)
               Positioned(
                 right: 0,
@@ -1393,9 +1350,84 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 bottom: 0,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: _buildOptionsMenuButton(context, position, isClosed, positionBook, rowIndex: rowIndex),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Exit button (only for exitable positions)
+                      if (!isClosed &&
+                          position.qty != "0" &&
+                          position.sPrdtAli != "BO" &&
+                          position.sPrdtAli != "CO" &&
+                          !positionBook.isDay)
+                        _buildExitButton(context, position),
+                      if (!isClosed &&
+                          position.qty != "0" &&
+                          position.sPrdtAli != "BO" &&
+                          position.sPrdtAli != "CO" &&
+                          !positionBook.isDay)
+                        const SizedBox(width: 6),
+                      // 3-dot menu button
+                      _buildOptionsMenuButton(context, position, isClosed, positionBook, rowIndex: rowIndex),
+                    ],
+                  ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Exit button with X icon (tertiary color)
+  Widget _buildExitButton(BuildContext context, PositionBookModel position) {
+    return GestureDetector(
+      onTap: () {
+        debugPrint('Exit button pressed');
+        _handleExitPosition(position);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark,
+              light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Helper to build menu item matching profile dropdown style
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
           ],
         ),
       ),
@@ -1410,30 +1442,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     PortfolioProvider positionBook, {
     int? rowIndex,
   }) {
+    final iconColor = resolveThemeColor(context, dark: MyntColors.iconDark, light: MyntColors.icon);
+    final textColor = resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
     return Builder(
       builder: (buttonContext) {
         return GestureDetector(
           onTap: () {
             // Build menu items dynamically based on position state
             List<shadcn.MenuItem> menuItems = [];
-
-            // Exit option (only for open positions, not BO/CO, not day positions)
-            if (!isClosed &&
-                position.qty != "0" &&
-                position.sPrdtAli != "BO" &&
-                position.sPrdtAli != "CO" &&
-                !positionBook.isDay) {
-              menuItems.add(
-                shadcn.MenuButton(
-                  leading: const Icon(Icons.remove_circle_outline, size: 16),
-                  onPressed: (ctx) {
-                    debugPrint('Exit pressed');
-                    _handleExitPosition(position);
-                  },
-                  child: const Text('Exit'),
-                ),
-              );
-            }
 
             // Add option (only for open positions, not BO/CO, not day positions)
             if (!isClosed &&
@@ -1442,13 +1459,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 position.sPrdtAli != "CO" &&
                 !positionBook.isDay) {
               menuItems.add(
-                shadcn.MenuButton(
-                  leading: const Icon(Icons.add_circle_outline, size: 16),
+                _buildMenuButton(
+                  icon: Icons.add_circle_outline,
+                  title: 'Add',
+                  iconColor: iconColor,
+                  textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Add pressed');
                     _handleAddPosition(position);
                   },
-                  child: const Text('Add'),
                 ),
               );
             }
@@ -1456,13 +1475,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             // Convert option (only for open positions)
             if (!isClosed && position.qty != "0") {
               menuItems.add(
-                shadcn.MenuButton(
-                  leading: const Icon(Icons.swap_horiz, size: 16),
+                _buildMenuButton(
+                  icon: Icons.swap_horiz,
+                  title: 'Convert',
+                  iconColor: iconColor,
+                  textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Convert pressed');
                     _handleConvertPosition(position);
                   },
-                  child: const Text('Convert'),
                 ),
               );
             }
@@ -1474,25 +1495,29 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
             // Info option (always available)
             menuItems.add(
-              shadcn.MenuButton(
-                leading: const Icon(Icons.info_outline, size: 16),
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
                 onPressed: (ctx) {
                   debugPrint('Info pressed');
                   _showPositionDetail(position);
                 },
-                child: const Text('Info'),
               ),
             );
 
             // Chart option (always available)
             menuItems.add(
-              shadcn.MenuButton(
-                leading: const Icon(Icons.bar_chart, size: 16),
+              _buildMenuButton(
+                icon: Icons.bar_chart,
+                title: 'Chart',
+                iconColor: iconColor,
+                textColor: textColor,
                 onPressed: (ctx) {
                   debugPrint('Chart pressed');
                   _handleChartTap(position);
                 },
-                child: const Text('Chart'),
               ),
             );
 
@@ -1524,12 +1549,21 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               },
             );
           },
-          child: Icon(
-            Icons.more_horiz,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.iconDark,
-                light: MyntColors.icon),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
           ),
         );
       },

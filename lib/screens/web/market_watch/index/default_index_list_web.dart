@@ -532,79 +532,28 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
     // Calculate styling values
     final changeColor = _getChangeColor(_change, _perChange);
 
-    return widget.src
-        ? RepaintBoundary(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "$_ltp ",
-                  style: _getTextStyle(changeColor, 13, 2), // Original font size
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("${_change.toString()} ",
-                        style: _getTextStyle(
-                            widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
-                            13, // Original font size
-                            2)),
-                    Text("($_perChange%)",
-                        style: _getTextStyle(
-                            widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
-                            13, // Original font size
-                            2)),
-                  ],
-                )
-              ],
+    // Use Wrap - stays on same line when space available, wraps when not
+    return RepaintBoundary(
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 2,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            _ltp,
+            style: _getTextStyle(changeColor, widget.src ? 13 : 13, 2),
+          ),
+          Text(
+            "$_change ($_perChange%)",
+            style: _getTextStyle(
+              widget.isDarkMode ? WebDarkColors.textSecondary : WebDarkColors.textSecondary,
+              widget.src ? 12 : 13,
+              2,
             ),
-          )
-        : RepaintBoundary(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    "$_ltp  ",
-                    style: _getTextStyle(
-                      changeColor,
-                      13,
-                      2,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text("$_change ",
-                            style: _getTextStyle(
-                              WebDarkColors.textSecondary,
-                              13,
-                              2,
-                            )),
-                        const SizedBox(width: 2),
-                        Text("($_perChange%)",
-                            style: _getTextStyle(
-                              WebDarkColors.textSecondary,
-                              13,
-                              2,
-                            )),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+          ),
+        ],
+      ),
+    );
   }
 
   // Cache for text styles
@@ -615,8 +564,8 @@ class _LivePriceWidgetWebState extends State<_LivePriceWidgetWeb> {
     return _textStyleCache.putIfAbsent(
       key,
       () => WebTextStyles.priceWatch(
-          isDarkTheme: true, 
-          color: color, 
+          isDarkTheme: true,
+          color: color,
       ),
     );
   }

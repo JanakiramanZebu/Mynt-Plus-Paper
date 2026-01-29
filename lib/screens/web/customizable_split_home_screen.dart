@@ -4438,13 +4438,14 @@ class _AppBarLivePriceWidgetState
   @override
   Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+    // Use Wrap - stays on same line when space available, wraps when not
+    return Wrap(
+      spacing: 6,
+      runSpacing: 2,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
-          "$_ltp  ",
+          _ltp,
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,
