@@ -19,6 +19,7 @@ import 'market_watch/index/index_bottom_sheet_web.dart';
 import 'trade_action_screen_web.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
+import '../../../utils/rupee_convert_format.dart';
 
 class DashboardScreenWeb extends ConsumerStatefulWidget {
   const DashboardScreenWeb({super.key});
@@ -493,15 +494,17 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     }
 
     final metric = metrics[index];
-    final double value =
-        double.tryParse((metric['value'] as String).replaceAll('₹', '')) ?? 0.0;
+    final String valueStr = metric['value'] as String;
     final bool isPnl = metric['isPnl'] ?? false;
-    final Color valueColor = (isPnl && value != 0)
-        ? (value > 0
+    // Efficient color determination: check first char for negative, regex for zero
+    final bool isNegative = valueStr.startsWith('-');
+    final bool isZero = !valueStr.contains(RegExp(r'[1-9]'));
+    final Color valueColor = (isPnl && !isZero)
+        ? (isNegative
             ? resolveThemeColor(context,
-                dark: MyntColors.profitDark, light: MyntColors.profit)
+                dark: MyntColors.lossDark, light: MyntColors.loss)
             : resolveThemeColor(context,
-                dark: MyntColors.lossDark, light: MyntColors.loss))
+                dark: MyntColors.profitDark, light: MyntColors.profit))
         : resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
 
@@ -584,18 +587,18 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         invest > 0 ? (totalPnlHolding / invest) * 100 : 0.0;
 
     return [
-      {'label': 'Invested', 'value': '₹${invest.toStringAsFixed(2)}'},
-      {'label': 'Current', 'value': '₹${totalCurrentVal.toStringAsFixed(2)}'},
+      {'label': 'Invested', 'value': invest.toIndianRupee()},
+      {'label': 'Current', 'value': totalCurrentVal.toIndianRupee()},
       {
         'label': 'Total P&L',
-        'value': '₹${totalPnlHolding.toStringAsFixed(2)}',
-        'subValue': '${totPnlPercHolding.toStringAsFixed(2)}%',
+        'value': totalPnlHolding.toIndianRupee(),
+        'subValue': '(${totPnlPercHolding.toStringAsFixed(2)}%)',
         'isPnl': true
       },
       {
         'label': 'Today P&L',
-        'value': '₹${oneDayChng.toStringAsFixed(2)}',
-        'subValue': '${oneDayChngPer.toStringAsFixed(2)}%',
+        'value': oneDayChng.toIndianRupee(),
+        'subValue': '(${oneDayChngPer.toStringAsFixed(2)}%)',
         'isPnl': true
       },
     ];
@@ -612,12 +615,12 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final totalPnLPer = double.tryParse(summary?.absReturnPercent ?? '0') ?? 0.0;
 
     return [
-      {'label': 'Invested', 'value': '₹${invest.toStringAsFixed(2)}'},
-      {'label': 'Current', 'value': '₹${current.toStringAsFixed(2)}'},
+      {'label': 'Invested', 'value': invest.toIndianRupee()},
+      {'label': 'Current', 'value': current.toIndianRupee()},
       {
         'label': 'Total P&L',
-        'value': '₹${totalPnL.toStringAsFixed(2)}',
-        'subValue': '${totalPnLPer.toStringAsFixed(2)}%',
+        'value': totalPnL.toIndianRupee(),
+        'subValue': '(${totalPnLPer.toStringAsFixed(2)}%)',
         'isPnl': true
       },
     ];
@@ -636,10 +639,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     }
 
     return [
-      {'label': 'Trade value', 'value': '₹${totBuyAmts.toStringAsFixed(2)}'},
-      {'label': 'MTM', 'value': '₹$mtm', 'isPnl': true},
-      {'label': 'Total P&L', 'value': '₹$totalPnL', 'isPnl': true},
-      {'label': 'Open P&L', 'value': '₹$openPnL', 'isPnl': true},
+      {'label': 'Trade value', 'value': totBuyAmts.toIndianRupee()},
+      {'label': 'MTM', 'value': mtm.toIndianRupee(), 'isPnl': true},
+      {'label': 'Total P&L', 'value': totalPnL.toIndianRupee(), 'isPnl': true},
+      {'label': 'Open P&L', 'value': openPnL.toIndianRupee(), 'isPnl': true},
     ];
   }
 
@@ -652,9 +655,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     final marginUsed = fundDetail?.marginused ?? '0.00';
 
     return [
-      {'label': 'Available Margin', 'value': '₹$availableBalance'},
-      {'label': 'Capital', 'value': '₹$totalCredits'},
-      {'label': 'Used', 'value': '₹$marginUsed'},
+      {'label': 'Available Margin', 'value': availableBalance.toIndianRupee()},
+      {'label': 'Capital', 'value': totalCredits.toIndianRupee()},
+      {'label': 'Used', 'value': marginUsed.toIndianRupee()},
     ];
   }
 

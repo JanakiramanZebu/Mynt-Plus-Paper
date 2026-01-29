@@ -15,6 +15,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../utils/rupee_convert_format.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -219,7 +220,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Invested',
-            value: invested,
+            value: invested.toIndianRupee(),
             valueColor: resolveThemeColor(
               context,
               dark: MyntColors.textPrimaryDark,
@@ -232,7 +233,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Current Value',
-            value: currentValue,
+            value: currentValue.toIndianRupee(),
             valueColor: resolveThemeColor(
               context,
               dark: MyntColors.textPrimaryDark,
@@ -245,7 +246,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Profit/Loss',
-            value: totalPnL,
+            value: totalPnL.toIndianRupee(),
             percentage: totalPnLPercent,
             valueColor: getValueColor(context, totalPnL),
             theme: theme,
@@ -255,7 +256,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         Expanded(
           child: _buildStatCard(
             label: 'Day Change',
-            value: dayChange,
+            value: dayChange.toIndianRupee(),
             percentage: dayChangePercent,
             valueColor: getValueColor(context, dayChange),
             theme: theme,
@@ -378,7 +379,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               child: _buildStatCard(
                 // icon: Icons.account_balance_wallet_outlined,
                 label: 'Invested',
-                value: investedValue,
+                value: investedValue.toIndianRupee(),
                 valueColor: resolveThemeColor(
                   context,
                   dark: MyntColors.textPrimaryDark,
@@ -392,7 +393,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               child: _buildStatCard(
                 // icon: Icons.pie_chart_outline,
                 label: 'Current Value',
-                value: currentValue,
+                value: currentValue.toIndianRupee(),
                 valueColor: resolveThemeColor(
                   context,
                   dark: MyntColors.textPrimaryDark,
@@ -406,7 +407,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
               child: _buildStatCard(
                 // icon: Icons.trending_up,
                 label: 'Returns',
-                value: absReturnValue,
+                value: absReturnValue.toIndianRupee(),
                 percentage: absReturnPercent,
                 valueColor: getValueColor(context, absReturnValue),
                 theme: theme,
