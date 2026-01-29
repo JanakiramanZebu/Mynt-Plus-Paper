@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -7,7 +8,6 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import '../../../../sharedWidget/hover_actions_web.dart';
 
 
 // Bond Table based on TableExample1 (hold_table.dart)
@@ -36,6 +36,12 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
   // setState causes full widget rebuild, ValueNotifier only rebuilds hover-dependent parts
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -45,10 +51,56 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -252,83 +304,179 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
     });
   }
 
-  // Builds the name cell with hover action buttons (Apply)
+  // Builds the name cell with hover action buttons (Apply + Dropdown) - matching hold_table.dart style
   Widget _buildNameCellWithActions(dynamic bond, int index) {
     return ValueListenableBuilder<int?>(
       valueListenable: _hoveredRowIndex,
       builder: (context, hoveredIndex, _) {
-        final isHovered = hoveredIndex == index;
+        final isHovered = hoveredIndex == index || _popoverRowIndex == index;
 
-        return Stack(
-          alignment: Alignment.centerLeft,
-          children: [
-            Container(
-              width: double.infinity,
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    bond.name ?? '',
-                    style: _getTextStyle(context),
-                        
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                  Text(
-                    bond.series ?? '',
-                    style: MyntWebTextStyles.para(
-                      context,
-                      darkColor: WebColors.textSecondaryDark,
-                      lightColor: WebColors.textSecondary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ],
-              ),
-            ),
-            if (isHovered)
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                child: Container(
-                  padding: const EdgeInsets.only(left: 12),
-                  alignment: Alignment.centerRight,
-                  child: HoverActionsContainer(
-                    isVisible: isHovered,
-                    actions: [
-                      HoverActionButton(
-                        label: 'Apply',
-                        width: 64,
-                        height: 32,
-                        borderRadius: 5,
-                        color: Colors.white,
-                        backgroundColor: resolveThemeColor(
+        return SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              // Bond name and series - full width
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        bond.name ?? '',
+                        style: _getTextStyle(context),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      Text(
+                        bond.series ?? '',
+                        style: MyntWebTextStyles.para(
                           context,
-                          dark: WebColors.primaryDark,
-                          light: WebColors.primary,
+                          darkColor: WebColors.textSecondaryDark,
+                          lightColor: WebColors.textSecondary,
                         ),
-                        borderColor: resolveThemeColor(
-                          context,
-                          dark: WebColors.primaryDark,
-                          light: WebColors.primary,
-                        ),
-                        onPressed: () {
-                          if (widget.onApplyTap != null) {
-                            widget.onApplyTap!(bond);
-                          }
-                        },
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ],
                   ),
                 ),
               ),
-          ],
+              // Action button - positioned on the right (matching hold_table.dart style)
+              if (isHovered)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: _buildOptionsMenuButton(bond, index),
+                  ),
+                ),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(dynamic bond, int rowIndex) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: WebColors.textPrimaryDark,
+                light: WebColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: WebColors.textPrimaryDark,
+                light: WebColors.textPrimary);
+
+            // Apply option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.check_circle_outline,
+                title: 'Apply',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  if (widget.onApplyTap != null) {
+                    widget.onApplyTap!(bond);
+                  }
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: WebColors.textPrimaryDark,
+                  light: WebColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -425,19 +573,24 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
 
     // Show NoDataFound if no results after filtering
     if (displayBonds.isEmpty) {
-      return shadcn.OutlinedContainer(
-        child: NoDataFound(
-          title: searchQuery.isNotEmpty ? "No Bonds Found" : "No Bonds Listed",
-          subtitle: searchQuery.isNotEmpty
-              ? "No bonds match your search \"$searchQuery\"."
-              : "There are no active bond listings at the moment.",
-          primaryEnabled: false,
-          secondaryEnabled: false,
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: shadcn.OutlinedContainer(
+          child: NoDataFound(
+            title: searchQuery.isNotEmpty ? "No Bonds Found" : "No Bonds Listed",
+            subtitle: searchQuery.isNotEmpty
+                ? "No bonds match your search \"$searchQuery\"."
+                : "There are no active bond listings at the moment.",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
         ),
       );
     }
 
-    return shadcn.OutlinedContainer(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: shadcn.OutlinedContainer(
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate minimum widths dynamically based on actual content
@@ -588,6 +741,7 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
               ],
             );
         },
+      ),
       ),
     );
   }

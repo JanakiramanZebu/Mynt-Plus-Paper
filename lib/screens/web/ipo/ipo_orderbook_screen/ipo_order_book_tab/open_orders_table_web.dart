@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -28,11 +29,46 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  String? _popoverRowId;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowToken != _popoverRowId) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowId != null;
+    _activePopoverController = null;
+    _popoverRowId = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -316,6 +352,241 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     );
   }
 
+  // Build name cell with hover dropdown menu
+  shadcn.TableCell _buildNameCellWithActions({
+    required dynamic order,
+    required String uniqueId,
+    required bool rowIsHovered,
+    required ThemesProvider theme,
+    required String companyName,
+    required bool canCancel,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) {
+          setState(() => _hoveredRowToken = uniqueId);
+          if (_activePopoverController != null && _popoverRowId == uniqueId) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          setState(() => _hoveredRowToken = null);
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: GestureDetector(
+          onTap: () => _showOrderDetailsDialog(order),
+          child: Container(
+            color: rowIsHovered
+                ? resolveThemeColor(context,
+                        dark: MyntColors.primary, light: MyntColors.primary)
+                    .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
+                : Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+            width: double.infinity,
+            height: double.infinity,
+            child: SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Company name
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: rowIsHovered ? 40.0 : 0.0),
+                      child: Text(
+                        companyName,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                          fontWeight: MyntFonts.medium,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ),
+                  // Dropdown button on hover
+                  if (rowIsHovered)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildOptionsMenuButton(
+                          order: order,
+                          uniqueId: uniqueId,
+                          canCancel: canCancel,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic order,
+    required String uniqueId,
+    required bool canCancel,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // Cancel option (if allowed)
+            if (canCancel) {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.cancel_outlined,
+                  title: 'Cancel',
+                  iconColor: MyntColors.tertiary,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return IpoCancelAlert(ipocancel: order);
+                      },
+                    );
+                  },
+                ),
+              );
+              menuItems.add(const shadcn.MenuDivider());
+            }
+
+            // Info option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _showOrderDetailsDialog(order);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowId = uniqueId;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHoverButton({
     String? label,
     IconData? icon,
@@ -441,62 +712,14 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
             ),
           ),
         ),
-        // Stock Name
-        _buildShadcnCell(
+        // Stock Name with dropdown
+        _buildNameCellWithActions(
+          order: order,
           uniqueId: uniqueId,
-          rowIsHovered: isHovered,
+          rowIsHovered: isHovered || _popoverRowId == uniqueId,
           theme: theme,
-          onTap: () => _showOrderDetailsDialog(order),
-          child: Row(
-            children: [
-              Expanded(
-                flex: isHovered && canCancel ? 1 : 2,
-                child: Text(
-                  companyName,
-                  style: MyntWebTextStyles.body(
-                    context,
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary,
-                    ),
-                    fontWeight: MyntFonts.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-              // Cancel button fade in on hover
-              if (canCancel)
-                AnimatedOpacity(
-                  opacity: isHovered ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 150),
-                  child: IgnorePointer(
-                    ignoring: !isHovered,
-                    child: _buildHoverButton(
-                      label: 'Cancel',
-                      color: Colors.white,
-                      backgroundColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.tertiary,
-                        light: MyntColors.tertiary,
-                      ),
-                      onPressed: isHovered
-                          ? () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return IpoCancelAlert(ipocancel: order);
-                                },
-                              );
-                            }
-                          : null,
-                      theme: theme,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          companyName: companyName,
+          canCancel: canCancel,
         ),
         // Amount
         _buildShadcnCell(
