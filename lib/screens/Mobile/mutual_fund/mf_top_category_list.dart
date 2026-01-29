@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -55,14 +56,66 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
+  // Popover state management
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
+
+    // Listen to hover changes for popover management
+    _hoveredRowIndex.addListener(_onHoverChanged);
 
     // Initialize tab titles based on the category data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeTabs();
     });
+  }
+
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   void _initializeTabs() {
@@ -118,6 +171,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _tabController.dispose();
     _scrollController.dispose();
     _horizontalScrollController.dispose();
@@ -402,6 +457,263 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
     });
   }
 
+  // Build fund name cell with hover dropdown menu
+  shadcn.TableCell _buildFundNameCellWithActions({
+    required dynamic item,
+    required int rowIndex,
+    required String amcCode,
+    required dynamic mfData,
+    VoidCallback? onTap,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Fund info
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 14,
+                          backgroundImage: NetworkImage(
+                            "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  item.name ?? '--',
+                                  style: _getTextStyle(context),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "${item.type ?? 'Equity'}   ${item.subType ?? item.schemeType ?? ''}",
+                                  style: MyntWebTextStyles.para(
+                                      context,
+                                      darkColor: MyntColors.textSecondaryDark,
+                                      lightColor: MyntColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // 3-dot dropdown button on hover
+                    if (isHovered)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _buildOptionsMenuButton(
+                            item: item,
+                            rowIndex: rowIndex,
+                            mfData: mfData,
+                            onTap: onTap,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic item,
+    required int rowIndex,
+    required dynamic mfData,
+    VoidCallback? onTap,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Close any existing popover first
+            _closePopover();
+
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+            final iconColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+
+            // One-Time option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.payments_outlined,
+                title: 'One-Time',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleOrder(item, 'One-time', mfData);
+                },
+              ),
+            );
+
+            // SIP option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.autorenew,
+                title: 'SIP',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleOrder(item, 'SIP', mfData);
+                },
+              ),
+            );
+
+            // Divider
+            menuItems.add(const shadcn.MenuDivider());
+
+            // Details option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Details',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  if (onTap != null) onTap();
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+
+            // Force rebuild to show row highlight
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for building menu buttons
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFundList(String selectedTab, dynamic mfData,
       ThemesProvider theme, BuildContext context) {
     // Sort the list based on selected return period
@@ -580,105 +892,13 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
 
                                 return shadcn.TableRow(
                                   cells: [
-                                    // Fund name column with tags and hover buttons
-                                    buildCellWithHover(
+                                    // Fund name column with 3-dot dropdown menu
+                                    _buildFundNameCellWithActions(
+                                      item: item,
                                       rowIndex: index,
-                                      columnIndex: 0,
+                                      amcCode: amcCode,
+                                      mfData: mfData,
                                       onTap: onTap,
-                                      child: ValueListenableBuilder<int?>(
-                                        valueListenable: _hoveredRowIndex,
-                                        builder: (context, hoveredIndex, _) {
-                                          final isHovered =
-                                              hoveredIndex == index;
-                                          return Row(
-                                            children: [
-                                              CircleAvatar(
-                                                radius: 14,
-                                                backgroundImage: NetworkImage(
-                                                  "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Text(
-                                                      item.name ?? '--',
-                                                      style: _getTextStyle(
-                                                          context),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                    ),
-                                                    const SizedBox(
-                                                        height: 4), // Spacing
-                                                    Text(
-                                                      "${item.type ?? 'Equity'}   ${item.subType ?? item.schemeType ?? ''}",
-                                                      style: MyntWebTextStyles.para(
-                                                          context,
-                                                          darkColor: MyntColors
-                                                              .textSecondaryDark,
-                                                          lightColor: MyntColors
-                                                              .textSecondary),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              // Buy/SIP buttons on hover
-                                              if (isHovered) ...[
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.all(4),
-                                                  decoration: BoxDecoration(
-                                                    color: resolveThemeColor(
-                                                        context,
-                                                        dark: MyntColors
-                                                            .searchBgDark,
-                                                        light: MyntColors
-                                                            .backgroundColor),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6),
-                                                    boxShadow: MyntShadows.card,
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      _buildActionButton(
-                                                          'One-time',
-                                                          const Color(
-                                                              0xff0037B7),
-                                                          () => _handleOrder(
-                                                              item,
-                                                              'One-time',
-                                                              mfData),
-                                                          filled: true),
-                                                      const SizedBox(width: 6),
-                                                      _buildActionButton(
-                                                          'SIP',
-                                                          const Color(
-                                                              0xff0037B7),
-                                                          () => _handleOrder(
-                                                              item,
-                                                              'SIP',
-                                                              mfData),
-                                                          filled: true),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          );
-                                        },
-                                      ),
                                     ),
                                     // AUM column
                                     buildCellWithHover(
@@ -739,30 +959,6 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
           ),
         );
       },
-    );
-  }
-
-  Widget _buildActionButton(String label, Color color, VoidCallback onTap,
-      {bool filled = true}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 14, vertical: 4), // Reduced to 4
-        decoration: BoxDecoration(
-          color: filled ? color : Colors.transparent,
-          border: filled ? null : Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: filled ? Colors.white : color,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
     );
   }
 
