@@ -9,7 +9,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+// import 'package:mynt_plus/res/global_font_web.dart'; // Commented out - unused
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
@@ -73,6 +73,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   }
 
   // Builds a cell with hover detection (matches holdings pattern)
+  // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
@@ -81,8 +82,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     VoidCallback? onTap,
   }) {
     final isFirstColumn = columnIndex == 0; // Time column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 10; // Status column
+    final isInstrumentColumn = columnIndex == 2; // Instrument column (index 2 now)
+    final isLastColumn = columnIndex == 7; // Status column (index 7 now)
 
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -146,11 +147,12 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   }
 
   // Builds a sortable header cell
+  // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 10; // Status column
+    final isInstrumentColumn = columnIndex == 2; // Instrument column (index 2 now)
+    final isLastColumn = columnIndex == 7; // Status column (index 7 now)
 
     // Match the cell padding logic - Instrument column has more left, minimal right
     // Last column mirrors this - minimal left, more right
@@ -236,23 +238,18 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     });
   }
 
-  // Helper method to get status color using shadcn theme
+  // Helper method to format time with seconds (HH:mm:ss)
   String _formatTime(String time) {
     if (time.isEmpty || time == '0.00') return 'N/A';
 
-    // Try using CellFormatters first (expects "HH:mm:ss dd-MM-yyyy" format)
-    final formatted = CellFormatters.formatTime(time);
-    if (formatted.isNotEmpty) {
-      // Extract just the time part (hh:mm a) from "dd MMM yyyy, hh:mm a"
-      final parts = formatted.split(', ');
-      if (parts.length == 2) {
-        return parts[1]; // Return "hh:mm a" part
-      }
-      return formatted;
-    }
-
-    // Fallback: If formatDateTime failed, try parsing as simple time string (HHMMSS or HHMM)
     try {
+      // Check if time is in "HH:mm:ss dd-MM-yyyy" format
+      if (time.contains(':') && time.contains('-')) {
+        final timePart = time.split(' ')[0]; // Get "HH:mm:ss" part
+        return timePart; // Returns time with seconds
+      }
+
+      // Fallback: If time is in "HHMMSS" or "HHMM" format
       if (time.length >= 6) {
         // Format: "HHMMSS" to "HH:MM:SS"
         final hours = time.substring(0, 2);
@@ -260,10 +257,10 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         final seconds = time.substring(4, 6);
         return '$hours:$minutes:$seconds';
       } else if (time.length >= 4) {
-        // Format: "HHMM" to "HH:MM"
+        // Format: "HHMM" to "HH:MM:00"
         final hours = time.substring(0, 2);
         final minutes = time.substring(2, 4);
-        return '$hours:$minutes';
+        return '$hours:$minutes:00';
       }
     } catch (e) {
       // If parsing fails, return as is
@@ -291,137 +288,111 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
   }
 
-  // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(
-      List<OrderBookModel> orders, BuildContext context) {
-    // Use fixed font size for measurement (table text is not responsive, only buttons are)
-    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
-    const padding = 24.0; // Padding for cell content
-    const sortIconWidth = 24.0; // Extra space for sort indicator icon
+  // Commented out - using equal width columns now
+  // // Calculate minimum column widths dynamically based on header and data
+  // // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
+  // Map<int, double> _calculateMinWidths(
+  //     List<OrderBookModel> orders, BuildContext context) {
+  //   // Use fixed font size for measurement (table text is not responsive, only buttons are)
+  //   final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
+  //   const padding = 24.0; // Padding for cell content
+  //   const sortIconWidth = 24.0; // Extra space for sort indicator icon
+  //
+  //   // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
+  //   final headers = [
+  //     'Time',
+  //     'Type',
+  //     'Instrument',
+  //     'Product',
+  //     'Qty.',
+  //     'LTP',
+  //     'Price',
+  //     'Status',
+  //   ];
+  //   final minWidths = <int, double>{};
+  //
+  //   // Calculate width for each column
+  //   for (int col = 0; col < headers.length; col++) {
+  //     double maxWidth = 0.0;
+  //
+  //     // Measure header width and add space for sort icon
+  //     final headerWidth = _measureTextWidth(headers[col], textStyle);
+  //     maxWidth = headerWidth + sortIconWidth;
+  //
+  //     // Measure widest value in this column (sample first 5 rows for performance)
+  //     for (final order in orders.take(5)) {
+  //       String cellText = '';
+  //       switch (col) {
+  //         case 0: // Time
+  //           cellText = _formatTime(order.norentm ?? '0.00');
+  //           break;
+  //         case 1: // Type (BUY/SELL)
+  //           cellText = order.trantype == "S" ? "SELL" : "BUY";
+  //           break;
+  //         case 2: // Instrument
+  //           final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
+  //           final exchange = order.exch ?? '';
+  //           final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
+  //           final symbolWidth = _measureTextWidth(symbol, textStyle);
+  //           final exchangeStyle =
+  //               const TextStyle(fontSize: 10, fontFamily: 'Geist');
+  //           final exchangeWidth = exchangeText.isNotEmpty
+  //               ? _measureTextWidth(exchangeText, exchangeStyle)
+  //               : 0.0;
+  //           final totalWidth = symbolWidth +
+  //               exchangeWidth +
+  //               (exchangeText.isNotEmpty ? 4.0 : 0.0);
+  //           if (totalWidth > maxWidth) {
+  //             maxWidth = totalWidth;
+  //           }
+  //           continue;
+  //         case 3: // Product
+  //           cellText = order.sPrdtAli ?? order.prd ?? '';
+  //           break;
+  //         case 4: // Qty.
+  //           cellText = order.qty?.toString() ?? '0';
+  //           break;
+  //         case 5: // LTP
+  //           cellText = CellFormatters.getValidLTP(order);
+  //           break;
+  //         case 6: // Price
+  //           cellText = CellFormatters.getValidPrice(order);
+  //           break;
+  //         case 7: // Status
+  //           cellText = CellFormatters.getStatusText(order);
+  //           break;
+  //       }
+  //
+  //       final cellWidth = _measureTextWidth(cellText, textStyle);
+  //       if (cellWidth > maxWidth) {
+  //         maxWidth = cellWidth;
+  //       }
+  //     }
+  //
+  //     if (headers[col] == 'Instrument') {
+  //       const minInstrumentWidth = 150.0;
+  //       maxWidth =
+  //           maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+  //     }
+  //
+  //     minWidths[col] = maxWidth + padding;
+  //   }
+  //
+  //   return minWidths;
+  // }
+  //
+  // // Helper method to measure text width dynamically
+  // double _measureTextWidth(String text, TextStyle style) {
+  //   final textPainter = TextPainter(
+  //     text: TextSpan(text: text, style: style),
+  //     textDirection: TextDirection.ltr,
+  //     maxLines: 1,
+  //   );
+  //   textPainter.layout();
+  //   return textPainter.width;
+  // }
 
-    final headers = [
-      'Time',
-      'Instrument',
-      'Product',
-      'Type',
-      'Side',
-      'Qty',
-      'Avg price',
-      'LTP',
-      'Price',
-      'Trigger price',
-      'Status',
-    ];
-    final minWidths = <int, double>{};
-
-    // Calculate width for each column
-    for (int col = 0; col < headers.length; col++) {
-      double maxWidth = 0.0;
-
-      // Measure header width and add space for sort icon
-      final headerWidth = _measureTextWidth(headers[col], textStyle);
-      maxWidth = headerWidth + sortIconWidth;
-
-      // Measure widest value in this column (sample first 5 rows for performance)
-      for (final order in orders.take(5)) {
-        String cellText = '';
-        switch (col) {
-          case 0: // Time
-            cellText = _formatTime(order.norentm ?? '0.00');
-            break;
-          case 1: // Instrument
-            // For Instrument column, measure symbol + exchange separately
-            // since exchange uses smaller font
-            final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
-            final exchange = order.exch ?? '';
-            final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
-
-            // Measure symbol with normal font (fixed 14px)
-            final symbolWidth = _measureTextWidth(symbol, textStyle);
-
-            // Measure exchange with smaller font (fixed 10px, matches rendering)
-            final exchangeStyle =
-                const TextStyle(fontSize: 10, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty
-                ? _measureTextWidth(exchangeText, exchangeStyle)
-                : 0.0;
-
-            // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth +
-                exchangeWidth +
-                (exchangeText.isNotEmpty ? 4.0 : 0.0);
-            if (totalWidth > maxWidth) {
-              maxWidth = totalWidth;
-            }
-            // Skip normal cellWidth calculation for Instrument - already handled above
-            continue;
-          case 2: // Product
-            cellText = order.sPrdtAli ?? order.prd ?? '';
-            break;
-          case 3: // Type (Price type)
-            cellText = order.prctyp ?? '';
-            break;
-          case 4: // Side
-            cellText = order.trantype == "S" ? "SELL" : "BUY";
-            break;
-          case 5: // Qty
-            cellText = order.qty?.toString() ?? '0';
-            break;
-          case 6: // Avg price
-            cellText = order.avgprc ?? '0.00';
-            break;
-          case 7: // LTP
-            cellText = CellFormatters.getValidLTP(order);
-            break;
-          case 8: // Price
-            cellText = CellFormatters.getValidPrice(order);
-            break;
-          case 9: // Trigger price
-            cellText = (order.trgprc != null &&
-                    order.trgprc != '0' &&
-                    order.trgprc != '0.00')
-                ? order.trgprc!
-                : '0.00';
-            break;
-          case 10: // Status
-            cellText = CellFormatters.getStatusText(order);
-            break;
-        }
-
-        final cellWidth = _measureTextWidth(cellText, textStyle);
-        if (cellWidth > maxWidth) {
-          maxWidth = cellWidth;
-        }
-      }
-
-      // For instrument column, no need to reserve space for buttons
-      // Buttons will overlay on the right side, covering only half the text
-      // Text can use full width, buttons appear on hover as overlay
-      // Ensure minimum width to prevent excessive truncation
-      if (headers[col] == 'Instrument') {
-        const minInstrumentWidth = 150.0;
-        maxWidth =
-            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
-      }
-
-      // Set minimum width (max of header/data + padding)
-      minWidths[col] = maxWidth + padding;
-    }
-
-    return minWidths;
-  }
-
-  // Helper method to measure text width dynamically
-  double _measureTextWidth(String text, TextStyle style) {
-    final textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    );
-    textPainter.layout();
-    return textPainter.width;
-  }
-
+  // Sort orders based on 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
   List<OrderBookModel> _getSortedOrders(List<OrderBookModel> orders) {
     if (_sortColumnIndex == null) return orders;
 
@@ -433,43 +404,44 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
         case 0: // Time
           comparison = (a.norentm ?? '').compareTo(b.norentm ?? '');
           break;
-        case 1: // Instrument
+        case 1: // Type (BUY/SELL)
+          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
+          break;
+        case 2: // Instrument
           comparison = (a.tsym ?? '').compareTo(b.tsym ?? '');
           break;
-        case 2: // Product
+        case 3: // Product
           comparison =
               (a.sPrdtAli ?? a.prd ?? '').compareTo(b.sPrdtAli ?? b.prd ?? '');
           break;
-        case 3: // Type (Price type)
-          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
-          break;
-        case 4: // Side
-          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
-          break;
-        case 5: // Qty
+        case 4: // Qty.
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 6: // Avg price
-          comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
-              .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
-          break;
-        case 7: // LTP
+        case 5: // LTP
           comparison = (double.tryParse(a.ltp ?? '0') ?? 0)
               .compareTo(double.tryParse(b.ltp ?? '0') ?? 0);
           break;
-        case 8: // Price
+        case 6: // Price
           comparison = (double.tryParse(a.prc ?? '0') ?? 0)
               .compareTo(double.tryParse(b.prc ?? '0') ?? 0);
           break;
-        case 9: // Trigger price
-          comparison = (double.tryParse(a.trgprc ?? '0') ?? 0)
-              .compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
-          break;
-        case 10: // Status
+        case 7: // Status
           comparison = (CellFormatters.getStatusText(a))
               .compareTo(CellFormatters.getStatusText(b));
           break;
+        // Old column cases (commented out):
+        // case 3: // Type (Price type)
+        //   comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
+        //   break;
+        // case 6: // Avg price
+        //   comparison = (double.tryParse(a.avgprc ?? '0') ?? 0)
+        //       .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0);
+        //   break;
+        // case 9: // Trigger price
+        //   comparison = (double.tryParse(a.trgprc ?? '0') ?? 0)
+        //       .compareTo(double.tryParse(b.trgprc ?? '0') ?? 0);
+        //   break;
       }
 
       return _sortAscending ? comparison : -comparison;
@@ -524,17 +496,18 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     final sortedOrders = _getSortedOrders(orders);
     final actionHandler = OrderActionHandler(ref: ref, context: context);
 
-    // Build data rows
+    // Build data rows - 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
     final dataRows = <shadcn.TableRow>[];
     for (var i = 0; i < sortedOrders.length; i++) {
       final order = sortedOrders[i];
       final uniqueId =
           order.norenordno?.toString() ?? order.token?.toString() ?? '';
-      final colorScheme = shadcn.Theme.of(context).colorScheme;
+      // final colorScheme = shadcn.Theme.of(context).colorScheme; // Commented out - unused
 
       dataRows.add(
         shadcn.TableRow(
           cells: [
+            // Column 0: Time
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 0,
@@ -546,48 +519,10 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 softWrap: false,
               ),
             ),
-            // PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent UI
+            // Column 1: Type (BUY/SELL)
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 1,
-              child: ValueListenableBuilder<int?>(
-                valueListenable: _hoveredRowIndex,
-                builder: (context, hoveredIndex, _) {
-                  final isHovered = hoveredIndex == i;
-                  return GestureDetector(
-                    onTap: () => actionHandler.openOrderDetail(order),
-                    behavior: HitTestBehavior.opaque,
-                    child: _buildInstrumentCell(
-                        order, theme, uniqueId, actionHandler, isHovered),
-                  );
-                },
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 2,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                order.sPrdtAli ?? order.prd ?? '',
-                style: _getTextStyle(context),
-                overflow: TextOverflow.visible,
-                softWrap: false,
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 3,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                order.prctyp ?? '',
-                style: _getTextStyle(context),
-                overflow: TextOverflow.visible,
-                softWrap: false,
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 4,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
                 order.trantype == "S" ? "SELL" : "BUY",
@@ -602,9 +537,40 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 ),
               ),
             ),
+            // Column 2: Instrument - PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent UI
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 5,
+              columnIndex: 2,
+              child: ValueListenableBuilder<int?>(
+                valueListenable: _hoveredRowIndex,
+                builder: (context, hoveredIndex, _) {
+                  final isHovered = hoveredIndex == i;
+                  return GestureDetector(
+                    onTap: () => actionHandler.openOrderDetail(order),
+                    behavior: HitTestBehavior.opaque,
+                    child: _buildInstrumentCell(
+                        order, theme, uniqueId, actionHandler, isHovered),
+                  );
+                },
+              ),
+            ),
+            // Column 3: Product
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 3,
+               alignRight: true,
+              onTap: () => actionHandler.openOrderDetail(order),
+              child: Text(
+                order.sPrdtAli ?? order.prd ?? '',
+                style: _getTextStyle(context),
+                overflow: TextOverflow.visible,
+                softWrap: false,
+              ),
+            ),
+            // Column 4: Qty.
+            buildCellWithHover(
+              rowIndex: i,
+              columnIndex: 4,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
@@ -612,29 +578,23 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 style: _getTextStyle(context),
               ),
             ),
+            // Column 5: LTP (with dynamic colors based on order price)
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 6,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                order.avgprc ?? '0.00',
-                style: _getTextStyle(context),
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 7,
+              columnIndex: 5,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: _OrderLTPCell(
                 token: order.token ?? '',
                 initialLtp: CellFormatters.getValidLTP(order),
+                trantype: order.trantype ?? 'B',
+                orderPrice: order.prc ?? '0',
               ),
             ),
+            // Column 6: Price
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 8,
+              columnIndex: 6,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
@@ -650,29 +610,17 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 ),
               ),
             ),
+            // Column 7: Status (aligned right)
             buildCellWithHover(
               rowIndex: i,
-              columnIndex: 9,
+              columnIndex: 7,
               alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                (order.trgprc != null &&
-                        order.trgprc != '0' &&
-                        order.trgprc != '0.00')
-                    ? order.trgprc!
-                    : '0.00',
-                style: _getTextStyle(context),
-              ),
-            ),
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 10,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: _getStatusColor(CellFormatters.getStatusText(order))
-                      .withOpacity(0.12),
+                      .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -685,86 +633,69 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 ),
               ),
             ),
+            // Old columns (commented out):
+            // buildCellWithHover(
+            //   rowIndex: i,
+            //   columnIndex: 3,
+            //   onTap: () => actionHandler.openOrderDetail(order),
+            //   child: Text(
+            //     order.prctyp ?? '',
+            //     style: _getTextStyle(context),
+            //     overflow: TextOverflow.visible,
+            //     softWrap: false,
+            //   ),
+            // ),
+            // buildCellWithHover(
+            //   rowIndex: i,
+            //   columnIndex: 6,
+            //   alignRight: true,
+            //   onTap: () => actionHandler.openOrderDetail(order),
+            //   child: Text(
+            //     order.avgprc ?? '0.00',
+            //     style: _getTextStyle(context),
+            //   ),
+            // ),
+            // buildCellWithHover(
+            //   rowIndex: i,
+            //   columnIndex: 9,
+            //   alignRight: true,
+            //   onTap: () => actionHandler.openOrderDetail(order),
+            //   child: Text(
+            //     (order.trgprc != null &&
+            //             order.trgprc != '0' &&
+            //             order.trgprc != '0.00')
+            //         ? order.trgprc!
+            //         : '0.00',
+            //     style: _getTextStyle(context),
+            //   ),
+            // ),
           ],
         ),
       );
     }
 
     // Return shadcn Table with proper structure
+    // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
     return SizedBox.expand(
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: double.infinity,
         child: shadcn.OutlinedContainer(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Calculate minimum widths dynamically based on actual content
-              final minWidths = _calculateMinWidths(sortedOrders, context);
-
               // Available width
               final availableWidth = constraints.maxWidth;
 
-              // Step 1: Start with minimum widths (content-based, no wasted space)
-              final columnWidths = <int, double>{};
-              for (int i = 0; i < 11; i++) {
-                columnWidths[i] = minWidths[i] ?? 100.0;
-              }
+              // Equal width for all 8 columns
+              final equalWidth = availableWidth / 8;
 
-              // Step 2: Calculate total minimum width needed
-              final totalMinWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
-
-              // Step 3: If there's extra space, distribute it proportionally
-              // This prevents unnecessary horizontal scroll while using available space efficiently
-              if (totalMinWidth < availableWidth) {
-                final extraSpace = availableWidth - totalMinWidth;
-
-                // Define which columns can grow and their growth priorities
-                // Instrument gets more growth, text columns get medium, numeric get less
-                const instrumentGrowthFactor =
-                    2.0; // Instrument can grow 2x more than numeric
-                const textGrowthFactor = 1.2;
-                const numericGrowthFactor = 1.0;
-
-                // Calculate growth factors for each column
-                final growthFactors = <int, double>{};
-                double totalGrowthFactor = 0.0;
-
-                for (int i = 0; i < 11; i++) {
-                  // Column 0: Time (numeric)
-                  // Column 1: Instrument
-                  // Columns 2, 3, 10: Text columns (Product, Type, Status)
-                  // Rest: Numeric columns
-                  if (i == 1) {
-                    growthFactors[i] = instrumentGrowthFactor;
-                    totalGrowthFactor += instrumentGrowthFactor;
-                  } else if (i == 2 || i == 3 || i == 10) {
-                    growthFactors[i] = textGrowthFactor;
-                    totalGrowthFactor += textGrowthFactor;
-                  } else {
-                    growthFactors[i] = numericGrowthFactor;
-                    totalGrowthFactor += numericGrowthFactor;
-                  }
-                }
-
-                // Distribute extra space proportionally
-                if (totalGrowthFactor > 0) {
-                  for (int i = 0; i < 11; i++) {
-                    if (growthFactors[i]! > 0) {
-                      final extraForThisColumn =
-                          (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                      columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                    }
-                  }
-                }
-              }
-
-              // Calculate total required width
-              final totalRequiredWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
-
-              // If total width exceeds available width, enable horizontal scrolling
-              final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+              // Old dynamic width calculation (commented out):
+              // final minWidths = _calculateMinWidths(sortedOrders, context);
+              // final columnWidths = <int, double>{};
+              // for (int i = 0; i < 11; i++) {
+              //   columnWidths[i] = minWidths[i] ?? 100.0;
+              // }
+              // ... proportional distribution logic ...
 
               // Build table content
               Widget buildTableContent() {
@@ -778,36 +709,34 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Fixed Header (synced with horizontal scroll)
+                      // Fixed Header - 8 columns with equal width
                       shadcn.Table(
                         columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
-                          8: shadcn.FixedTableSize(columnWidths[8]!),
-                          9: shadcn.FixedTableSize(columnWidths[9]!),
-                          10: shadcn.FixedTableSize(columnWidths[10]!),
+                          0: shadcn.FixedTableSize(equalWidth),
+                          1: shadcn.FixedTableSize(equalWidth),
+                          2: shadcn.FixedTableSize(equalWidth),
+                          3: shadcn.FixedTableSize(equalWidth),
+                          4: shadcn.FixedTableSize(equalWidth),
+                          5: shadcn.FixedTableSize(equalWidth),
+                          6: shadcn.FixedTableSize(equalWidth),
+                          7: shadcn.FixedTableSize(equalWidth),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
                           shadcn.TableHeader(
                             cells: [
                               buildHeaderCell('Time', 0),
-                              buildHeaderCell('Instrument', 1),
-                              buildHeaderCell('Product', 2),
-                              buildHeaderCell('Type', 3),
-                              buildHeaderCell('Side', 4),
-                              buildHeaderCell('Qty', 5, true),
-                              buildHeaderCell('Avg price', 6, true),
-                              buildHeaderCell('LTP', 7, true),
-                              buildHeaderCell('Price', 8, true),
-                              buildHeaderCell('Trigger price', 9, true),
-                              buildHeaderCell('Status', 10),
+                              buildHeaderCell('Type', 1),
+                              buildHeaderCell('Instrument', 2),
+                              buildHeaderCell('Product', 3,true),
+                              buildHeaderCell('Qty.', 4, true),
+                              buildHeaderCell('LTP', 5, true),
+                              buildHeaderCell('Price', 6, true),
+                              buildHeaderCell('Status', 7, true),
+                              // Old headers (commented out):
+                              // buildHeaderCell('Side', 4),
+                              // buildHeaderCell('Avg price', 6, true),
+                              // buildHeaderCell('Trigger price', 9, true),
                             ],
                           ),
                         ],
@@ -819,11 +748,11 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                           thumbVisibility: true,
                           trackVisibility: true,
                           trackColor: resolveThemeColor(context,
-                              dark: Colors.grey.withOpacity(0.1),
-                              light: Colors.grey.withOpacity(0.1)),
+                              dark: Colors.grey.withValues(alpha: 0.1),
+                              light: Colors.grey.withValues(alpha: 0.1)),
                           thumbColor: resolveThemeColor(context,
-                              dark: Colors.grey.withOpacity(0.3),
-                              light: Colors.grey.withOpacity(0.3)),
+                              dark: Colors.grey.withValues(alpha: 0.3),
+                              light: Colors.grey.withValues(alpha: 0.3)),
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
@@ -834,17 +763,14 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                               key: ValueKey(
                                   'table_${_sortColumnIndex}_$_sortAscending'),
                               columnWidths: {
-                                0: shadcn.FixedTableSize(columnWidths[0]!),
-                                1: shadcn.FixedTableSize(columnWidths[1]!),
-                                2: shadcn.FixedTableSize(columnWidths[2]!),
-                                3: shadcn.FixedTableSize(columnWidths[3]!),
-                                4: shadcn.FixedTableSize(columnWidths[4]!),
-                                5: shadcn.FixedTableSize(columnWidths[5]!),
-                                6: shadcn.FixedTableSize(columnWidths[6]!),
-                                7: shadcn.FixedTableSize(columnWidths[7]!),
-                                8: shadcn.FixedTableSize(columnWidths[8]!),
-                                9: shadcn.FixedTableSize(columnWidths[9]!),
-                                10: shadcn.FixedTableSize(columnWidths[10]!),
+                                0: shadcn.FixedTableSize(equalWidth),
+                                1: shadcn.FixedTableSize(equalWidth),
+                                2: shadcn.FixedTableSize(equalWidth),
+                                3: shadcn.FixedTableSize(equalWidth),
+                                4: shadcn.FixedTableSize(equalWidth),
+                                5: shadcn.FixedTableSize(equalWidth),
+                                6: shadcn.FixedTableSize(equalWidth),
+                                7: shadcn.FixedTableSize(equalWidth),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: dataRows,
@@ -857,33 +783,37 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 );
               }
 
-              // Horizontal scroll wrapper (if needed)
-              if (needsHorizontalScroll) {
-                return RawScrollbar(
-                  controller: widget.horizontalScrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  trackColor: resolveThemeColor(context,
-                      dark: Colors.grey.withOpacity(0.1),
-                      light: Colors.grey.withOpacity(0.1)),
-                  thumbColor: resolveThemeColor(context,
-                      dark: Colors.grey.withOpacity(0.3),
-                      light: Colors.grey.withOpacity(0.3)),
-                  thickness: 6,
-                  radius: const Radius.circular(3),
-                  interactive: true,
-                  child: SingleChildScrollView(
-                    controller: widget.horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: totalRequiredWidth,
-                      child: buildTableContent(),
-                    ),
-                  ),
-                );
-              }
-
+              // No horizontal scroll needed with equal width columns
               return buildTableContent();
+
+              // Old horizontal scroll wrapper (commented out):
+              // final totalRequiredWidth = columnWidths.values
+              //     .fold<double>(0.0, (sum, width) => sum + width);
+              // final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+              // if (needsHorizontalScroll) {
+              //   return RawScrollbar(
+              //     controller: widget.horizontalScrollController,
+              //     thumbVisibility: true,
+              //     trackVisibility: true,
+              //     trackColor: resolveThemeColor(context,
+              //         dark: Colors.grey.withValues(alpha: 0.1),
+              //         light: Colors.grey.withValues(alpha: 0.1)),
+              //     thumbColor: resolveThemeColor(context,
+              //         dark: Colors.grey.withValues(alpha: 0.3),
+              //         light: Colors.grey.withValues(alpha: 0.3)),
+              //     thickness: 6,
+              //     radius: const Radius.circular(3),
+              //     interactive: true,
+              //     child: SingleChildScrollView(
+              //       controller: widget.horizontalScrollController,
+              //       scrollDirection: Axis.horizontal,
+              //       child: SizedBox(
+              //         width: totalRequiredWidth,
+              //         child: buildTableContent(),
+              //       ),
+              //     ),
+              //   );
+              // }
             },
           ),
         ),
@@ -1123,14 +1053,18 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
 
 // Action button widget
 
-// LTP Cell with WebSocket updates
+// LTP Cell with WebSocket updates and dynamic colors
 class _OrderLTPCell extends ConsumerStatefulWidget {
   final String token;
   final String initialLtp;
+  final String trantype; // "B" for BUY, "S" for SELL
+  final String orderPrice; // Order price for comparison
 
   const _OrderLTPCell({
     required this.token,
     required this.initialLtp,
+    required this.trantype,
+    required this.orderPrice,
   });
 
   @override
@@ -1180,14 +1114,64 @@ class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
     super.dispose();
   }
 
+  // Get dynamic color based on LTP vs order price
+  Color _getLtpColor(BuildContext context) {
+    final ltpValue = double.tryParse(ltp) ?? 0.0;
+    final priceValue = double.tryParse(widget.orderPrice) ?? 0.0;
+
+    // If price is 0 or MKT order, use default color
+    if (priceValue == 0.0) {
+      return resolveThemeColor(
+        context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary,
+      );
+    }
+
+    // For BUY orders: Green if LTP >= price (favorable), Red if LTP < price
+    // For SELL orders: Green if LTP <= price (favorable), Red if LTP > price
+    final isBuy = widget.trantype != "S";
+
+    if (isBuy) {
+      // BUY: LTP >= price is good (green), LTP < price is bad (red)
+      if (ltpValue >= priceValue) {
+        return resolveThemeColor(
+          context,
+          dark: MyntColors.profitDark,
+          light: MyntColors.profit,
+        );
+      } else {
+        return resolveThemeColor(
+          context,
+          dark: MyntColors.lossDark,
+          light: MyntColors.loss,
+        );
+      }
+    } else {
+      // SELL: LTP <= price is good (green), LTP > price is bad (red)
+      if (ltpValue <= priceValue) {
+        return resolveThemeColor(
+          context,
+          dark: MyntColors.profitDark,
+          light: MyntColors.profit,
+        );
+      } else {
+        return resolveThemeColor(
+          context,
+          dark: MyntColors.lossDark,
+          light: MyntColors.loss,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Text(
       ltp,
       style: MyntWebTextStyles.tableCell(
         context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
+        color: _getLtpColor(context),
         fontWeight: MyntFonts.medium,
       ),
     );

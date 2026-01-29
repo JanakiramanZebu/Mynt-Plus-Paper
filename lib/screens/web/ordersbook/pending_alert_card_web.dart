@@ -564,7 +564,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                           buildHeaderCell('Alert Type', 2),
                           buildHeaderCell('Target', 3, true),
                           buildHeaderCell('LTP', 4, true),
-                          buildHeaderCell('Status', 5),
+                          buildHeaderCell('Status', 5, true),
                         ],
                       ),
                     ],
@@ -651,6 +651,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 5,
+                                  alignRight: true,
                                   onTap: () => _showAlertDetail(alert),
                                   child: _buildStatusCell(alert, theme),
                                 ),
@@ -1221,7 +1222,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     }
 
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: Alignment.centerRight,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
