@@ -36,7 +36,7 @@ class MFAllocation extends ConsumerWidget {
     return Container(
       color: isDarkMode ? Colors.black : Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -45,7 +45,9 @@ class MFAllocation extends ConsumerWidget {
               "Asset allocation and Holdings",
               style: MyntWebTextStyles.title(
                 context,
-                color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                color: isDarkMode
+                    ? MyntColors.textPrimaryDark
+                    : MyntColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -102,7 +104,9 @@ class MFAllocation extends ConsumerWidget {
           "Equity allocation by Sector",
           style: MyntWebTextStyles.body(
             context,
-            color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+            color: isDarkMode
+                ? MyntColors.textPrimaryDark
+                : MyntColors.textPrimary,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -126,7 +130,7 @@ class MFAllocation extends ConsumerWidget {
                 sector.netAsset ?? "0.00",
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, __) => const SizedBox(height: 20),
           ),
           if (mfData.sectors!.length > 5)
             Padding(
@@ -241,7 +245,7 @@ class MFAllocation extends ConsumerWidget {
                 holding.netAsset ?? "0.00",
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, __) => const SizedBox(height: 20),
           ),
           if (mfData.holdings!.length > 5)
             Padding(
@@ -303,8 +307,8 @@ class MFAllocation extends ConsumerWidget {
         const SizedBox(height: 6),
         // Small Progress Bar (blue)
         LinearPercentIndicator(
-          lineHeight: 6.0,
-          barRadius: const Radius.circular(3),
+          lineHeight: 8.0,
+          barRadius: const Radius.circular(4),
           backgroundColor: isDarkMode
               ? colors.textSecondaryDark.withOpacity(0.2)
               : colors.textSecondaryLight.withOpacity(0.1),

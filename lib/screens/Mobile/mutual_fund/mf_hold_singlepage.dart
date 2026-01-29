@@ -6,9 +6,11 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/global_font_web.dart';
 // import '../../sharedWidget/loader_ui.dart';
 // import '../mutual_fund_old/mf_order_filter_sheet.dart';
-import 'redeem_new_bottomsheet.dart';
 
 class mfholdsinlepage extends StatefulWidget {
   const mfholdsinlepage({super.key});
@@ -26,9 +28,14 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
   // Helper method to determine color based on value
   Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
-    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    return value >= 0
+        ? theme.isDarkMode
+            ? colors.profitDark
+            : colors.profitLight
+        : theme.isDarkMode
+            ? colors.lossDark
+            : colors.lossLight;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,8 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
           mfdata.holssinglelist![0] != null;
 
       return Scaffold(
-        backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        backgroundColor:
+            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         body: Column(
           children: [
             // Header with close button and title
@@ -51,8 +59,8 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: theme.isDarkMode 
-                        ? colors.darkColorDivider 
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
                         : colors.colorDivider,
                     width: 1,
                   ),
@@ -65,16 +73,16 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                     child: Icon(
                       Icons.close,
                       size: 24,
-                      color: theme.isDarkMode 
-                          ? colors.textPrimaryDark 
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
                     ),
                   ),
                   const SizedBox(width: 16),
                   TextWidget.titleText(
                     text: "Holding Details",
-                    color: theme.isDarkMode 
-                        ? colors.textPrimaryDark 
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
                         : colors.textPrimaryLight,
                     fw: 1,
                     theme: theme.isDarkMode,
@@ -82,12 +90,13 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                 ],
               ),
             ),
-            
+
             // Content
             Expanded(
               child: hasData
                   ? _buildHoldingDetails(context, theme, mfdata)
-                  : const Center(child: NoDataFound(
+                  : const Center(
+                      child: NoDataFound(
                       secondaryEnabled: false,
                     )),
             ),
@@ -137,85 +146,8 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
                 ),
               ],
             ),
-            
-            const SizedBox(height: 20),
 
-            // Redeem button (outlined)
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  mfdata.recdemevalu();
-                  Navigator.of(context, rootNavigator: true).pop();
-                  
-                  // Show redeem screen as 30% width right-side panel
-                  showGeneralDialog(
-                    context: context,
-                    barrierDismissible: true,
-                    barrierLabel: 'Dismiss',
-                    barrierColor: Colors.transparent,
-                    transitionDuration: const Duration(milliseconds: 300),
-                    pageBuilder: (dialogContext, animation, secondaryAnimation) {
-                      return Align(
-                        alignment: Alignment.centerRight,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: Container(
-                            width: 400, // Fixed width for side panel
-                            height: MediaQuery.of(dialogContext).size.height,
-                            decoration: BoxDecoration(
-                              color: Theme.of(dialogContext).scaffoldBackgroundColor,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(-2, 0),
-                                ),
-                              ],
-                            ),
-                            child: const RedemptionBottomScreenNew(),
-                          ),
-                        ),
-                      );
-                    },
-                    transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
-                      return SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(1, 0),
-                          end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOutCubic,
-                        )),
-                        child: child,
-                      );
-                    },
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  side: BorderSide(
-                    color: theme.isDarkMode 
-                        ? colors.primaryDark 
-                        : colors.primaryLight,
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                child: TextWidget.subText(
-                  text: "Redeem",
-                  color: theme.isDarkMode 
-                      ? colors.primaryDark 
-                      : colors.primaryLight,
-                  fw: 2,
-                  theme: theme.isDarkMode,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
+            // Units and Avg Price
 
             rowOfInfoData(
               "Returns",
@@ -268,40 +200,54 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
     );
   }
 
-  Column rowOfInfoData(String title1, String value1, ThemesProvider theme,
+  Widget rowOfInfoData(String title1, String value1, ThemesProvider theme,
       {Color? valueColor}) {
-    return Column(children: [
-      const SizedBox(height: 12),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TextWidget.subText(
-              // align: TextAlign.right,
-              text: title1,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 0),
-          TextWidget.subText(
-              align: TextAlign.right,
-              text: value1,
-              color: valueColor ??
-                  (theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight),
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 0),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+            width: 1,
+          ),
+        ),
       ),
-      const SizedBox(height: 8),
-      Divider(
-        thickness: 0,
-        color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-      )
-    ]);
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Text(
+                title1,
+                style: MyntWebTextStyles.bodyMedium(
+                  context,
+                  color: theme.isDarkMode
+                      ? MyntColors.textSecondaryDark
+                      : MyntColors.textSecondary,
+                  fontWeight: MyntFonts.regular,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                value1,
+                textAlign: TextAlign.right,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: valueColor ??
+                      (theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showBottomSheet(BuildContext context, Widget BottomSheet) {

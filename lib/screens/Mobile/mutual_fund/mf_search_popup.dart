@@ -48,7 +48,9 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
-                      color: theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,
+                      color: theme.isDarkMode
+                          ? MyntColors.searchBgDark
+                          : MyntColors.searchBg,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Row(
@@ -56,7 +58,9 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                         Icon(
                           Icons.search,
                           size: 20,
-                          color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                          color: theme.isDarkMode
+                              ? MyntColors.textSecondaryDark
+                              : MyntColors.textSecondary,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -72,7 +76,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                               contentPadding: EdgeInsets.zero,
                             ),
                             onChanged: (value) {
-                               mfData.fetchmfCommonsearch(value, context);
+                              mfData.fetchmfCommonsearch(value, context);
                             },
                           ),
                         ),
@@ -81,9 +85,9 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                 InkWell(
+                InkWell(
                   onTap: () {
-                     Navigator.pop(context);
+                    Navigator.pop(context);
                   },
                   child: Icon(
                     Icons.close,
@@ -97,24 +101,33 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
             // Content Area
             Expanded(
               child: mfData.bestmfloader == true
-              ? const Center(child: CircularProgressIndicator()) 
-              : (_searchController.text.isEmpty && (mfData.mutualFundsearchdata == null || mfData.mutualFundsearchdata!.isEmpty))
-                  ? _buildEmptyState(theme) // "Start Searching" State
-                  : (mfData.mutualFundsearchdata == null || mfData.mutualFundsearchdata!.isEmpty)
-                      ? Center(child: const NoDataFound(secondaryEnabled: false))
-                      : ListView.separated(
-                          padding: const EdgeInsets.only(top: 24),
-                          itemCount: mfData.mutualFundsearchdata?.length ?? 0,
-                          separatorBuilder: (context, index) => Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: theme.isDarkMode ? const Color(0xff333333) : const Color(0xffF0F0F0),
-                          ),
-                          itemBuilder: (context, index) {
-                            final item = mfData.mutualFundsearchdata![index];
-                            return _buildListItem(context, item, theme, mfData);
-                          },
-                        ),
+                  ? const Center(child: CircularProgressIndicator())
+                  : (_searchController.text.isEmpty &&
+                          (mfData.mutualFundsearchdata == null ||
+                              mfData.mutualFundsearchdata!.isEmpty))
+                      ? _buildEmptyState(theme) // "Start Searching" State
+                      : (mfData.mutualFundsearchdata == null ||
+                              mfData.mutualFundsearchdata!.isEmpty)
+                          ? Center(
+                              child: const NoDataFound(secondaryEnabled: false))
+                          : ListView.separated(
+                              padding: const EdgeInsets.only(top: 24),
+                              itemCount:
+                                  mfData.mutualFundsearchdata?.length ?? 0,
+                              separatorBuilder: (context, index) => Divider(
+                                height: 1,
+                                thickness: 0.5,
+                                color: theme.isDarkMode
+                                    ? const Color(0xff333333)
+                                    : const Color(0xffF0F0F0),
+                              ),
+                              itemBuilder: (context, index) {
+                                final item =
+                                    mfData.mutualFundsearchdata![index];
+                                return _buildListItem(
+                                    context, item, theme, mfData);
+                              },
+                            ),
             ),
           ],
         ),
@@ -127,7 +140,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Bull Icon Placeholder (You may want to replace with asset)
-         Icon(
+        Icon(
           Icons.show_chart, // Placeholder for the bull icon
           size: 64,
           color: theme.isDarkMode ? Colors.grey[700] : Colors.grey[400],
@@ -152,31 +165,30 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
         ),
         const SizedBox(height: 24),
         InkWell(
-            onTap: (){
-                Navigator.pop(context);
-                // logic to go to explore if needed?
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              decoration: BoxDecoration(
-                  color: theme.isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(6)
-              ),
-              child: Text(
-                  "Explore",
-                  style: TextStyle(
-                     fontSize: 14,
-                     fontWeight: FontWeight.w600,
-                     color: theme.isDarkMode ? Colors.white : Colors.black87
-                  ),
-              ),
+          onTap: () {
+            Navigator.pop(context);
+            // logic to go to explore if needed?
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            decoration: BoxDecoration(
+                color: theme.isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(6)),
+            child: Text(
+              "Explore",
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: theme.isDarkMode ? Colors.white : Colors.black87),
             ),
+          ),
         )
       ],
     );
   }
 
-  Widget _buildListItem(BuildContext context, dynamic item, ThemesProvider theme, dynamic mfData) {
+  Widget _buildListItem(BuildContext context, dynamic item,
+      ThemesProvider theme, dynamic mfData) {
     final amcCode = item.aMCCode ?? "default";
     final isAdded = item.isAdd ?? false;
 
@@ -188,7 +200,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
           // AMC Logo
           CircleAvatar(
             radius: 20,
-             backgroundColor: Colors.transparent,
+            backgroundColor: Colors.transparent,
             backgroundImage: NetworkImage(
               "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
             ),
@@ -215,7 +227,8 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                   item.schemeType ?? item.type ?? "Equity",
                   style: TextStyle(
                     fontSize: 12,
-                    color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    color:
+                        theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
                   ),
                 ),
               ],

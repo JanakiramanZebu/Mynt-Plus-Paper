@@ -66,7 +66,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
 
     // Filter list based on search query
     final filteredList = watchlist.where((item) {
-      final name = (item.mfsearchnamename ?? item.schemeName ?? '').toLowerCase();
+      final name =
+          (item.mfsearchnamename ?? item.schemeName ?? '').toLowerCase();
       return name.contains(searchQuery.toLowerCase());
     }).toList();
 
@@ -80,8 +81,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 (a.mfsearchnamename ?? '').compareTo(b.mfsearchnamename ?? '');
             break;
           case 1: // AUM (Assuming field name aUM matches model)
-             compareResult = (double.tryParse(a.aUM ?? '0') ?? 0)
-                  .compareTo(double.tryParse(b.aUM ?? '0') ?? 0);
+            compareResult = (double.tryParse(a.aUM ?? '0') ?? 0)
+                .compareTo(double.tryParse(b.aUM ?? '0') ?? 0);
             break;
           case 2: // 1Y
             compareResult = (double.tryParse(a.oneYearData ?? '0') ?? 0)
@@ -92,8 +93,10 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 .compareTo(double.tryParse(b.tHREEYEARDATA ?? '0') ?? 0);
             break;
           case 4: // Min Invest
-             compareResult = (double.tryParse(a.minimumPurchaseAmount ?? '0') ?? 0)
-                  .compareTo(double.tryParse(b.minimumPurchaseAmount ?? '0') ?? 0);
+            compareResult =
+                (double.tryParse(a.minimumPurchaseAmount ?? '0') ?? 0)
+                    .compareTo(
+                        double.tryParse(b.minimumPurchaseAmount ?? '0') ?? 0);
             break;
         }
         return _sortAscending ? compareResult : -compareResult;
@@ -107,7 +110,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
         children: [
           _buildSearchBar(theme),
           Expanded(
-            child: _buildTableWithHeader(filteredList, theme, mfData, searchQuery),
+            child:
+                _buildTableWithHeader(filteredList, theme, mfData, searchQuery),
           ),
         ],
       ),
@@ -134,17 +138,22 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
-               Icon(
+              Icon(
                 Icons.search,
                 size: 21,
-                color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                color: theme.isDarkMode
+                    ? MyntColors.textSecondaryDark
+                    : MyntColors.textSecondary,
               ),
-              const SizedBox(width: 8), // Common search field usually has 8-12 gap
+              const SizedBox(
+                  width: 8), // Common search field usually has 8-12 gap
               Text(
                 "Search & Add",
                 style: MyntWebTextStyles.placeholder(
                   context,
-                  color: theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                  color: theme.isDarkMode
+                      ? MyntColors.textSecondaryDark
+                      : MyntColors.textSecondary,
                   fontWeight: MyntFonts.medium,
                 ),
               ),
@@ -155,22 +164,19 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
     );
   }
 
-  Widget _buildTableWithHeader(List<dynamic> data, ThemesProvider theme, MFProvider mf, String searchQuery) {
+  Widget _buildTableWithHeader(List<dynamic> data, ThemesProvider theme,
+      MFProvider mf, String searchQuery) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: shadcn.OutlinedContainer(
         child: LayoutBuilder(builder: (context, constraints) {
           final double totalWidth = constraints.maxWidth;
-          // Proportions: Fund Name 40%, AUM 15%, 1yr 15%, 3yr 15%, Min Invest 15%
           final double fundNameWidth = totalWidth * 0.40;
           final double otherColumnWidth = totalWidth * 0.15;
 
-          // Filter local references of scroll controllers to avoid attach errors if rebuilds happen differently
-          // Using the one defined in state: _horizontalScrollController
-
           return Scrollbar(
             controller: _horizontalScrollController,
-            thumbVisibility: true,
+            thumbVisibility: false, // matches mf_all_best_funds
             child: SingleChildScrollView(
               controller: _horizontalScrollController,
               scrollDirection: Axis.horizontal,
@@ -179,14 +185,16 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Fixed Header Table
                     shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(60), // Increased height to fit 2 lines
+                      defaultRowHeight: const shadcn.FixedTableSize(50),
                       columnWidths: {
                         0: shadcn.FixedTableSize(fundNameWidth),
                         1: shadcn.FixedTableSize(otherColumnWidth), // AUM
                         2: shadcn.FixedTableSize(otherColumnWidth), // 1Y
                         3: shadcn.FixedTableSize(otherColumnWidth), // 3Y
-                        4: shadcn.FixedTableSize(otherColumnWidth), // Min Invest
+                        4: shadcn.FixedTableSize(
+                            otherColumnWidth), // Min Invest
                       },
                       rows: [
                         shadcn.TableHeader(
@@ -198,75 +206,95 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                             buildHeaderCell('Min. Invest', 4, true),
                           ],
                         ),
-                        if (data.isNotEmpty)
-                          ...data.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final item = entry.value;
-
-                            return shadcn.TableRow(
-                              cells: [
-                                // Fund Name
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 0,
-                                  onTap: () => _openFundDetails(item, mf),
-                                  child: _buildFundNameCell(item, index, mf),
-                                ),
-                                // AUM
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 1,
-                                  alignRight: true,
-                                  onTap: () => _openFundDetails(item, mf),
-                                  child: Text(
-                                    _formatAUM(item.aUM),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // 1yr
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 2,
-                                  alignRight: true,
-                                  onTap: () => _openFundDetails(item, mf),
-                                  child: Text(
-                                    _formatReturns(item.oneYearData),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // 3yr
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 3,
-                                  alignRight: true,
-                                  onTap: () => _openFundDetails(item, mf),
-                                  child: Text(
-                                    _formatReturns(item.tHREEYEARDATA),
-                                    style: _getTextStyle(context,
-                                        color: _getReturnColor(context, item.tHREEYEARDATA)),
-                                  ),
-                                ),
-                                // Min Invest
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 4,
-                                  alignRight: true,
-                                  onTap: () => _openFundDetails(item, mf),
-                                  child: Text(
-                                    '₹${item.minimumPurchaseAmount ?? '500.00'}',
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
                       ],
                     ),
+                    // Scrollable Body Table
+                    if (data.isNotEmpty)
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: _verticalScrollController,
+                          child: shadcn.Table(
+                            defaultRowHeight:
+                                const shadcn.FixedTableSize(60), // Data height
+                            columnWidths: {
+                              0: shadcn.FixedTableSize(fundNameWidth),
+                              1: shadcn.FixedTableSize(otherColumnWidth), // AUM
+                              2: shadcn.FixedTableSize(otherColumnWidth), // 1Y
+                              3: shadcn.FixedTableSize(otherColumnWidth), // 3Y
+                              4: shadcn.FixedTableSize(
+                                  otherColumnWidth), // Min Invest
+                            },
+                            rows: [
+                              ...data.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final item = entry.value;
+
+                                return shadcn.TableRow(
+                                  cells: [
+                                    // Fund Name
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 0,
+                                      onTap: () => _openFundDetails(item, mf),
+                                      child:
+                                          _buildFundNameCell(item, index, mf),
+                                    ),
+                                    // AUM
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 1,
+                                      alignRight: true,
+                                      onTap: () => _openFundDetails(item, mf),
+                                      child: Text(
+                                        _formatAUM(item.aUM),
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // 1yr
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 2,
+                                      alignRight: true,
+                                      onTap: () => _openFundDetails(item, mf),
+                                      child: Text(
+                                        _formatReturns(item.oneYearData),
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // 3yr
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 3,
+                                      alignRight: true,
+                                      onTap: () => _openFundDetails(item, mf),
+                                      child: Text(
+                                        _formatReturns(item.tHREEYEARDATA),
+                                        style: _getTextStyle(context,
+                                            color: _getReturnColor(
+                                                context, item.tHREEYEARDATA)),
+                                      ),
+                                    ),
+                                    // Min Invest
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 4,
+                                      alignRight: true,
+                                      onTap: () => _openFundDetails(item, mf),
+                                      child: Text(
+                                        '₹${item.minimumPurchaseAmount ?? '500.00'}',
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
                     if (data.isEmpty)
-                      SizedBox(
-                        height: 300,
-                        width: totalWidth,
-                         child: Center(
+                      Expanded(
+                        child: Center(
                           child: NoDataFound(
                             title: "No Funds Found",
                             subtitle: searchQuery.isNotEmpty
@@ -366,7 +394,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                           child: Text(
                             _formatReturns(item.tHREEYEARDATA),
                             style: _getTextStyle(context,
-                                color: _getReturnColor(context, item.tHREEYEARDATA)),
+                                color: _getReturnColor(
+                                    context, item.tHREEYEARDATA)),
                           ),
                         ),
                         // Min Invest
@@ -394,7 +423,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
 
   Widget _buildFundNameCell(dynamic item, int index, MFProvider mf) {
     final amcCode = item.aMCCode ?? "default";
-    
+
     return ValueListenableBuilder<int?>(
       valueListenable: _hoveredRowIndex,
       builder: (context, hoveredIndex, _) {
@@ -426,7 +455,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   Row(
                     children: [
                       _buildTag(item.type ?? 'Equity'),
-                         // _buildTag(item.schemeType ?? ''),
+                      // _buildTag(item.schemeType ?? ''),
                     ],
                   ),
                 ],
@@ -446,7 +475,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildActionButton('Buy', const Color(0xff0037B7),
+                    _buildActionButton('One-time', const Color(0xff0037B7),
                         () => _handleOrder(item, 'One-time', mf),
                         filled: true),
                     const SizedBox(width: 6),
@@ -491,21 +520,21 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
   }
 
   Widget _buildTag(String text) {
-      if(text.isEmpty) return const SizedBox.shrink();
+    if (text.isEmpty) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 2), // Remove horizontal padding if bg is gone? kept minimal.
+      padding: const EdgeInsets.symmetric(
+          horizontal: 0,
+          vertical:
+              2), // Remove horizontal padding if bg is gone? kept minimal.
       decoration: BoxDecoration(
         // color: Colors.transparent, // Background removed
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 11,
-          color: resolveThemeColor(context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary),
-        ),
+        style: MyntWebTextStyles.para(context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary),
       ),
     );
   }
@@ -570,7 +599,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
 
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
-     final isFirstColumn = columnIndex == 0;
+    final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 4;
 
     EdgeInsets headerPadding;
@@ -603,7 +632,7 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
-               if (alignRight && _sortColumnIndex == columnIndex)
+              if (alignRight && _sortColumnIndex == columnIndex)
                 Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
@@ -615,8 +644,8 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 label,
                 style: _getHeaderStyle(context),
               ),
-               if (!alignRight && _sortColumnIndex == columnIndex)
-                 Icon(
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
                   _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
                   color: resolveThemeColor(context,
@@ -721,12 +750,14 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
     );
   }
 
-    Future<void> _handleOrder(dynamic item, String orderType, MFProvider mf) async {
+  Future<void> _handleOrder(
+      dynamic item, String orderType, MFProvider mf) async {
     // Show loader while fetching dependencies
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: MyntLoader(size: MyntLoaderSize.large)),
+      builder: (context) =>
+          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
     );
 
     try {
@@ -756,24 +787,27 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
       // Convert item to MutualFundList
       Map<String, dynamic> jsonData = item.toJson();
       // Ensure fSchemeName is set from name if not present
-      if (jsonData['f_scheme_name'] == null && (jsonData['name'] != null || jsonData['mfsearchnamename'] != null)) {
-        jsonData['f_scheme_name'] = jsonData['name'] ?? jsonData['mfsearchnamename'];
+      if (jsonData['f_scheme_name'] == null &&
+          (jsonData['name'] != null || jsonData['mfsearchnamename'] != null)) {
+        jsonData['f_scheme_name'] =
+            jsonData['name'] ?? jsonData['mfsearchnamename'];
       }
       MutualFundList mfItem = MutualFundList.fromJson(jsonData);
 
       if (context.mounted) {
         mf.chngOrderType(orderType);
         mf.orderchangetitle(orderType);
-        
+
         // Get screen dimensions
         final screenSize = MediaQuery.of(context).size;
         final dialogWidth = screenSize.width * 0.25; // 25% width
         final dialogHeight = screenSize.height * 0.60; // 60% height
-        
+
         showDialog(
           context: context,
           builder: (context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             child: SizedBox(
               width: dialogWidth,
               height: dialogHeight,
@@ -788,7 +822,10 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context); // Dismiss loader if still showing
-        ResponsiveSnackBar.show(context: context,  message: "Error: ${e.toString()}", type: SnackBarType.error);
+        ResponsiveSnackBar.show(
+            context: context,
+            message: "Error: ${e.toString()}",
+            type: SnackBarType.error);
       }
     }
   }
@@ -799,32 +836,33 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
       if (isin != null) {
         mf.loaderfun();
         await mf.fetchFactSheet(isin);
-         mf.fetchmatchisan(isin);
+        mf.fetchmatchisan(isin);
 
         // Navigate to full page instead of side sheet
-         if (mf.factSheetDataModel?.stat != "Not Ok") {
-            Map<String, dynamic> jsonData = item.toJson();
-             if (jsonData['f_scheme_name'] == null && (jsonData['name'] != null || jsonData['mfsearchnamename'] != null)) {
-                jsonData['f_scheme_name'] = jsonData['name'] ?? jsonData['mfsearchnamename'];
-              }
-            MutualFundList bInstance = MutualFundList.fromJson(jsonData);
+        if (mf.factSheetDataModel?.stat != "Not Ok") {
+          Map<String, dynamic> jsonData = item.toJson();
+          if (jsonData['f_scheme_name'] == null &&
+              (jsonData['name'] != null ||
+                  jsonData['mfsearchnamename'] != null)) {
+            jsonData['f_scheme_name'] =
+                jsonData['name'] ?? jsonData['mfsearchnamename'];
+          }
+          MutualFundList bInstance = MutualFundList.fromJson(jsonData);
 
-            // Use callback if provided (web panel navigation), otherwise use full page navigation
-            if (widget.onFundTap != null) {
-              widget.onFundTap!(bInstance);
-            } else {
-              // Navigate to full page using root navigator
-              Navigator.of(context, rootNavigator: true).pushNamed(
-                Routes.mfStockDetail,
-                arguments: bInstance,
-              );
-            }
-         }
+          // Use callback if provided (web panel navigation), otherwise use full page navigation
+          if (widget.onFundTap != null) {
+            widget.onFundTap!(bInstance);
+          } else {
+            // Navigate to full page using root navigator
+            Navigator.of(context, rootNavigator: true).pushNamed(
+              Routes.mfStockDetail,
+              arguments: bInstance,
+            );
+          }
+        }
       }
     } catch (e) {
       // ignore
     }
   }
-
-
 }

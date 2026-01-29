@@ -1,10 +1,10 @@
-import 'dart:async';
+// import 'dart:async'; // COMMENTED OUT - not used currently
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/provider/websocket_provider.dart';
+// import 'package:mynt_plus/provider/websocket_provider.dart'; // COMMENTED OUT - not used currently
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
@@ -13,7 +13,7 @@ import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
-import '../refactored/utils/cell_formatters.dart';
+// import '../refactored/utils/cell_formatters.dart'; // COMMENTED OUT - not used currently
 
 /// Separate screen widget for Executed Orders tab
 class ExecutedOrdersScreen extends ConsumerStatefulWidget {
@@ -71,20 +71,32 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     );
   }
 
-  // Column definitions
+  // Column definitions - 7 columns matching the image
+  // Headers: Time | Type | Instrument | Product | Qty. | Avg. price | Status
   final List<String> _columns = [
-    'Time',
-    'Instrument',
-    'Product',
-    'Type',
-    'Side',
-    'Qty',
-    'Avg price',
-    'LTP',
-    'Price',
-    'Trigger price',
-    'Status',
+    'Time',        // 0
+    'Type',        // 1 - BUY/SELL (trantype)
+    'Instrument',  // 2
+    'Product',     // 3
+    'Qty.',        // 4
+    'Avg. price',  // 5
+    'Status',      // 6
   ];
+
+  // Old column definitions (commented out)
+  // final List<String> _columnsOld = [
+  //   'Time',
+  //   'Instrument',
+  //   'Product',
+  //   'Type',          // prctyp - LMT/MKT etc
+  //   'Side',          // BUY/SELL
+  //   'Qty',
+  //   'Avg price',
+  //   'LTP',
+  //   'Price',
+  //   'Trigger price',
+  //   'Status',
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -137,73 +149,10 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         child: shadcn.OutlinedContainer(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Calculate minimum widths dynamically based on actual content
-              final minWidths = _calculateMinWidths(sortedOrders, context);
-
-              // Available width
+              // Calculate equal column widths for 7 columns
               final availableWidth = constraints.maxWidth;
-
-              // Step 1: Start with minimum widths (content-based, no wasted space)
-              final columnWidths = <int, double>{};
-              for (int i = 0; i < 11; i++) {
-                columnWidths[i] = minWidths[i] ?? 100.0;
-              }
-
-              // Step 2: Calculate total minimum width needed
-              final totalMinWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
-
-              // Step 3: If there's extra space, distribute it proportionally
-              // This prevents unnecessary horizontal scroll while using available space efficiently
-              if (totalMinWidth < availableWidth) {
-                final extraSpace = availableWidth - totalMinWidth;
-
-                // Define which columns can grow and their growth priorities
-                // Instrument gets more growth, text columns get medium, numeric get less
-                const instrumentGrowthFactor =
-                    2.0; // Instrument can grow 2x more than numeric
-                const textGrowthFactor = 1.2;
-                const numericGrowthFactor = 1.0;
-
-                // Calculate growth factors for each column
-                final growthFactors = <int, double>{};
-                double totalGrowthFactor = 0.0;
-
-                for (int i = 0; i < 11; i++) {
-                  // Column 0: Time (numeric)
-                  // Column 1: Instrument
-                  // Columns 2, 3, 10: Text columns (Product, Type, Status)
-                  // Rest: Numeric columns
-                  if (i == 1) {
-                    growthFactors[i] = instrumentGrowthFactor;
-                    totalGrowthFactor += instrumentGrowthFactor;
-                  } else if (i == 2 || i == 3 || i == 10) {
-                    growthFactors[i] = textGrowthFactor;
-                    totalGrowthFactor += textGrowthFactor;
-                  } else {
-                    growthFactors[i] = numericGrowthFactor;
-                    totalGrowthFactor += numericGrowthFactor;
-                  }
-                }
-
-                // Distribute extra space proportionally
-                if (totalGrowthFactor > 0) {
-                  for (int i = 0; i < 11; i++) {
-                    if (growthFactors[i]! > 0) {
-                      final extraForThisColumn =
-                          (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                      columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                    }
-                  }
-                }
-              }
-
-              // Calculate total required width
-              final totalRequiredWidth = columnWidths.values
-                  .fold<double>(0.0, (sum, width) => sum + width);
-
-              // If total width exceeds available width, enable horizontal scrolling
-              final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+              final columnCount = 7;
+              final equalWidth = availableWidth / columnCount;
 
               // Build table content
               Widget buildTableContent() {
@@ -217,36 +166,28 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Fixed Header (synced with horizontal scroll)
+                      // Fixed Header
                       shadcn.Table(
                         columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
-                          8: shadcn.FixedTableSize(columnWidths[8]!),
-                          9: shadcn.FixedTableSize(columnWidths[9]!),
-                          10: shadcn.FixedTableSize(columnWidths[10]!),
+                          0: shadcn.FixedTableSize(equalWidth),
+                          1: shadcn.FixedTableSize(equalWidth),
+                          2: shadcn.FixedTableSize(equalWidth),
+                          3: shadcn.FixedTableSize(equalWidth),
+                          4: shadcn.FixedTableSize(equalWidth),
+                          5: shadcn.FixedTableSize(equalWidth),
+                          6: shadcn.FixedTableSize(equalWidth),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
                           shadcn.TableHeader(
                             cells: [
                               buildHeaderCell('Time', 0),
-                              buildHeaderCell('Instrument', 1),
-                              buildHeaderCell('Product', 2),
-                              buildHeaderCell('Type', 3),
-                              buildHeaderCell('Side', 4),
-                              buildHeaderCell('Qty', 5, true),
-                              buildHeaderCell('Avg price', 6, true),
-                              buildHeaderCell('LTP', 7, true),
-                              buildHeaderCell('Price', 8, true),
-                              buildHeaderCell('Trigger price', 9, true),
-                              buildHeaderCell('Status', 10),
+                              buildHeaderCell('Type', 1),
+                              buildHeaderCell('Instrument', 2),
+                              buildHeaderCell('Product', 3,true),
+                              buildHeaderCell('Qty.', 4,true),
+                              buildHeaderCell('Avg. price', 5,true),
+                              buildHeaderCell('Status', 6,true),
                             ],
                           ),
                         ],
@@ -273,17 +214,13 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                               key: ValueKey(
                                   'table_${_sortColumnIndex}_$_sortAscending'),
                               columnWidths: {
-                                0: shadcn.FixedTableSize(columnWidths[0]!),
-                                1: shadcn.FixedTableSize(columnWidths[1]!),
-                                2: shadcn.FixedTableSize(columnWidths[2]!),
-                                3: shadcn.FixedTableSize(columnWidths[3]!),
-                                4: shadcn.FixedTableSize(columnWidths[4]!),
-                                5: shadcn.FixedTableSize(columnWidths[5]!),
-                                6: shadcn.FixedTableSize(columnWidths[6]!),
-                                7: shadcn.FixedTableSize(columnWidths[7]!),
-                                8: shadcn.FixedTableSize(columnWidths[8]!),
-                                9: shadcn.FixedTableSize(columnWidths[9]!),
-                                10: shadcn.FixedTableSize(columnWidths[10]!),
+                                0: shadcn.FixedTableSize(equalWidth),
+                                1: shadcn.FixedTableSize(equalWidth),
+                                2: shadcn.FixedTableSize(equalWidth),
+                                3: shadcn.FixedTableSize(equalWidth),
+                                4: shadcn.FixedTableSize(equalWidth),
+                                5: shadcn.FixedTableSize(equalWidth),
+                                6: shadcn.FixedTableSize(equalWidth),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: [
@@ -300,7 +237,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
 
                                   return shadcn.TableRow(
                                     cells: [
-                                      // Time
+                                      // Time (with seconds)
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 0,
@@ -309,14 +246,38 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         child: Text(
                                           _formatTime(order.norentm ?? '0.00'),
                                           style: _getTextStyle(context),
-                                          overflow: TextOverflow.visible,
+                                          overflow: TextOverflow.ellipsis,
                                           softWrap: false,
                                         ),
                                       ),
-                                      // Instrument with action buttons on hover - Make clickable for row tap
+                                      // Type (BUY/SELL)
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 1,
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: Text(
+                                          order.trantype == "S"
+                                              ? "SELL"
+                                              : "BUY",
+                                          style: _getTextStyle(
+                                            context,
+                                            color: order.trantype == "S"
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.lossDark,
+                                                    light: MyntColors.loss)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.profitDark,
+                                                    light: MyntColors.profit),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                      // Instrument with action buttons on hover
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 2,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
                                         child: ValueListenableBuilder<int?>(
@@ -327,8 +288,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                             return Stack(
                                               clipBehavior: Clip.hardEdge,
                                               children: [
-                                                // Instrument name - full width, can be partially covered by buttons
-                                                // Only truncate when hovered (buttons visible), otherwise show full text
                                                 Positioned.fill(
                                                   child: Align(
                                                     alignment:
@@ -348,12 +307,11 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                               ? TextOverflow
                                                                   .ellipsis
                                                               : TextOverflow
-                                                                  .visible,
+                                                                  .ellipsis,
                                                           maxLines: 1,
                                                           softWrap: false,
                                                           text: TextSpan(
                                                             children: [
-                                                              // Symbol (14px, 500)
                                                               TextSpan(
                                                                 text:
                                                                     _formatInstrumentText(
@@ -362,7 +320,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                                     _getTextStyle(
                                                                         context),
                                                               ),
-                                                              // Exchange (10px, 500, muted color) - matching positions table style
                                                               if (order.exch !=
                                                                       null &&
                                                                   order.exch!
@@ -393,15 +350,13 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                     ),
                                                   ),
                                                 ),
-                                                // Action buttons with gradient background and HoverActionsContainer
                                                 if (isRowHovered)
                                                   Positioned(
                                                     right: 0,
                                                     top: 0,
                                                     bottom: 0,
                                                     child: GestureDetector(
-                                                      onTap:
-                                                          () {}, // Empty handler to stop propagation
+                                                      onTap: () {},
                                                       behavior: HitTestBehavior
                                                           .opaque,
                                                       child: Container(
@@ -460,54 +415,31 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       // Product
                                       buildCellWithHover(
                                         rowIndex: index,
-                                        columnIndex: 2,
+                                        columnIndex: 3,
+                                        alignRight: true,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
                                         child: Text(
                                           order.sPrdtAli ?? order.prd ?? '',
                                           style: _getTextStyle(context),
-                                          overflow: TextOverflow.visible,
+                                          overflow: TextOverflow.ellipsis,
                                           softWrap: false,
                                         ),
                                       ),
-                                      // Type (Price type)
-                                      buildCellWithHover(
-                                        rowIndex: index,
-                                        columnIndex: 3,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
-                                        child: Text(
-                                          order.prctyp ?? '',
-                                          style: _getTextStyle(context),
-                                          overflow: TextOverflow.visible,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                      // Side
+                                      // Qty.
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 4,
+                                        alignRight: true,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
                                         child: Text(
-                                          order.trantype == "S"
-                                              ? "SELL"
-                                              : "BUY",
-                                          style: _getTextStyle(
-                                            context,
-                                            color: order.trantype == "S"
-                                                ? resolveThemeColor(context,
-                                                    dark: MyntColors.lossDark,
-                                                    light: MyntColors.loss)
-                                                : resolveThemeColor(context,
-                                                    dark: MyntColors.profitDark,
-                                                    light: MyntColors.profit),
-                                          ),
-                                          overflow: TextOverflow.visible,
-                                          softWrap: false,
+                                          _formatQty(order),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      // Qty
+                                      // Avg. price
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 5,
@@ -515,67 +447,16 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
                                         child: Text(
-                                          order.qty?.toString() ?? '0',
-                                          style: _getTextStyle(context),
-                                        ),
-                                      ),
-                                      // Avg price
-                                      buildCellWithHover(
-                                        rowIndex: index,
-                                        columnIndex: 6,
-                                        alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
-                                        child: Text(
                                           order.avgprc ?? '0.00',
                                           style: _getTextStyle(context),
-                                        ),
-                                      ),
-                                      // LTP
-                                      buildCellWithHover(
-                                        rowIndex: index,
-                                        columnIndex: 7,
-                                        alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
-                                        child: _OrderBookLTPCell(
-                                          token: order.token ?? '',
-                                          initialLtp: _getValidLTP(order),
-                                          order: order,
-                                        ),
-                                      ),
-                                      // Price
-                                      buildCellWithHover(
-                                        rowIndex: index,
-                                        columnIndex: 8,
-                                        alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
-                                        child: Text(
-                                          _getValidPrice(order),
-                                          style: _getTextStyle(context),
-                                        ),
-                                      ),
-                                      // Trigger price
-                                      buildCellWithHover(
-                                        rowIndex: index,
-                                        columnIndex: 9,
-                                        alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
-                                        child: Text(
-                                          (order.trgprc != null &&
-                                                  order.trgprc != '0' &&
-                                                  order.trgprc != '0.00')
-                                              ? order.trgprc!
-                                              : '0.00',
-                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       // Status
                                       buildCellWithHover(
                                         rowIndex: index,
-                                        columnIndex: 10,
+                                        columnIndex: 6,
+                                        alignRight: true,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
                                         child: Tooltip(
@@ -605,12 +486,63 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                                     context),
                                                 fontWeight: MyntFonts.medium,
                                               ),
-                                              overflow: TextOverflow.visible,
+                                              overflow: TextOverflow.ellipsis,
                                               softWrap: false,
                                             ),
                                           ),
                                         ),
                                       ),
+                                      // COMMENTED OUT COLUMNS:
+                                      // // Type (Price type) - LMT/MKT etc
+                                      // buildCellWithHover(
+                                      //   rowIndex: index,
+                                      //   columnIndex: 3,
+                                      //   onTap: () => actionHandler.openOrderDetail(order),
+                                      //   child: Text(
+                                      //     order.prctyp ?? '',
+                                      //     style: _getTextStyle(context),
+                                      //     overflow: TextOverflow.visible,
+                                      //     softWrap: false,
+                                      //   ),
+                                      // ),
+                                      // // LTP
+                                      // buildCellWithHover(
+                                      //   rowIndex: index,
+                                      //   columnIndex: 7,
+                                      //   alignRight: true,
+                                      //   onTap: () => actionHandler.openOrderDetail(order),
+                                      //   child: _OrderBookLTPCell(
+                                      //     token: order.token ?? '',
+                                      //     initialLtp: _getValidLTP(order),
+                                      //     order: order,
+                                      //   ),
+                                      // ),
+                                      // // Price
+                                      // buildCellWithHover(
+                                      //   rowIndex: index,
+                                      //   columnIndex: 8,
+                                      //   alignRight: true,
+                                      //   onTap: () => actionHandler.openOrderDetail(order),
+                                      //   child: Text(
+                                      //     _getValidPrice(order),
+                                      //     style: _getTextStyle(context),
+                                      //   ),
+                                      // ),
+                                      // // Trigger price
+                                      // buildCellWithHover(
+                                      //   rowIndex: index,
+                                      //   columnIndex: 9,
+                                      //   alignRight: true,
+                                      //   onTap: () => actionHandler.openOrderDetail(order),
+                                      //   child: Text(
+                                      //     (order.trgprc != null &&
+                                      //             order.trgprc != '0' &&
+                                      //             order.trgprc != '0.00')
+                                      //         ? order.trgprc!
+                                      //         : '0.00',
+                                      //     style: _getTextStyle(context),
+                                      //   ),
+                                      // ),
                                     ],
                                   );
                                 }),
@@ -620,32 +552,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                         ),
                       ),
                     ],
-                  ),
-                );
-              }
-
-              // Horizontal scroll wrapper (if needed)
-              if (needsHorizontalScroll) {
-                return RawScrollbar(
-                  controller: widget.horizontalScrollController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  trackColor: resolveThemeColor(context,
-                      dark: Colors.grey.withOpacity(0.1),
-                      light: Colors.grey.withOpacity(0.1)),
-                  thumbColor: resolveThemeColor(context,
-                      dark: Colors.grey.withOpacity(0.3),
-                      light: Colors.grey.withOpacity(0.3)),
-                  thickness: 6,
-                  radius: const Radius.circular(3),
-                  interactive: true,
-                  child: SingleChildScrollView(
-                    controller: widget.horizontalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: totalRequiredWidth,
-                      child: buildTableContent(),
-                    ),
                   ),
                 );
               }
@@ -667,8 +573,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     VoidCallback? onTap,
   }) {
     final isFirstColumn = columnIndex == 0; // Time column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 10; // Status column
+    final isInstrumentColumn = columnIndex == 2; // Instrument column
+    final isLastColumn = columnIndex == 6; // Status column
 
     // Match the cell padding logic
     EdgeInsets cellPadding;
@@ -731,23 +637,18 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
-    final isInstrumentColumn = columnIndex == 1; // Instrument column
-    final isLastColumn = columnIndex == 10; // Status column
+    final isInstrumentColumn = columnIndex == 2; // Instrument column
+    final isLastColumn = columnIndex == 6; // Status column
 
-    // Match the cell padding logic - Instrument column has more left, minimal right
-    // Last column mirrors this - minimal left, more right
+    // Match the cell padding logic
     EdgeInsets headerPadding;
     if (isFirstColumn) {
-      // First column - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6);
     } else if (isInstrumentColumn) {
-      // Instrument column - more left, minimal right
       headerPadding = const EdgeInsets.fromLTRB(16, 6, 4, 6);
     } else if (isLastColumn) {
-      // Last column - minimal left, more right
       headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
     } else {
-      // Other columns - symmetric padding
       headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
     }
 
@@ -816,125 +717,6 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         _sortAscending = true;
       }
     });
-  }
-
-  // Calculate minimum column widths dynamically based on header and data
-  Map<int, double> _calculateMinWidths(
-      List<OrderBookModel> orders, BuildContext context) {
-    // Use fixed font size for measurement (table text is not responsive, only buttons are)
-    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
-    const padding = 24.0; // Padding for cell content
-    const sortIconWidth = 24.0; // Extra space for sort indicator icon
-
-    final headers = _columns;
-    final minWidths = <int, double>{};
-
-    // Calculate width for each column
-    for (int col = 0; col < headers.length; col++) {
-      double maxWidth = 0.0;
-
-      // Measure header width and add space for sort icon
-      final headerWidth = _measureTextWidth(headers[col], textStyle);
-      maxWidth = headerWidth + sortIconWidth;
-
-      // Measure widest value in this column (sample first 5 rows for performance)
-      for (final order in orders.take(5)) {
-        String cellText = '';
-        switch (col) {
-          case 0: // Time
-            cellText = _formatTime(order.norentm ?? '0.00');
-            break;
-          case 1: // Instrument
-            // For Instrument column, measure symbol + exchange separately
-            // since exchange uses smaller font
-            final symbol = _formatInstrumentText(order);
-            final exchange = order.exch ?? '';
-            final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
-
-            // Measure symbol with normal font
-            final symbolWidth = _measureTextWidth(symbol, textStyle);
-
-            // Measure exchange with smaller font (fixed 10px, matches rendering)
-            final exchangeStyle =
-                const TextStyle(fontSize: 10, fontFamily: 'Geist');
-            final exchangeWidth = exchangeText.isNotEmpty
-                ? _measureTextWidth(exchangeText, exchangeStyle)
-                : 0.0;
-
-            // Total width = symbol + exchange + 4px gap
-            final totalWidth = symbolWidth +
-                exchangeWidth +
-                (exchangeText.isNotEmpty ? 4.0 : 0.0);
-            if (totalWidth > maxWidth) {
-              maxWidth = totalWidth;
-            }
-            // Skip normal cellWidth calculation for Instrument - already handled above
-            continue;
-          case 2: // Product
-            cellText = order.sPrdtAli ?? order.prd ?? '';
-            break;
-          case 3: // Type (Price type)
-            cellText = order.prctyp ?? '';
-            break;
-          case 4: // Side
-            cellText = order.trantype == "S" ? "SELL" : "BUY";
-            break;
-          case 5: // Qty
-            cellText = order.qty?.toString() ?? '0';
-            break;
-          case 6: // Avg price
-            cellText = order.avgprc ?? '0.00';
-            break;
-          case 7: // LTP
-            cellText = _getValidLTP(order);
-            break;
-          case 8: // Price
-            cellText = _getValidPrice(order);
-            break;
-          case 9: // Trigger price
-            cellText = (order.trgprc != null &&
-                    order.trgprc != '0' &&
-                    order.trgprc != '0.00')
-                ? order.trgprc!
-                : '0.00';
-            break;
-          case 10: // Status
-            cellText = _getStatusText(order);
-            break;
-        }
-
-        final cellWidth = _measureTextWidth(cellText, textStyle);
-        if (cellWidth > maxWidth) {
-          maxWidth = cellWidth;
-        }
-      }
-
-      // For instrument column, no need to reserve space for buttons
-      // Buttons will overlay on the right side, covering only half the text
-      // Text can use full width, buttons appear on hover as overlay
-      // Ensure minimum width to prevent excessive truncation
-      if (col == 1) {
-        const minInstrumentWidth = 150.0;
-        maxWidth =
-            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
-      }
-
-      // Set minimum width (max of header/data + padding)
-      minWidths[col] = maxWidth + padding;
-    }
-
-    return minWidths;
-  }
-
-  // Helper method to measure text width dynamically
-  double _measureTextWidth(String text, TextStyle style) {
-    final textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    );
-    textPainter.layout();
-    return textPainter.width;
   }
 
   List<Widget> _buildActionButtons(
@@ -1088,45 +870,43 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         case 0: // Time
           comparison = (a.norentm ?? '').compareTo(b.norentm ?? '');
           break;
-        case 1: // Instrument
+        case 1: // Type (BUY/SELL)
+          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
+          break;
+        case 2: // Instrument
           comparison =
               (_formatInstrumentText(a)).compareTo(_formatInstrumentText(b));
           break;
-        case 2: // Product
+        case 3: // Product
           comparison =
               (a.sPrdtAli ?? a.prd ?? '').compareTo(b.sPrdtAli ?? b.prd ?? '');
           break;
-        case 3: // Type (Price type)
-          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
-          break;
-        case 4: // Side
-          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
-          break;
-        case 5: // Qty
+        case 4: // Qty
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 6: // Avg price
+        case 5: // Avg price
           comparison = (double.tryParse(a.avgprc ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0.0);
           break;
-        case 7: // LTP
-          comparison = (double.tryParse(a.ltp ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.ltp ?? '0') ?? 0.0);
-          break;
-        case 8: // Price
-          final priceA = double.tryParse(a.prc ?? '0') ?? 0.0;
-          final priceB = double.tryParse(b.prc ?? '0') ?? 0.0;
-          comparison = priceA.compareTo(priceB);
-          break;
-        case 9: // Trigger price
-          final triggerA = double.tryParse(a.trgprc ?? '0') ?? 0.0;
-          final triggerB = double.tryParse(b.trgprc ?? '0') ?? 0.0;
-          comparison = triggerA.compareTo(triggerB);
-          break;
-        case 10: // Status
+        case 6: // Status
           comparison = (a.status ?? '').compareTo(b.status ?? '');
           break;
+        // COMMENTED OUT - Old column sorting
+        // case 7: // LTP
+        //   comparison = (double.tryParse(a.ltp ?? '0') ?? 0.0)
+        //       .compareTo(double.tryParse(b.ltp ?? '0') ?? 0.0);
+        //   break;
+        // case 8: // Price
+        //   final priceA = double.tryParse(a.prc ?? '0') ?? 0.0;
+        //   final priceB = double.tryParse(b.prc ?? '0') ?? 0.0;
+        //   comparison = priceA.compareTo(priceB);
+        //   break;
+        // case 9: // Trigger price
+        //   final triggerA = double.tryParse(a.trgprc ?? '0') ?? 0.0;
+        //   final triggerB = double.tryParse(b.trgprc ?? '0') ?? 0.0;
+        //   comparison = triggerA.compareTo(triggerB);
+        //   break;
       }
 
       return _sortAscending ? comparison : -comparison;
@@ -1145,19 +925,28 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     return 'N/A';
   }
 
-  String _getValidLTP(OrderBookModel order) {
-    if (order.ltp != null && order.ltp != '0' && order.ltp != '0.00') {
-      return order.ltp!;
-    }
-    return '0.00';
+  // Format Qty as "filledQty / totalQty" like in image (0/1)
+  String _formatQty(OrderBookModel order) {
+    final filledQty = order.fillshares ?? '0';
+    final totalQty = order.qty ?? '0';
+    return '$filledQty / $totalQty';
   }
 
-  String _getValidPrice(OrderBookModel order) {
-    if (order.prc != null && order.prc != '0' && order.prc != '0.00') {
-      return order.prc!;
-    }
-    return '0.00';
-  }
+  // COMMENTED OUT - Kept for reference
+  // String _getValidLTP(OrderBookModel order) {
+  //   if (order.ltp != null && order.ltp != '0' && order.ltp != '0.00') {
+  //     return order.ltp!;
+  //   }
+  //   return '0.00';
+  // }
+
+  // COMMENTED OUT - Kept for reference
+  // String _getValidPrice(OrderBookModel order) {
+  //   if (order.prc != null && order.prc != '0' && order.prc != '0.00') {
+  //     return order.prc!;
+  //   }
+  //   return '0.00';
+  // }
 
   String _getStatusText(OrderBookModel order) {
     if (order.status == null) return 'N/A';
@@ -1173,33 +962,34 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     return order.status!;
   }
 
+  // Format time with seconds (e.g., "11:18:07")
   String _formatTime(String time) {
     if (time.isEmpty || time == '0.00') return 'N/A';
 
-    // Try using CellFormatters first (expects "HH:mm:ss dd-MM-yyyy" format)
-    final formatted = CellFormatters.formatTime(time);
-    if (formatted.isNotEmpty) {
-      // Extract just the time part (hh:mm a) from "dd MMM yyyy, hh:mm a"
-      final parts = formatted.split(', ');
-      if (parts.length == 2) {
-        return parts[1]; // Return "hh:mm a" part
+    // Try parsing "HH:mm:ss dd-MM-yyyy" format (API format) with seconds
+    try {
+      if (time.contains(':') && time.contains('-')) {
+        // Format: "HH:mm:ss dd-MM-yyyy"
+        final timePart = time.split(' ')[0]; // Get "HH:mm:ss"
+        return timePart; // Return time with seconds as-is
       }
-      return formatted;
+    } catch (e) {
+      // Continue to fallback
     }
 
-    // Fallback: If formatDateTime failed, try parsing as simple time string (HHMMSS or HHMM)
+    // Fallback: Try parsing as simple time string (HHMMSS or HHMM)
     try {
-      if (time.length >= 6) {
+      if (time.length >= 6 && !time.contains(':')) {
         // Format: "HHMMSS" to "HH:MM:SS"
         final hours = time.substring(0, 2);
         final minutes = time.substring(2, 4);
         final seconds = time.substring(4, 6);
         return '$hours:$minutes:$seconds';
-      } else if (time.length >= 4) {
-        // Format: "HHMM" to "HH:MM"
+      } else if (time.length >= 4 && !time.contains(':')) {
+        // Format: "HHMM" to "HH:MM:00"
         final hours = time.substring(0, 2);
         final minutes = time.substring(2, 4);
-        return '$hours:$minutes';
+        return '$hours:$minutes:00';
       }
     } catch (e) {
       // If parsing fails, return as is
@@ -1232,63 +1022,63 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   }
 }
 
-// Live LTP cell widget
-class _OrderBookLTPCell extends ConsumerStatefulWidget {
-  final String token;
-  final String initialLtp;
-  final OrderBookModel order;
+// Live LTP cell widget - COMMENTED OUT (not used in current view)
+// class _OrderBookLTPCell extends ConsumerStatefulWidget {
+//   final String token;
+//   final String initialLtp;
+//   final OrderBookModel order;
 
-  const _OrderBookLTPCell({
-    required this.token,
-    required this.initialLtp,
-    required this.order,
-  });
+//   const _OrderBookLTPCell({
+//     required this.token,
+//     required this.initialLtp,
+//     required this.order,
+//   });
 
-  @override
-  ConsumerState<_OrderBookLTPCell> createState() => _OrderBookLTPCellState();
-}
+//   @override
+//   ConsumerState<_OrderBookLTPCell> createState() => _OrderBookLTPCellState();
+// }
 
-class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
-  late String ltp;
-  StreamSubscription? _subscription;
+// class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
+//   late String ltp;
+//   StreamSubscription? _subscription;
 
-  @override
-  void initState() {
-    super.initState();
-    ltp = widget.initialLtp;
+//   @override
+//   void initState() {
+//     super.initState();
+//     ltp = widget.initialLtp;
 
-    if (widget.token.isNotEmpty) {
-      _subscription =
-          ref.read(websocketProvider).socketDataStream.listen((data) {
-        if (!mounted || !data.containsKey(widget.token)) return;
+//     if (widget.token.isNotEmpty) {
+//       _subscription =
+//           ref.read(websocketProvider).socketDataStream.listen((data) {
+//         if (!mounted || !data.containsKey(widget.token)) return;
 
-        final newLtp = data[widget.token]['lp']?.toString();
-        if (newLtp != null &&
-            newLtp != ltp &&
-            newLtp != '0.00' &&
-            newLtp != 'null') {
-          setState(() => ltp = newLtp);
-        }
-      });
-    }
-  }
+//         final newLtp = data[widget.token]['lp']?.toString();
+//         if (newLtp != null &&
+//             newLtp != ltp &&
+//             newLtp != '0.00' &&
+//             newLtp != 'null') {
+//           setState(() => ltp = newLtp);
+//         }
+//       });
+//     }
+//   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _subscription?.cancel();
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      ltp,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Text(
+//       ltp,
+//       style: MyntWebTextStyles.tableCell(
+//         context,
+//         darkColor: MyntColors.textPrimaryDark,
+//         lightColor: MyntColors.textPrimary,
+//         fontWeight: MyntFonts.medium,
+//       ),
+//     );
+//   }
+// }

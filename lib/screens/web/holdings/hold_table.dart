@@ -996,10 +996,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                                       child: Row(
                                                         mainAxisSize: MainAxisSize.min,
                                                         children: [
-                                                          // Exit button (only for holdings with sellable qty)
-                                                          if (qty > 0 && (holding.saleableQty ?? 0) > 0)
+                                                          // Exit button (only for holdings with qty)
+                                                          if (qty > 0)
                                                             _buildExitButton(holding, exchTsym),
-                                                          if (qty > 0 && (holding.saleableQty ?? 0) > 0)
+                                                          if (qty > 0)
                                                             const SizedBox(width: 6),
                                                           _buildOptionsMenuButton(
                                                             holding,

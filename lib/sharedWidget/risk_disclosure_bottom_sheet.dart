@@ -50,8 +50,8 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
         children: [
           // Header - centered
           Padding(
-            padding: const EdgeInsets.only(
-                left: 16, right: 16, top: 14, bottom: 8),
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -73,7 +73,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.only(
-                    left: 16, right: 16, bottom: 16, top: 16),
+                    left: 25, right: 25, bottom: 16, top: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -113,9 +113,9 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       label: 'I Understand',
                       isFullWidth: true,
                       onPressed: () {
-                              pref.setRiskDiscloser(true);
-                              Navigator.pop(context);
-                            },
+                        pref.setRiskDiscloser(true);
+                        Navigator.pop(context);
+                      },
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -223,7 +223,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                          fw: 0,
+                      fw: 0,
                     ))
                   ]),
                   const SizedBox(height: 12),
@@ -241,7 +241,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                          fw: 0,
+                      fw: 0,
                     ))
                   ]),
                   const SizedBox(height: 12),
@@ -259,7 +259,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                          fw: 0,
+                      fw: 0,
                     ))
                   ]),
                   const SizedBox(height: 12),
@@ -277,7 +277,7 @@ class RiskDisclousreBottomSheet extends ConsumerWidget {
                       color: theme.isDarkMode
                           ? colors.textPrimaryDark
                           : colors.textPrimaryLight,
-                          fw: 0,
+                      fw: 0,
                     ))
                   ]),
                   const SizedBox(height: 12),
