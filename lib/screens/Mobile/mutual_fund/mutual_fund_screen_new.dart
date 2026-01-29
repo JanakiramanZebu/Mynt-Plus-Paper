@@ -3,17 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/mf_provider.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../routes/route_names.dart';
 
 import '../../../sharedWidget/list_divider.dart';
 
 class MutualFundNewScreen extends ConsumerStatefulWidget {
   final TabController tabController;
-  final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
-  final Function(String title, String subtitle, String icon)? onCollectionTap; // Callback when collection is tapped
-  final Function(String title, String subtitle, String icon)? onCategoryTap; // Callback when category is tapped
+  final VoidCallback?
+      onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
+  final Function(String title, String subtitle, String icon)?
+      onCollectionTap; // Callback when collection is tapped
+  final Function(String title, String subtitle, String icon)?
+      onCategoryTap; // Callback when category is tapped
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
 
@@ -35,13 +39,12 @@ class MutualFundNewScreen extends ConsumerStatefulWidget {
 class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    
+
     // Add listener to update state when tab changes
     _tabController.addListener(() {
       setState(() {
@@ -56,15 +59,11 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
-  final isSelected = _tabController.index;
-    
-
+    final isSelected = _tabController.index;
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -229,19 +228,23 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       // Collections Header
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: TextWidget.subText(
-                          text: "Collections",
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 0,
-                          theme: theme.isDarkMode,
+                        child: Text(
+                          "Collections",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: theme.isDarkMode
+                                ? MyntColors.textSecondaryDark
+                                : MyntColors.textSecondary,
+                            fontWeight: MyntFonts.medium,
+                          ),
                         ),
                       ),
                       // Collections List
                       Container(
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          color: theme.isDarkMode
+                              ? Colors.transparent
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: theme.isDarkMode
@@ -265,13 +268,15 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   title: item['title'] ?? '',
                                   subtitle: item['subtitle'] ?? '',
                                   theme: theme,
+                                  context: context,
                                   onTap: () {
                                     mfData.changetitle(item['title']);
                                     if (widget.onCollectionTap != null) {
                                       widget.onCollectionTap!(
                                         item['title'] ?? '',
                                         item['subtitle'] ?? '',
-                                        item['image'] ?? 'assets/explore/default.svg',
+                                        item['image'] ??
+                                            'assets/explore/default.svg',
                                       );
                                     } else {
                                       Navigator.pushNamed(
@@ -288,7 +293,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                     height: 1,
                                     thickness: 1,
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark.withOpacity(0.3)
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.3)
                                         : const Color(0xFFECEDEE),
                                   ),
                               ],
@@ -299,9 +305,9 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(width: 32),
-                
+
                 // Right column - Categories
                 Expanded(
                   child: Column(
@@ -310,19 +316,23 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       // Categories Header
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: TextWidget.subText(
-                          text: "Categories",
-                          color: theme.isDarkMode
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight,
-                          fw: 0,
-                          theme: theme.isDarkMode,
+                        child: Text(
+                          "Categories",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: theme.isDarkMode
+                                ? MyntColors.textSecondaryDark
+                                : MyntColors.textSecondary,
+                            fontWeight: MyntFonts.medium,
+                          ),
                         ),
                       ),
                       // Categories List
                       Container(
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          color: theme.isDarkMode
+                              ? Colors.transparent
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: theme.isDarkMode
@@ -345,6 +355,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   title: item['title'] ?? '',
                                   subtitle: item['description'] ?? '',
                                   theme: theme,
+                                  context: context,
                                   onTap: () {
                                     final chips = item['sub'] as List<dynamic>?;
                                     if (chips?.isNotEmpty ?? false) {
@@ -373,7 +384,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                     height: 1,
                                     thickness: 1,
                                     color: theme.isDarkMode
-                                        ? colors.textSecondaryDark.withOpacity(0.3)
+                                        ? colors.textSecondaryDark
+                                            .withOpacity(0.3)
                                         : const Color(0xFFECEDEE),
                                   ),
                               ],
@@ -397,19 +409,23 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidget.titleText(
-                        text: 'Calculator',
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
-                        textOverflow: TextOverflow.ellipsis,
-                        theme: theme.isDarkMode,
-                        fw: 1,
+                      Text(
+                        'Calculator',
+                        style: MyntWebTextStyles.title(
+                          context,
+                          color: theme.isDarkMode
+                              ? MyntColors.textPrimaryDark
+                              : MyntColors.textPrimary,
+                          fontWeight: MyntFonts.semiBold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 10),
                       Container(
                         decoration: BoxDecoration(
-                          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+                          color: theme.isDarkMode
+                              ? Colors.transparent
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: theme.isDarkMode
@@ -436,7 +452,9 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   ),
                 ),
                 const SizedBox(width: 32),
-                const Expanded(child: SizedBox()), // Empty column to match the 2-column layout spacing
+                const Expanded(
+                    child:
+                        SizedBox()), // Empty column to match the 2-column layout spacing
               ],
             ),
           ),
@@ -453,6 +471,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     required String subtitle,
     required ThemesProvider theme,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
     return InkWell(
       onTap: onTap,
@@ -472,25 +491,28 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.subText(
-                    text: title,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    title,
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  TextWidget.captionText(
-                    text: subtitle,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                  Text(
+                    subtitle,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
+                    ),
                     maxLines: 2,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -508,6 +530,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     required String subtitle,
     required ThemesProvider theme,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
     return InkWell(
       onTap: onTap,
@@ -528,25 +551,28 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.subText(
-                    text: title,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    title,
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  TextWidget.captionText(
-                    text: subtitle,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                  Text(
+                    subtitle,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
+                    ),
                     maxLines: 2,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -603,26 +629,26 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.titleText(
-                    align: TextAlign.right,
-                    text: "Collections",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 1),
+                Text("Collections",
+                    textAlign: TextAlign.right,
+                    style: MyntWebTextStyles.title(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 10),
-                TextWidget.paraText(
-                    align: TextAlign.right,
-                    text:
-                        "Find the right mutual fund across these asset classes",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 3),
+                Text("Find the right mutual fund across these asset classes",
+                    textAlign: TextAlign.right,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
+                    ),
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -675,23 +701,27 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   height: 40,
                                   width: 40,
                                 ),
-                                title: TextWidget.subText(
-                                  text: bestMFList[index]['title'] ?? '',
-                                  color: theme.isDarkMode
-                                      ? colors.textPrimaryDark
-                                      : colors.textPrimaryLight,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
+                                title: Text(
+                                  bestMFList[index]['title'] ?? '',
+                                  style: MyntWebTextStyles.body(
+                                    context,
+                                    color: theme.isDarkMode
+                                        ? MyntColors.textPrimaryDark
+                                        : MyntColors.textPrimary,
+                                    fontWeight: MyntFonts.medium,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                subtitle: TextWidget.paraText(
-                                  text:
-                                      "${bestMFList[index]['subtitle'] ?? ''}",
-                                  color: theme.isDarkMode
-                                      ? colors.textSecondaryDark
-                                      : colors.textSecondaryLight,
+                                subtitle: Text(
+                                  "${bestMFList[index]['subtitle'] ?? ''}",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    color: theme.isDarkMode
+                                        ? MyntColors.textSecondaryDark
+                                        : MyntColors.textSecondary,
+                                  ),
                                   maxLines: 2,
-                                  textOverflow: TextOverflow.ellipsis,
-                                  theme: theme.isDarkMode,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             );
@@ -741,7 +771,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
               dataIcon,
             ); // Pass the main category title
           } else {
-            Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
+            Navigator.pushNamed(context, Routes.mfCategoryList,
+                arguments: title);
           }
         }
       },
@@ -754,29 +785,30 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 30,
           height: 30,
         ),
-        title: TextWidget.subText(
-          // align: TextAlign.right,
-          text: title,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: 0,
+        title: Text(
+          title,
+          style: MyntWebTextStyles.body(
+            context,
+            color: theme.isDarkMode
+                ? MyntColors.textPrimaryDark
+                : MyntColors.textPrimary,
+            fontWeight: MyntFonts.medium,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Container(
           margin: EdgeInsets.only(
             right: MediaQuery.of(context).size.width * 0.1,
           ),
-          child: TextWidget.paraText(
-              // align: TextAlign.right,
-              text: description ?? '',
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              textOverflow: TextOverflow.ellipsis,
-              theme: theme.isDarkMode,
-              fw: 0),
+          child: Text(
+              description ?? '',
+              style: MyntWebTextStyles.para(
+                context,
+                color: theme.isDarkMode
+                    ? MyntColors.textSecondaryDark
+                    : MyntColors.textSecondary,
+              ),
+              overflow: TextOverflow.ellipsis),
         ),
       ),
     );
@@ -809,33 +841,36 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           children: [
             SvgPicture.asset(
               'assets/explore/gift.svg',
-              width: 24,
-              height: 24,
+              width: 25,
+              height: 25,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextWidget.subText(
-                    text: "New Fund Offerings",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    "New Fund Offerings",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  TextWidget.captionText(
-                    text: "Invest in new funds at launch price",
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
+                  Text(
+                    "Invest in new funds at launch price",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
+                    ),
                     maxLines: 2,
-                    textOverflow: TextOverflow.ellipsis,
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -864,15 +899,16 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 25,
           height: 25,
         ),
-        title: TextWidget.subText(
-          // align: TextAlign.right,
-          text: "SIP Calculator",
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: 0,
+        title: Text(
+          "SIP Calculator",
+          style: MyntWebTextStyles.body(
+            context,
+            color: theme.isDarkMode
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
+            fontWeight: MyntFonts.medium,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -896,15 +932,16 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 25,
           height: 25,
         ),
-        title: TextWidget.subText(
-          // align: TextAlign.right,
-          text: "CAGR Calculator",
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          textOverflow: TextOverflow.ellipsis,
-          theme: theme.isDarkMode,
-          fw: 0,
+        title: Text(
+          "CAGR Calculator",
+          style: MyntWebTextStyles.body(
+            context,
+            color: theme.isDarkMode
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
+            fontWeight: MyntFonts.medium,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
@@ -960,14 +997,17 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
                         return InkWell(
                           onTap: () async {
-                            final title = mfData.bestMFListStaticnew[index]['title'];
+                            final title =
+                                mfData.bestMFListStaticnew[index]['title'];
                             mfData.changetitle(title);
-                            
+
                             if (widget.onCollectionTap != null) {
                               widget.onCollectionTap!(
                                 title,
-                                mfData.bestMFListStaticnew[index]['subtitle'] ?? '',
-                                mfData.bestMFListStaticnew[index]['image'] ?? 'assets/explore/default.svg',
+                                mfData.bestMFListStaticnew[index]['subtitle'] ??
+                                    '',
+                                mfData.bestMFListStaticnew[index]['image'] ??
+                                    'assets/explore/default.svg',
                               );
                             } else {
                               Navigator.pushNamed(
@@ -988,27 +1028,28 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               height: 30,
                               width: 30,
                             ),
-                            title: TextWidget.subText(
-                              text: mfData.bestMFListStaticnew[index]
-                                      ['title'] ??
-                                  '',
-                              color: theme.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              fw: 0,
+                            title: Text(
+                              mfData.bestMFListStaticnew[index]['title'] ?? '',
+                              style: MyntWebTextStyles.body(
+                                context,
+                                color: theme.isDarkMode
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
+                                fontWeight: MyntFonts.medium,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            subtitle: TextWidget.paraText(
-                              text:
-                                  "${mfData.bestMFListStaticnew[index]['subtitle'] ?? ''}",
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark
-                                  : colors.textSecondaryLight,
+                            subtitle: Text(
+                              "${mfData.bestMFListStaticnew[index]['subtitle'] ?? ''}",
+                              style: MyntWebTextStyles.para(
+                                context,
+                                color: theme.isDarkMode
+                                    ? MyntColors.textSecondaryDark
+                                    : MyntColors.textSecondary,
+                                fontWeight: MyntFonts.medium,
+                              ),
                               maxLines: 2,
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              fw: 0,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         );
@@ -1054,14 +1095,12 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   title: mfData.mFCategoryTypesStatic[index]['title'],
                   description: mfData.mFCategoryTypesStatic[index]
                       ['description'],
-                      
                   chips: mfData.mFCategoryTypesStatic[index]['sub'],
                   mfData: mfData,
                   theme: theme);
             },
             itemCount: mfData.mFCategoryTypesStatic.length,
           ),
-          
         ],
       ),
     );

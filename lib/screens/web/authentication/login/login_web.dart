@@ -580,7 +580,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                             "Login to MYNT",
                             style: webText(
                               context,
-                              size: 22,
+                              size: MediaQuery.of(context).size.width < 600 ? 18 : 22,
                               weight: FontWeight.w900,
                               color: MyntColors.textPrimary,
                               darkColor: MyntColors.textPrimaryDark,

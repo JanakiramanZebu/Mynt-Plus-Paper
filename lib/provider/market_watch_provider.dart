@@ -4807,6 +4807,10 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       }
 
       notifyListeners();
+
+      // Update the tab count with alert count
+      ref.read(orderProvider).tabSize();
+
       return _alertPendingModel;
     } catch (e) {
       debugPrint(e.toString());
@@ -4826,18 +4830,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Update the tab count immediately
         ref.read(orderProvider).tabSize();
 
-        // Show success message using a safe approach
-        // This should be safe since we're using the context from the caller
-        // which should be the order book screen that remains active
-        try {
-          if (kIsWeb) {
-            ResponsiveSnackBar.showSuccess(context, "Alert deleted successfully");
-          } else {
-            successMessage(context, "Alert deleted successfully");
-          }
-        } catch (e) {
-          print("Could not show SnackBar: $e");
-        }
+        // Snackbar is shown by the caller (UI) to avoid duplicate messages
+        // try {
+        //   if (kIsWeb) {
+        //     ResponsiveSnackBar.showSuccess(context, "Alert deleted successfully");
+        //   } else {
+        //     successMessage(context, "Alert deleted successfully");
+        //   }
+        // } catch (e) {
+        //   print("Could not show SnackBar: $e");
+        // }
 
         // Return success status
         notifyListeners();

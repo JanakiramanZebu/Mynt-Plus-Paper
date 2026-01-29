@@ -58,6 +58,14 @@ class BondsProvider extends DefaultChangeNotifier {
 
   // SovereignGoldBonds? _sovereignGoldBonds;
 
+  String _selectedFilter = 'All'; // All, G-SEC, T-BILL
+  String get selectedFilter => _selectedFilter;
+
+  void setSelectedFilter(String filter) {
+    _selectedFilter = filter;
+    notifyListeners();
+  }
+
   bool _bondsMyBidsload = true;
   bool get bondsMyBidsload => _bondsMyBidsload;
 

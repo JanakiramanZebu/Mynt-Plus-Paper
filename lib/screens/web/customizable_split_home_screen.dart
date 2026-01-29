@@ -46,6 +46,7 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
+import '../../../provider/sidebar_provider.dart';
 import '../../../res/mynt_web_color_styles.dart' hide WebColors;
 import '../../../res/web_colors.dart';
 
@@ -55,6 +56,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
 // import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/notification_screens/notification_screen_web.dart';
 
 // import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
@@ -222,6 +224,9 @@ class _CustomizableSplitHomeScreenState
 
     // Initialize with default panels
     _initializeDefaultPanels();
+
+    // Register scaffold key for sidebar
+    ref.read(sidebarProvider.notifier).setScaffoldKey(_scaffoldKey);
 
     // Set up callback for showing scrip depth info in panel
     ref
@@ -790,6 +795,18 @@ class _CustomizableSplitHomeScreenState
 
         return Scaffold(
           key: _scaffoldKey,
+          drawerScrimColor: Colors.transparent, // Disable grey overlay
+          endDrawer: Consumer(
+            builder: (context, ref, _) {
+              final sidebarContent = ref.watch(sidebarProvider);
+              if (sidebarContent == null) return const SizedBox.shrink();
+              return Drawer(
+                width: 400,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                child: sidebarContent,
+              );
+            },
+          ),
           drawer: showDrawer
               ? NavigationDrawerWeb(
                   isDarkMode: theme.isDarkMode,
@@ -1910,6 +1927,8 @@ class _CustomizableSplitHomeScreenState
           );
         }
         return const SizedBox.shrink();
+      case ScreenType.notification:
+        return const NotificationScreenWeb();
       // caEvent and cpAction removed
     }
   }
@@ -1961,6 +1980,8 @@ class _CustomizableSplitHomeScreenState
         return 'CAGR Calculator';
       case ScreenType.mfStockDetail:
         return 'Fund Details';
+      case ScreenType.notification:
+        return 'Notification';
       // caEvent and cpAction removed
     }
   }
@@ -2012,6 +2033,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.calculate;
       case ScreenType.mfStockDetail:
         return Icons.show_chart;
+      case ScreenType.notification:
+        return Icons.notifications_outlined;
       // caEvent and cpAction removed
     }
   }
@@ -2383,6 +2406,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.tradeAction:
         _handleTradeActionTap();
+        break;
+      case ScreenType.notification:
+        _handleNotificationTap();
         break;
       case ScreenType.mfCollection:
       case ScreenType.mfCategory:
@@ -3572,6 +3598,12 @@ class _CustomizableSplitHomeScreenState
         .requestWSOrderBook(context: context, isSubscribe: false);
   }
 
+  // Handle notification tap
+  void _handleNotificationTap() async {
+    final portfolio = ref.read(portfolioProvider);
+    portfolio.cancelTimer();
+  }
+
   // Handle trade action tap
   void _handleTradeActionTap() async {
     final portfolio = ref.read(portfolioProvider);
@@ -4107,6 +4139,7 @@ enum ScreenType {
   sipCalculator,
   cagrCalculator,
   mfStockDetail,
+  notification,
 }
 
 // Hoverable navigation item widget
@@ -4556,13 +4589,14 @@ class _AppBarLivePriceWidgetState
   @override
   Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+    // Use Wrap - stays on same line when space available, wraps when not
+    return Wrap(
+      spacing: 6,
+      runSpacing: 2,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
-          "$_ltp  ",
+          _ltp,
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,

@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mynt_plus/utils/overlay_manager.dart';
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
 import '../locator/locator.dart';
@@ -575,6 +577,10 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
       if (data["stat"] == "Ok") {
         ConstantName.timer!.cancel();
+        Future.microtask(() {
+        if (kIsWeb) {
+        OverlayManager.closeAll();
+       }
 
         pref.clearClientSession();
         pref.setLogout(true);
@@ -591,6 +597,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
                 context, Routes.loginScreen, (route) => false);
           }
           successMessage(context, 'The Account has been deactivated');
+        });
         });
       } else {
         warningMessage(context, data["emsg"].toString());

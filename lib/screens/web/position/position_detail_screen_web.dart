@@ -617,6 +617,9 @@ class _PositionDetailScreenWebState
         : (_positionData.mTm ?? "0.00");
     final pnlColor = _getPnLColor(pnlValue);
 
+    final mtmValue = _positionData.mTm ?? "0.00";
+    final mtmColor = _getPnLColor(mtmValue);
+
     return Column(
       children: [
         // P&L item
@@ -626,6 +629,27 @@ class _PositionDetailScreenWebState
             pnlValue,
             style: MyntWebTextStyles.body(context,
                 color: pnlColor, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+        // MTM item
+        _rowOfInfoData(
+          "MTM",
+          Text(
+            mtmValue,
+            style: MyntWebTextStyles.body(context,
+                color: mtmColor, fontWeight: MyntFonts.medium),
+          ),
+          theme,
+        ),
+         _rowOfInfoData(
+          "Product",
+          Text(
+            _positionData.sPrdtAli != "null"
+                ? "${_positionData.sPrdtAli}"
+                : "--",
+            style:
+                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
           theme,
         ),
@@ -647,17 +671,16 @@ class _PositionDetailScreenWebState
           ),
           theme,
         ),
-        _rowOfInfoData(
-          "Product",
+          _rowOfInfoData(
+          "Actual Avg Price",
           Text(
-            _positionData.sPrdtAli != "null"
-                ? "${_positionData.sPrdtAli}"
-                : "--",
+            "${_positionData.upldprc ?? 0.00}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
           theme,
         ),
+       
         _rowOfInfoData(
           "Buy Qty ( Day / CF )",
           Text(
@@ -694,15 +717,7 @@ class _PositionDetailScreenWebState
           ),
           theme,
         ),
-        _rowOfInfoData(
-          "Actual Avg Price",
-          Text(
-            "${_positionData.upldprc ?? 0.00}",
-            style:
-                MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
-          ),
-          theme,
-        ),
+      
         _rowOfInfoData(
           "Buy / Sell Value",
           Text(

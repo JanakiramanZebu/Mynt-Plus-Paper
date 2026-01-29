@@ -13,7 +13,6 @@ import '../../../res/mynt_web_color_styles.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
-import '../../../sharedWidget/alert_dialogue.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../main.dart';
@@ -819,17 +818,127 @@ class _HoldingDetailScreenWebState
           setState(() {
             _isProcessingSell = false;
           });
-          showDialog(
-            context: rootContext,
-            builder: (BuildContext context) {
-              return AlertDialogue(
-                scripName: "${_exchTsym.tsym}",
-                exch: "${_exchTsym.exch}",
-                content:
-                    'You are unable to exit because there are no sellable quantity.',
-              );
-            },
-          );
+
+          // Close the sheet FIRST before showing the dialog
+          try {
+            shadcn.closeSheet(context);
+          } catch (e) {
+            print("Error closing sheet: $e");
+          }
+
+          // Small delay to ensure sheet is closed before showing dialog
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          if (rootContext.mounted) {
+            showGeneralDialog(
+              context: rootContext,
+              barrierDismissible: true,
+              barrierLabel: MaterialLocalizations.of(rootContext).modalBarrierDismissLabel,
+              barrierColor: Colors.black.withValues(alpha: 0.3),
+              transitionDuration: const Duration(milliseconds: 200),
+              pageBuilder: (dialogContext, animation, secondaryAnimation) {
+                return Center(
+                  child: shadcn.Card(
+                    borderRadius: BorderRadius.circular(8),
+                    padding: EdgeInsets.zero,
+                    child: Container(
+                      width: 400,
+                      constraints: const BoxConstraints(maxHeight: 250),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: shadcn.Theme.of(dialogContext)
+                                      .colorScheme
+                                      .border,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Exit',
+                                  style: MyntWebTextStyles.title(
+                                    dialogContext,
+                                    color: resolveThemeColor(
+                                      dialogContext,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                MyntCloseButton(
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Content
+                          Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'You are unable to exit because there are no sellable quantity.',
+                                    textAlign: TextAlign.center,
+                                    style: MyntWebTextStyles.body(
+                                      dialogContext,
+                                      fontWeight: FontWeight.w500,
+                                      color: resolveThemeColor(
+                                        dialogContext,
+                                        dark: MyntColors.textPrimaryDark,
+                                        light: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  MyntPrimaryButton(
+                                    size: MyntButtonSize.large,
+                                    label: 'Ok',
+                                    isFullWidth: true,
+                                    onPressed: () =>
+                                        Navigator.of(dialogContext).pop(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              transitionBuilder:
+                  (dialogContext, animation, secondaryAnimation, child) {
+                final curvedAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOut,
+                  reverseCurve: Curves.easeIn,
+                );
+
+                return FadeTransition(
+                  opacity: curvedAnimation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.95, end: 1.0)
+                        .animate(curvedAnimation),
+                    child: child,
+                  ),
+                );
+              },
+            );
+          }
         }
         return;
       }

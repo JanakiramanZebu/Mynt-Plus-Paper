@@ -1989,11 +1989,41 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Cache expiry duration: 12 hours in milliseconds
+  static const int _oplistCacheExpiryMs = 12 * 60 * 60 * 1000;
+
   Future fetchOplist(context) async {
     try {
+      // Check if cached data exists and is not expired
+      final cachedData = pref.oplistCache;
+      final cachedTimestamp = pref.oplistCacheTimestamp;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+      if (cachedData != null &&
+          cachedData.isNotEmpty &&
+          cachedTimestamp != null &&
+          (currentTime - cachedTimestamp) < _oplistCacheExpiryMs) {
+        // Use cached data
+        _oplists = jsonDecode(cachedData) as List;
+        notifyListeners();
+        return;
+      }
+
+      // Cache expired or doesn't exist, fetch from API
       List oplist = await api.getOptionlist();
       _oplists = oplist;
+
+      // Store in cache with current timestamp
+      await pref.setOplistCache(jsonEncode(oplist));
+      await pref.setOplistCacheTimestamp(currentTime);
+
+      notifyListeners();
     } catch (e) {
+      // If API fails, try to use cached data regardless of expiry
+      final cachedData = pref.oplistCache;
+      if (cachedData != null && cachedData.isNotEmpty && _oplists.isEmpty) {
+        _oplists = jsonDecode(cachedData) as List;
+      }
       ref
           .read(indexListProvider)
           .logError

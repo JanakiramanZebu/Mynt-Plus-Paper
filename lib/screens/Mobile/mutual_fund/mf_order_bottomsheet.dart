@@ -175,7 +175,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                             mfOrder.paymentName == "NET BANKING") &&
                         mfOrder.ispaymentcalled == true) ...[
                       SizedBox(
-                        height: screenheight * 0.24,
+                        height: screenheight * 0.32,
                         child: MfUPIProcessingScreen(
                           data: widget.condval == 'reinitiatefromportfolio'
                               ? widget.data.orderId
@@ -270,8 +270,10 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                             child: SizedBox(
                                               width: MediaQuery.of(context).size.width >= 1100
-                                                  ? MediaQuery.of(context).size.width * 0.25
-                                                  : MediaQuery.of(context).size.width * 0.9,
+                                                  ? MediaQuery.of(context).size.width * 0.30
+                                                  : MediaQuery.of(context).size.width >= 800
+                                                      ? MediaQuery.of(context).size.width * 0.50
+                                                      : MediaQuery.of(context).size.width * 0.9,
                                               child: MandateSelectionScreen(
                                                 currentMandateId: mfOrder.mandateId,
                                                 onMandateSelected: (String mandateId) {
@@ -394,8 +396,10 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                                 child: SizedBox(
                                                   width: MediaQuery.of(context).size.width >= 1100
-                                                      ? MediaQuery.of(context).size.width * 0.25
-                                                      : MediaQuery.of(context).size.width * 0.9,
+                                                      ? MediaQuery.of(context).size.width * 0.30
+                                                      : MediaQuery.of(context).size.width >= 800
+                                                          ? MediaQuery.of(context).size.width * 0.50
+                                                          : MediaQuery.of(context).size.width * 0.9,
                                                   child: const CreateMandateDialogue()
                                                 ),
                                               );
@@ -906,7 +910,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                       Dialog(
                                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                                         child: SizedBox(
-                                                          width: 400,
+                                                          width: MediaQuery.of(context).size.width >= 1100
+                                                              ? MediaQuery.of(context).size.width * 0.30
+                                                              : MediaQuery.of(context).size.width >= 800
+                                                                  ? MediaQuery.of(context).size.width * 0.50
+                                                                  : 420,
                                                           child: WillPopScope(
                                                             onWillPop: () async => !mfOrder.ispaymentcalled,
                                                             child: MfPaymentRespAlert(
@@ -949,7 +957,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     Dialog(
                                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                                       child: SizedBox(
-                                                        width: 400,
+                                                        width: MediaQuery.of(context).size.width >= 1100
+                                                            ? MediaQuery.of(context).size.width * 0.30
+                                                            : MediaQuery.of(context).size.width >= 800
+                                                                ? MediaQuery.of(context).size.width * 0.50
+                                                                : 420,
                                                         child: MfPaymentRespAlert(
                                                           upiData: mfOrder.xsipOrderResponces?.toJson(),
                                                           conditionval: ''

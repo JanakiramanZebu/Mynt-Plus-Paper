@@ -254,8 +254,8 @@ class _ExitAllPositionsDialogWebState
                               isLoading: _isLoading,
                               backgroundColor: resolveThemeColor(
                                 context,
-                                dark: MyntColors.tertiary,
-                                light: MyntColors.tertiary,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary,
                               ),
                               onPressed:
                                   _isLoading || widget.selectedPositions.isEmpty

@@ -22,7 +22,7 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap; // Callback to open drawer on small screens
 
   /// Breakpoint below which hamburger menu is shown
-  static const double mobileBreakpoint = 1200.0;
+  static const double mobileBreakpoint = 1000.0;
 
   const HomeAppBar({
     super.key,

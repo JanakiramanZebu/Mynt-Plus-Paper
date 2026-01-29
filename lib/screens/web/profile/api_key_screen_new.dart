@@ -14,11 +14,15 @@ class ApiKeyScreenNew extends ConsumerStatefulWidget {
   ConsumerState<ApiKeyScreenNew> createState() => _ApiKeyScreenNewState();
 }
 
-class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
+class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
+    with AutomaticKeepAliveClientMixin {
   // Error state variables like margin_calculator.dart
   String? _errorMessageUrl;
   String? _errorMessagePrimaryIp;
   String? _errorMessageBackupIp;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -27,6 +31,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
   }
 
   void _loadApiKeyData() async {
+    if (!mounted) return;
     await ref.read(apikeyprovider).fetchgenerateapikeynew(context);
   }
 
@@ -36,6 +41,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
 
   // Validation helper functions
   void _validateUrl(String value) {
+    if (!mounted) return;
     if (value.trim().isEmpty) {
       setState(() {
         _errorMessageUrl = "Redirect URL is required";
@@ -56,6 +62,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
   }
 
   void _validatePrimaryIp(String value) {
+    if (!mounted) return;
     if (value.trim().isEmpty) {
       setState(() {
         _errorMessagePrimaryIp = "Primary IP is required";
@@ -76,6 +83,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
   }
 
   void _validateBackupIp(String value) {
+    if (!mounted) return;
     // Backup IP is optional but must be valid format if provided
     if (value.trim().isNotEmpty) {
       final ipRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
@@ -246,6 +254,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final apiData = ref.watch(apikeyprovider).generateApikeyNew;
     final provider = ref.watch(apikeyprovider);
 
@@ -263,23 +272,23 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew> {
             color: resolveThemeColor(context,
                 dark: MyntColors.backgroundColorDark,
                 light: MyntColors.backgroundColor),
-            border: Border(
-              top: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-              left: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-              right: BorderSide(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark,
-                    light: MyntColors.backgroundColor),
-              ),
-            ),
+            // border: Border(
+            //   top: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            //   left: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            //   right: BorderSide(
+            //     color: resolveThemeColor(context,
+            //         dark: MyntColors.dividerDark,
+            //         light: MyntColors.backgroundColor),
+            //   ),
+            // ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

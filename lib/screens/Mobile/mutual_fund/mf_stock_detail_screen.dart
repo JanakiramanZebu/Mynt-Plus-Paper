@@ -133,10 +133,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
           children: [
             Column(
               children: [
-                // Header with breadcrumb
-                _buildHeader(isDark, mfData),
-
-                // Tab bar with action buttons
+                // Tab bar with action buttons (includes back arrow)
                 _buildTabBarWithActions(isDark, mfData),
 
                 // Scrollable content with all sections
@@ -153,10 +150,13 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         // Overview Section
                         Container(
                           key: _overviewKey,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: isDark ? colors.darkColorDivider : colors.colorDivider,
+                              color: isDark
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                               width: 1,
                             ),
                             borderRadius: BorderRadius.circular(8),
@@ -174,33 +174,41 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         // Scheme Section
                         Container(
                           key: _schemeKey,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: isDark ? colors.darkColorDivider : colors.colorDivider,
+                              color: isDark
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                               width: 1,
                             ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: MFSchemeInfo(mfStockData: widget.mfStockData),
+                            child:
+                                MFSchemeInfo(mfStockData: widget.mfStockData),
                           ),
                         ),
                         // Allocation Section
                         Container(
                           key: _allocationKey,
-                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: isDark ? colors.darkColorDivider : colors.colorDivider,
+                              color: isDark
+                                  ? colors.darkColorDivider
+                                  : colors.colorDivider,
                               width: 1,
                             ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: MFAllocation(mfStockData: widget.mfStockData),
+                            child:
+                                MFAllocation(mfStockData: widget.mfStockData),
                           ),
                         ),
                       ],
@@ -223,9 +231,10 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     });
   }
 
-  Widget _buildHeader(bool isDark, MFProvider mfData) {
+
+  Widget _buildTabBarWithActions(bool isDark, MFProvider mfData) {
     return Container(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isDark ? colors.colorBlack : colors.colorWhite,
         border: Border(
@@ -239,7 +248,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
         bottom: false,
         child: Row(
           children: [
-            // Back button
+            // Back arrow button
             InkWell(
               onTap: () {
                 if (widget.onBack != null) {
@@ -259,69 +268,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               ),
             ),
             const SizedBox(width: 8),
-            // Breadcrumb
+            // Tab bar
             Expanded(
-              child: Row(
-                children: [
-                  Text(
-                    "Mutual Fund",
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: isDark
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Icon(
-                      Icons.chevron_right,
-                      size: 18,
-                      color: isDark
-                          ? WebColors.textSecondaryDark
-                          : WebColors.textSecondary,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      _formatFundName(mfData),
-                      style: MyntWebTextStyles.body(
-                        context,
-                        color: isDark
-                            ? MyntColors.textPrimaryDark
-                            : MyntColors.textPrimary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabBarWithActions(bool isDark, MFProvider mfData) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? colors.darkColorDivider : colors.colorDivider,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Tab bar
-          Expanded(
-            child: TabBar(
+              child: TabBar(
               controller: _tabController,
               isScrollable: true,
               labelColor: isDark ? WebColors.primary : WebColors.primary,
@@ -354,7 +303,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               SizedBox(
                 height: 36,
                 child: OutlinedButton(
-                  onPressed: mfData.singleloader == true ? null : () => _handleOneTimeTap(mfData),
+                  onPressed: mfData.singleloader == true
+                      ? null
+                      : () => _handleOneTimeTap(mfData),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     side: const BorderSide(
@@ -380,7 +331,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               SizedBox(
                 height: 36,
                 child: ElevatedButton(
-                  onPressed: mfData.singleloader == true ? null : () => _handleSIPTap(mfData),
+                  onPressed: mfData.singleloader == true
+                      ? null
+                      : () => _handleSIPTap(mfData),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     backgroundColor: WebColors.primary,
@@ -402,6 +355,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
             ],
           ),
         ],
+        ),
       ),
     );
   }
@@ -433,7 +387,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDark ? colors.darkColorDivider : colors.colorDivider,
+                    color:
+                        isDark ? colors.darkColorDivider : colors.colorDivider,
                     width: 1,
                   ),
                 ),
@@ -444,7 +399,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     errorBuilder: (context, error, stackTrace) => Icon(
                       Icons.account_balance,
                       size: 20,
-                      color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                      color: isDark
+                          ? WebColors.textSecondaryDark
+                          : WebColors.textSecondary,
                     ),
                   ),
                 ),
@@ -458,7 +415,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                       _formatFundName(mfData),
                       style: MyntWebTextStyles.title(
                         context,
-                        color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                        color: isDark
+                            ? MyntColors.textPrimaryDark
+                            : MyntColors.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                       maxLines: 1,
@@ -476,7 +435,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         // ),
                         // const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             // color: (isDark ? WebColors.textSecondaryDark : WebColors.textSecondary).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
@@ -485,7 +445,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                             widget.mfStockData.type ?? "Equity",
                             style: MyntWebTextStyles.para(
                               context,
-                              color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                              color: isDark
+                                  ? MyntColors.textSecondaryDark
+                                  : MyntColors.textSecondary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -497,86 +459,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               ),
             ],
           ),
-
-          const SizedBox(height: 20),
-
-          // Stats row
-          Row(
-            children: [
-              _buildStatItem(
-                "Aum (cr)",
-                _formatAum(widget.mfStockData.aUM),
-                isDark,
-              ),
-              _buildStatDivider(isDark),
-              _buildStatItem(
-                "NAV",
-                factSheet?.currentNAV ?? '--',
-                isDark,
-              ),
-              _buildStatDivider(isDark),
-              _buildStatItem(
-                "Min. Inv",
-                widget.mfStockData.minimumPurchaseAmount ?? '500',
-                isDark,
-              ),
-              _buildStatDivider(isDark),
-              _buildStatItem(
-                "5Yr CAGR",
-                _formatPercentage(widget.mfStockData.fIVEYEARDATA),
-                isDark,
-                isPercentage: true,
-              ),
-            ],
-          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, bool isDark, {bool isPercentage = false}) {
-    Color valueColor = isDark ? WebColors.textPrimaryDark : WebColors.textPrimary;
-
-    if (isPercentage && value != '--') {
-      final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0;
-      if (numValue > 0) {
-        valueColor = isDark ? WebColors.profitDark : WebColors.profit;
-      } else if (numValue < 0) {
-        valueColor = isDark ? WebColors.lossDark : WebColors.loss;
-      }
-    }
-
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: MyntWebTextStyles.para(
-              context,
-              color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: MyntWebTextStyles.body(
-              context,
-              color: valueColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatDivider(bool isDark) {
-    return Container(
-      width: 1,
-      height: 30,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      color: isDark ? colors.darkColorDivider : colors.colorDivider,
     );
   }
 
@@ -588,10 +472,13 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: MyntLoader(size: MyntLoaderSize.large)),
+      builder: (context) =>
+          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
     );
 
-    if (widget.mfStockData.sIPFLAG == "Y" && isin != null && schemeCode != null) {
+    if (widget.mfStockData.sIPFLAG == "Y" &&
+        isin != null &&
+        schemeCode != null) {
       await mfData.invertfun(isin, schemeCode, context);
       String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
       mfData.invAmt.text = amt.split('.').first;
@@ -633,10 +520,13 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: MyntLoader(size: MyntLoaderSize.large)),
+      builder: (context) =>
+          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
     );
 
-    if (widget.mfStockData.sIPFLAG == "Y" && isin != null && schemeCode != null) {
+    if (widget.mfStockData.sIPFLAG == "Y" &&
+        isin != null &&
+        schemeCode != null) {
       await mfData.invertfun(isin, schemeCode, context);
       String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
       mfData.installmentAmt.text = amt.split('.').first;
@@ -675,20 +565,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       return mfData.factSheetDataModel!.data!.name!
           .replaceAll(RegExp(r'(Reg \(G\)|\(G\))$'), ' ');
     }
-    return widget.mfStockData.schemeName ?? widget.mfStockData.fSchemeName ?? 'Unknown Fund';
-  }
-
-  String _formatAum(String? aum) {
-    if (aum == null || aum.isEmpty) return "--";
-    try {
-      return double.parse(aum).toStringAsFixed(2);
-    } catch (e) {
-      return "--";
-    }
-  }
-
-  String _formatPercentage(String? value) {
-    if (value == null || value.isEmpty) return "--";
-    return "$value%";
+    return widget.mfStockData.schemeName ??
+        widget.mfStockData.fSchemeName ??
+        'Unknown Fund';
   }
 }

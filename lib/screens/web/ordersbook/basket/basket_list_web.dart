@@ -560,7 +560,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                       shadcn.TableHeader(
                         cells: [
                           buildHeaderCell('Basket Name', 0),
-                          buildHeaderCell('Items', 1, true),
+                          buildHeaderCell('Items', 1),
                           buildHeaderCell('Created Date', 2),
                         ],
                       ),
@@ -608,13 +608,12 @@ class _BasketListState extends ConsumerState<BasketList> {
                                     buildCellWithHover(
                                       rowIndex: index,
                                       columnIndex: 1,
-                                      alignRight: true,
                                       onTap: () =>
                                           _handleBasketTap(context, basket),
                                       child: _buildTextCell(
                                         (basket['curLength'] ?? 0).toString(),
                                         theme,
-                                        Alignment.centerRight,
+                                        Alignment.centerLeft,
                                       ),
                                     ),
                                     buildCellWithHover(
@@ -821,7 +820,7 @@ class _BasketListState extends ConsumerState<BasketList> {
               ),
               decoration: BoxDecoration(
                 color: colorScheme.popover,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: colorScheme.border,
                   width: 1,
@@ -835,7 +834,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(6),
                 child: BasketScripList(
                   bsktName: bsktName,
                 ),
@@ -987,6 +986,146 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     _tabController.addListener(_tabControllerListener!);
   }
 
+  // Builds a cell with hover detection
+  shadcn.TableCell buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    required int totalColumns,
+    bool alignRight = false,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == totalColumns - 1;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = 'basket_$rowIndex',
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<String?>(
+          valueListenable: _hoveredRowIndex,
+          child: child,
+          builder: (context, hoveredId, cachedChild) {
+            final isRowHovered = hoveredId == 'basket_$rowIndex';
+
+            Color? backgroundColor;
+            if (isRowHovered) {
+              backgroundColor = resolveThemeColor(context,
+                  dark: styles.MyntColors.primary.withOpacity(0.08),
+                  light: styles.MyntColors.primary.withOpacity(0.08));
+            }
+
+            return Container(
+              padding: cellPadding,
+              color: backgroundColor,
+              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+              child: cachedChild,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Builds a sortable header cell with sort indicator
+  shadcn.TableCell buildHeaderCell(
+      String label, int columnIndex, ThemesProvider theme, int totalColumns,
+      [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == totalColumns - 1;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 12, 4, 12);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(4, 12, 16, 12);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 12);
+    }
+
+    return shadcn.TableCell(
+      theme: shadcn.TableCellTheme(
+        backgroundColor: shadcn.WidgetStatePropertyAll(
+          theme.isDarkMode
+              ? styles.MyntColors.searchBgDark
+              : const Color(0xffF9FAFB),
+        ),
+        border: const shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _onSortTable(columnIndex, true),
+        child: Container(
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 14,
+                  color: resolveThemeColor(context,
+                      dark: styles.MyntColors.textSecondaryDark,
+                      light: styles.MyntColors.textSecondary),
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  style: MyntWebTextStyles.tableHeader(
+                    context,
+                    darkColor: styles.MyntColors.textSecondaryDark,
+                    lightColor: styles.MyntColors.textSecondary,
+                    fontWeight: MyntFonts.semiBold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 14,
+                  color: resolveThemeColor(context,
+                      dark: styles.MyntColors.textSecondaryDark,
+                      light: styles.MyntColors.textSecondary),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -1005,40 +1144,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     super.dispose();
   }
 
-  // Helper method to get responsive column configuration for Basket Items
-  Map<String, dynamic> _getResponsiveBasketItemsColumns(double screenWidth) {
-    // Desktop/Default:
-    return {
-      'headers': [
-        'Instrument',
-        'Buy/Sell',
-        'Product',
-        'Price type',
-        'Qty',
-        'Price',
-        'Actions'
-      ],
-      'columnFlex': {
-        'Instrument': 3,
-        'Buy/Sell': 1,
-        'Product': 1,
-        'Price type': 1,
-        'Qty': 1,
-        'Price': 1,
-        'Actions': 1,
-      },
-      'columnMinWidth': {
-        'Instrument': 250,
-        'Buy/Sell': 80,
-        'Product': 90,
-        'Price type': 90,
-        'Qty': 80,
-        'Price': 90,
-        'Actions': 110,
-      },
-    };
-  }
-
   void _onSortTable(int columnIndex, bool ascending) {
     setState(() {
       if (_sortColumnIndex == columnIndex) {
@@ -1051,19 +1156,11 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   }
 
   bool _isNumericColumnBasketItems(String header) {
-    switch (header) {
-      case 'Qty':
-      case 'Price':
-      case 'LTP':
-        return true;
-      case 'Instrument':
-      case 'Details':
-      case 'Type':
-      case 'Status':
-        return false;
-      default:
-        return false;
-    }
+    if (header == 'Qty.' ||
+        header == 'Price' ||
+        header == 'LTP' ||
+        header == 'Actions') return true;
+    return false;
   }
 
   List<Map<String, dynamic>> _getSortedBasketScripts(
@@ -1090,21 +1187,27 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           final bSymbol = '${b['symbol'] ?? ''}';
           r = cmp<String>(aSymbol, bSymbol);
           break;
-        case 1: // Buy/Sell
+        case 1: // Type (Buy/Sell)
           r = cmp<String>(a["trantype"]?.toString(), b["trantype"]?.toString());
           break;
-        case 2: // Product
-          r = cmp<String>(a['prd']?.toString(), b['prd']?.toString());
-          break;
-        case 3: // Price type
+        case 2: // Order type
           r = cmp<String>(a['prctype']?.toString(), b['prctype']?.toString());
           break;
-        case 4: // Qty
+        case 3: // Product
+          r = cmp<String>(a['prd']?.toString(), b['prd']?.toString());
+          break;
+        case 4: // Qty.
           final aQty = int.tryParse(a["qty"]?.toString() ?? "0") ?? 0;
           final bQty = int.tryParse(b["qty"]?.toString() ?? "0") ?? 0;
           r = aQty.compareTo(bQty);
           break;
-        case 5: // Price
+        case 5: // LTP
+          // LTP is dynamic, but we can sort by the 'lp' value if present in the raw item data
+          final aLtp = parseNum(a["lp"]?.toString());
+          final bLtp = parseNum(b["lp"]?.toString());
+          r = cmp<num>(aLtp, bLtp);
+          break;
+        case 6: // Price
           final aPrice = parseNum(a["prc"]?.toString());
           final bPrice = parseNum(b["prc"]?.toString());
           r = cmp<num>(aPrice, bPrice);
@@ -1301,21 +1404,21 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                         .withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            5),
+                                                            4),
                                                   ),
                                                   padding: const EdgeInsets
                                                       .symmetric(
-                                                      horizontal: 10.0,
-                                                      vertical: 4.0),
+                                                      horizontal: 12.0,
+                                                      vertical: 6.0),
                                                   child: Text(
-                                                    'Buy',
+                                                    'BUY',
                                                     style:
                                                         WebTextStyles.buttonSm(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
                                                       color: WebColors.primary,
                                                       fontWeight:
-                                                          WebFonts.medium,
+                                                          WebFonts.semiBold,
                                                     ),
                                                   ),
                                                 ),
@@ -1342,21 +1445,21 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                         .withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            5),
+                                                            4),
                                                   ),
                                                   padding: const EdgeInsets
                                                       .symmetric(
-                                                      horizontal: 10.0,
-                                                      vertical: 4.0),
+                                                      horizontal: 12.0,
+                                                      vertical: 6.0),
                                                   child: Text(
-                                                    'Sell',
+                                                    'SELL',
                                                     style:
                                                         WebTextStyles.buttonSm(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
                                                       color: WebColors.tertiary,
                                                       fontWeight:
-                                                          WebFonts.medium,
+                                                          WebFonts.semiBold,
                                                     ),
                                                   ),
                                                 ),
@@ -1653,7 +1756,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
                     // Search Bar
                     Container(
-                      width: 300,
+                      width: 450,
                       height: 36,
                       decoration: BoxDecoration(
                         color: theme.isDarkMode
@@ -1676,7 +1779,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                           border: InputBorder.none,
                           hintText: "Search script",
                           hintStyle: WebTextStyles.custom(
-                              fontSize: 13,
+                              fontSize: 14,
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
                                   ? WebDarkColors.textSecondary
@@ -1689,18 +1792,26 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                 dark: styles.MyntColors.textSecondaryDark,
                                 light: styles.MyntColors.textSecondary,
                               )),
-                          suffixIcon: GestureDetector(
-                            onTap: () {
-                              // Toggle dropdown logic if needed, currently behaves as search
-                            },
-                            child: Icon(Icons.keyboard_arrow_down,
-                                size: 18,
-                                color: resolveThemeColor(
-                                  context,
-                                  dark: styles.MyntColors.textSecondaryDark,
-                                  light: styles.MyntColors.textSecondary,
-                                )),
-                          ),
+                          suffixIcon: _searchValue.isNotEmpty
+                              ? IconButton(
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchValue = "";
+                                    });
+                                    ref.read(marketWatchProvider).searchClear();
+                                  },
+                                  icon: Icon(
+                                    Icons.close,
+                                    size: 18,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: styles.MyntColors.textSecondaryDark,
+                                      light: styles.MyntColors.textSecondary,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
                         onChanged: (value) async {
                           setState(() {
@@ -1724,7 +1835,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               Expanded(
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                   child: basket.bsktScripList.isEmpty
                       ? NoDataFound(secondaryEnabled: false)
                       : Builder(
@@ -1762,125 +1873,252 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
                             return LayoutBuilder(
                               builder: (context, constraints) {
-                                final screenWidth =
-                                    MediaQuery.of(context).size.width;
-                                final responsiveConfig =
-                                    _getResponsiveBasketItemsColumns(
-                                        screenWidth);
-                                final headers = List<String>.from(
-                                    responsiveConfig['headers'] as List);
-                                final columnFlex = Map<String, int>.from(
-                                    responsiveConfig['columnFlex'] as Map);
-                                final columnMinWidth = Map<String, double>.from(
-                                    responsiveConfig['columnMinWidth'] as Map);
-                                final totalMinWidth = columnMinWidth.values
-                                    .fold<double>(0.0, (a, b) => a + b);
-                                final needHorizontalScroll =
-                                    constraints.maxWidth < totalMinWidth;
+                                final screenWidth = constraints.maxWidth;
 
-                                final tableColumn = Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                          : WebColors.divider,
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                                // Define headers and fixed widths for shadcn.Table
+                                final basket = ref.read(orderProvider);
+                                final count = basket.bsktScripList.length;
+                                final maxCount =
+                                    basket.frezQtyOrderSliceMaxLimit;
+
+                                final headers = [
+                                  'Instrument ($count / $maxCount)',
+                                  'Type',
+                                  'Order type',
+                                  'Product',
+                                  'Qty.',
+                                  'LTP',
+                                  'Price',
+                                  'Actions'
+                                ];
+
+                                // Define fixed minimum widths for columns
+                                final minWidths = <int, double>{
+                                  0: 100.0, // Instrument
+                                  1: 100.0, // Type
+                                  2: 100.0, // Order type
+                                  3: 100.0, // Product
+                                  4: 100.0, // Qty.
+                                  5: 140.0, // LTP
+                                  6: 100.0, // Price
+                                  7: 140.0, // Actions
+                                };
+
+                                final totalMinWidth =
+                                    minWidths.values.reduce((a, b) => a + b);
+                                final needsHorizontalScroll =
+                                    screenWidth < totalMinWidth;
+
+                                // Build the shadcn Table
+                                Widget buildTable() {
+                                  final sortedItems =
+                                      _getSortedBasketScripts(processedItems);
+
+                                  return Column(
                                     children: [
                                       // Header
-                                      Container(
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          border: Border(
-                                              bottom: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? WebDarkColors.divider
-                                                      : WebColors.divider,
-                                                  width: 1)),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal:
-                                                0), // Padding inside cells
-                                        child: needHorizontalScroll
-                                            ? IntrinsicWidth(
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children:
-                                                      headers.map((label) {
-                                                    return _buildBasketColumnCell(
-                                                      needHorizontalScroll:
-                                                          needHorizontalScroll,
-                                                      flex: columnFlex[label] ??
-                                                          1,
-                                                      minW: columnMinWidth[
-                                                              label] ??
-                                                          80.0,
-                                                      child: _buildBasketHeaderWidget(
-                                                          label,
-                                                          _getBasketColumnIndexForHeader(
-                                                              label),
-                                                          theme),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                              )
-                                            : Row(
-                                                children: headers.map((label) {
-                                                  return _buildBasketColumnCell(
-                                                    needHorizontalScroll:
-                                                        needHorizontalScroll,
-                                                    flex:
-                                                        columnFlex[label] ?? 1,
-                                                    minW:
-                                                        columnMinWidth[label] ??
-                                                            80.0,
-                                                    child: _buildBasketHeaderWidget(
-                                                        label,
-                                                        _getBasketColumnIndexForHeader(
-                                                            label),
-                                                        theme),
-                                                  );
-                                                }).toList(),
-                                              ),
+                                      shadcn.Table(
+                                        columnWidths: minWidths.map((index, width) {
+                                          if (index == 0) {
+                                            final otherWidths = minWidths.entries
+                                                .where((e) => e.key != 0)
+                                                .map((e) => e.value)
+                                                .fold(0.0, (a, b) => a + b);
+                                            final calculatedWidth = screenWidth > totalMinWidth
+                                                ? screenWidth - otherWidths
+                                                : width;
+                                            return MapEntry(
+                                                0, shadcn.FixedTableSize(calculatedWidth));
+                                          }
+                                          return MapEntry(
+                                              index, shadcn.FixedTableSize(width));
+                                        }),
+                                        defaultRowHeight:
+                                            const shadcn.FixedTableSize(48),
+                                        rows: [
+                                          shadcn.TableHeader(
+                                            cells: headers
+                                                .asMap()
+                                                .entries
+                                                .map((entry) {
+                                              final index = entry.key;
+                                              final label = entry.value;
+                                              final isNumeric =
+                                                  _isNumericColumnBasketItems(
+                                                      label);
+                                              return buildHeaderCell(label,
+                                                  index, theme, headers.length, isNumeric);
+                                            }).toList(),
+                                          ),
+                                        ],
                                       ),
                                       // Body
                                       Expanded(
-                                        child: Scrollbar(
+                                        child: RawScrollbar(
                                           controller: _verticalScrollController,
                                           thumbVisibility: true,
-                                          child: _buildBasketBodyList(
-                                            theme,
-                                            processedItems,
-                                            headers,
-                                            columnFlex,
-                                            columnMinWidth,
-                                            totalMinWidth: totalMinWidth,
-                                            needHorizontalScroll:
-                                                needHorizontalScroll,
+                                          thickness: 6,
+                                          radius: const Radius.circular(3),
+                                          child: SingleChildScrollView(
+                                            controller: _verticalScrollController,
+                                            child: shadcn.Table(
+                                              columnWidths:
+                                                  minWidths.map((index, width) {
+                                                if (index == 0) {
+                                                  final otherWidths = minWidths.entries
+                                                      .where((e) => e.key != 0)
+                                                      .map((e) => e.value)
+                                                      .fold(0.0, (a, b) => a + b);
+                                                  final calculatedWidth = screenWidth > totalMinWidth
+                                                      ? screenWidth - otherWidths
+                                                      : width;
+                                                  return MapEntry(
+                                                      0, shadcn.FixedTableSize(calculatedWidth));
+                                                }
+                                                return MapEntry(index,
+                                                    shadcn.FixedTableSize(width));
+                                              }),
+                                              defaultRowHeight:
+                                                  const shadcn.FixedTableSize(56),
+                                              rows: sortedItems
+                                                  .asMap()
+                                                  .entries
+                                                  .map((rowEntry) {
+                                                final rowIndex = rowEntry.key;
+                                                final item = rowEntry.value;
+                                                final originalIndex =
+                                                    item['_originalIndex']
+                                                        as int;
+                                                final uniqueId =
+                                                    'basket_$originalIndex';
+
+                                                return shadcn.TableRow(
+                                                  cells: headers
+                                                      .asMap()
+                                                      .entries
+                                                      .map((colEntry) {
+                                                    final colIndex =
+                                                        colEntry.key;
+                                                    final headerLabel =
+                                                        colEntry.value;
+                                                    final isNumeric =
+                                                        _isNumericColumnBasketItems(
+                                                            headerLabel);
+
+                                                    return buildCellWithHover(
+                                                      rowIndex: rowIndex,
+                                                      columnIndex: colIndex,
+                                                      totalColumns: headers.length,
+                                                      alignRight: isNumeric,
+                                                      child: GestureDetector(
+                                                        behavior:
+                                                            HitTestBehavior.opaque,
+                                                        onTap: () async {
+                                                          // Handle row tap logic
+                                                          await ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .fetchScripInfo(
+                                                                  "${item['token']}",
+                                                                  '${item['exch']}',
+                                                                  context,
+                                                                  true);
+                                                          if (!context.mounted)
+                                                            return;
+
+                                                          final basket = ref
+                                                              .read(orderProvider);
+                                                          basket.bsktScripList[
+                                                                  originalIndex]
+                                                              ['index'] = originalIndex;
+                                                          basket.bsktScripList[
+                                                                  originalIndex]
+                                                              ['prctyp'] = basket
+                                                                  .bsktScripList[
+                                                              originalIndex]['prctype'];
+
+                                                          final ltp = item['lp']
+                                                                  ?.toString() ??
+                                                              "0.00";
+                                                          final perChange = item['pc']
+                                                                  ?.toString() ??
+                                                              "0.00";
+
+                                                          OrderScreenArgs orderArgs =
+                                                              OrderScreenArgs(
+                                                                  exchange:
+                                                                      '${item['exch']}',
+                                                                  tSym:
+                                                                      '${item['tsym']}',
+                                                                  isExit: false,
+                                                                  token:
+                                                                      "${item['token']}",
+                                                                  transType: item[
+                                                                          'trantype'] ==
+                                                                      'B',
+                                                                  lotSize: ref
+                                                                      .read(
+                                                                          marketWatchProvider)
+                                                                      .scripInfoModel
+                                                                      ?.ls
+                                                                      .toString(),
+                                                                  ltp: ltp,
+                                                                  perChange:
+                                                                      perChange,
+                                                                  orderTpye: '',
+                                                                  holdQty: '',
+                                                                  isModify: true,
+                                                                  prd: item['prd']
+                                                                      ?.toString(),
+                                                                  raw: item);
+
+                                                          final scripInfo = ref
+                                                              .read(
+                                                                  marketWatchProvider)
+                                                              .scripInfoModel;
+                                                          if (scripInfo != null) {
+                                                            PlaceOrderScreenWeb
+                                                                .showDraggable(
+                                                              context: context,
+                                                              orderArg: orderArgs,
+                                                              scripInfo: scripInfo,
+                                                              isBasket:
+                                                                  'BasketEdit',
+                                                            );
+                                                          }
+                                                        },
+                                                        child:
+                                                            _buildBasketCellWidget(
+                                                          headerLabel,
+                                                          item,
+                                                          originalIndex,
+                                                          theme,
+                                                          uniqueId,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                );
+                                              }).toList(),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
-                                  ),
-                                );
+                                  );
+                                }
 
-                                if (needHorizontalScroll) {
+                                if (needsHorizontalScroll) {
                                   return SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     controller: _horizontalScrollController,
                                     child: SizedBox(
-                                        width: totalMinWidth,
-                                        child: tableColumn),
+                                      width: totalMinWidth,
+                                      child: buildTable(),
+                                    ),
                                   );
                                 }
-                                return tableColumn;
+                                return buildTable();
                               },
                             );
                           },
@@ -2021,7 +2259,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             Positioned(
               top: 110, // Header(50) + Toolbar(60)
               right: 16, // Padding of Toolbar
-              width: 300, // Width of Search Bar
+              width: 450, // Width of Search Bar
               height: 400,
               child: Container(
                 decoration: BoxDecoration(
@@ -2072,252 +2310,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
 
   // Helper methods for individual item status indicators
 
-  int _getBasketColumnIndexForHeader(String header) {
-    switch (header) {
-      case 'Instrument':
-        return 0;
-      case 'Buy/Sell':
-        return 1;
-      case 'Product':
-        return 2;
-      case 'Price type':
-        return 3;
-      case 'Qty':
-        return 4;
-      case 'Price':
-        return 5;
-      case 'Actions':
-        return 6;
-      default:
-        return -1;
-    }
-  }
 
-  Widget _buildBasketHeaderWidget(
-    String label,
-    int columnIndex,
-    ThemesProvider theme,
-  ) {
-    final isNumeric = _isNumericColumnBasketItems(label);
-    return SizedBox.expand(
-      child: MouseRegion(
-        onEnter: (_) => _hoveredColumnIndex.value = columnIndex,
-        onExit: (_) => _hoveredColumnIndex.value = null,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => _onSortTable(columnIndex, true),
-          child: ValueListenableBuilder<int?>(
-            valueListenable: _hoveredColumnIndex,
-            builder: (context, hoveredIndex, child) {
-              return Container(
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: hoveredIndex == columnIndex
-                      ? (theme.isDarkMode
-                          ? WebDarkColors.primary.withOpacity(0.1)
-                          : WebColors.primary.withOpacity(0.05))
-                      : Colors.transparent,
-                ),
-                alignment:
-                    isNumeric ? Alignment.centerRight : Alignment.centerLeft,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12.0, horizontal: 6.0),
-                child: Row(
-                  mainAxisAlignment: isNumeric
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        label,
-                        style: WebTextStyles.tableHeader(
-                          isDarkTheme: theme.isDarkMode,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textPrimary
-                              : WebColors.textPrimary,
-                        ),
-                        textAlign: isNumeric ? TextAlign.right : TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBasketColumnCell({
-    required bool needHorizontalScroll,
-    required int flex,
-    required double minW,
-    required Widget child,
-  }) {
-    if (needHorizontalScroll) {
-      return SizedBox(
-        width: minW,
-        child: child,
-      );
-    }
-
-    return Expanded(
-      flex: flex,
-      child: SizedBox(
-        width: minW,
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildBasketBodyList(
-    ThemesProvider theme,
-    List<Map<String, dynamic>> processedItems,
-    List<String> headers,
-    Map<String, int> columnFlex,
-    Map<String, double> columnMinWidth, {
-    required double totalMinWidth,
-    required bool needHorizontalScroll,
-  }) {
-    final sorted = _getSortedBasketScripts(processedItems);
-    return ListView.builder(
-      controller: _verticalScrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final item = sorted[index];
-        final originalIndex = item['_originalIndex'] as int;
-        final uniqueId = 'basket_$originalIndex';
-
-        return MouseRegion(
-          onEnter: (_) => _hoveredRowIndex.value = uniqueId,
-          onExit: (_) => _hoveredRowIndex.value = null,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () async {
-              // Handle tap - same as original onTap
-              await ref.read(marketWatchProvider).fetchScripInfo(
-                  "${item['token']}", '${item['exch']}', context, true);
-
-              if (!context.mounted) return;
-
-              final basket = ref.read(orderProvider);
-              basket.bsktScripList[originalIndex]['index'] = originalIndex;
-              basket.bsktScripList[originalIndex]['prctyp'] =
-                  basket.bsktScripList[originalIndex]['prctype'];
-
-              final ltp = item['lp']?.toString() ?? "0.00";
-              final perChange = item['pc']?.toString() ?? "0.00";
-
-              OrderScreenArgs orderArgs = OrderScreenArgs(
-                  exchange: '${item['exch']}',
-                  tSym: '${item['tsym']}',
-                  isExit: false,
-                  token: "${item['token']}",
-                  transType: item['trantype'] == 'B' ? true : false,
-                  lotSize: ref
-                      .read(marketWatchProvider)
-                      .scripInfoModel
-                      ?.ls
-                      .toString(),
-                  ltp: ltp,
-                  perChange: perChange,
-                  orderTpye: '',
-                  holdQty: '',
-                  isModify: true,
-                  prd: item['prd']?.toString(),
-                  raw: item);
-
-              final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
-              if (scripInfo == null) {
-                ResponsiveSnackBar.showError(
-                    context, 'Unable to fetch scrip information');
-                return;
-              }
-
-              PlaceOrderScreenWeb.showDraggable(
-                context: context,
-                orderArg: orderArgs,
-                scripInfo: scripInfo,
-                isBasket: 'BasketEdit',
-              );
-            },
-            child: ValueListenableBuilder<String?>(
-              valueListenable: _hoveredRowIndex,
-              builder: (context, hoveredToken, child) {
-                final rowIsHovered = hoveredToken == uniqueId;
-
-                return Container(
-                  decoration: BoxDecoration(
-                    color: rowIsHovered
-                        ? (theme.isDarkMode
-                            ? WebDarkColors.primary.withOpacity(0.06)
-                            : WebColors.primary.withOpacity(0.10))
-                        : Colors.transparent,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.divider
-                            : WebColors.divider,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: needHorizontalScroll
-                      ? IntrinsicWidth(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: headers.map((label) {
-                              final flex = columnFlex[label] ?? 1;
-                              final minW = columnMinWidth[label] ?? 80.0;
-                              return _buildBasketColumnCell(
-                                needHorizontalScroll: needHorizontalScroll,
-                                flex: flex,
-                                minW: minW,
-                                child: _buildBasketCellWidget(
-                                  label,
-                                  item,
-                                  originalIndex,
-                                  theme,
-                                  uniqueId,
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: headers.map((label) {
-                            final flex = columnFlex[label] ?? 1;
-                            final minW = columnMinWidth[label] ?? 80.0;
-                            return _buildBasketColumnCell(
-                              needHorizontalScroll: needHorizontalScroll,
-                              flex: flex,
-                              minW: minW,
-                              child: _buildBasketCellWidget(
-                                label,
-                                item,
-                                originalIndex,
-                                theme,
-                                uniqueId,
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildBasketCellWidget(
     String column,
@@ -2326,242 +2319,263 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     ThemesProvider theme,
     String uniqueId,
   ) {
+    if (column.startsWith('Instrument')) {
+      return _BasketInstrumentCell(
+        item: item,
+        originalIndex: originalIndex,
+        theme: theme,
+        uniqueId: uniqueId,
+        hoveredRowIndex: _hoveredRowIndex,
+        onDelete: (item, index, theme) =>
+            _handleDeleteBasketScript(item, index, theme),
+      );
+    }
+
     switch (column) {
-      case 'Instrument':
-        return _BasketInstrumentCell(
-          item: item,
-          originalIndex: originalIndex,
-          theme: theme,
-          uniqueId: uniqueId,
-          hoveredRowIndex: _hoveredRowIndex,
-          onDelete: (item, index, theme) =>
-              _handleDeleteBasketScript(item, index, theme),
-        );
-      case 'Buy/Sell':
+      case 'Type':
         final trantype = item["trantype"]?.toString();
-        final buySell = trantype == "S" ? "SELL" : "BUY";
-        final textColor = trantype == "S"
-            ? (theme.isDarkMode ? WebDarkColors.error : WebColors.error)
-            : (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary);
-        return _buildBasketTextCell(
-          buySell,
-          theme,
-          Alignment.centerLeft,
-          color: textColor,
+        final isBuy = trantype != "S";
+        final color = isBuy ? styles.MyntColors.profit : styles.MyntColors.loss;
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              isBuy ? "BUY" : "SELL",
+              style: MyntWebTextStyles.tableCell(
+                context,
+                color: color,
+                darkColor: color,
+                lightColor: color,
+                fontWeight: MyntFonts.semiBold,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        );
+      case 'Order type':
+        final prctype = item["prctype"]?.toString() ?? "LMT";
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              prctype,
+              style: MyntWebTextStyles.tableCell(
+                context,
+                fontWeight: MyntFonts.medium,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         );
       case 'Product':
-        // Map prd to user friendly text
-        String product = "Intraday"; // Default
+        String product = "CNC";
         switch (item["prd"]) {
           case "I":
-            product = "Intraday";
+            product = "MIS";
             break;
           case "C":
-            product = "Delivery";
+            product = "CNC";
             break;
           case "M":
-            product = "Margin";
-            break;
-          case "F":
-            product = "MTF";
+            product = "NRML";
             break;
         }
-        return _buildBasketTextCell(
-          product,
-          theme,
-          Alignment.centerLeft,
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              product,
+              style: MyntWebTextStyles.tableCell(
+                context,
+                fontWeight: MyntFonts.medium,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         );
-      case 'Price type':
-        // Map prcType to user friendly text if needed, or use as is
-        String priceType = item["prctype"] ?? "LMT";
-        if (priceType == "LMT") priceType = "LMT";
-        if (priceType == "MKT") priceType = "MKT";
-        if (priceType == "SL-LMT") priceType = "SL-LMT";
-        if (priceType == "SL-MKT") priceType = "SL-MKT";
-        return _buildBasketTextCell(
-          priceType,
-          theme,
-          Alignment.centerLeft,
-        );
-      case 'Qty':
+      case 'Qty.':
         final qty = item["qty"]?.toString() ?? '0';
-        return _buildBasketTextCell(
-          qty,
-          theme,
-          Alignment.centerRight,
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              qty,
+              style: MyntWebTextStyles.tableCell(
+                context,
+                fontWeight: MyntFonts.medium,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        );
+      case 'LTP':
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _BasketLtpCell(
+              item: item,
+              theme: theme,
+            ),
+          ),
         );
       case 'Price':
-        return _buildBasketTextCell(
-          item["prc"]?.toString() ?? '0.00',
-          theme,
-          Alignment.centerRight,
+        final price = item["prc"]?.toString() ?? '0.00';
+        final trantype = item["trantype"]?.toString();
+        final isBuy = trantype != "S";
+        final color = isBuy ? styles.MyntColors.profit : styles.MyntColors.loss;
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              price,
+              style: MyntWebTextStyles.tableCell(
+                context,
+                color: color,
+                darkColor: color,
+                lightColor: color,
+                fontWeight: MyntFonts.medium,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         );
       case 'Actions':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Copy (Placeholder)
-            // Copy
-            _buildBasketHoverButton(
-              icon: Icons.copy,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary,
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // Copy
+                _buildBasketHoverButton(
+                icon: Icons.copy_outlined,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+                onPressed: () async {
+                  await ref.read(marketWatchProvider).fetchScripInfo(
+                      "${item['token']}", '${item['exch']}', context, true);
+
+                  if (!context.mounted) return;
+
+                  final ltp = item['lp']?.toString() ?? "0.00";
+                  final perChange = item['pc']?.toString() ?? "0.00";
+
+                  OrderScreenArgs orderArgs = OrderScreenArgs(
+                      exchange: '${item['exch']}',
+                      tSym: '${item['tsym']}',
+                      isExit: false,
+                      token: "${item['token']}",
+                      transType: item['trantype'] == 'B',
+                      lotSize: ref
+                          .read(marketWatchProvider)
+                          .scripInfoModel
+                          ?.ls
+                          .toString(),
+                      ltp: ltp,
+                      perChange: perChange,
+                      orderTpye: '',
+                      holdQty: '',
+                      isModify: false, // Copy as new order
+                      prd: item['prd']?.toString(),
+                      raw: item);
+
+                  final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+                  if (scripInfo == null) {
+                    ResponsiveSnackBar.showError(
+                        context, 'Unable to fetch scrip information');
+                    return;
+                  }
+
+                  PlaceOrderScreenWeb.showDraggable(
+                    context: context,
+                    orderArg: orderArgs,
+                    scripInfo: scripInfo,
+                    isBasket: 'Basket', // Add to basket
+                  );
+                },
+                theme: theme,
               ),
-              onPressed: () async {
-                await ref.read(marketWatchProvider).fetchScripInfo(
-                    "${item['token']}", '${item['exch']}', context, true);
+              const SizedBox(width: 4),
+              // Edit
+              _buildBasketHoverButton(
+                icon: Icons.edit_outlined,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+                onPressed: () async {
+                  // Trigger edit mode
+                  await ref.read(marketWatchProvider).fetchScripInfo(
+                      "${item['token']}", '${item['exch']}', context, true);
 
-                if (!context.mounted) return;
+                  if (!context.mounted) return;
 
-                final ltp = item['lp']?.toString() ?? "0.00";
-                final perChange = item['pc']?.toString() ?? "0.00";
+                  final ltp = item['lp']?.toString() ?? "0.00";
+                  final perChange = item['pc']?.toString() ?? "0.00";
 
-                OrderScreenArgs orderArgs = OrderScreenArgs(
-                    exchange: '${item['exch']}',
-                    tSym: '${item['tsym']}',
-                    isExit: false,
-                    token: "${item['token']}",
-                    transType: item['trantype'] == 'B',
-                    lotSize: ref
-                        .read(marketWatchProvider)
-                        .scripInfoModel
-                        ?.ls
-                        .toString(),
-                    ltp: ltp,
-                    perChange: perChange,
-                    orderTpye: '',
-                    holdQty: '',
-                    isModify: false, // Copy as new order
-                    prd: item['prd']?.toString(),
-                    raw: item);
+                  OrderScreenArgs orderArgs = OrderScreenArgs(
+                      exchange: '${item['exch']}',
+                      tSym: '${item['tsym']}',
+                      isExit: false,
+                      token: "${item['token']}",
+                      transType: item['trantype'] == 'B' ? true : false,
+                      lotSize: ref
+                          .read(marketWatchProvider)
+                          .scripInfoModel
+                          ?.ls
+                          .toString(),
+                      ltp: ltp,
+                      perChange: perChange,
+                      orderTpye: '',
+                      holdQty: '',
+                      isModify: true,
+                      prd: item['prd']?.toString(),
+                      raw: item);
 
-                final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
-                if (scripInfo == null) {
-                  ResponsiveSnackBar.showError(
-                      context, 'Unable to fetch scrip information');
-                  return;
-                }
+                  final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+                  if (scripInfo == null) {
+                    ResponsiveSnackBar.showError(
+                        context, 'Unable to fetch scrip information');
+                    return;
+                  }
 
-                PlaceOrderScreenWeb.showDraggable(
-                  context: context,
-                  orderArg: orderArgs,
-                  scripInfo: scripInfo,
-                  isBasket: 'Basket', // Add to basket
-                );
-              },
-              theme: theme,
-            ),
-            const SizedBox(width: 8),
-            // Edit
-            _buildBasketHoverButton(
-              icon: Icons.edit,
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary,
+                  PlaceOrderScreenWeb.showDraggable(
+                    context: context,
+                    orderArg: orderArgs,
+                    scripInfo: scripInfo,
+                    isBasket: 'BasketEdit',
+                  );
+                },
+                theme: theme,
               ),
-              onPressed: () async {
-                // Trigger edit mode
-                // Same as row tap logic - reusing edit handler
-                await ref.read(marketWatchProvider).fetchScripInfo(
-                    "${item['token']}", '${item['exch']}', context, true);
-
-                if (!context.mounted) return;
-
-                final basket = ref.read(orderProvider);
-                basket.bsktScripList[originalIndex]['index'] = originalIndex;
-                basket.bsktScripList[originalIndex]['prctyp'] =
-                    basket.bsktScripList[originalIndex]['prctype'];
-
-                final ltp = item['lp']?.toString() ?? "0.00";
-                final perChange = item['pc']?.toString() ?? "0.00";
-
-                OrderScreenArgs orderArgs = OrderScreenArgs(
-                    exchange: '${item['exch']}',
-                    tSym: '${item['tsym']}',
-                    isExit: false,
-                    token: "${item['token']}",
-                    transType: item['trantype'] == 'B' ? true : false,
-                    lotSize: ref
-                        .read(marketWatchProvider)
-                        .scripInfoModel
-                        ?.ls
-                        .toString(),
-                    ltp: ltp,
-                    perChange: perChange,
-                    orderTpye: '',
-                    holdQty: '',
-                    isModify: true,
-                    prd: item['prd']?.toString(),
-                    raw: item);
-
-                final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
-                if (scripInfo == null) {
-                  ResponsiveSnackBar.showError(
-                      context, 'Unable to fetch scrip information');
-                  return;
-                }
-
-                PlaceOrderScreenWeb.showDraggable(
-                  context: context,
-                  orderArg: orderArgs,
-                  scripInfo: scripInfo,
-                  isBasket: 'BasketEdit',
-                );
-              },
-              theme: theme,
-            ),
-            const SizedBox(width: 8),
-            // Delete
-            _buildBasketHoverButton(
-              icon: Icons.delete_outline,
-              color: theme.isDarkMode
-                  ? WebDarkColors.tertiary
-                  : WebColors.tertiary,
-              onPressed: () => _handleDeleteBasketScript(
-                {'_originalIndex': originalIndex, ...item},
-                originalIndex,
-                theme,
+              const SizedBox(width: 4),
+              // Delete
+              _buildBasketHoverButton(
+                icon: Icons.delete_outline,
+                color: styles.MyntColors.loss,
+                onPressed: () =>
+                    _handleDeleteBasketScript(item, originalIndex, theme),
+                theme: theme,
               ),
-              theme: theme,
+              ],
             ),
-          ],
+          ),
         );
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildBasketTextCell(
-    String text,
-    ThemesProvider theme,
-    Alignment alignment, {
-    Color? color,
-  }) {
-    return Align(
-      alignment: alignment,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-        child: Text(
-          text,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: theme.isDarkMode,
-            color: color ??
-                (theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary),
-            fontWeight: WebFonts.medium,
-          ),
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
 
   Widget _buildBasketHoverButton({
     String? label,
@@ -2983,156 +2997,128 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
     final symbol =
         widget.item['symbol']?.toString() ?? widget.item['tsym'] ?? '';
     final exch = widget.item['exch']?.toString() ?? '';
-    final isPositive = !pc.toString().startsWith('-');
 
-    return ValueListenableBuilder<String?>(
-      valueListenable: widget.hoveredRowIndex,
-      builder: (context, hoveredToken, child) {
-        final rowIsHovered = hoveredToken == widget.uniqueId;
-
-        return ClipRect(
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              // Content (Symbol + LTP)
-              Flexible(
-                flex: rowIsHovered ? 1 : 2,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Symbol Row
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              symbol,
-                              style: WebTextStyles.custom(
-                                fontSize: 13,
-                                isDarkTheme: widget.theme.isDarkMode,
-                                color: widget.theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: WebFonts.medium,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: widget.theme.isDarkMode
-                                          ? WebDarkColors.divider
-                                          : WebColors.divider,
-                                      width: 1),
-                                  borderRadius: BorderRadius.circular(2)),
-                              child: Text(exch,
-                                  style: WebTextStyles.custom(
-                                      fontSize: 9,
-                                      isDarkTheme: widget.theme.isDarkMode,
-                                      color: widget.theme.isDarkMode
-                                          ? WebDarkColors.textSecondary
-                                          : WebColors.textSecondary,
-                                      fontWeight: WebFonts.regular)))
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      // LTP + Change Row
-                      Row(children: [
-                        Text(
-                          "₹$ltp",
-                          style: WebTextStyles.custom(
-                            fontSize: 11,
-                            isDarkTheme: widget.theme.isDarkMode,
-                            color: widget.theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                            fontWeight: WebFonts.regular,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "${isPositive ? '+' : ''}$pc",
-                          style: WebTextStyles.custom(
-                            fontSize: 11,
-                            isDarkTheme: widget.theme.isDarkMode,
-                            color: isPositive
-                                ? (widget.theme.isDarkMode
-                                    ? WebDarkColors.profit
-                                    : WebColors.profit)
-                                : (widget.theme.isDarkMode
-                                    ? WebDarkColors.loss
-                                    : WebColors.loss),
-                            fontWeight: WebFonts.regular,
-                          ),
-                        ),
-                      ])
-                    ],
-                  ),
+    return SizedBox.expand(
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                symbol,
+                style: MyntWebTextStyles.symbol(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
                 ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-              // Delete button fade in on hover (or reuse existing helper if accessible, else implementing inline for isolation)
-              if (rowIsHovered)
-                // Use a fade transition for smoother effect
-                AnimatedOpacity(
-                  opacity: 1,
-                  duration: const Duration(milliseconds: 140),
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: SizedBox(
-                      height: 28,
-                      width: 28,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(5),
-                          splashColor: (widget.theme.isDarkMode
-                                  ? WebDarkColors.tertiary
-                                  : WebColors.tertiary)
-                              .withOpacity(0.15),
-                          highlightColor: (widget.theme.isDarkMode
-                                  ? WebDarkColors.tertiary
-                                  : WebColors.tertiary)
-                              .withOpacity(0.08),
-                          onTap: () => widget.onDelete(
-                              widget.item, widget.originalIndex, widget.theme),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: widget.theme.isDarkMode
-                                    ? WebDarkColors.tertiary
-                                    : WebColors.tertiary,
-                                width: 1,
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.delete_outline,
-                                size: 16,
-                                color: widget.theme.isDarkMode
-                                    ? WebDarkColors.tertiary
-                                    : WebColors.tertiary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        );
-      },
+            ),
+            const SizedBox(width: 4),
+            Text(
+              exch,
+              style: MyntWebTextStyles.exch(
+                context,
+                darkColor: styles.MyntColors.textSecondaryDark,
+                lightColor: styles.MyntColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+}
+
+class _BasketLtpCell extends ConsumerStatefulWidget {
+  final Map<String, dynamic> item;
+  final ThemesProvider theme;
+
+  const _BasketLtpCell({
+    required this.item,
+    required this.theme,
+  });
+
+  @override
+  ConsumerState<_BasketLtpCell> createState() => _BasketLtpCellState();
+}
+
+class _BasketLtpCellState extends ConsumerState<_BasketLtpCell> {
+  String ltp = "0.00";
+  String pc = "0.00";
+  StreamSubscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateValues();
+
+    final token = widget.item['token']?.toString();
+    if (token != null) {
+      _subscription =
+          ref.read(websocketProvider).socketDataStream.listen((data) {
+        if (!mounted || !data.containsKey(token)) return;
+
+        bool changed = false;
+        final newLtp = data[token]['lp']?.toString();
+        if (newLtp != null && newLtp != ltp && newLtp != 'null') {
+          ltp = newLtp;
+          widget.item['lp'] = newLtp;
+          changed = true;
+        }
+
+        final newPc = data[token]['pc']?.toString();
+        if (newPc != null && newPc != pc && newPc != 'null') {
+          pc = newPc;
+          widget.item['pc'] = newPc;
+          changed = true;
+        }
+
+        if (changed) {
+          setState(() {});
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(_BasketLtpCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item['token'] != oldWidget.item['token']) {
+      _subscription?.cancel();
+      _updateValues();
+      initState();
+    }
+  }
+
+  void _updateValues() {
+    ltp = widget.item['lp']?.toString() ?? "0.00";
+    pc = widget.item['pc']?.toString() ?? "0.00";
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pcVal = double.tryParse(pc) ?? 0.0;
+    final color = pcVal > 0
+        ? styles.MyntColors.profit
+        : (pcVal < 0 ? styles.MyntColors.loss : null);
+
+    return Text(
+      "$ltp",
+      style: MyntWebTextStyles.tableCell(
+        context,
+        color: color,
+        darkColor: color,
+        lightColor: color,
+        fontWeight: MyntFonts.medium,
+      ),
+    );
+  } 
 }

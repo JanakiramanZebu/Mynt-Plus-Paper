@@ -43,7 +43,8 @@ class MFOverview extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Fund Description Section
-            _buildFundDescriptionSection(context, theme, mfProvide, factSheetData),
+            _buildFundDescriptionSection(
+                context, theme, mfProvide, factSheetData),
 
             const SizedBox(height: 24),
 
@@ -52,7 +53,9 @@ class MFOverview extends ConsumerWidget {
               "Trailing Returns (%)",
               style: MyntWebTextStyles.title(
                 context,
-                color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                color: isDarkMode
+                    ? MyntColors.textPrimaryDark
+                    : MyntColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -74,7 +77,9 @@ class MFOverview extends ConsumerWidget {
                   "Benchmark",
                   style: MyntWebTextStyles.body(
                     context,
-                    color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                    color: isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -83,7 +88,9 @@ class MFOverview extends ConsumerWidget {
                     "(${factSheetData.benchmark ?? ""})",
                     style: MyntWebTextStyles.para(
                       context,
-                      color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                      color: isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -93,7 +100,8 @@ class MFOverview extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // Returns Grid and Chart Row
-            _buildReturnsAndChartSection(context, theme, mfProvide, dataSource, isDarkMode),
+            _buildReturnsAndChartSection(
+                context, theme, mfProvide, dataSource, isDarkMode),
 
             const SizedBox(height: 16),
           ],
@@ -111,9 +119,11 @@ class MFOverview extends ConsumerWidget {
     final isDarkMode = theme.isDarkMode;
 
     // Build fund name with category
-    final fundName = factSheetData.name ?? mfStockData.schemeName ?? 'Unknown Fund';
+    final fundName =
+        factSheetData.name ?? mfStockData.schemeName ?? 'Unknown Fund';
     final category = mfStockData.type ?? factSheetData.category ?? '';
-    final displayTitle = category.isNotEmpty ? "$fundName - $category" : fundName;
+    final displayTitle =
+        category.isNotEmpty ? "$fundName - $category" : fundName;
 
     // Build description paragraph
     final managerName = factSheetData.fundManager ?? 'N/A';
@@ -131,35 +141,154 @@ class MFOverview extends ConsumerWidget {
     final fiveYear = factSheetData.d5Year ?? '0';
     final tenYear = factSheetData.d10Year ?? '0';
 
-    final description = "The $fundName is managed by $managerName. Launched on $launchDate, "
+    final description =
+        "The $fundName is managed by $managerName. Launched on $launchDate, "
         "the fund has a current NAV of ₹$currentNav as of $navDate. "
         "It has an AUM of ₹$aum Crores, with a minimum investment of ₹$minPurchase for purchase and ₹$minSip for SIP. "
         "The expense ratio is $expenseRatio% with a risk level of $riskLevel. "
         "The benchmark is $benchmark. "
         "Returns are $oneYear% for 1 year, $threeYear% for 3 years, $fiveYear% for 5 years, and $tenYear% for 10 years.";
 
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Side: Fund Title and Description (60% width)
+        Expanded(
+          flex: 6,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Fund Title with Category
+              Text(
+                displayTitle,
+                style: MyntWebTextStyles.title(
+                  context,
+                  color: isDarkMode
+                      ? MyntColors.textPrimaryDark
+                      : MyntColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              // Fund Description
+              Text(
+                description,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: isDarkMode
+                      ? MyntColors.textSecondaryDark
+                      : MyntColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 24),
+        // Right Side: Stats Grid (40% width)
+        Expanded(
+          flex: 4,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildGridStatItem(
+                      context,
+                      "Aum (cr)",
+                      aum,
+                      isDarkMode,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildGridStatItem(
+                      context,
+                      "NAV",
+                      currentNav,
+                      isDarkMode,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildGridStatItem(
+                      context,
+                      "Min. Inv",
+                      minPurchase,
+                      isDarkMode,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildGridStatItem(
+                      context,
+                      "5Yr CAGR",
+                      "$fiveYear%",
+                      isDarkMode,
+                      isPercentage: true,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGridStatItem(
+    BuildContext context,
+    String label,
+    String value,
+    bool isDarkMode, {
+    bool isPercentage = false,
+  }) {
+    Color valueColor =
+        isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary;
+
+    if (isPercentage && value != '--%') {
+      final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0;
+      if (numValue > 0) {
+        valueColor = isDarkMode ? MyntColors.profitDark : MyntColors.profit;
+      } else if (numValue < 0) {
+        valueColor = isDarkMode ? MyntColors.lossDark : MyntColors.loss;
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Fund Title with Category
         Text(
-          displayTitle,
-          style: MyntWebTextStyles.title(
-            context,
-            color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 12),
-        // Fund Description
-        Text(
-          description,
+          label,
           style: MyntWebTextStyles.para(
             context,
-            color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+            color: isDarkMode
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
           ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: MyntWebTextStyles.body(
+            context,
+            color: valueColor,
+            fontWeight: FontWeight.w600,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 8),
+        Divider(
+          color: isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
+          height: 1,
+          thickness: 0.5,
         ),
       ],
     );
@@ -192,7 +321,8 @@ class MFOverview extends ConsumerWidget {
         // Chart (Right Side - 70%)
         Expanded(
           flex: 7,
-          child: _buildChartSection(context, isDarkMode, dataSource, interactiveTooltip, mfProvide),
+          child: _buildChartSection(
+              context, isDarkMode, dataSource, interactiveTooltip, mfProvide),
         ),
       ],
     );
@@ -212,7 +342,9 @@ class MFOverview extends ConsumerWidget {
             "No returns data available",
             style: MyntWebTextStyles.body(
               context,
-              color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+              color: isDarkMode
+                  ? MyntColors.textSecondaryDark
+                  : MyntColors.textSecondary,
             ),
           ),
         ),
@@ -227,7 +359,7 @@ class MFOverview extends ConsumerWidget {
       crossAxisSpacing: 8,
       mainAxisSpacing: 8,
       childAspectRatio: 1.2,
-      children: List.generate(mfProvide.mfReturnsGridview.length, (index) {
+      children: List.generate(mfProvide.mfReturnsGridview.length > 6 ? 6 : mfProvide.mfReturnsGridview.length, (index) {
         final item = mfProvide.mfReturnsGridview[index];
         final value = item['value']?.toString() ?? "0";
         final isNegative = value.startsWith("-");
@@ -238,42 +370,62 @@ class MFOverview extends ConsumerWidget {
         return Container(
           decoration: BoxDecoration(
             color: isNegative
-                ? (isDarkMode ? colors.lossDark.withOpacity(0.1) : colors.lossLight.withOpacity(0.1))
-                : (isDarkMode ? colors.profitDark.withOpacity(0.1) : colors.profitLight.withOpacity(0.1)),
+                ? (isDarkMode
+                    ? colors.lossDark.withOpacity(0.1)
+                    : colors.lossLight.withOpacity(0.1))
+                : (isDarkMode
+                    ? colors.profitDark.withOpacity(0.1)
+                    : colors.profitLight.withOpacity(0.1)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Fund Value
-              Text(
-                "$value%",
-                style: MyntWebTextStyles.body(
-                  context,
-                  color: isNegative
-                      ? (isDarkMode ? MyntColors.lossDark : MyntColors.loss)
-                      : (isDarkMode ? MyntColors.profitDark : MyntColors.profit),
-                  fontWeight: FontWeight.w600,
+              // Top section with value and duration (Centered)
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Fund Value
+                    Text(
+                      "$value%",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: isNegative
+                            ? (isDarkMode
+                                ? MyntColors.lossDark
+                                : MyntColors.loss)
+                            : (isDarkMode
+                                ? MyntColors.profitDark
+                                : MyntColors.profit),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Duration Name
+                    Text(
+                      durName,
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: isDarkMode
+                            ? MyntColors.textSecondaryDark
+                            : MyntColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              // Duration Name
-              Text(
-                durName,
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Benchmark Value (bottom section)
+              // Benchmark Value (bottom section - Pinned to bottom)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 decoration: BoxDecoration(
                   color: isReturnNegative
-                      ? (isDarkMode ? colors.lossDark.withOpacity(0.3) : colors.lossLight.withOpacity(0.2))
-                      : (isDarkMode ? colors.profitDark.withOpacity(0.3) : colors.profitLight.withOpacity(0.2)),
+                      ? (isDarkMode
+                          ? colors.lossDark.withOpacity(0.3)
+                          : colors.lossLight.withOpacity(0.2))
+                      : (isDarkMode
+                          ? colors.profitDark.withOpacity(0.3)
+                          : colors.profitLight.withOpacity(0.2)),
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(6),
                     bottomRight: Radius.circular(6),
@@ -284,7 +436,9 @@ class MFOverview extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: MyntWebTextStyles.para(
                     context,
-                    color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                    color: isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -304,8 +458,12 @@ class MFOverview extends ConsumerWidget {
     MFProvider mfProvide,
   ) {
     // Get the last NAV value for display
-    final lastNav = dataSource.isNotEmpty ? dataSource.last.nav?.toStringAsFixed(3) ?? '--' : '--';
-    final lastDate = dataSource.isNotEmpty ? _formatChartDate(dataSource.last.navDate) : '--';
+    final lastNav = dataSource.isNotEmpty
+        ? dataSource.last.nav?.toStringAsFixed(3) ?? '--'
+        : '--';
+    final lastDate = dataSource.isNotEmpty
+        ? _formatChartDate(dataSource.last.navDate)
+        : '--';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -316,10 +474,6 @@ class MFOverview extends ConsumerWidget {
           decoration: BoxDecoration(
             color: isDarkMode ? colors.colorBlack : Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-              width: 0.5,
-            ),
           ),
           child: Stack(
             children: [
@@ -352,7 +506,8 @@ class MFOverview extends ConsumerWidget {
                     xValueMapper: (NavGraphData data, _) {
                       if (data.navDate == null) return "";
                       return data.navDate!.length > 14
-                          ? data.navDate!.substring(0, data.navDate!.length - 14)
+                          ? data.navDate!
+                              .substring(0, data.navDate!.length - 14)
                           : data.navDate!;
                     },
                     yValueMapper: (NavGraphData data, _) => data.nav,

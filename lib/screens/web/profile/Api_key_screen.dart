@@ -19,9 +19,28 @@ class ApiKeyScreen extends ConsumerStatefulWidget {
   ConsumerState<ApiKeyScreen> createState() => _TotpScreenState();
 }
 
-class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
+class _TotpScreenState extends ConsumerState<ApiKeyScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  /// Calculate days remaining until expiry
+  String _getDaysRemaining(String? exd) {
+    if (exd == null || exd.isEmpty) return "";
+    try {
+      final expiryTimestamp = int.parse(exd) * 1000;
+      final expiryDate = DateTime.fromMillisecondsSinceEpoch(expiryTimestamp);
+      final now = DateTime.now();
+      final difference = expiryDate.difference(now).inDays;
+      return "($difference days)";
+    } catch (e) {
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final apikeys = ref.watch(apikeyprovider);
 
     return SafeArea(
@@ -63,6 +82,28 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16.0),
+                  // API Key Info Section (Generate API, Expire date, Vendor code)
+                  if (apikeys.apikeyres != null && apikeys.apikeyres!.apistatus != "NOT_PRESENT") ...[
+                    _buildInfoRow(
+                      'Generate API',
+                      apikeys.apikeyres!.apistatus ?? '--',
+                      isStatus: true,
+                      statusColor: apikeys.apikeyres!.apistatus == "VALID"
+                          ? MyntColors.profit
+                          : MyntColors.loss,
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      'Expire date',
+                      '${readTimestamp(int.parse("${apikeys.apikeyres!.exd}000"))} ${_getDaysRemaining(apikeys.apikeyres!.exd)}',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      'Vender code(vc)',
+                      apikeys.apikeyres!.uid ?? '--',
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   apikeys.apikeyres!.apistatus == "NOT_PRESENT"
                       ? Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -348,6 +389,50 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value, {bool isStatus = false, Color? statusColor}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: MyntWebTextStyles.para(context,
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary),
+          ),
+        ),
+        Text(
+          ':  ',
+          style: MyntWebTextStyles.para(context,
+              darkColor: MyntColors.textSecondaryDark,
+              lightColor: MyntColors.textSecondary),
+        ),
+        if (isStatus)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: (statusColor ?? MyntColors.profit).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              value,
+              style: MyntWebTextStyles.para(context,
+                  color: statusColor ?? MyntColors.profit,
+                  fontWeight: MyntFonts.medium),
+            ),
+          )
+        else
+          Text(
+            value,
+            style: MyntWebTextStyles.para(context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary),
+          ),
+      ],
     );
   }
 }

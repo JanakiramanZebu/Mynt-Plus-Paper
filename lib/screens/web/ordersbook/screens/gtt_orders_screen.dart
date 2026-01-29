@@ -203,8 +203,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           final availableWidth = constraints.maxWidth;
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
+          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 7; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -213,35 +214,35 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               .fold<double>(0.0, (sum, width) => sum + width);
 
           // Step 3: If there's extra space, distribute it proportionally
+          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
 
-            const instrumentGrowthFactor =
-                2.0; // Instrument can grow 2x more than numeric
+            const instrumentGrowthFactor = 2.0; // Instrument can grow 2x more than numeric
             const textGrowthFactor = 1.2;
             const numericGrowthFactor = 1.0;
 
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
 
-            for (int i = 0; i < 8; i++) {
-              if (i == 0) {
+            for (int i = 0; i < 7; i++) {
+              if (i == 1) {
                 // Instrument
                 growthFactors[i] = instrumentGrowthFactor;
                 totalGrowthFactor += instrumentGrowthFactor;
-              } else if (i == 1 || i == 2 || i == 3 || i == 7) {
-                // Product, Type, Side, Status
+              } else if (i == 0 || i == 2 || i == 6) {
+                // Created on, Type, Status
                 growthFactors[i] = textGrowthFactor;
                 totalGrowthFactor += textGrowthFactor;
               } else {
-                // Qty, LTP, Trigger
+                // Trigger, LTP, Quantity
                 growthFactors[i] = numericGrowthFactor;
                 totalGrowthFactor += numericGrowthFactor;
               }
             }
 
             if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 8; i++) {
+              for (int i = 0; i < 7; i++) {
                 if (growthFactors[i]! > 0) {
                   final extraForThisColumn =
                       (extraSpace * growthFactors[i]!) / totalGrowthFactor;
@@ -258,7 +259,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           Widget buildTableContent() {
             return Column(
               children: [
-                // Fixed Header
+                // Fixed Header - 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
                 shadcn.Table(
                   columnWidths: {
                     0: shadcn.FixedTableSize(columnWidths[0]!),
@@ -268,25 +269,23 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                     4: shadcn.FixedTableSize(columnWidths[4]!),
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
-                    7: shadcn.FixedTableSize(columnWidths[7]!),
                   },
                   defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
-                        buildHeaderCell('Instrument', 0),
-                        buildHeaderCell('Product', 1),
+                        buildHeaderCell('Created on', 0),
+                        buildHeaderCell('Instrument', 1),
                         buildHeaderCell('Type', 2),
-                        buildHeaderCell('Side', 3),
-                        buildHeaderCell('Qty', 4, true),
-                        buildHeaderCell('LTP', 5, true),
-                        buildHeaderCell('Trigger', 6, true),
-                        buildHeaderCell('Status', 7),
+                        buildHeaderCell('Trigger', 3, true),
+                        buildHeaderCell('LTP', 4, true),
+                        buildHeaderCell('Quantity', 5, true),
+                        buildHeaderCell('Status', 6,true),
                       ],
                     ),
                   ],
                 ),
-                // Scrollable Body
+                // Scrollable Body - 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
                 Expanded(
                   child: RawScrollbar(
                     controller: _verticalScrollController,
@@ -315,7 +314,6 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           4: shadcn.FixedTableSize(columnWidths[4]!),
                           5: shadcn.FixedTableSize(columnWidths[5]!),
                           6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: sortedOrders.asMap().entries.map((entry) {
@@ -324,9 +322,20 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
                           return shadcn.TableRow(
                             cells: [
+                              // Created on (date)
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 0,
+                                onTap: () => _showGttOrderDetail(gttOrder),
+                                child: Text(
+                                  _formatCreatedDate(gttOrder),
+                                  style: _getTextStyle(context),
+                                ),
+                              ),
+                              // Instrument
+                              buildCellWithHover(
+                                rowIndex: index,
+                                columnIndex: 1,
                                 onTap: () => _showGttOrderDetail(gttOrder),
                                 child: ValueListenableBuilder<int?>(
                                   valueListenable: _hoveredRowIndex,
@@ -337,51 +346,33 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                   },
                                 ),
                               ),
-                              // Product
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 1,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  gttOrder.placeOrderParams?.sPrdtAli ??
-                                      gttOrder.prd ??
-                                      '',
-                                  style: _getTextStyle(context),
-                                ),
-                              ),
-                              // Type (Price Type)
+                              // Type (SINGLE/OCO + BUY/SELL badges)
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 2,
                                 onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  gttOrder.prctyp ?? '',
-                                  style: _getTextStyle(context),
-                                ),
+                                child: _buildTypeCell(gttOrder),
                               ),
-                              // Side
+                              // Trigger (with percentage)
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 3,
+                                alignRight: true,
                                 onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  gttOrder.trantype == "B" ? "BUY" : "SELL",
-                                  style: _getTextStyle(
-                                    context,
-                                    color: gttOrder.trantype == "B"
-                                        ? resolveThemeColor(context,
-                                            dark: MyntColors.profitDark,
-                                            light: MyntColors.profit)
-                                        : resolveThemeColor(context,
-                                            dark: MyntColors.lossDark,
-                                            light: MyntColors.loss),
-                                  ),
-                                ),
+                                child: _buildTriggerCell(gttOrder),
                               ),
-                              // Qty
+                              // LTP
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 4,
+                                alignRight: true,
+                                onTap: () => _showGttOrderDetail(gttOrder),
+                                child: _buildLTPCell(gttOrder, theme),
+                              ),
+                              // Quantity
+                              buildCellWithHover(
+                                rowIndex: index,
+                                columnIndex: 5,
                                 alignRight: true,
                                 onTap: () => _showGttOrderDetail(gttOrder),
                                 child: Text(
@@ -389,29 +380,11 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                                   style: _getTextStyle(context),
                                 ),
                               ),
-                              // LTP
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 5,
-                                alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildLTPCell(gttOrder, theme),
-                              ),
-                              // Trigger
+                              // Status
                               buildCellWithHover(
                                 rowIndex: index,
                                 columnIndex: 6,
                                 alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  gttOrder.d ?? '0.00',
-                                  style: _getTextStyle(context),
-                                ),
-                              ),
-                              // Status
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 7,
                                 onTap: () => _showGttOrderDetail(gttOrder),
                                 child: _buildStatusCell(gttOrder, theme),
                               ),
@@ -458,6 +431,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Builds a cell with hover detection
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
@@ -465,16 +439,21 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     bool alignRight = false,
     VoidCallback? onTap,
   }) {
-    final isFirstColumn = columnIndex == 0; // Instrument column
-    final isLastColumn =
-        columnIndex == 7; // Status column (updated for 8 columns)
+    final isFirstColumn = columnIndex == 0; // Created on column
+    final isInstrumentColumn = columnIndex == 1; // Instrument column
+    final isLastColumn = columnIndex == 6; // Status column (7 columns, index 6)
 
     // Match the cell padding logic
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+      // First column - more left padding
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8);
+    } else if (isInstrumentColumn) {
+      // Instrument column - symmetric padding
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+      // Last column - more right padding
+      cellPadding = const EdgeInsets.fromLTRB(8, 8, 16, 8);
     } else {
       cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
@@ -524,24 +503,23 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Builds a sortable header cell
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
-    final isFirstColumn = columnIndex == 0; // Instrument column
-    final isLastColumn =
-        columnIndex == 7; // Status column (updated for 8 columns)
+    final isFirstColumn = columnIndex == 0; // Created on column
+    final isLastColumn = columnIndex == 6; // Status column (7 columns, index 6)
 
-    // Match the cell padding logic - Instrument column has more left, minimal right
-    // Last column mirrors this - minimal left, more right
+    // Match the cell padding logic
     EdgeInsets headerPadding;
     if (isFirstColumn) {
-      // Instrument column - more left, minimal right
-      headerPadding = const EdgeInsets.fromLTRB(16, 6, 4, 6);
+      // First column - more left padding
+      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
     } else if (isLastColumn) {
-      // Last column - minimal left, more right
-      headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
+      // Last column - more right padding
+      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
     } else {
       // Other columns - symmetric padding
-      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+      headerPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 6);
     }
 
     return shadcn.TableCell(
@@ -603,6 +581,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Calculate minimum column widths dynamically
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
   Map<int, double> _calculateMinWidths(
       List<GttOrderBookModel> gttOrders, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
@@ -611,13 +590,12 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     const sortIconWidth = 24.0;
 
     final headers = [
+      'Created on',
       'Instrument',
-      'Product',
       'Type',
-      'Side',
-      'Qty',
-      'LTP',
       'Trigger',
+      'LTP',
+      'Quantity',
       'Status',
     ];
     final minWidths = <int, double>{};
@@ -630,7 +608,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       for (final order in gttOrders.take(5)) {
         String cellText = '';
         switch (col) {
-          case 0:
+          case 0: // Created on
+            cellText = _formatCreatedDate(order);
+            break;
+          case 1: // Instrument
             final symbol = (order.tsym ?? '').replaceAll("-EQ", "").trim();
             final exchange = order.exch ?? '';
             final exchangeText = exchange.isNotEmpty ? ' $exchange' : '';
@@ -647,25 +628,19 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               maxWidth = totalWidth;
             }
             continue;
-          case 1:
-            cellText = order.placeOrderParams?.sPrdtAli ?? order.prd ?? '';
+          case 2: // Type (SINGLE / BUY or OCO / SELL format)
+            cellText = 'SINGLE / SELL'; // Approximate width
             break;
-          case 2:
-            cellText = order.prctyp ?? '';
+          case 3: // Trigger (with percentage)
+            cellText = '${order.d ?? '0.00'} 100%';
             break;
-          case 3:
-            cellText = order.trantype == "B" ? "BUY" : "SELL";
-            break;
-          case 4:
-            cellText = (order.qty ?? 0).toString();
-            break;
-          case 5:
+          case 4: // LTP
             cellText = CellFormatters.getValidLTPForGtt(order);
             break;
-          case 6:
-            cellText = order.d ?? '0.00';
+          case 5: // Quantity
+            cellText = (order.qty ?? 0).toString();
             break;
-          case 7:
+          case 6: // Status
             cellText = CellFormatters.getGttStatusText(
                 order.gttOrderCurrentStatus?.toUpperCase() ?? '');
             break;
@@ -677,11 +652,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         }
       }
 
-      // For instrument column, ensure minimum width to prevent excessive truncation
+      // Ensure minimum widths for specific columns
       if (headers[col] == 'Instrument') {
         const minInstrumentWidth = 150.0;
-        maxWidth =
-            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+        maxWidth = maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
       }
 
       minWidths[col] = maxWidth + padding;
@@ -700,6 +674,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     return textPainter.width;
   }
 
+  // Sort GTT orders based on 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
   List<GttOrderBookModel> _getSortedGttOrders(List<GttOrderBookModel> orders) {
     if (_sortColumnIndex == null) return orders;
 
@@ -708,7 +683,11 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       int comparison = 0;
 
       switch (_sortColumnIndex!) {
-        case 0: // Instrument - compare symbol first, then exchange
+        case 0: // Created on - compare dates
+          comparison = (a.ordDate ?? a.norentm ?? '')
+              .compareTo(b.ordDate ?? b.norentm ?? '');
+          break;
+        case 1: // Instrument - compare symbol first, then exchange
           final aSymbol = (a.tsym ?? '').replaceAll("-EQ", "").trim();
           final bSymbol = (b.tsym ?? '').replaceAll("-EQ", "").trim();
           comparison = aSymbol.compareTo(bSymbol);
@@ -716,30 +695,28 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             comparison = (a.exch ?? '').compareTo(b.exch ?? '');
           }
           break;
-        case 1: // Product
-          comparison = (a.placeOrderParams?.sPrdtAli ?? a.prd ?? '')
-              .compareTo(b.placeOrderParams?.sPrdtAli ?? b.prd ?? '');
+        case 2: // Type - compare order type (SINGLE/OCO) then side (BUY/SELL)
+          final aIsOco = a.placeOrderParamsLeg2 != null;
+          final bIsOco = b.placeOrderParamsLeg2 != null;
+          comparison = aIsOco.toString().compareTo(bIsOco.toString());
+          if (comparison == 0) {
+            comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
+          }
           break;
-        case 2: // Type (Price type)
-          comparison = (a.prctyp ?? '').compareTo(b.prctyp ?? '');
-          break;
-        case 3: // Side
-          comparison = (a.trantype ?? '').compareTo(b.trantype ?? '');
-          break;
-        case 4: // Qty - numeric comparison
-          comparison = (a.qty ?? 0).compareTo(b.qty ?? 0);
-          break;
-        case 5: // LTP - numeric comparison
-          final aLtp = double.tryParse(a.ltp ?? '0') ?? 0.0;
-          final bLtp = double.tryParse(b.ltp ?? '0') ?? 0.0;
-          comparison = aLtp.compareTo(bLtp);
-          break;
-        case 6: // Trigger - numeric comparison
+        case 3: // Trigger - numeric comparison
           final aTrigger = double.tryParse(a.d ?? '0') ?? 0.0;
           final bTrigger = double.tryParse(b.d ?? '0') ?? 0.0;
           comparison = aTrigger.compareTo(bTrigger);
           break;
-        case 7: // Status
+        case 4: // LTP - numeric comparison
+          final aLtp = double.tryParse(a.ltp ?? '0') ?? 0.0;
+          final bLtp = double.tryParse(b.ltp ?? '0') ?? 0.0;
+          comparison = aLtp.compareTo(bLtp);
+          break;
+        case 5: // Quantity - numeric comparison
+          comparison = (a.qty ?? 0).compareTo(b.qty ?? 0);
+          break;
+        case 6: // Status
           comparison = (a.gttOrderCurrentStatus ?? '')
               .compareTo(b.gttOrderCurrentStatus ?? '');
           break;
@@ -947,6 +924,128 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     );
   }
 
+  // Format created date from norentm or ordDate - returns date only (YYYY-MM-DD)
+  String _formatCreatedDate(GttOrderBookModel gttOrder) {
+    // Try norentm first (format: "YYYY-MM-DDTHH:mm:ss" or "HH:mm:ss dd-MM-yyyy")
+    if (gttOrder.norentm != null && gttOrder.norentm!.isNotEmpty) {
+      try {
+        final norentm = gttOrder.norentm!;
+
+        // Handle "YYYY-MM-DDTHH:mm:ss" format (ISO format with T separator)
+        if (norentm.contains('T')) {
+          return norentm.split('T')[0]; // Returns "YYYY-MM-DD"
+        }
+
+        // Handle "HH:mm:ss dd-MM-yyyy" format
+        if (norentm.contains(' ')) {
+          final parts = norentm.split(' ');
+          if (parts.length >= 2) {
+            // Convert "dd-MM-yyyy" to "yyyy-MM-dd"
+            final dateParts = parts[1].split('-');
+            if (dateParts.length == 3) {
+              return '${dateParts[2]}-${dateParts[1]}-${dateParts[0]}';
+            }
+            return parts[1];
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+
+    // Fallback to ordDate
+    if (gttOrder.ordDate != null && gttOrder.ordDate!.isNotEmpty) {
+      final ordDate = gttOrder.ordDate!;
+      // Handle if ordDate also has time component
+      if (ordDate.contains('T')) {
+        return ordDate.split('T')[0];
+      }
+      return ordDate;
+    }
+
+    return 'N/A';
+  }
+
+  // Build Type cell with "SINGLE / BUY" or "OCO / SELL" format
+  Widget _buildTypeCell(GttOrderBookModel gttOrder) {
+    // Determine if SINGLE or OCO based on placeOrderParamsLeg2
+    final isOco = gttOrder.placeOrderParamsLeg2 != null;
+    final orderType = isOco ? 'OCO' : 'SINGLE';
+    final isBuy = gttOrder.trantype == 'B';
+    final sideText = isBuy ? 'BUY' : 'SELL';
+
+    // Get side color - green for BUY, red for SELL
+    final sideColor = isBuy
+        ? resolveThemeColor(context,
+            dark: MyntColors.profitDark, light: MyntColors.profit)
+        : resolveThemeColor(context,
+            dark: MyntColors.lossDark, light: MyntColors.loss);
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          // Order type (SINGLE/OCO) - normal text color
+          TextSpan(
+            text: orderType,
+            style: _getTextStyle(context),
+          ),
+          // Separator
+          TextSpan(
+            text: ' / ',
+            style: _getTextStyle(context),
+          ),
+          // Side (BUY/SELL) - colored
+          TextSpan(
+            text: sideText,
+            style: _getTextStyle(context, color: sideColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build Trigger cell with value and percentage
+  Widget _buildTriggerCell(GttOrderBookModel gttOrder) {
+    final triggerValue = gttOrder.d ?? '0.00';
+
+    // Calculate percentage from LTP if available
+    String percentageText = '';
+    try {
+      final trigger = double.tryParse(triggerValue) ?? 0.0;
+      final ltp = double.tryParse(gttOrder.ltp ?? '0') ?? 0.0;
+
+      if (ltp > 0 && trigger > 0) {
+        final percentage = ((trigger - ltp) / ltp * 100).abs();
+        percentageText = '${percentage.toStringAsFixed(0)}%';
+      }
+    } catch (e) {
+      // Ignore calculation errors
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Text(
+          triggerValue,
+          style: _getTextStyle(context),
+        ),
+        if (percentageText.isNotEmpty) ...[
+          const SizedBox(width: 6),
+          Text(
+            percentageText,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              darkColor: MyntColors.textSecondaryDark,
+              lightColor: MyntColors.textSecondary,
+              fontWeight: MyntFonts.medium,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   void _showGttOrderDetail(GttOrderBookModel gttOrder) {
     // Responsive width calculation
     shadcn.openSheet(
@@ -998,9 +1097,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       // Refresh GTT order book after successful cancel
       await ref.read(orderProvider).fetchGTTOrderBook(context, "");
 
-      if (mounted) {
-        ResponsiveSnackBar.showSuccess(context, 'GTT Order Cancelled');
-      }
+      // Note: Success snackbar is already shown by cancelGttOrder in provider
     } catch (e) {
       if (mounted) {
         ResponsiveSnackBar.showError(

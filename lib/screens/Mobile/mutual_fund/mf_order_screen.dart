@@ -818,8 +818,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             ),
             child: SizedBox(
               width: MediaQuery.of(context).size.width >= 1100
-                  ? MediaQuery.of(context).size.width * 0.25
-                  : MediaQuery.of(context).size.width * 0.90,
+                  ? MediaQuery.of(context).size.width * 0.30
+                  : MediaQuery.of(context).size.width >= 800
+                      ? MediaQuery.of(context).size.width * 0.50
+                      : MediaQuery.of(context).size.width * 0.90,
               child: MfOrderBottomsheet(
                 data: widget.mfData,
                 condval: 'reinit',
@@ -881,8 +883,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             child: SizedBox(
               width: MediaQuery.of(context).size.width >= 1100
-                  ? MediaQuery.of(context).size.width * 0.25
-                  : 400,
+                  ? MediaQuery.of(context).size.width * 0.30
+                  : MediaQuery.of(context).size.width >= 800
+                      ? MediaQuery.of(context).size.width * 0.50
+                      : 420,
               child: MfPaymentRespAlert(
                 upiData: mfOrder.xsipOrderResponces?.toJson(),
                 conditionval: '',

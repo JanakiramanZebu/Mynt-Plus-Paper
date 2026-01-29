@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/screens/web/ordersbook/mf/redeem_bottom_sheet_web.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
@@ -19,7 +20,8 @@ class MfHoldNewScreen extends ConsumerStatefulWidget {
 }
 
 class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
-  // int? _hoveredRowIndex;
+  // int? _hoveredRowIndex; // Commented out in original, now enabling it
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   int? _sortColumnIndex;
   bool _sortAscending = true;
 
@@ -65,6 +67,47 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     );
   }
 
+  // Helper method to get theme-aware colors for positive/negative/neutral values
+  Color _getCellColor(
+      double value, BuildContext context, ThemesProvider theme) {
+    if (value > 0) {
+      return theme.isDarkMode ? MyntColors.profitDark : MyntColors.profit;
+    }
+    if (value < 0) {
+      return theme.isDarkMode ? MyntColors.lossDark : MyntColors.loss;
+    }
+    return theme.isDarkMode
+        ? MyntColors.textSecondaryDark
+        : MyntColors.textSecondary;
+  }
+
+  // Helper method to build colored text for P&L values with percentage (stacked)
+  Widget _buildPnLWithPercentage(
+      String pnlValue, String percentValue, ThemesProvider theme) {
+    final numValue = double.tryParse(pnlValue) ?? 0.0;
+    final color = _getCellColor(numValue, context, theme);
+    final baseStyle = _getTextStyle(context, color: color);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(pnlValue, textAlign: TextAlign.end, style: baseStyle),
+        Text(
+          '$percentValue%',
+          textAlign: TextAlign.end,
+          style: baseStyle.copyWith(
+            fontSize: 10,
+            color: theme.isDarkMode
+                ? MyntColors.textPrimaryDark
+                : MyntColors.textPrimary,
+            fontWeight: MyntFonts.medium,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -97,16 +140,6 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    // Current Value Card
-                    Expanded(
-                      child: _buildSummaryCard(
-                        context,
-                        "Current Value",
-                        mfData.mfholdingnew?.summary?.currentValue ?? "0.00",
-                        theme,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
                     // Invested Card
                     Expanded(
                       child: _buildSummaryCard(
@@ -117,17 +150,31 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
+                    // Current Value Card
+                    Expanded(
+                      child: _buildSummaryCard(
+                        context,
+                        "Current Value",
+                        mfData.mfholdingnew?.summary?.currentValue ?? "0.00",
+                        theme,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     // Profit/Loss Card
                     Expanded(
                       child: _buildSummaryCard(
                         context,
                         "Profit/Loss",
-                        "${_formatValue(mfData.mfholdingnew?.summary?.absReturnValue)} (${_formatValue(mfData.mfholdingnew?.summary?.absReturnPercent?.toString())}%)",
+                        _formatValue(
+                            mfData.mfholdingnew?.summary?.absReturnValue),
                         theme,
                         valueColor: _getColorBasedOnValue(
                           mfData.mfholdingnew?.summary?.absReturnValue,
                           theme,
                         ),
+                        percentage: _formatValue(mfData
+                            .mfholdingnew?.summary?.absReturnPercent
+                            ?.toString()),
                       ),
                     ),
                   ],
@@ -155,6 +202,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     String value,
     ThemesProvider theme, {
     Color? valueColor,
+    String? percentage,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -162,34 +210,52 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
         color: theme.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.isDarkMode
-              ? colors.darkColorDivider
-              : colors.colorDivider,
+          color:
+              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          TextWidget.paraText(
-            text: title,
-            color: theme.isDarkMode
-                ? colors.textSecondaryDark
-                : colors.textSecondaryLight,
-            theme: theme.isDarkMode,
-            fw: 0,
+          Text(
+            title,
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: theme.isDarkMode
+                  ? MyntColors.textPrimaryDark
+                  : MyntColors.textPrimary,
+              fontWeight: MyntFonts.medium,
+            ),
           ),
-          const SizedBox(height: 8),
-          TextWidget.titleText(
-            text: value,
-            color: valueColor ??
-                (theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight),
-            theme: theme.isDarkMode,
-            fw: 1,
-            maxLines: 1,
-            textOverflow: TextOverflow.ellipsis,
+          const SizedBox(height: 1),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  value,
+                  style: MyntWebTextStyles.head(
+                    context,
+                    color: valueColor,
+                    fontWeight: MyntFonts.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (percentage != null) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '($percentage%)',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    color: valueColor,
+                    fontWeight: MyntFonts.medium,
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -204,7 +270,8 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     List items,
   ) {
     // Sort items if sort is active
-    final sortedItems = _sortColumnIndex != null ? _getSortedItems(items) : items;
+    final sortedItems =
+        _sortColumnIndex != null ? _getSortedItems(items) : items;
 
     return shadcn.OutlinedContainer(
       backgroundColor: Colors.transparent,
@@ -218,7 +285,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
 
           // Step 1: Start with minimum widths
           final columnWidths = <int, double>{};
-          for (int i = 0; i < 8; i++) {
+          for (int i = 0; i < 7; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
           }
 
@@ -237,9 +304,9 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
             final growthFactors = <int, double>{};
             double totalGrowthFactor = 0.0;
 
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < 7; i++) {
               if (i == 0) {
-                // Instrument column
+                // Fund Name column
                 growthFactors[i] = instrumentGrowthFactor;
                 totalGrowthFactor += instrumentGrowthFactor;
               } else {
@@ -251,7 +318,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
 
             // Distribute extra space proportionally
             if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 8; i++) {
+              for (int i = 0; i < 7; i++) {
                 if (growthFactors[i]! > 0) {
                   final extraForThisColumn =
                       (extraSpace * growthFactors[i]!) / totalGrowthFactor;
@@ -282,30 +349,29 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                     4: shadcn.FixedTableSize(columnWidths[4]!),
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
-                    7: shadcn.FixedTableSize(columnWidths[7]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
-                        buildHeaderCell('Instrument', 0),
-                        buildHeaderCell('Qty', 1, true),
+                        buildHeaderCell('Fund Name', 0),
+                        buildHeaderCell('Units', 1, true),
                         buildHeaderCell('Avg NAV', 2, true),
-                        buildHeaderCell('NAV', 3, true),
+                        buildHeaderCell('Current NAV', 3, true),
                         buildHeaderCell('Invested', 4, true),
                         buildHeaderCell('Current Value', 5, true),
-                        buildHeaderCell('Overall P&L', 6, true),
-                        buildHeaderCell('Overall %', 7, true),
+                        buildHeaderCell('P&L', 6, true),
                       ],
                     ),
                   ],
                 ),
 
-                // Scrollable Body
+                // Scrollable Body (List of Rows with Hover Overlay)
                 Expanded(
                   child: sortedItems.isEmpty
                       ? LayoutBuilder(
-                          builder: (context, constraints) => SingleChildScrollView(
+                          builder: (context, constraints) =>
+                              SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: ConstrainedBox(
                               constraints: BoxConstraints(
@@ -317,7 +383,8 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                                           mfData.mfholdingnew!.data!.isNotEmpty)
                                       ? "No results found"
                                       : "There's nothing here yet.",
-                                  subtitle: (mfData.mfholdingnew?.data != null &&
+                                  subtitle: (mfData.mfholdingnew?.data !=
+                                              null &&
                                           mfData.mfholdingnew!.data!.isNotEmpty)
                                       ? "Try adjusting your search"
                                       : "Buy some funds to see them here.",
@@ -337,144 +404,316 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
-                          child: SingleChildScrollView(
+                          child: ListView.builder(
                             controller: _verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(70),
-                        rows: [
-                          // Data Rows
-                          ...sortedItems.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final item = entry.value;
+                            itemCount: sortedItems.length,
+                            itemBuilder: (context, index) {
+                              final item = sortedItems[index];
+                              return MouseRegion(
+                                onEnter: (_) => _hoveredRowIndex.value = index,
+                                onExit: (_) => _hoveredRowIndex.value = null,
+                                child: ValueListenableBuilder<int?>(
+                                  valueListenable: _hoveredRowIndex,
+                                  builder: (context, hoveredIndex, child) {
+                                    final isHovered = hoveredIndex == index;
+                                    return Container(
+                                      color: isHovered
+                                          ? MyntColors.primary
+                                              .withValues(alpha: 0.08)
+                                          : Colors.transparent,
+                                      child: shadcn.Table(
+                                        key: ValueKey('table_row_$index'),
+                                        columnWidths: {
+                                          0: shadcn.FixedTableSize(
+                                              columnWidths[0]!),
+                                          1: shadcn.FixedTableSize(
+                                              columnWidths[1]!),
+                                          2: shadcn.FixedTableSize(
+                                              columnWidths[2]!),
+                                          3: shadcn.FixedTableSize(
+                                              columnWidths[3]!),
+                                          4: shadcn.FixedTableSize(
+                                              columnWidths[4]!),
+                                          5: shadcn.FixedTableSize(
+                                              columnWidths[5]!),
+                                          6: shadcn.FixedTableSize(
+                                              columnWidths[6]!),
+                                        },
+                                        defaultRowHeight:
+                                            const shadcn.FixedTableSize(50),
+                                        rows: [
+                                          shadcn.TableRow(
+                                            cells: [
+                                              // Instrument with action button on hover
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 0,
+                                                child: ValueListenableBuilder<
+                                                    int?>(
+                                                  valueListenable:
+                                                      _hoveredRowIndex,
+                                                  builder: (context,
+                                                      hoveredIndex, _) {
+                                                    final isRowHovered =
+                                                        hoveredIndex == index;
+                                                    final avgQty =
+                                                        double.tryParse(
+                                                                item.avgQty ??
+                                                                    '0') ??
+                                                            0.0;
 
-                            return shadcn.TableRow(
-                              cells: [
-                                // Instrument
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 0,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    item.name ?? "Unknown Fund",
-                                    style: _getTextStyle(context),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                  ),
-                                ),
-                                // Qty
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 1,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.avgQty ?? '0') ?? 0.0)
-                                        .toStringAsFixed(4),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // Avg NAV
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 2,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.avgNav ?? '0') ?? 0.0)
-                                        .toStringAsFixed(4),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // NAV
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 3,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.curNav ?? '0') ?? 0.0)
-                                        .toStringAsFixed(4),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // Invested
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 4,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.investedValue ?? '0') ?? 0.0)
-                                        .toStringAsFixed(2),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // Current Value
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 5,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.currentValue ?? '0') ?? 0.0)
-                                        .toStringAsFixed(2),
-                                    style: _getTextStyle(context),
-                                  ),
-                                ),
-                                // Overall P&L
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 6,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    (double.tryParse(item.profitLoss ?? '0') ?? 0.0)
-                                        .toStringAsFixed(2),
-                                    style: _getTextStyle(
-                                      context,
-                                      color: _getColorBasedOnValue(
-                                        item.profitLoss?.toString(),
-                                        theme,
+                                                    return GestureDetector(
+                                                      onTap: () =>
+                                                          _showHoldingDetail(
+                                                              mfData, item),
+                                                      behavior: HitTestBehavior
+                                                          .opaque,
+                                                      child: SizedBox(
+                                                        width: double.infinity,
+                                                        height: double.infinity,
+                                                        child: Stack(
+                                                          clipBehavior:
+                                                              Clip.hardEdge,
+                                                          children: [
+                                                            // Fund name - full width, can be partially covered by buttons
+                                                            Align(
+                                                              alignment: Alignment
+                                                                  .centerLeft,
+                                                              child: Tooltip(
+                                                                message: item
+                                                                        .name ??
+                                                                    'Unknown Fund',
+                                                                child: Padding(
+                                                                  padding:
+                                                                      EdgeInsets
+                                                                          .only(
+                                                                    right: isRowHovered
+                                                                        ? 8.0
+                                                                        : 0.0,
+                                                                  ),
+                                                                  child: Text(
+                                                                    item.name ??
+                                                                        "Unknown Fund",
+                                                                    overflow: isRowHovered
+                                                                        ? TextOverflow
+                                                                            .ellipsis
+                                                                        : TextOverflow
+                                                                            .visible,
+                                                                    maxLines: 1,
+                                                                    softWrap:
+                                                                        false,
+                                                                    style: _getTextStyle(
+                                                                        context),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            // Action button - overlay on the right side
+                                                             if (avgQty > 0)
+                                                Visibility(
+                                                  visible: isRowHovered,
+                                                  maintainSize: false,
+                                                  maintainAnimation: false,
+                                                  maintainState: false,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child:
+                                                        HoverActionsContainer(
+                                                      isVisible: isRowHovered,
+                                                      actions: [
+                                                        HoverActionButton
+                                                            .redeem(
+                                                          context: context,
+                                                          borderRadius: 5.0,
+                                                          height: 60.0,
+                                                          onPressed: () =>
+                                                              _handleRedeem(
+                                                                  mfData,item),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                              // Qty
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 1,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      (double.tryParse(
+                                                                  item.avgQty ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(4),
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Avg NAV
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 2,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      (double.tryParse(
+                                                                  item.avgNav ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(4),
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // NAV
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 3,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      (double.tryParse(
+                                                                  item.curNav ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(4),
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Invested
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 4,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      (double.tryParse(
+                                                                  item.investedValue ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(2),
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // Current Value
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 5,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: Text(
+                                                      (double.tryParse(
+                                                                  item.currentValue ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(2),
+                                                      style: _getTextStyle(
+                                                          context),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              // P&L with percentage
+                                              buildCellWithHover(
+                                                rowIndex: index,
+                                                columnIndex: 6,
+                                                alignRight: true,
+                                                child: GestureDetector(
+                                                  onTap: () =>
+                                                      _showHoldingDetail(
+                                                          mfData, item),
+                                                  behavior:
+                                                      HitTestBehavior.opaque,
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerRight,
+                                                    child: _buildPnLWithPercentage(
+                                                      (double.tryParse(
+                                                                  item.profitLoss ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(2),
+                                                      (double.tryParse(
+                                                                  item.changeprofitLoss
+                                                                      ?.toString() ??
+                                                                      '0') ??
+                                                              0.0)
+                                                          .toStringAsFixed(2),
+                                                      theme,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 ),
-                                // Overall %
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 7,
-                                  alignRight: true,
-                                  onTap: () => _showHoldingDetail(mfData, item),
-                                  child: Text(
-                                    "${(double.tryParse(item.changeprofitLoss?.toString() ?? '0') ?? 0.0).toStringAsFixed(2)}%",
-                                    style: _getTextStyle(
-                                      context,
-                                      color: _getColorBasedOnValue(
-                                        item.changeprofitLoss?.toString(),
-                                        theme,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ),
+                              );
+                            },
+                          ),
+                        ),
                 ),
               ],
             );
@@ -517,15 +756,15 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     VoidCallback? onTap,
   }) {
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 7;
+    final isLastColumn = columnIndex == 6;
 
     EdgeInsets cellPadding;
     if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 12, 12, 12);
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
     } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(12, 12, 16, 12);
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
     } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 12);
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
     }
 
     return shadcn.TableCell(
@@ -560,7 +799,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 7;
+    final isLastColumn = columnIndex == 6;
 
     EdgeInsets headerPadding;
     if (isFirstColumn) {
@@ -636,47 +875,57 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     const sortIconWidth = 24.0;
 
     final headers = [
-      'Instrument',
-      'Qty',
+      'Fund Name',
+      'Units',
       'Avg NAV',
-      'NAV',
+      'Current NAV',
       'Invested',
       'Current Value',
-      'Overall P&L',
-      'Overall %',
+      'P&L',
     ];
 
     final minWidths = <int, double>{};
 
     for (int col = 0; col < headers.length; col++) {
-      double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
+      double maxWidth =
+          _measureTextWidth(headers[col], textStyle) + sortIconWidth;
 
       for (final item in items.take(5)) {
         String cellText = '';
         switch (col) {
           case 0:
-            cellText = item.name ?? 'Unknown Fund';
+            cellText = item.name ?? 'N/A';
             break;
           case 1:
-            cellText = (double.tryParse(item.avgQty ?? '0') ?? 0.0).toStringAsFixed(4);
+            cellText =
+                (double.tryParse(item.avgQty ?? '0') ?? 0.0).toStringAsFixed(4);
             break;
           case 2:
-            cellText = (double.tryParse(item.avgNav ?? '0') ?? 0.0).toStringAsFixed(4);
+            cellText =
+                (double.tryParse(item.avgNav ?? '0') ?? 0.0).toStringAsFixed(4);
             break;
           case 3:
-            cellText = (double.tryParse(item.curNav ?? '0') ?? 0.0).toStringAsFixed(4);
+            cellText =
+                (double.tryParse(item.curNav ?? '0') ?? 0.0).toStringAsFixed(4);
             break;
           case 4:
-            cellText = (double.tryParse(item.investedValue ?? '0') ?? 0.0).toStringAsFixed(2);
+            cellText = (double.tryParse(item.investedValue ?? '0') ?? 0.0)
+                .toStringAsFixed(2);
             break;
           case 5:
-            cellText = (double.tryParse(item.currentValue ?? '0') ?? 0.0).toStringAsFixed(2);
+            cellText = (double.tryParse(item.currentValue ?? '0') ?? 0.0)
+                .toStringAsFixed(2);
             break;
           case 6:
-            cellText = (double.tryParse(item.profitLoss ?? '0') ?? 0.0).toStringAsFixed(2);
-            break;
-          case 7:
-            cellText = "${(double.tryParse(item.changeprofitLoss?.toString() ?? '0') ?? 0.0).toStringAsFixed(2)}%";
+            // P&L (with percentage - measure longest)
+            final pnl = (double.tryParse(item.profitLoss ?? '0') ?? 0.0)
+                .toStringAsFixed(2);
+            final pct = (double.tryParse(item.changeprofitLoss?.toString() ?? '0') ?? 0.0)
+                .toStringAsFixed(2);
+            final pnlWidth = _measureTextWidth(pnl, textStyle);
+            final pctWidth =
+                _measureTextWidth('$pct%', textStyle.copyWith(fontSize: 10));
+            cellText = pnlWidth > pctWidth ? pnl : '$pct%';
             break;
         }
 
@@ -684,6 +933,12 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
         if (cellWidth > maxWidth) {
           maxWidth = cellWidth;
         }
+      }
+
+      // For Fund Name column, ensure minimum width to prevent excessive truncation
+      if (headers[col] == 'Fund Name') {
+        const minFundNameWidth = 150.0;
+        maxWidth = maxWidth < minFundNameWidth ? minFundNameWidth : maxWidth;
       }
 
       minWidths[col] = maxWidth + padding;
@@ -710,10 +965,10 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
       int comparison = 0;
 
       switch (_sortColumnIndex!) {
-        case 0: // Instrument
+        case 0: // Fund Name
           comparison = (a.name ?? '').compareTo(b.name ?? '');
           break;
-        case 1: // Qty
+        case 1: // Units
           comparison = (double.tryParse(a.avgQty ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.avgQty ?? '0') ?? 0.0);
           break;
@@ -721,7 +976,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
           comparison = (double.tryParse(a.avgNav ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.avgNav ?? '0') ?? 0.0);
           break;
-        case 3: // NAV
+        case 3: // Current NAV
           comparison = (double.tryParse(a.curNav ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.curNav ?? '0') ?? 0.0);
           break;
@@ -733,13 +988,9 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
           comparison = (double.tryParse(a.currentValue ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.currentValue ?? '0') ?? 0.0);
           break;
-        case 6: // Overall P&L
+        case 6: // P&L (sorts by P&L value, not percentage)
           comparison = (double.tryParse(a.profitLoss ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.profitLoss ?? '0') ?? 0.0);
-          break;
-        case 7: // Overall %
-          comparison = (double.tryParse(a.changeprofitLoss?.toString() ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.changeprofitLoss?.toString() ?? '0') ?? 0.0);
           break;
       }
 
@@ -749,10 +1000,26 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     return sorted;
   }
 
+  // Handler: Redeem mutual fund
+  Future<void> _handleRedeem(MFProvider mfData, dynamic holding) async {
+    // Set the holding data for redemption using the ISIN
+    mfData.fetchmfholdsingpage(holding.iSIN ?? '');
+    // Call the redeem evaluation function
+    mfData.recdemevalu();
+    // Show mobile redeem dialog
+    showDialog(
+      context: context,
+      builder: (context) => RedemptionBottomSheetWeb(
+        // holdingData: holding,
+        // theme: ref.read(themeProvider),
+      ),
+    );
+  }
+
   void _showHoldingDetail(MFProvider mfData, dynamic item) {
     if (item.iSIN != null) {
       mfData.fetchmfholdsingpage("${item.iSIN}");
-      
+
       // Show as right side panel
       showGeneralDialog(
         context: context,
@@ -772,7 +1039,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                   color: Theme.of(dialogContext).scaffoldBackgroundColor,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(-2, 0),
                     ),
@@ -783,7 +1050,8 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
             ),
           );
         },
-        transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+        transitionBuilder:
+            (dialogContext, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
               begin: const Offset(1, 0),
