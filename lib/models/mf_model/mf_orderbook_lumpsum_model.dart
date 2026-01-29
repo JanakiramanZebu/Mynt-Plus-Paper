@@ -27,7 +27,7 @@ class MFOrderBookModel {
 class Data {
   String? amount;
   String? buysell;
-   String? amcCode;
+  String? amcCode;
   String? clientcode;
   String? date;
   String? dateTime;
@@ -42,7 +42,7 @@ class Data {
   String? sipregndate;
   String? sipregnno;
   String? units;
-   String? transCode;
+  String? transCode;
   String? transNo;
   String? orderId;
   String? userId;
@@ -68,7 +68,7 @@ class Data {
 
   Data(
       {this.amount,
-       this.amcCode,
+      this.amcCode,
       this.buysell,
       this.clientcode,
       this.date,
@@ -106,50 +106,49 @@ class Data {
       this.orderType,
       this.subOrderType,
       this.buySell,
-      this.allRedeem
-      });
+      this.allRedeem});
 
   Data.fromJson(Map<String, dynamic> json) {
-    amount = json['amount'].toString();
-    buysell = json['buysell'].toString();
-    amcCode = json['amc_code'].toString();
-    clientcode = json['clientcode'].toString();
-    date = json['date'].toString();
-    dateTime = json['date_time'].toString();
-    foliono = json['foliono'].toString();
-    internalReferNo = json['internal_refer_no'].toString();
-    ordernumber = json['ordernumber'].toString();
-    orderremarks = json['orderremarks'].toString();
-    orderstatus = json['orderstatus'].toString();
-    ordertype = json['ordertype'].toString();
-    schemename = json['schemename'].toString();
-    settno = json['settno'].toString();
-    sipregndate = json['sipregndate'].toString();
-    sipregnno = json['sipregnno'].toString();
-    units = json['units'].toString();
-    transCode = json['TransCode'].toString();
-    transNo = json['TransNo'].toString();
-    orderId = json['OrderId'].toString();
-    userId = json['UserId'].toString();
-    memberCode = json['MemberCode'].toString();
-    clientCode = json['ClientCode'].toString();
-    remarks = json['Remarks'].toString();
-      status = json['status'].toString();
-    name = json['name'].toString();
-    stat = json['stat'].toString();
-    source = json['source'].toString();
-    placedBy = json['placed_by'].toString();
-    iPAddress = json['IPAddress'].toString();
-    datetime = json['datetime'].toString();
-    orderVal = json['OrderVal'].toString();
-    folioNo = json['FolioNo'].toString();
-    iSIN = json['ISIN'].toString();
-    dPFolioNo = json['DPFolioNo'].toString();
-    settType = json['SettType'].toString();
-    orderType = json['OrderType'].toString();
-    subOrderType = json['SubOrderType'].toString();
-    buySell = json['buy_sell'].toString();
-    allRedeem = json['AllRedeem'].toString();
+    amount = json['amount']?.toString();
+    buysell = json['buysell']?.toString();
+    amcCode = json['amc_code']?.toString();
+    clientcode = json['clientcode']?.toString();
+    date = json['date']?.toString();
+    dateTime = json['date_time']?.toString();
+    foliono = json['foliono']?.toString();
+    internalReferNo = json['internal_refer_no']?.toString();
+    ordernumber = json['ordernumber']?.toString();
+    orderremarks = json['orderremarks']?.toString();
+    orderstatus = json['orderstatus']?.toString();
+    ordertype = json['ordertype']?.toString();
+    schemename = json['schemename']?.toString();
+    settno = json['settno']?.toString();
+    sipregndate = json['sipregndate']?.toString();
+    sipregnno = json['sipregnno']?.toString();
+    units = json['units']?.toString();
+    transCode = json['TransCode']?.toString();
+    transNo = json['TransNo']?.toString();
+    orderId = json['OrderId']?.toString();
+    userId = json['UserId']?.toString();
+    memberCode = json['MemberCode']?.toString();
+    clientCode = json['ClientCode']?.toString();
+    remarks = json['Remarks']?.toString();
+    status = json['status']?.toString();
+    name = json['name']?.toString();
+    stat = json['stat']?.toString();
+    source = json['source']?.toString();
+    placedBy = json['placed_by']?.toString();
+    iPAddress = json['IPAddress']?.toString();
+    datetime = json['datetime']?.toString();
+    orderVal = json['OrderVal']?.toString();
+    folioNo = json['FolioNo']?.toString();
+    iSIN = json['ISIN']?.toString();
+    dPFolioNo = json['DPFolioNo']?.toString();
+    settType = json['SettType']?.toString();
+    orderType = json['OrderType']?.toString();
+    subOrderType = json['SubOrderType']?.toString();
+    buySell = json['buy_sell']?.toString();
+    allRedeem = json['AllRedeem']?.toString();
   }
 
   Map<String, dynamic> toJson() {

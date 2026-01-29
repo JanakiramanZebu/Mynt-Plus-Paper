@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../provider/portfolio_provider.dart';
 import '../../../../../provider/thems.dart'; 
 import '../../../../../res/res.dart';
-import '../../../../../res/global_state_text.dart';
+import '../../../../../res/mynt_web_text_styles.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
 
 class PositionListGrpCard extends ConsumerWidget {
  final Map<String, dynamic> groupData;
@@ -27,33 +28,47 @@ class PositionListGrpCard extends ConsumerWidget {
             children: [
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Row(children: [
-                  TextWidget.subText(
-                    text: "${groupData['symbol']} ",
-                    theme: theme.isDarkMode,
-                    textOverflow: TextOverflow.ellipsis,
-                    fw: 1,
+                  Text(
+                    "${groupData['symbol']} ",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  TextWidget.subText(
-                    text: "${groupData['option']} ",
-                    theme: theme.isDarkMode,
-                    textOverflow: TextOverflow.ellipsis,
-                    fw: 1,
+                  Text(
+                    "${groupData['option']} ",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   )
                 ]),
                 Row(children: [
-                  TextWidget.subText(
-                    text: " LTP: ",
-                    theme: theme.isDarkMode,
-                    color: const Color(0xff5E6B7D),
-                    fw: 1,
+                  Text(
+                    " LTP: ",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: const Color(0xff5E6B7D),
+                      fontWeight: MyntFonts.semiBold,
+                    ),
                   ),
-                  TextWidget.subText(
-                    text: "₹${groupData['lp']}",
-                    theme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                    fw: 0,
+                  Text(
+                    "₹${groupData['lp']}",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? colors.colorWhite
+                          : colors.colorBlack,
+                      fontWeight: MyntFonts.medium,
+                    ),
                   )
                 ])
               ]),
@@ -73,31 +88,40 @@ class PositionListGrpCard extends ConsumerWidget {
                               : groupData['qty'] == "0"
                                   ? colors.colorWhite
                                   : const Color(0xffECEDEE)),
-                      child: TextWidget.captionText(
-                        text: "${groupData['exch']}",
-                        theme: theme.isDarkMode,
+                      child: Text(
+                        "${groupData['exch']}",
+                        style: MyntWebTextStyles.para(
+                          context,
                           color: theme.isDarkMode
                               ? colors.colorWhite
-                            : const Color(0xff666666),
-                        textOverflow: TextOverflow.ellipsis,
-                        fw: 0,
+                              : const Color(0xff666666),
+                          fontWeight: MyntFonts.medium,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       )),
-                  TextWidget.paraText(
-                    text: "  ${groupData['expDate']} ",
-                    theme: theme.isDarkMode,
-                    textOverflow: TextOverflow.ellipsis,
-                    fw: 0,
+                  Text(
+                    "  ${groupData['expDate']} ",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   )
                 ]),
-                TextWidget.paraText(
-                  text: " (${groupData['perChange'] ?? 0.00}%)",
-                  theme: theme.isDarkMode,
-                  color: groupData['perChange'].toString().startsWith("-")
-                            ? colors.darkred
-                            : groupData['perChange'] == "0.00"
-                                ? colors.ltpgrey
-                                : colors.ltpgreen,
-                  fw: 0,
+                Text(
+                  " (${groupData['perChange'] ?? 0.00}%)",
+                  style: MyntWebTextStyles.para(
+                    context,
+                    color: groupData['perChange'].toString().startsWith("-")
+                        ? colors.darkred
+                        : groupData['perChange'] == "0.00"
+                            ? colors.ltpgrey
+                            : colors.ltpgreen,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 )
               ]),
               Divider(
@@ -109,54 +133,66 @@ class PositionListGrpCard extends ConsumerWidget {
               const SizedBox(height: 2),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Row(children: [
-                  TextWidget.subText(
-                    text: "${groupData['s_prdt_ali']}",
-                    theme: theme.isDarkMode,
-                    fw: 1,
+                  Text(
+                    "${groupData['s_prdt_ali']}",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold,
+                    ),
                   )
                 ]),
                 positions.isNetPnl
                     ? Row(children: [
-                        TextWidget.subText(
-                          text: "P&L: ",
-                          theme: theme.isDarkMode,
-                          color: const Color(0xff5E6B7D),
-                          fw: 0,
+                        Text(
+                          "P&L: ",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: const Color(0xff5E6B7D),
+                            fontWeight: MyntFonts.medium,
+                          ),
                         ),
-                        TextWidget.titleText(
-                          text:
-                            "₹${groupData['profitNloss'] ?? groupData['rpnl']}",
-                          theme: theme.isDarkMode,
-                          color: groupData['profitNloss'] != null
-                                    ? groupData['profitNloss']!.startsWith("-")
-                                        ? colors.darkred
-                                        : groupData['profitNloss'] == "0.00"
-                                            ? colors.ltpgrey
-                                            : colors.ltpgreen
-                                    : groupData['rpnl'].toString().startsWith("-")
-                                        ? colors.darkred
-                                        : groupData['rpnl'] == "0.00"
-                                            ? colors.ltpgrey
-                                            : colors.ltpgreen,
-                          fw: 1,
+                        Text(
+                          "₹${groupData['profitNloss'] ?? groupData['rpnl']}",
+                          style: MyntWebTextStyles.title(
+                            context,
+                            color: groupData['profitNloss'] != null
+                                ? groupData['profitNloss']!.startsWith("-")
+                                    ? colors.darkred
+                                    : groupData['profitNloss'] == "0.00"
+                                        ? colors.ltpgrey
+                                        : colors.ltpgreen
+                                : groupData['rpnl'].toString().startsWith("-")
+                                    ? colors.darkred
+                                    : groupData['rpnl'] == "0.00"
+                                        ? colors.ltpgrey
+                                        : colors.ltpgreen,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
                         )
                       ])
                     : Row(children: [
-                        TextWidget.subText(
-                          text: "MTM: ",
-                          theme: theme.isDarkMode,
-                          color: const Color(0xff5E6B7D),
-                          fw: 0,
+                        Text(
+                          "MTM: ",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: const Color(0xff5E6B7D),
+                            fontWeight: MyntFonts.medium,
+                          ),
                         ),
-                        TextWidget.titleText(
-                          text: "₹${groupData['mTm']}",
-                          theme: theme.isDarkMode,
-                          color: groupData['mTm'].toString().startsWith("-")
-                                    ? colors.darkred
-                                    : groupData['mTm'] == "0.00"
-                                        ? colors.ltpgrey
-                                        : colors.ltpgreen,
-                          fw: 1,
+                        Text(
+                          "₹${groupData['mTm']}",
+                          style: MyntWebTextStyles.title(
+                            context,
+                            color: groupData['mTm'].toString().startsWith("-")
+                                ? colors.darkred
+                                : groupData['mTm'] == "0.00"
+                                    ? colors.ltpgrey
+                                    : colors.ltpgreen,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
                         )
                       ])
               ]),
@@ -165,42 +201,44 @@ class PositionListGrpCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(children: [
-                  TextWidget.subText(
-                    text: "Qty: ",
-                    theme: theme.isDarkMode,
-                    color: const Color(0xff5E6B7D),
-                    fw: 0,
+                  Text(
+                    "Qty: ",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: const Color(0xff5E6B7D),
+                      fontWeight: MyntFonts.medium,
+                    ),
                   ),
-                  TextWidget.subText(
-                    text: "${groupData['qty']}",
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    "${groupData['qty']}",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
                   )
                   ]),
                   Row(
                     children: [
-                      // Text("MTM: ",
-                      //     style: textStyle(
-                      //         const Color(0xff5E6B7D), 14, FontWeight.w500)),
-                      // Text("₹${groupData[mTm}",
-                      //     style: textStyle(
-                      //         Color(groupData[mTm!.startsWith("-")
-                      //             ? 0XFFFF1717
-                      //             : groupData[mTm == "0.00"
-                      //                 ? 0xff999999
-                      //                 : 0xff43A833),
-                      //         15,
-                      //         FontWeight.w600)),
-                  TextWidget.subText(
-                    text: "Avg: ",
-                    theme: theme.isDarkMode,
-                    color: const Color(0xff5E6B7D),
-                    fw: 0,
+                  Text(
+                    "Avg: ",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: const Color(0xff5E6B7D),
+                      fontWeight: MyntFonts.medium,
+                    ),
                   ),
-                  TextWidget.subText(
-                    text: "${groupData['avgPrc']}",
-                    theme: theme.isDarkMode,
-                    fw: 0,
+                  Text(
+                    "${groupData['avgPrc']}",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
                   )
                 ]
               ),
