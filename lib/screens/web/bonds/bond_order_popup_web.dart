@@ -5,11 +5,13 @@ import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_place_order_details_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/provider/transcation_provider.dart';
+
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/screens/web/funds/fund_screen_web.dart';
+
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
+import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
 
 class BondOrderPopupWeb extends ConsumerStatefulWidget {
   final BondsList bondInfo;
@@ -344,14 +346,10 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
           onPressed: hasInsufficientBalance
               ? () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FundScreenWeb(
-                        dd: ref.read(transcationProvider),
-                      ),
-                    ),
-                  );
+                  if (WebNavigationHelper.isAvailable) {
+                    WebNavigationHelper.navigateTo(Routes.fundscreen,
+                        arguments: 'addMoney');
+                  }
                 }
               : () {
                   _placeOrder();
