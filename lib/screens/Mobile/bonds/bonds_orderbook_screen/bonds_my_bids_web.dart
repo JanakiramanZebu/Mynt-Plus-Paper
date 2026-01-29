@@ -10,12 +10,14 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 
-import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../provider/sidebar_provider.dart';
 import 'bonds_details_sidebar_web.dart';
 import '../../../../res/res.dart';
 import '../../../../provider/thems.dart';
+import '../../../../utils/custom_navigator.dart';
+import '../../../../routes/route_names.dart';
 
 class BondsMyBidsWeb extends ConsumerStatefulWidget {
   const BondsMyBidsWeb({super.key});
@@ -283,10 +285,14 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                           ? Center(
                               child: NoDataFound(
                                   title: "There's nothing here yet.",
-                                  subtitle: "Buy some stocks to see them here.",
+                                  subtitle: "Buy some bonds to see them here.",
                                   assetIcon: assets.documentIcon,
                                   iconSize: 120,
-                                  primaryEnabled: false,
+                                  primaryEnabled: true,
+                                  primaryLabel: "Add Funds",
+                                  onPrimary: () {
+                                    WebNavigationHelper.navigateTo(Routes.fundscreen);
+                                  },
                                   secondaryEnabled: false,
                                ))
                           : RawScrollbar(

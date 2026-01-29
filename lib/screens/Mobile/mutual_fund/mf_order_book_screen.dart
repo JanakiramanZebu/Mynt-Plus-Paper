@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
@@ -42,7 +44,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   };
 
   // State for table hover and sorting
-  // int? _hoveredRowIndex;
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   int? _sortColumnIndex;
   bool _sortAscending = true;
   final TextEditingController _searchController = TextEditingController();
@@ -50,6 +52,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   // Scroll controllers for Orders table
   final ScrollController _ordersVerticalScrollController = ScrollController();
   final ScrollController _ordersHorizontalScrollController = ScrollController();
+
+  // Popover state management for 3-dot dropdown menu
+  shadcn.PopoverController? _activePopoverController;
+  int? _popoverRowIndex;
+  bool _isHoveringDropdown = false;
+  Timer? _popoverCloseTimer;
 
   @override
   void initState() {
@@ -66,13 +74,66 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         setState(() {});
       }
     });
+    // Listen to hover changes for popover management
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+      _startPopoverCloseTimer();
+    }
+  }
+
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {}
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    try {
+      _hoveredRowIndex.removeListener(_onHoverChanged);
+    } catch (_) {}
     _tabController.dispose();
+    _searchController.dispose();
     _ordersVerticalScrollController.dispose();
     _ordersHorizontalScrollController.dispose();
+    try {
+      _hoveredRowIndex.dispose();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -435,36 +496,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                                     maxLines: 2,
                                   ),
                                 ),
-                                // Fund name (with Lumpsum tag)
-                                buildCellWithHover(
+                                // Fund name (with Lumpsum tag and 3-dot dropdown)
+                                _buildFundNameCellWithActions(
+                                  orderData: orderData,
                                   rowIndex: rowIndex,
-                                  columnIndex: 1,
-                                  onTap: () => _showOrderDetail(
-                                      mforderbook, orderData, theme, context),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        orderData.name ?? "Unknown Fund",
-                                        style: _getTextStyle(context),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        "Lumpsum",
-                                        style: MyntWebTextStyles.bodySmall(
-                                          context,
-                                          color: theme.isDarkMode
-                                              ? MyntColors.textSecondaryDark
-                                              : MyntColors.textSecondary,
-                                          fontWeight: MyntFonts.regular,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  mforderbook: mforderbook,
+                                  theme: theme,
                                 ),
                                 // Folio no.
                                 buildCellWithHover(
@@ -843,6 +880,223 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     });
 
     return sorted;
+  }
+
+  // Build Fund Name cell with 3-dot dropdown menu on hover
+  shadcn.TableCell _buildFundNameCellWithActions({
+    required dynamic orderData,
+    required int rowIndex,
+    required MFProvider mforderbook,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+            return GestureDetector(
+              onTap: () => _showOrderDetail(mforderbook, orderData, theme, context),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                color: Colors.transparent,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Fund info
+                    Padding(
+                      padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            orderData.name ?? "Unknown Fund",
+                            style: _getTextStyle(context),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "Lumpsum",
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: theme.isDarkMode
+                                  ? MyntColors.textSecondaryDark
+                                  : MyntColors.textSecondary,
+                              fontWeight: MyntFonts.regular,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // 3-dot dropdown button on hover
+                    if (isHovered)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: _buildOptionsMenuButton(
+                            orderData: orderData,
+                            rowIndex: rowIndex,
+                            mforderbook: mforderbook,
+                            theme: theme,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton({
+    required dynamic orderData,
+    required int rowIndex,
+    required MFProvider mforderbook,
+    required ThemesProvider theme,
+  }) {
+    return Builder(
+      builder: (buttonContext) {
+        return MouseRegion(
+          onEnter: (_) {
+            _isHoveringDropdown = true;
+            _cancelPopoverCloseTimer();
+          },
+          onExit: (_) {
+            _isHoveringDropdown = false;
+            _startPopoverCloseTimer();
+          },
+          child: GestureDetector(
+            onTap: () {
+              // Close any existing popover first
+              _closePopover();
+
+              // Create new controller and show popover
+              final controller = shadcn.PopoverController();
+              _activePopoverController = controller;
+              _popoverRowIndex = rowIndex;
+
+              // Build menu items
+              final List<shadcn.MenuItem> menuItems = [
+                _buildMenuButton(
+                  icon: Icons.info_outline,
+                  label: 'Details',
+                  onPressed: () {
+                    _closePopover();
+                    _showOrderDetail(mforderbook, orderData, theme, context);
+                  },
+                  theme: theme,
+                ),
+              ];
+
+              controller.show(
+                context: buttonContext,
+                builder: (popoverContext) {
+                  return MouseRegion(
+                    onEnter: (_) {
+                      _isHoveringDropdown = true;
+                      _cancelPopoverCloseTimer();
+                    },
+                    onExit: (_) {
+                      _isHoveringDropdown = false;
+                      _startPopoverCloseTimer();
+                    },
+                    child: shadcn.DropdownMenu(
+                      children: menuItems,
+                    ),
+                  );
+                },
+                alignment: Alignment.topRight,
+                offset: const Offset(0, 4),
+              );
+
+              setState(() {});
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.isDarkMode
+                    ? MyntColors.primary.withValues(alpha: 0.15)
+                    : MyntColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                Icons.more_vert,
+                size: 18,
+                color: MyntColors.primary,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Build individual menu button
+  shadcn.MenuItem _buildMenuButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required ThemesProvider theme,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: (context) => onPressed(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: theme.isDarkMode
+                  ? MyntColors.textPrimaryDark
+                  : MyntColors.textPrimary,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: theme.isDarkMode
+                    ? MyntColors.textPrimaryDark
+                    : MyntColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showOrderDetail(MFProvider mforderbook, dynamic orderData,
