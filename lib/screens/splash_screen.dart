@@ -4,13 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../locator/locator.dart';
 import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/thems.dart';
-import '../res/web_resources.dart';
 import '../routes/route_names.dart';
+import '../routes/web_router.dart';
 import '../sharedWidget/internet_widget.dart';
 import '../sharedWidget/snack_bar.dart';
 import '../sharedWidget/splash_loader.dart';
@@ -28,8 +29,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
 
     SchedulerBinding.instance.addPostFrameCallback((_) {
-      // initializeResources(context: context);
-      initializeWebResources(); // Initialize web resources
+      // Resources already initialized in main.dart - no need to re-initialize
       initialRoute();
       ref.read(networkStateProvider).networkStream();
       ref.read(networkStateProvider).getContext(context);
@@ -76,10 +76,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (pref.clientSession!.isEmpty) {
         pref.setLogout(true);
 
-        // For web, always go directly to login screen (skip banner)
+        // For web, use GoRouter navigation
         if (kIsWeb) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
+          if (mounted) context.go(WebRoutes.login);
         } else {
           pref.clientId!.isNotEmpty
               ? Navigator.pushNamedAndRemoveUntil(
@@ -90,9 +89,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       } else {
         pref.setMobileLogin(true);
         if (kIsWeb) {
-          // For web, always go directly to login screen (skip banner)
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
+          // For web, use GoRouter navigation
+          if (mounted) context.go(WebRoutes.login);
         } else {
           await ref.read(authProvider).fetchMobileLogin(
               context, "", pref.clientId!, "", pref.imei!, true);

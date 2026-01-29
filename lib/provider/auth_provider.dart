@@ -4,6 +4,8 @@ import 'dart:io' show SocketException, HttpException; // Used in non-web builds
 import 'package:flutter/foundation.dart'
     show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:go_router/go_router.dart';
+import '../routes/web_router.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1873,12 +1875,16 @@ class AuthProvider extends DefaultChangeNotifier {
           if (kIsWeb || s.isEmpty) {
             // Navigate to home screen IMMEDIATELY without waiting for data
             if (s.isEmpty) {
-              final targetRoute = getResponsiveWidth(context) == 600
-                  ? Routes.mainControlerScreenForWeb
-                  : Routes.homeScreen;
-              
-              Navigator.pushNamedAndRemoveUntil(
-                  context, targetRoute, (route) => false);
+              // For web, use GoRouter for URL-based navigation
+              if (kIsWeb) {
+                if (context.mounted) context.go(WebRoutes.home);
+              } else {
+                final targetRoute = getResponsiveWidth(context) == 600
+                    ? Routes.mainControlerScreenForWeb
+                    : Routes.homeScreen;
+                Navigator.pushNamedAndRemoveUntil(
+                    context, targetRoute, (route) => false);
+              }
               
               // Show risk disclosure if needed (non-blocking)
               if (pref.showRiskDis != 'true') {
@@ -1944,15 +1950,16 @@ class AuthProvider extends DefaultChangeNotifier {
                 
                 // Load data in parallel batches for better performance
                 // Batch 1: Essential portfolio data (for first tab)
+                // Note: getDeafultIndexList already awaited above, no need to call again
                 final essentialFutures = [
                   ref.read(portfolioProvider).fetchHoldings(context, ""),
-                  ref.read(indexListProvider).getDeafultIndexList(context),
                 ];
                 await Future.wait(essentialFutures);
                 
                 // Batch 2: Market watch and stocks data
+                // Use waitis=true for watchlist: loads first watchlist immediately, others in background
                 final marketFutures = [
-                  ref.read(marketWatchProvider).fetchMWList(context, false),
+                  ref.read(marketWatchProvider).fetchMWList(context, true),
                   ref.read(stocksProvide).fetchCAevents(),
                 ];
                 Future.wait(marketFutures); // Don't await - let it run in background
@@ -2023,7 +2030,8 @@ class AuthProvider extends DefaultChangeNotifier {
             await ref.read(indexListProvider).getDeafultIndexList(context);
             ref.read(marketWatchProvider).resetCurrentWatchlistPageIndex();
             await ref.read(stocksProvide).fetchCAevents();
-            await ref.read(marketWatchProvider).fetchMWList(context, false);
+            // Use waitis=true: loads first watchlist immediately, others in background
+            await ref.read(marketWatchProvider).fetchMWList(context, true);
             
             ref.read(ledgerProvider).setterfornullallSwitch = null;
             ref.read(userProfileProvider).getProfileimage();
@@ -2053,12 +2061,17 @@ class AuthProvider extends DefaultChangeNotifier {
             ref.read(orderProvider).setOrderIp();
             
             if (s.isEmpty) {
-              getResponsiveWidth(context) == 600
-                  ? Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.mainControlerScreenForWeb, (route) => false)
-                  : Navigator.pushNamedAndRemoveUntil(
-                      context, Routes.homeScreen, (route) => false);
-              
+              // For web, use GoRouter for URL-based navigation
+              if (kIsWeb) {
+                if (context.mounted) context.go(WebRoutes.home);
+              } else {
+                getResponsiveWidth(context) == 600
+                    ? Navigator.pushNamedAndRemoveUntil(
+                        context, Routes.mainControlerScreenForWeb, (route) => false)
+                    : Navigator.pushNamedAndRemoveUntil(
+                        context, Routes.homeScreen, (route) => false);
+              }
+
               if (pref.showRiskDis != 'true') {
                 getResponsiveWidth(context) == 600
                     ? showDialog(

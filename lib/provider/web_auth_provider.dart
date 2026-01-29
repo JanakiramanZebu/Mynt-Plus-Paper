@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../api/web_auth_api.dart';
@@ -10,7 +11,7 @@ import '../models/auth_model/mobile_login_model.dart';
 import '../models/auth_model/mobile_otp_model.dart';
 import '../utils/responsive_snackbar.dart';
 import '../utils/totp_utils.dart';
-import '../routes/route_names.dart';
+import '../routes/web_router.dart';
 import 'auth_provider.dart';
 
 /// Provider for web-specific authentication
@@ -188,9 +189,9 @@ class WebAuthProvider extends ChangeNotifier {
           await pref.setClientName(result['uname']);
         }
         
-        // Navigate to Home
+        // Navigate to Home using GoRouter for web
         if (context.mounted) {
-           Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
+           context.go(WebRoutes.home);
            ref.read(authProvider).initialLoadMethods(context, "");
         }
         return true;
@@ -481,9 +482,10 @@ class WebAuthProvider extends ChangeNotifier {
     // Start polling after 2 seconds
     _qrPollTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       _pollQrStatus(context, onLoginSuccess: () {
-        // Navigate to Home screen on success
-        Navigator.pushNamedAndRemoveUntil(
-            context, Routes.mainControlerScreenForWeb, (route) => false);
+        // Navigate to Home screen using GoRouter for web
+        if (context.mounted) {
+          context.go(WebRoutes.home);
+        }
       });
     });
   }
@@ -550,6 +552,12 @@ class WebAuthProvider extends ChangeNotifier {
     await pref.setApiToken(_mobileLogin!.token ?? '');
     await pref.setLogout(false);
     await pref.setMobileLogin(true);
+
+    // Navigate to Home using GoRouter for web
+    if (context.mounted) {
+      context.go(WebRoutes.home);
+      ref.read(authProvider).initialLoadMethods(context, "");
+    }
   }
 
   /// Handle successful OTP verification
@@ -563,6 +571,12 @@ class WebAuthProvider extends ChangeNotifier {
     await pref.setApiToken(_mobileOtp!.token ?? '');
     await pref.setLogout(false);
     await pref.setMobileLogin(true);
+
+    // Navigate to Home using GoRouter for web
+    if (context.mounted) {
+      context.go(WebRoutes.home);
+      ref.read(authProvider).initialLoadMethods(context, "");
+    }
   }
 
   /// QR Login

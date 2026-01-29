@@ -5,6 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/get_quotes.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
+import 'package:mynt_plus/provider/user_profile_provider.dart';
+import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/screens/web/chart/web_chart_manager.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_depth_info_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
@@ -47,6 +50,9 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
   BuildContext? _storedContext; // Store context for cleanup in dispose
   ProviderContainer? _storedContainer; // Store container for cleanup in dispose
   // bool _isDepthVisible = false; // Controlled by wlValue.showDepthInitially
+
+  // LayerLink for persistent chart portal positioning
+  final LayerLink _chartLayerLink = LayerLink();
 
   @override
   void initState() {
@@ -152,6 +158,15 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
     }
     _tabController?.dispose();
     _tabController = null;
+
+    // Hide inline chart portal when this widget is disposed
+    if (_storedContainer != null) {
+      try {
+        _storedContainer!.read(userProfileProvider).hideInlineChart();
+      } catch (e) {
+        // Ignore if provider is not available
+      }
+    }
 
     // Unsubscribe from depth data using stored container (ref is not available in dispose)
     if (_storedContainer != null) {
@@ -1149,13 +1164,39 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
       );
     }
 
-    // Overview (index 0) and Chart (index 1) tabs - show chart
-    return ChartScreenWebViews(
-      chartArgs: ChartArgs(
-        exch: widget.wlValue.exch,
-        tsym: widget.wlValue.tsym,
-        token: widget.wlValue.token,
-      ),
+    // Overview (index 0) and Chart (index 1) tabs - show chart via persistent portal
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Set up the portal target and update symbol
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            // IMPORTANT: Change symbol FIRST (before making chart visible)
+            // This ensures the correct symbol is ready when the chart appears
+            // and avoids showing a flash of the old symbol
+            webChartManager.changeSymbol(
+              exch: widget.wlValue.exch,
+              token: widget.wlValue.token,
+              tsym: widget.wlValue.tsym,
+              isDarkMode: ref.read(themeProvider).isDarkMode,
+            );
+            // Then update portal position and make it visible
+            ref.read(userProfileProvider).setInlineChartTarget(
+              _chartLayerLink,
+              Size(constraints.maxWidth, constraints.maxHeight),
+            );
+          }
+        });
+
+        // Return placeholder target that the portal follows
+        return CompositedTransformTarget(
+          link: _chartLayerLink,
+          child: Container(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            color: Colors.transparent, // Transparent placeholder, chart renders via portal
+          ),
+        );
+      },
     );
   }
 

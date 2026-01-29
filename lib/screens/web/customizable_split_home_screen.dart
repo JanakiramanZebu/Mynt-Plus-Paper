@@ -19,6 +19,7 @@ import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart
 
 
 // import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
+import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
@@ -73,6 +74,7 @@ import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
+import '../../../routes/web_router.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 // import 'market_watch/scrip_tabs_manager.dart';
@@ -84,8 +86,32 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 
+/// Screen type parameter enum - used for URL routing
+/// Maps to internal ScreenType enum
+enum ScreenTypeParam {
+  dashboard,
+  watchlist,
+  holdings,
+  positions,
+  orderBook,
+  funds,
+  mutualFund,
+  ipo,
+  optionChain,
+  reports,
+  settings,
+  tradeAction,
+}
+
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
-  const CustomizableSplitHomeScreen({super.key});
+  /// Optional initial panel to show in the right panel on startup
+  /// Used by GoRouter for URL-based navigation
+  final ScreenTypeParam? initialRightPanel;
+
+  const CustomizableSplitHomeScreen({
+    super.key,
+    this.initialRightPanel,
+  });
 
   @override
   ConsumerState<CustomizableSplitHomeScreen> createState() =>
@@ -215,12 +241,15 @@ class _CustomizableSplitHomeScreenState
       }
 
       // Panels already initialized with defaults in initState(), no need to call _addDefaultScreens()
-      // Mark initial load as complete after setup and initialize default screens
-      Future.delayed(const Duration(milliseconds: 500), () {
+      // Mark initial load as complete and initialize default screens immediately
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _isInitialLoad = false;
-          // Initialize the default screens after a delay
+          // Initialize the default screens
           _initializeDefaultScreenData();
+
+          // Apply initial panel from URL routing (GoRouter)
+          _applyInitialRightPanel();
         }
       });
 
@@ -336,13 +365,11 @@ class _CustomizableSplitHomeScreenState
     ref.read(versionProvider).checkVersion(context);
 
     // Initialize websocket connection early to ensure real-time data is available
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted &&
-          ref.read(networkStateProvider).connectionStatus !=
-              ConnectivityResult.none) {
-        _handleWebSocketConnections();
-      }
-    });
+    if (mounted &&
+        ref.read(networkStateProvider).connectionStatus !=
+            ConnectivityResult.none) {
+      _handleWebSocketConnections();
+    }
 
     // Update subscription manager context
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -376,6 +403,55 @@ class _CustomizableSplitHomeScreenState
 
   void _initializeDefaultPanels() {
     _createPanelsForCount(_panelCount);
+  }
+
+  /// Apply the initial right panel from URL routing (GoRouter)
+  /// This is called after panels are initialized to show the correct screen
+  /// based on the URL path (e.g., /holdings, /orders, /positions)
+  void _applyInitialRightPanel() {
+    final initialPanel = widget.initialRightPanel;
+    if (initialPanel == null) return;
+
+    debugPrint('WebRouter: Applying initial right panel: $initialPanel');
+
+    // Map ScreenTypeParam to the appropriate handler
+    switch (initialPanel) {
+      case ScreenTypeParam.holdings:
+        _handleHoldingsTap(initialTabIndex: 0);
+        break;
+      case ScreenTypeParam.positions:
+        _handlePositionsTap();
+        break;
+      case ScreenTypeParam.orderBook:
+        showOrderBookInPanel();
+        break;
+      case ScreenTypeParam.funds:
+        _handleFundsTap();
+        break;
+      case ScreenTypeParam.optionChain:
+        // Option chain requires arguments, show default if none provided
+        _replaceScreenInPanel(ScreenType.optionChain);
+        break;
+      case ScreenTypeParam.ipo:
+        _handleIPOTap();
+        break;
+      case ScreenTypeParam.mutualFund:
+        _handleHoldingsTap(initialTabIndex: 1); // Mutual funds tab
+        break;
+      case ScreenTypeParam.reports:
+        _handleReportsTap();
+        break;
+      case ScreenTypeParam.settings:
+        _handleSettingsTap();
+        break;
+      case ScreenTypeParam.tradeAction:
+        showTradeActionInPanel();
+        break;
+      case ScreenTypeParam.dashboard:
+      case ScreenTypeParam.watchlist:
+        // Default panels, no action needed
+        break;
+    }
   }
 
   void _createPanelsForCount(int count) {
@@ -468,10 +544,10 @@ class _CustomizableSplitHomeScreenState
 
         Future.microtask(() async {
           try {
-            await ref.read(indexListProvider).checkSession(context);
-            if (mounted &&
-                ref.read(indexListProvider).checkSess?.stat == "Ok" &&
-                shouldFetchPortfolio) {
+            // Session validation removed - APIs return "Session Expired" errors
+            // which are handled by ifSessionExpired(). This avoids unnecessary
+            // DeleteMultiMWScrips API calls on every lifecycle resume.
+            if (mounted && shouldFetchPortfolio) {
               // Only fetch data for ACTIVE screens (smart fetching)
               debugPrint(
                   'Fetching data for active portfolio screens after cooldown');
@@ -522,11 +598,7 @@ class _CustomizableSplitHomeScreenState
         });
         _handleChartData();
         if (mounted) {
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted) {
-              setState(() {});
-            }
-          });
+          setState(() {});
         }
         break;
       case AppLifecycleState.inactive:
@@ -603,6 +675,9 @@ class _CustomizableSplitHomeScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Set context for WebNavigationHelper to enable URL updates
+    WebNavigationHelper.setContext(context);
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -618,6 +693,7 @@ class _CustomizableSplitHomeScreenState
           children: [
             _buildMainScaffold(),
             // const WebChartOverlay(), // Commented out - using panel chart only
+            const InlineChartPortal(), // Persistent chart that follows ChartWithDepthWeb's target
           ],
         ),
       ),
@@ -2974,11 +3050,57 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
 
+    // Update browser URL for web navigation
+    _updateUrlForScreenType(screenType);
+
     // Update subscription manager
     _updateSubscriptionManagerForPanels();
 
     // Save layout in background (non-blocking)
     Future.microtask(() => _saveLayout());
+  }
+
+  /// Update browser URL based on the current screen type
+  void _updateUrlForScreenType(ScreenType screenType) {
+    String? urlPath;
+    switch (screenType) {
+      case ScreenType.holdings:
+        urlPath = WebRoutes.holdings;
+        break;
+      case ScreenType.positions:
+        urlPath = WebRoutes.positions;
+        break;
+      case ScreenType.orderBook:
+        urlPath = WebRoutes.orders;
+        break;
+      case ScreenType.funds:
+        urlPath = WebRoutes.funds;
+        break;
+      case ScreenType.ipo:
+        urlPath = WebRoutes.ipo;
+        break;
+      case ScreenType.mutualFund:
+        urlPath = WebRoutes.mutualFunds;
+        break;
+      case ScreenType.optionChain:
+        urlPath = WebRoutes.optionChain;
+        break;
+      case ScreenType.reports:
+        urlPath = WebRoutes.reports;
+        break;
+      case ScreenType.dashboard:
+      case ScreenType.watchlist:
+        urlPath = WebRoutes.home;
+        break;
+      default:
+        // Don't update URL for other screen types (like scripDepthInfo, etc.)
+        urlPath = null;
+        break;
+    }
+
+    if (urlPath != null) {
+      WebNavigationHelper.updateUrl(urlPath);
+    }
   }
 
   // Add screen as a panel tab (only for profile screens)
@@ -3041,23 +3163,35 @@ class _CustomizableSplitHomeScreenState
       _markRequestStarted('order_book');
 
       try {
-        // Only fetch Order Book (Open Orders + Executed Orders)
-        // Always fetch fresh data when switching to Order Book
-        await orderProviderRef.fetchOrderBook(context, false);
+        // Preserve current tab selection - don't reset to tab 0 unless this is first load
+        final currentTab = orderProviderRef.selectedTab;
 
-        // Trade Book and SIP will be lazy loaded when user switches to those tabs
+        // Fetch Order Book, GTT Orders, and Trade Book in parallel
+        // This ensures all order data is ready when user navigates between tabs
+        await Future.wait([
+          orderProviderRef.fetchOrderBook(context, false),
+          orderProviderRef.fetchGTTOrderBook(context, "initLoad"), // initLoad to prevent tab switch
+          orderProviderRef.fetchTradeBook(context),
+        ]);
+
+        // SIP will be lazy loaded when user switches to that tab
         // This is handled in OrderProvider.changeTabIndex()
 
         // Order book handles its own tab-specific subscriptions
-        // Subscribe to Open Orders tab (tab 0) by default when order book opens
         if (mounted) {
-          // Reset to Open Orders tab (index 0) and subscribe
-          orderProviderRef.changeTabIndex(0, context);
-          // Force WebSocket subscription for order tokens
-          // (changeTabIndex may skip if already on tab 0, so call directly)
+          // Preserve the selected tab if user was previously on order book
+          // Only reset to tab 0 if the current tab is out of bounds
+          final tabToSelect = (currentTab >= 0 && currentTab <= 5) ? currentTab : 0;
+
+          // Only change tab if different from current
+          if (orderProviderRef.selectedTab != tabToSelect) {
+            orderProviderRef.changeTabIndex(tabToSelect, context);
+          }
+
+          // Force WebSocket subscription for current tab's order tokens
           orderProviderRef.requestWSOrderBook(isSubscribe: true, context: context);
           debugPrint(
-              "📥 [Order Book] Initial subscription to Open Orders tab (Tab 0)");
+              "📥 [Order Book] Subscription to tab $tabToSelect");
         }
 
         // Update subscription manager (order book is now SubscriptionType.none, so it won't subscribe)

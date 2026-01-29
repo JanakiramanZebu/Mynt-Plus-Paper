@@ -61,13 +61,24 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   void _updateScrollArrows() {
     if (!mounted) return;
-    setState(() {
-      _canScrollLeft =
-          _tabScrollController.hasClients && _tabScrollController.offset > 0;
-      _canScrollRight = _tabScrollController.hasClients &&
-          _tabScrollController.offset <
-              _tabScrollController.position.maxScrollExtent;
-    });
+    // Additional safety check to prevent setState after dispose
+    try {
+      if (!_tabScrollController.hasClients) return;
+      final newCanScrollLeft = _tabScrollController.offset > 0;
+      final newCanScrollRight =
+          _tabScrollController.offset < _tabScrollController.position.maxScrollExtent;
+
+      // Only call setState if values actually changed
+      if (_canScrollLeft != newCanScrollLeft || _canScrollRight != newCanScrollRight) {
+        setState(() {
+          _canScrollLeft = newCanScrollLeft;
+          _canScrollRight = newCanScrollRight;
+        });
+      }
+    } catch (e) {
+      // Silently handle any errors during scroll position access
+      // This prevents crashes when widget is being disposed
+    }
   }
 
   void _scrollTabs({required bool left}) {
@@ -93,8 +104,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
 
   void _setupListeners() {
     _tabScrollController.addListener(_updateScrollArrows);
-    // Initial check
-    Future.delayed(const Duration(milliseconds: 500), _updateScrollArrows);
+    // Initial check - use addPostFrameCallback for safer initial update
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _updateScrollArrows();
+    });
   }
 
   @override
@@ -200,6 +213,10 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   void dispose() {
     // Remove search listener using stored reference (safe during dispose)
     _orderSearchCtrl?.removeListener(_onSearchChanged);
+
+    // Remove scroll listener BEFORE disposing the controller to prevent
+    // "Trying to render a disposed EngineFlutterView" error
+    _tabScrollController.removeListener(_updateScrollArrows);
 
     _tabController?.dispose();
     _openOrdersHorizontalScrollController.dispose();

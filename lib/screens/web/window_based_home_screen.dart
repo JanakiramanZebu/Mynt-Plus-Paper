@@ -789,10 +789,10 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
 
         Future.microtask(() async {
           try {
-            await ref.read(indexListProvider).checkSession(context);
-            if (mounted &&
-                ref.read(indexListProvider).checkSess?.stat == "Ok" &&
-                shouldFetchPortfolio) {
+            // Session validation removed - APIs return "Session Expired" errors
+            // which are handled by ifSessionExpired(). This avoids unnecessary
+            // DeleteMultiMWScrips API calls on every lifecycle resume.
+            if (mounted && shouldFetchPortfolio) {
               _lastPortfolioFetch = now;
 
               final futures = <Future>[];
