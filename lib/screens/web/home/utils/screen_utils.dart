@@ -37,6 +37,20 @@ class ScreenUtils {
         return 'Settings';
       case ScreenType.tradeAction:
         return 'Trade Action';
+      case ScreenType.mfNfo:
+        return 'New Fund Offerings';
+      case ScreenType.mfCollection:
+        return 'Collections';
+      case ScreenType.mfCategory:
+        return 'Categories';
+      case ScreenType.sipCalculator:
+        return 'SIP Calculator';
+      case ScreenType.cagrCalculator:
+        return 'CAGR Calculator';
+      case ScreenType.mfStockDetail:
+        return 'Fund Details';
+      case ScreenType.notification:
+        return 'Notification';
     }
   }
 
@@ -75,6 +89,20 @@ class ScreenUtils {
         return Icons.settings;
       case ScreenType.tradeAction:
         return Icons.trending_up;
+      case ScreenType.mfNfo:
+        return Icons.card_giftcard;
+      case ScreenType.mfCollection:
+        return Icons.collections_bookmark;
+      case ScreenType.mfCategory:
+        return Icons.category;
+      case ScreenType.sipCalculator:
+        return Icons.calculate;
+      case ScreenType.cagrCalculator:
+        return Icons.calculate;
+      case ScreenType.mfStockDetail:
+        return Icons.show_chart;
+      case ScreenType.notification:
+        return Icons.notifications_outlined;
     }
   }
 

@@ -115,11 +115,12 @@ class Routes {
   static const String placeOrderScreen = 'PlaceOrderScreen';
   static const String placeOrderScreenWeb = 'PlaceOrderScreenWeb';
   static const String orderConfirmation = 'OrderConfirmation';
-  // static const String gttOrderScreen = 'GTTOrderScreen';
+  static const String gttOrderScreen = 'GTTOrderScreen';
   static const String modifyOrder = 'ModifyOrder';
   static const String modifyGtt = 'modifyGtt';
   static const String settingscreen = 'settingscreen';
   static const String notificationscreen = 'notificationscreen';
+  static const String notificationscreenweb = 'notificationscreenweb';
   static const String windowsetting = 'windowsetting';
   static const String upiautopay = 'upiautopay';
 

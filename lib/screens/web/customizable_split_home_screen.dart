@@ -55,6 +55,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
 // import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/notification_screens/notification_screen_web.dart';
 
 // import 'profile/settings_web.dart';
 import 'splitter_widget.dart';
@@ -1850,6 +1851,8 @@ class _CustomizableSplitHomeScreenState
           );
         }
         return const SizedBox.shrink();
+      case ScreenType.notification:
+        return const NotificationScreenWeb();
       // caEvent and cpAction removed
     }
   }
@@ -1901,6 +1904,8 @@ class _CustomizableSplitHomeScreenState
         return 'CAGR Calculator';
       case ScreenType.mfStockDetail:
         return 'Fund Details';
+      case ScreenType.notification:
+        return 'Notification';
       // caEvent and cpAction removed
     }
   }
@@ -1952,6 +1957,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.calculate;
       case ScreenType.mfStockDetail:
         return Icons.show_chart;
+      case ScreenType.notification:
+        return Icons.notifications_outlined;
       // caEvent and cpAction removed
     }
   }
@@ -2323,6 +2330,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.tradeAction:
         _handleTradeActionTap();
+        break;
+      case ScreenType.notification:
+        _handleNotificationTap();
         break;
       case ScreenType.mfCollection:
       case ScreenType.mfCategory:
@@ -3454,6 +3464,12 @@ class _CustomizableSplitHomeScreenState
         .requestWSOrderBook(context: context, isSubscribe: false);
   }
 
+  // Handle notification tap
+  void _handleNotificationTap() async {
+    final portfolio = ref.read(portfolioProvider);
+    portfolio.cancelTimer();
+  }
+
   // Handle trade action tap
   void _handleTradeActionTap() async {
     final portfolio = ref.read(portfolioProvider);
@@ -3989,6 +4005,7 @@ enum ScreenType {
   sipCalculator,
   cagrCalculator,
   mfStockDetail,
+  notification,
 }
 
 // Hoverable navigation item widget
