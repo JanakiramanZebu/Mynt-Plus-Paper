@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
+import '../utils/custom_navigator.dart';
 
 /// GoRouter for web - enables URL synchronization with browser
 /// Only used when kIsWeb is true
@@ -136,16 +137,27 @@ void initializeWebRouter() {
 /// Extension to update URL without full navigation
 /// Use this to sync URL when panel navigation happens internally
 extension WebRouterExtension on BuildContext {
-  /// Update browser URL to match current panel state
-  /// This updates the URL without triggering a full route rebuild
+  /// Update browser URL and ADD to history stack (enables back button)
+  /// Uses WebNavigationHelper which handles platform differences
   void updateWebUrl(String path) {
     if (kIsWeb) {
-      GoRouter.of(this).go(path);
+      WebNavigationHelper.updateUrl(path);
+    }
+  }
+
+  /// Replace current URL without adding to history
+  /// Use this for URL updates that shouldn't be back-navigable
+  void replaceWebUrl(String path) {
+    if (kIsWeb) {
+      WebNavigationHelper.replaceUrl(path);
     }
   }
 
   /// Get current route path
   String get currentPath {
+    if (kIsWeb) {
+      return WebNavigationHelper.getCurrentPath();
+    }
     return GoRouterState.of(this).uri.path;
   }
 }

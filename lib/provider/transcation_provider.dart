@@ -250,17 +250,10 @@ class TranctionProvider extends DefaultChangeNotifier {
         }
       }
       
-      // Web: Optimized method with fallbacks
-      try {
-        final ip = (await IpAddress().getIp()).trim();
-        if (_isValidIp(ip)) {
-          return _ipAddress = ip;
-        }
-      } catch (_) {}
-      
-      // Try fallback services (web only)
-      final services = ['https://ipv4.seeip.org', 'https://api.ipify.org?format=text', 
-                       'https://icanhazip.com', 'https://ifconfig.me/ip'];
+      // Web: Use only CORS-friendly services (ipify)
+      // Note: public_ip_address package uses seeip.org which doesn't support CORS
+      final services = ['https://api.ipify.org?format=text',
+                       'https://api64.ipify.org?format=text'];
       for (final url in services) {
         final ip = await _fetchIpFromService(url);
         if (ip != null) return _ipAddress = ip;
