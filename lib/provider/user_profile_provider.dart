@@ -228,6 +228,27 @@ class UserProfileProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  // Inline chart portal state (for persistent chart across navigation)
+  LayerLink? _inlineChartLayerLink;
+  bool _showInlineChart = false;
+  Size? _inlineChartSize;
+
+  LayerLink? get inlineChartLayerLink => _inlineChartLayerLink;
+  bool get showInlineChart => _showInlineChart;
+  Size? get inlineChartSize => _inlineChartSize;
+
+  void setInlineChartTarget(LayerLink link, Size size) {
+    _inlineChartLayerLink = link;
+    _inlineChartSize = size;
+    _showInlineChart = true;
+    notifyListeners();
+  }
+
+  void hideInlineChart() {
+    _showInlineChart = false;
+    notifyListeners();
+  }
+
   // Method to clear all user data when switching accounts
   void clearUserData() {
     _userDetailModel = null;
@@ -237,6 +258,10 @@ class UserProfileProvider extends DefaultChangeNotifier {
     _userloader = false;
     _webViewKey = UniqueKey();
     _profileimage = null;
+    // Clear inline chart state
+    _inlineChartLayerLink = null;
+    _showInlineChart = false;
+    _inlineChartSize = null;
     notifyListeners();
   }
 

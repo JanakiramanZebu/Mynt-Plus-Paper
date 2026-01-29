@@ -23,11 +23,15 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import 'package:mynt_plus/notification/notification_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+// Web URL strategy - enables path-based URLs instead of hash-based
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'locator/locator.dart';
 import 'locator/preference.dart';
 import 'provider/thems.dart';
+import 'res/web_resources.dart';
 import 'routes/app_routes.dart';
 import 'routes/route_names.dart';
+import 'routes/web_router.dart';
 import 'themes/theme.dart';
 
 // Global route observer to allow screens to react to navigation events
@@ -107,8 +111,7 @@ Future<void> initializeFirebaseAsync() async {
 
   try {
     // Initialize Firebase with appropriate platform options
-    // This is needed for all platforms including web (for Analytics)
-    if (!kIsWeb && TargetPlatform.android == defaultTargetPlatform) {
+    if (TargetPlatform.android == defaultTargetPlatform) {
       await Firebase.initializeApp(
           name: "dev project", options: DefaultFirebaseOptions.currentPlatform);
     } else {
@@ -120,27 +123,21 @@ Future<void> initializeFirebaseAsync() async {
     final coreInitDuration = coreInitTime.difference(firebaseStartTime);
     print("Firebase core initialized in: ${coreInitDuration.inMilliseconds}ms");
 
-    // Web only needs Firebase core for Analytics - skip Crashlytics and Messaging
-    if (kIsWeb) {
-      FirebaseHelper.setInitialized(true);
-      print("Firebase initialized for web (Analytics only)");
-      return;
-    }
-
-    // Mobile-only: Crashlytics and Messaging
     final Preferences pref = locator<Preferences>();
 
-    // Enable Crashlytics (mobile only)
-    FlutterError.onError =
-        FirebaseCrashlytics.instance.recordFlutterFatalError;
-    PlatformDispatcher.instance.onError = (error, stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-    FirebaseCrashlytics.instance
-        .setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+    // Only enable Crashlytics on mobile platforms (not web)
+    if (!kIsWeb) {
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
+      PlatformDispatcher.instance.onError = (error, stack) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+      FirebaseCrashlytics.instance
+          .setUserIdentifier("${pref.deviceName!} ${pref.imei}");
+    }
 
-    // Configure messaging (mobile only)
+    // Configure messaging
     final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission(
       alert: true,
@@ -156,9 +153,11 @@ Future<void> initializeFirebaseAsync() async {
     ConstantName.msgToken = await messaging.getToken();
     log("Token ${ConstantName.msgToken}");
 
-    // Configure background messaging handler
-    FirebaseMessaging.onBackgroundMessage(
-        _firebaseMessagingBackgroundHandler);
+    // Configure background messaging handler (not supported on web)
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(
+          _firebaseMessagingBackgroundHandler);
+    }
 
     // Handle notification click when app was terminated
     FirebaseMessaging.instance.getInitialMessage().then((message) async {
@@ -184,12 +183,14 @@ Future<void> initializeFirebaseAsync() async {
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Message $message");
-      print('Handling a foreground message: ${message.messageId}');
-      print('Message data: ${message.data}');
-      print('Message notification: ${message.notification?.title}');
-      print('Message notification: ${message.notification?.body}');
-      print('Message notification: ${message.data["imageUrl"]}');
+      if (!kIsWeb) {
+        print("Message $message");
+        print('Handling a foreground message: ${message.messageId}');
+        print('Message data: ${message.data}');
+        print('Message notification: ${message.notification?.title}');
+        print('Message notification: ${message.notification?.body}');
+        print('Message notification: ${message.data["imageUrl"]}');
+      }
 
       handleNotificationMessage(message);
       _messageStreamController.sink.add(message);
@@ -219,8 +220,23 @@ void main() async {
   final startTime = DateTime.now();
   print("App startup began at: $startTime");
 
+  // Enable path-based URLs for web (removes #/ from URLs)
+  // This allows proper browser history and shareable links
+  // MUST be called BEFORE WidgetsFlutterBinding.ensureInitialized()
+  if (kIsWeb) {
+    usePathUrlStrategy();
+    // Initialize GoRouter for web URL-based navigation
+    initializeWebRouter();
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
-  initializeResources();
+
+  // Initialize resources - web uses extended resources, mobile uses base
+  if (kIsWeb) {
+    initializeWebResources(); // Includes web fonts, colors AND base resources
+  } else {
+    initializeResources();
+  }
   if (!kIsWeb && TargetPlatform.android == defaultTargetPlatform) {
     await FlutterDisplayMode.setHighRefreshRate();
   }
@@ -229,21 +245,17 @@ void main() async {
   }
   setupLocator();
 
-  // Skip notification initialization for web - not needed
-  if (!kIsWeb) {
-    await NotificationService.initializeNotification();
-  }
-
+  // Initialize preferences and notifications in parallel for faster startup
   final Preferences pref = locator<Preferences>();
-  await pref.init();
+  await Future.wait([
+    NotificationService.initializeNotification(),
+    pref.init(),
+  ]);
 
-  // Skip badge clearing for web - not needed
-  if (!kIsWeb) {
-    try {
-      _clearBadgeOnStartup();
-    } catch (e) {
-      print("Error in notification clearing $e");
-    }
+  try {
+    _clearBadgeOnStartup();
+  } catch (e) {
+    print("Error in notification clearing $e");
   }
   // Run the app first without waiting for Firebase
   final beforeFirebase = DateTime.now();
@@ -287,22 +299,20 @@ class MyApp extends ConsumerWidget {
     //         themeProvide.isDarkMode ? Brightness.light : Brightness.dark,
     //     statusBarColor: themeProvide.isDarkMode ? Colors.black :Colors.white));
 
-    // Use ShadcnApp for web, MaterialApp for mobile
+    // Use MaterialApp.router with GoRouter for web (enables URL routing)
+    // Use MaterialApp for mobile (standard navigation)
     if (kIsWeb) {
-      return shadcn.ShadcnApp(
-        navigatorKey: rootNavigatorKey,
+      return shadcn.ShadcnApp.router(
+        routerConfig: webRouter,
         title: 'MYNT',
         debugShowCheckedModeBanner: false,
         theme: shadcn.ThemeData(
           colorScheme: themeProvide
               .getShadcnColorScheme(), // Use provider method for proper sync
           radius: 0,
-          // Note: shadcn components inherit from DefaultTextStyle belowz
+          // Note: shadcn components inherit from DefaultTextStyle below
           // If shadcn.ThemeData supports textTheme, you can set it here
         ),
-        initialRoute: Routes.splash,
-        onGenerateRoute: AppRoutes.router,
-        navigatorObservers: [routeObserver],
         builder: (context, child) {
           return shadcn.DrawerOverlay(
             child: Stack(

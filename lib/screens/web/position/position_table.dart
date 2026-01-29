@@ -1731,7 +1731,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Handle convert position
   void _handleConvertPosition(PositionBookModel position) {
-        showDialog(
+    _closePopover(); // Close the dropdown menu first
+    showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return ConvertPositionDialogueWeb(convertPosition: position);

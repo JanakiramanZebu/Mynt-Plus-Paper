@@ -16,4 +16,11 @@ enum ScreenType {
   reports,
   settings,
   tradeAction,
+  mfNfo,
+  mfCollection,
+  mfCategory,
+  sipCalculator,
+  cagrCalculator,
+  mfStockDetail,
+  notification,
 }

@@ -21,7 +21,7 @@ class WebChartManager {
   bool _isRegistered = false;
   String? _currentToken;
   bool _isVisible = false;
-  bool _hasUserChangedSymbol = false; // Track if user has changed symbol at least once
+  bool _isIframeCreated = false; // Track if iframe has been created and added to DOM
 
   // Pending symbol to use when iframe is created (if changeSymbol called before iframe ready)
   Map<String, dynamic>? _pendingSymbol;
@@ -53,7 +53,6 @@ class WebChartManager {
               prefs: prefs,
             );
             _currentToken = _pendingSymbol!['token'];
-            _hasUserChangedSymbol = true;
             debugPrint('WebChartManager: Creating iframe with pending symbol: ${_pendingSymbol!['tsym']}');
             // NOTE: Don't clear _pendingSymbol - keep it so subsequent iframes
             // also use the correct symbol (multiple HtmlElementView widgets may exist)
@@ -77,6 +76,9 @@ class WebChartManager {
             ..style.pointerEvents = 'auto'
             ..allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
             ..src = initialUrl;
+
+          // Mark iframe as created so changeSymbol knows the DOM is ready
+          _isIframeCreated = true;
 
           debugPrint('WebChartManager: Iframe #$viewId created with URL for token: $_currentToken');
           return _iframe!;
@@ -107,7 +109,7 @@ class WebChartManager {
     }
   }
 
-  /// Change symbol - uses URL reload for first change, postMessage for subsequent
+  /// Change symbol - uses postMessage for instant updates, URL reload as fallback
   /// IMPORTANT: In production, multiple HtmlElementView widgets may create separate
   /// iframe instances. We must send postMessage to ALL chart iframes, not just one.
   void changeSymbol({
@@ -139,27 +141,21 @@ class WebChartManager {
     final allChartIframes = _findAllChartIframes();
 
     if (allChartIframes.isEmpty) {
-      debugPrint('WebChartManager: No iframes found, stored pending symbol: $tsym');
+      // Iframe might not be in DOM yet - will use pending symbol when created
+      if (!_isIframeCreated) {
+        debugPrint('WebChartManager: Iframe not created yet, stored pending symbol: $tsym');
+      } else {
+        debugPrint('WebChartManager: No iframes found in DOM, stored pending symbol: $tsym');
+      }
       return;
     }
 
-    // For the FIRST user symbol change, reload iframe URL because TradingView
-    // widget might not be ready to receive postMessage yet
-    if (!_hasUserChangedSymbol) {
-      _hasUserChangedSymbol = true;
-      debugPrint('WebChartManager: First symbol change, reloading ${allChartIframes.length} iframe(s)');
-      _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
-      return;
-    }
-
-    // For subsequent changes, use postMessage (faster, no reload)
-    // dart:html's postMessage handles cross-origin correctly - don't use dart:js
-    // which triggers security errors when accessing contentWindow properties
+    // Use postMessage for all symbol changes (faster, no reload)
+    // If TradingView hasn't loaded yet, postMessage will be ignored but
+    // the pending symbol will be used when the user navigates back
     int successCount = 0;
     for (final iframe in allChartIframes) {
       try {
-        debugPrint('WebChartManager: iframe ${iframe.id} src: ${iframe.src}');
-
         final contentWindow = iframe.contentWindow;
         if (contentWindow != null) {
           // Send as JSON string - dart:html Map serialization may not work cross-origin

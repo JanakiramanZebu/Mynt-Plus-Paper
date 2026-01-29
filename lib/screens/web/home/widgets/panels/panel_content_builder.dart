@@ -133,6 +133,20 @@ class PanelContentBuilder {
           key: ValueKey('tradeAction_$tabIndex'),
           initialTabIndex: tabIndex,
         );
+      case ScreenType.mfNfo:
+        return const SizedBox.shrink();
+      case ScreenType.mfCollection:
+        return const SizedBox.shrink();
+      case ScreenType.mfCategory:
+        return const SizedBox.shrink();
+      case ScreenType.sipCalculator:
+        return const SizedBox.shrink();
+      case ScreenType.cagrCalculator:
+        return const SizedBox.shrink();
+      case ScreenType.mfStockDetail:
+        return const SizedBox.shrink();
+      case ScreenType.notification:
+        return const SizedBox.shrink();
     }
   }
 }
