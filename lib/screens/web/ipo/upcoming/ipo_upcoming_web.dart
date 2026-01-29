@@ -38,19 +38,6 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
 
     // Get filtered upcoming IPOs based on search
     List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);
-    final hasUpcomingIPOs = filteredUpcomingIPOs.isNotEmpty;
-
-    if (!hasUpcomingIPOs && ipos.ipocommonsearchcontroller.text.isNotEmpty) {
-      return const Center(
-        child: NoDataFound(),
-      );
-    }
-
-    if (!hasUpcomingIPOs) {
-      return const Center(
-        child: NoDataFound(),
-      );
-    }
 
     // Apply sorting
     final sortedUpcomingIPOs = _getSortedUpcomingIPOs(filteredUpcomingIPOs);
@@ -74,30 +61,35 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
         return shadcn.OutlinedContainer(
           child: Column(
             children: [
-              shadcn.Table(
-                columnWidths: columnWidths,
-                defaultRowHeight: const shadcn.FixedTableSize(50),
-                rows: [
-                  shadcn.TableHeader(
-                    cells: [
-                      _buildHeaderCell("Stock name", 0, theme),
-                      _buildHeaderCell("Issue Size", 1, theme),
-                      _buildHeaderCell("Last Updated", 2, theme),
-                      _buildHeaderCell("Stock Exchanges", 3, theme),
-                    ],
-                  ),
-                ],
+              SizedBox(
+                height: 50,
+                child: shadcn.Table(
+                  columnWidths: columnWidths,
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        _buildHeaderCell("Stock name", 0, theme),
+                        _buildHeaderCell("Issue Size", 1, theme),
+                        _buildHeaderCell("Last Updated", 2, theme),
+                        _buildHeaderCell("Stock Exchanges", 3, theme),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: shadcn.Table(
-                    columnWidths: columnWidths,
-                    defaultRowHeight: const shadcn.FixedTableSize(50),
-                    rows: sortedUpcomingIPOs.asMap().entries.map((entry) {
-                      return _buildShadcnRow(entry.value, entry.key, theme);
-                    }).toList(),
-                  ),
-                ),
+                child: filteredUpcomingIPOs.isEmpty
+                    ? const Center(child: NoDataFound())
+                    : SingleChildScrollView(
+                        child: shadcn.Table(
+                          columnWidths: columnWidths,
+                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          rows: sortedUpcomingIPOs.asMap().entries.map((entry) {
+                            return _buildShadcnRow(entry.value, entry.key, theme);
+                          }).toList(),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -210,11 +202,11 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
         child: Container(
           alignment: alignment,
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? Colors.white.withOpacity(0.04)
-                : Colors.black.withOpacity(0.03),
-          ),
+          // decoration: BoxDecoration(
+          //   color: theme.isDarkMode
+          //       ? Colors.white.withOpacity(0.04)
+          //       : Colors.black.withOpacity(0.03),
+          // ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -177,9 +177,14 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: null,
+              color: isRowHovered
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  : null,
               alignment:
                   alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
@@ -291,6 +296,11 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
             final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              color: isHovered
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  : null,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -547,16 +557,22 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Back Button (Left side)
-                    IconButton(
-                      onPressed: widget.onBack ?? () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back_ios_new,
-                          size: 20,
-                          color:
-                              theme.isDarkMode ? Colors.white : Colors.black),
-                      alignment: Alignment.center,
-                      tooltip: "Back",
+                    GestureDetector(
+                      onTap: widget.onBack ?? () => Navigator.pop(context),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.arrow_back_ios_outlined,
+                          size: 18,
+                          color: theme.isDarkMode
+                              ? colors.textSecondaryDark
+                              : colors.textSecondaryLight,
+                        ),
+                      ),
                     ),
-                    // const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     // // Icon
                     // Container(
                     //   width: 48,
@@ -683,7 +699,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                                       controller: _verticalScrollController,
                                       child: shadcn.Table(
                                         defaultRowHeight:
-                                            const shadcn.FixedTableSize(70),
+                                            const shadcn.FixedTableSize(60),
                                         columnWidths: {
                                           0: shadcn.FixedTableSize(
                                               fundNameWidth),

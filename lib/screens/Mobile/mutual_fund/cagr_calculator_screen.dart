@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart' show MyntColors, MyntFonts;
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
@@ -183,8 +183,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                               style: MyntWebTextStyles.bodyMedium(
                                 context,
                                 color: isDarkMode
-                                    ? WebColors.textPrimaryDark
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
                               ),
                             ),
                             const SizedBox(width: 6),
@@ -259,8 +259,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                               style: MyntWebTextStyles.bodyMedium(
                                 context,
                                 color: isDarkMode
-                                    ? WebColors.textPrimaryDark
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
                               ),
                             ),
                             const SizedBox(width: 6),
@@ -335,8 +335,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                               style: MyntWebTextStyles.bodyMedium(
                                 context,
                                 color: isDarkMode
-                                    ? WebColors.textPrimaryDark
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
                               ),
                             ),
                             Text(
@@ -344,8 +344,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                               style: MyntWebTextStyles.bodyMedium(
                                 context,
                                 color: isDarkMode
-                                    ? WebColors.textPrimaryDark
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
                               ),
                             ),
                           ],
@@ -398,8 +398,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                               style: MyntWebTextStyles.title(
                                 context,
                                 color: isDarkMode
-                                    ? WebColors.textPrimaryDark
-                                    : WebColors.textPrimary,
+                                    ? MyntColors.textPrimaryDark
+                                    : MyntColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -503,8 +503,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 style: MyntWebTextStyles.bodyMedium(
                   context,
                   color: theme.isDarkMode
-                      ? WebColors.textPrimaryDark
-                      : WebColors.textPrimary,
+                      ? MyntColors.textPrimaryDark
+                      : MyntColors.textPrimary,
                 ),
               ),
             ],
@@ -514,8 +514,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
             style: MyntWebTextStyles.bodyMedium(
               context,
               color: theme.isDarkMode
-                  ? WebColors.textPrimaryDark
-                  : WebColors.textPrimary,
+                  ? MyntColors.textPrimaryDark
+                  : MyntColors.textPrimary,
             ),
           ),
         ],

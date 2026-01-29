@@ -189,13 +189,13 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
-          decoration: BoxDecoration(
-            color: resolveThemeColor(
-              context,
-              dark: Colors.white.withOpacity(0.04),
-              light: Colors.black.withOpacity(0.03),
-            ),
-          ),
+          // decoration: BoxDecoration(
+          //   color: resolveThemeColor(
+          //     context,
+          //     dark: Colors.white.withOpacity(0.04),
+          //     light: Colors.black.withOpacity(0.03),
+          //   ),
+          // ),
           child: Row(
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,

@@ -358,14 +358,18 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            // final isRowHovered = hoveredIndex == rowIndex;
+            final isRowHovered = hoveredIndex == rowIndex;
 
             return GestureDetector(
               onTap: onTap,
               behavior: HitTestBehavior.opaque,
               child: Container(
                 padding: cellPadding,
-                color: null,
+                color: isRowHovered
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        light: MyntColors.primary.withValues(alpha: 0.08))
+                    : null,
                 alignment: alignRight ? Alignment.topRight : null,
                 child: child,
               ),
@@ -498,6 +502,11 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
               behavior: HitTestBehavior.opaque,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                color: isHovered
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        light: MyntColors.primary.withValues(alpha: 0.08))
+                    : null,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [

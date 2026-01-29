@@ -183,7 +183,7 @@ class BondsDetailsSidebarWeb extends ConsumerWidget {
 
   Widget _buildRow(BuildContext context, String label, String value, bool isDark, {bool isChip = false, bool isChipValue = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

@@ -210,12 +210,6 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   Widget _buildIPOTable(List<dynamic> ipos, ThemesProvider theme,
       IPOProvider ipoProvider, TranctionProvider upiProvider) {
-    if (ipos.isEmpty) {
-      return const Center(
-        child: NoDataFound(),
-      );
-    }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -235,43 +229,48 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
         return shadcn.OutlinedContainer(
           child: Column(
             children: [
-              shadcn.Table(
-                columnWidths: columnWidths,
-                defaultRowHeight: const shadcn.FixedTableSize(50),
-                rows: [
-                  shadcn.TableHeader(
-                    cells: [
-                      _buildHeaderCell("Stock name", 0, theme,
-                          padding: const EdgeInsets.only(
-                              left: 15.0,
-                              right: 12.0,
-                              top: 12.0,
-                              bottom: 12.0)),
-                      _buildHeaderCell("IPO date", 1, theme),
-                      _buildHeaderCell("Price range", -1, theme,
-                          alignRight: true),
-                      _buildHeaderCell("Min. amount", -1, theme,
-                          alignRight: true,
-                          padding: const EdgeInsets.only(
-                              left: 12.0,
-                              right: 24.0,
-                              top: 12.0,
-                              bottom: 12.0)),
-                    ],
-                  ),
-                ],
+              SizedBox(
+                height: 50,
+                child: shadcn.Table(
+                  columnWidths: columnWidths,
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: [
+                        _buildHeaderCell("Stock name", 0, theme,
+                            padding: const EdgeInsets.only(
+                                left: 15.0,
+                                right: 12.0,
+                                top: 12.0,
+                                bottom: 12.0)),
+                        _buildHeaderCell("IPO date", 1, theme),
+                        _buildHeaderCell("Price range", -1, theme,
+                            alignRight: true),
+                        _buildHeaderCell("Min. amount", -1, theme,
+                            alignRight: true,
+                            padding: const EdgeInsets.only(
+                                left: 12.0,
+                                right: 24.0,
+                                top: 12.0,
+                                bottom: 12.0)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: shadcn.Table(
-                    columnWidths: columnWidths,
-                    defaultRowHeight: const shadcn.FixedTableSize(65),
-                    rows: ipos.asMap().entries.map((entry) {
-                      return _buildShadcnRow(entry.value, entry.key, theme,
-                          ipoProvider, upiProvider);
-                    }).toList(),
-                  ),
-                ),
+                child: ipos.isEmpty
+                    ? const Center(child: NoDataFound())
+                    : SingleChildScrollView(
+                        child: shadcn.Table(
+                          columnWidths: columnWidths,
+                          defaultRowHeight: const shadcn.FixedTableSize(60),
+                          rows: ipos.asMap().entries.map((entry) {
+                            return _buildShadcnRow(entry.value, entry.key, theme,
+                                ipoProvider, upiProvider);
+                          }).toList(),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -313,11 +312,11 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
         child: Container(
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           padding: padding ?? const EdgeInsets.symmetric(horizontal: 12.0),
-          decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? Colors.white.withOpacity(0.04)
-                : Colors.black.withOpacity(0.03),
-          ),
+          // decoration: BoxDecoration(
+          //   color: theme.isDarkMode
+          //       ? Colors.white.withOpacity(0.04)
+          //       : Colors.black.withOpacity(0.03),
+          // ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
