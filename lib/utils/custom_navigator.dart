@@ -22,6 +22,13 @@ class WebNavigationHelper {
   // Callback for handling browser back/forward navigation
   static Function(String urlPath)? _onBrowserNavigation;
 
+  // Flag to track if we're handling browser back/forward navigation
+  // When true, URL updates should be skipped to preserve forward history
+  static bool _isHandlingBrowserNavigation = false;
+
+  /// Check if currently handling browser back/forward navigation
+  static bool get isHandlingBrowserNavigation => _isHandlingBrowserNavigation;
+
   // Initialize the web navigation helper with the main controller's methods
   static void initialize({
     required GlobalKey<NavigatorState> navigatorKey,
@@ -53,18 +60,33 @@ class WebNavigationHelper {
 
   /// Handle browser back/forward navigation
   static void _handleBrowserNavigation(String urlPath) {
-    // Notify external listener if registered
-    if (_onBrowserNavigation != null) {
-      _onBrowserNavigation!(urlPath);
-      return;
-    }
+    // Set flag to prevent URL updates during browser navigation
+    // This preserves forward history when pressing back button
+    _isHandlingBrowserNavigation = true;
+    debugPrint('WebNavigationHelper: Browser navigation started to $urlPath');
 
-    // Default handling: navigate to screen based on URL
-    final routeName = _urlPathToRouteName(urlPath);
-    if (routeName != null && _replaceScreen != null) {
-      // Use replaceScreen to avoid adding another history entry
-      _replaceScreen!(routeName);
-      debugPrint('WebNavigationHelper: Navigated to $routeName from browser back/forward');
+    try {
+      // Notify external listener if registered
+      if (_onBrowserNavigation != null) {
+        _onBrowserNavigation!(urlPath);
+        return;
+      }
+
+      // Default handling: navigate to screen based on URL
+      final routeName = _urlPathToRouteName(urlPath);
+      if (routeName != null && _replaceScreen != null) {
+        // Use replaceScreen to avoid adding another history entry
+        _replaceScreen!(routeName);
+        debugPrint('WebNavigationHelper: Navigated to $routeName from browser back/forward');
+      }
+    } finally {
+      // Reset flag after a longer delay to allow all navigation callbacks
+      // and GoRouter widget rebuilds to complete
+      // Using 500ms to ensure all async frame callbacks have executed
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _isHandlingBrowserNavigation = false;
+        debugPrint('WebNavigationHelper: Browser navigation handling complete');
+      });
     }
   }
 
@@ -177,8 +199,17 @@ class WebNavigationHelper {
 
   /// Update browser URL WITHOUT triggering GoRouter navigation
   /// This uses the browser's History API directly to avoid widget rebuilds
+  /// Skips update if currently handling browser back/forward to preserve forward history
   static void updateUrl(String urlPath) {
     if (!kIsWeb) return;
+
+    // Skip URL update if we're handling browser back/forward navigation
+    // This prevents clearing forward history when pressing back button
+    if (_isHandlingBrowserNavigation) {
+      debugPrint('WebNavigationHelper: Skipping URL update (handling browser navigation)');
+      return;
+    }
+
     try {
       url_strategy.updateBrowserUrl(urlPath);
       debugPrint('WebNavigationHelper: Updated URL to $urlPath');
