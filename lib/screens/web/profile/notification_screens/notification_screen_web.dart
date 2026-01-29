@@ -13,17 +13,17 @@ import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/broker_m
 import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/exchange_message.dart';
 import 'package:mynt_plus/screens/web/profile/notification_screens/tabs/information_message.dart';
 
-class Notificationpage extends ConsumerStatefulWidget {
-  const Notificationpage({super.key});
+class NotificationScreenWeb extends ConsumerStatefulWidget {
+  const NotificationScreenWeb({super.key});
 
   @override
-  ConsumerState<Notificationpage> createState() => _NotificationpageState();
+  ConsumerState<NotificationScreenWeb> createState() => _NotificationScreenWebState();
 
   // Public static method to check if notification screen is visible
-  static bool isCurrentlyVisible() => _NotificationpageState._isScreenVisible;
+  static bool isCurrentlyVisible() => _NotificationScreenWebState._isScreenVisible;
 }
 
-class _NotificationpageState extends ConsumerState<Notificationpage>
+class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb>
     with TickerProviderStateMixin {
   // Static flag to track if notification screen is currently visible
   static bool _isScreenVisible = false;
