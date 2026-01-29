@@ -822,19 +822,28 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
           ),
         ),
       ),
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          padding: cellPadding,
-          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: child,
-        ),
+      child: ValueListenableBuilder<int?>(
+        valueListenable: _hoveredRowIndex,
+        builder: (context, hoveredIndex, _) {
+          final isRowHovered = hoveredIndex == rowIndex;
+          return GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: cellPadding,
+              alignment:
+                  alignRight ? Alignment.centerRight : Alignment.centerLeft,
+              color: isRowHovered
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  : null,
+              child: child,
+            ),
+          );
+        },
       ),
     );
   }
@@ -1152,19 +1161,26 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     return shadcn.MenuButton(
       leading: Icon(
         icon,
-        size: 16,
+        size: 20,
         color: theme.isDarkMode
             ? MyntColors.textPrimaryDark
             : MyntColors.textPrimary,
       ),
       onPressed: (context) => onPressed(),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          color: theme.isDarkMode
-              ? MyntColors.textPrimaryDark
-              : MyntColors.textPrimary,
+      child: SizedBox(
+        width: 120,
+        height: 36,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.isDarkMode
+                  ? MyntColors.textPrimaryDark
+                  : MyntColors.textPrimary,
+            ),
+          ),
         ),
       ),
     );

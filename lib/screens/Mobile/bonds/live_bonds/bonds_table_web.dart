@@ -571,23 +571,6 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
       });
     }
 
-    // Show NoDataFound if no results after filtering
-    if (displayBonds.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: shadcn.OutlinedContainer(
-          child: NoDataFound(
-            title: searchQuery.isNotEmpty ? "No Bonds Found" : "No Bonds Listed",
-            subtitle: searchQuery.isNotEmpty
-                ? "No bonds match your search \"$searchQuery\"."
-                : "There are no active bond listings at the moment.",
-            primaryEnabled: false,
-            secondaryEnabled: false,
-          ),
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: shadcn.OutlinedContainer(
@@ -617,126 +600,140 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
           return Column(
               children: [
                 // Fixed Header
-                shadcn.Table(
-                  columnWidths: {
-                    0: shadcn.FixedTableSize(columnWidths[0]!),
-                    1: shadcn.FixedTableSize(columnWidths[1]!),
-                    2: shadcn.FixedTableSize(columnWidths[2]!),
-                    3: shadcn.FixedTableSize(columnWidths[3]!),
-                  },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
-                  rows: [
-                    shadcn.TableHeader(
-                      cells: [
-                        buildHeaderCell('Bonds name', 0),
-                        buildHeaderCell('BID date', 1),
-                        buildHeaderCell('Min. Invest', 2, true),
-                        buildHeaderCell('Lot Size', 3, true),
-                      ],
-                    ),
-                  ],
+                SizedBox(
+                  height: 50,
+                  child: shadcn.Table(
+                    columnWidths: {
+                      0: shadcn.FixedTableSize(columnWidths[0]!),
+                      1: shadcn.FixedTableSize(columnWidths[1]!),
+                      2: shadcn.FixedTableSize(columnWidths[2]!),
+                      3: shadcn.FixedTableSize(columnWidths[3]!),
+                    },
+                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                    rows: [
+                      shadcn.TableHeader(
+                        cells: [
+                          buildHeaderCell('Bonds name', 0),
+                          buildHeaderCell('BID date', 1),
+                          buildHeaderCell('Min. Invest', 2, true),
+                          buildHeaderCell('Lot Size', 3, true),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 // Scrollable Body (vertical scroll)
                 Expanded(
-                  child: RawScrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    trackColor: resolveThemeColor(context,
-                        dark: Colors.grey.withOpacity(0.1),
-                        light: Colors.grey.withOpacity(0.1)),
-                    thumbColor: resolveThemeColor(context,
-                        dark: Colors.grey.withOpacity(0.3),
-                        light: Colors.grey.withOpacity(0.3)),
-                    thickness: 6,
-                    radius: const Radius.circular(3),
-                    interactive: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey(
-                            'table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(80), // Larger row height for content
-                        rows: [
-                          // Data Rows
-                          ...displayBonds.asMap().entries.map((entry) {
-                            final index = entry.key;
-                             final bond = entry.value;
+                  child: displayBonds.isEmpty
+                      ? Center(
+                          child: NoDataFound(
+                            title: searchQuery.isNotEmpty ? "No Bonds Found" : "No Bonds Listed",
+                            subtitle: searchQuery.isNotEmpty
+                                ? "No bonds match your search \"$searchQuery\"."
+                                : "There are no active bond listings at the moment.",
+                            primaryEnabled: false,
+                            secondaryEnabled: false,
+                          ),
+                        )
+                      : RawScrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          trackColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.1),
+                              light: Colors.grey.withOpacity(0.1)),
+                          thumbColor: resolveThemeColor(context,
+                              dark: Colors.grey.withOpacity(0.3),
+                              light: Colors.grey.withOpacity(0.3)),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            child: shadcn.Table(
+                              key: ValueKey(
+                                  'table_${_sortColumnIndex}_$_sortAscending'),
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                                3: shadcn.FixedTableSize(columnWidths[3]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(65), // Larger row height for content
+                              rows: [
+                                // Data Rows
+                                ...displayBonds.asMap().entries.map((entry) {
+                                  final index = entry.key;
+                                   final bond = entry.value;
 
-                            return shadcn.TableRow(
-                              cells: [
-                                // Name & Series with hover action buttons
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 0,
-                                  child: _buildNameCellWithActions(bond, index),
-                                ),
-                                // Bid Date (Start & End)
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 1,
-                                  child: Row(
-                                      children: [
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                      Text("Start date", style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
-                                                      Text(_formatDate(bond.biddingStartDate), style: _getTextStyle(context)),
-                                                      Text(bond.dailyStartTime ?? '', style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
-                                                  ],
-                                              ),
-                                          ),
-                                          Expanded(
-                                              child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                      Text("End date", style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
-                                                      Text(_formatDate(bond.biddingEndDate), style: _getTextStyle(context)),
-                                                      Text(bond.dailyEndTime ?? '', style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
-                                                  ],
-                                              ),
-                                          ),
-                                      ],
-                                  )
-                                ),
-                                // Min Invest
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 2,
-                                  alignRight: true,
-                                  child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                          Text("₹${_calculateMinInvest(bond)}", style: _getTextStyle(context)),
-                                          Text("${_formatNumber(double.tryParse(bond.minBidQuantity?.toString() ?? '0') ?? 0)} Qty.", style: MyntWebTextStyles.para(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
-                                      ],
-                                  ),
-                                ),
-                                // Lot Size (Use "Cr" format logic if needed, or simply display)
-                                buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: 3,
-                                  alignRight: true,
-                                  child: Text(_formatLotSize(bond), style: _getTextStyle(context)),
-                                ),
+                                  return shadcn.TableRow(
+                                    cells: [
+                                      // Name & Series with hover action buttons
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 0,
+                                        child: _buildNameCellWithActions(bond, index),
+                                      ),
+                                      // Bid Date (Start & End)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 1,
+                                        child: Row(
+                                            children: [
+                                                Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                            Text("Start date", style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
+                                                            Text(_formatDate(bond.biddingStartDate), style: _getTextStyle(context)),
+                                                            Text(bond.dailyStartTime ?? '', style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
+                                                        ],
+                                                    ),
+                                                ),
+                                                Expanded(
+                                                    child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                            Text("End date", style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
+                                                            Text(_formatDate(bond.biddingEndDate), style: _getTextStyle(context)),
+                                                            Text(bond.dailyEndTime ?? '', style: MyntWebTextStyles.caption(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
+                                                        ],
+                                                    ),
+                                                ),
+                                            ],
+                                        )
+                                      ),
+                                      // Min Invest
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 2,
+                                        alignRight: true,
+                                        child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                                Text("₹${_calculateMinInvest(bond)}", style: _getTextStyle(context)),
+                                                Text("${_formatNumber(double.tryParse(bond.minBidQuantity?.toString() ?? '0') ?? 0)} Qty.", style: MyntWebTextStyles.para(context, darkColor: WebColors.textSecondaryDark, lightColor: WebColors.textSecondary)),
+                                            ],
+                                        ),
+                                      ),
+                                      // Lot Size (Use "Cr" format logic if needed, or simply display)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 3,
+                                        alignRight: true,
+                                        child: Text(_formatLotSize(bond), style: _getTextStyle(context)),
+                                      ),
+                                    ],
+                                  );
+                                }),
                               ],
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ),
+                            ),
+                          ),
+                        ),
                 ),
               ],
             );

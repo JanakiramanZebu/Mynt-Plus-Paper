@@ -23,7 +23,7 @@ import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
 import '../../../locator/locator.dart';
@@ -54,7 +54,7 @@ import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
-// import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+// import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
 
@@ -363,6 +363,12 @@ class _CustomizableSplitHomeScreenState
           // Handle back navigation if needed
         },
       );
+
+      // Set up browser back/forward navigation handler
+      WebNavigationHelper.setOnBrowserNavigation((String urlPath) {
+        debugPrint('Browser navigation event: $urlPath');
+        _handleBrowserNavigation(urlPath);
+      });
     });
 
     ref.read(networkStateProvider).networkStream();
@@ -1773,7 +1779,7 @@ class _CustomizableSplitHomeScreenState
                 color: resolveThemeColor(context,
                     dark: MyntColors.backgroundColorDark,
                     light: MyntColors.backgroundColor),
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return HoldingScreenWeb(
@@ -1801,7 +1807,7 @@ class _CustomizableSplitHomeScreenState
                 color: resolveThemeColor(context,
                     dark: MyntColors.backgroundColorDark,
                     light: MyntColors.backgroundColor),
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return PositionScreenWeb(listofPosition: allPostionList);
@@ -3306,6 +3312,47 @@ class _CustomizableSplitHomeScreenState
     });
   }
 
+  /// Handle browser back/forward navigation
+  /// Maps URL paths to screen handlers without adding new history entries
+  void _handleBrowserNavigation(String urlPath) {
+    if (!mounted) return;
+
+    debugPrint('_handleBrowserNavigation: $urlPath');
+
+    // Map URL path to screen type and navigate
+    switch (urlPath) {
+      case WebRoutes.holdings: // '/holdings'
+        _handleHoldingsTap();
+        break;
+      case WebRoutes.positions: // '/positions'
+        _handlePositionsTap();
+        break;
+      case WebRoutes.orders: // '/orders'
+        _handleOrderBookTap();
+        break;
+      case WebRoutes.funds: // '/funds'
+        _handleFundsTap();
+        break;
+      case WebRoutes.ipo: // '/ipo'
+        _handleIPOTap();
+        break;
+      case WebRoutes.mutualFunds: // '/mutual-funds'
+        _handleMutualFundTap();
+        break;
+      case WebRoutes.reports: // '/reports'
+        _handleReportsTap();
+        break;
+      case WebRoutes.optionChain: // '/option-chain'
+        // Option chain requires arguments, navigate to dashboard instead
+        _handleDashboardTap();
+        break;
+      case WebRoutes.home: // '/'
+      default:
+        _handleDashboardTap();
+        break;
+    }
+  }
+
   // New handler methods for separate portfolio screens
   void _handleHoldingsTap({int initialTabIndex = 0}) async {
     // Set loading state immediately
@@ -4252,7 +4299,7 @@ class _LazyOrderBookScreenState extends ConsumerState<_LazyOrderBookScreen> {
       color: resolveThemeColor(context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor),
-      child: const CircularLoaderImage(),
+      child: MyntLoader.branded(),
     );
   }
 }
@@ -4690,7 +4737,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
       color: resolveThemeColor(context,
           dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor),
-      child: const CircularLoaderImage(),
+      child: MyntLoader.branded(),
     );
   }
 }

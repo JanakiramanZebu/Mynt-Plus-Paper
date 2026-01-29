@@ -76,12 +76,6 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
     final theme = ref.watch(themeProvider);
     final ordersToDisplay = widget.filteredOrders ?? ipo.closeorder ?? [];
 
-    if (ordersToDisplay.isEmpty) {
-      return const Center(
-        child: NoDataFound(),
-      );
-    }
-
     // Apply sorting
     final sortedOrders = _getSortedOrders(ordersToDisplay);
 
@@ -113,52 +107,58 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                 ),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.zero,
               color: theme.isDarkMode
                   ? Theme.of(context).colorScheme.surface
                   : Colors.white,
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.zero,
               child: Column(
                 children: [
                   // Header
-                  Container(
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark.withOpacity(0.05),
-                      light: MyntColors.primary.withOpacity(0.05),
-                    ),
-                    child: shadcn.Table(
-                      columnWidths: columnWidths,
-                      defaultRowHeight: const shadcn.FixedTableSize(48),
-                      rows: [
-                        shadcn.TableHeader(
-                          cells: [
-                            _buildHeaderCell("Date", 0, theme),
-                            _buildHeaderCell("Stock name", 1, theme),
-                            _buildHeaderCell("Amount", 2, theme,
-                                centered: true),
-                            _buildHeaderCell("Status", 3, theme,
-                                centered: true),
-                          ],
-                        ),
-                      ],
+                  SizedBox(
+                    height: 48,
+                    child: Container(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark.withOpacity(0.05),
+                        light: MyntColors.primary.withOpacity(0.05),
+                      ),
+                      child: shadcn.Table(
+                        columnWidths: columnWidths,
+                        defaultRowHeight: const shadcn.FixedTableSize(48),
+                        rows: [
+                          shadcn.TableHeader(
+                            cells: [
+                              _buildHeaderCell("Date", 0, theme,
+                                  padding: const EdgeInsets.only(left: 16.0, right: 8.0)),
+                              _buildHeaderCell("Stock name", 1, theme),
+                              _buildHeaderCell("Amount", 2, theme,
+                                  centered: true),
+                              _buildHeaderCell("Status", 3, theme,
+                                  centered: true),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   // Body
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: shadcn.Table(
-                        columnWidths: columnWidths,
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: sortedOrders.asMap().entries.map((entry) {
-                          final order = entry.value;
-                          final index = entry.key;
-                          return _buildShadcnRow(order, index, theme);
-                        }).toList(),
-                      ),
-                    ),
+                    child: ordersToDisplay.isEmpty
+                        ? const Center(child: NoDataFound())
+                        : SingleChildScrollView(
+                            child: shadcn.Table(
+                              columnWidths: columnWidths,
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                              rows: sortedOrders.asMap().entries.map((entry) {
+                                final order = entry.value;
+                                final index = entry.key;
+                                return _buildShadcnRow(order, index, theme);
+                              }).toList(),
+                            ),
+                          ),
                   ),
                 ],
               ),
@@ -596,6 +596,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
           rowIsHovered: isHovered,
           theme: theme,
           onTap: () => _showOrderDetailsDialog(order),
+          padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 8.0, bottom: 8.0),
           child: Text(
             order.responseDatetime?.toString() == "" ||
                     order.responseDatetime == null

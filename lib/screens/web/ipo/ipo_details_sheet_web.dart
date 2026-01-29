@@ -296,13 +296,13 @@ class IpoDetailsSheetWeb extends ConsumerWidget {
   Widget _buildDetailRow(BuildContext context, String label, String value,
       {bool isLink = false, VoidCallback? onTap}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
             color: resolveThemeColor(context,
                 dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 0.5,
+            width: 1,
           ),
         ),
       ),

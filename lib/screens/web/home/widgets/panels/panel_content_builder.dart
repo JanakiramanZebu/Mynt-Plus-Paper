@@ -16,7 +16,7 @@ import 'package:mynt_plus/screens/web/position/position_screen_web.dart';
 import 'package:mynt_plus/screens/web/profile/Reports/reports_screen_web.dart';
 // import 'package:mynt_plus/screens/web/profile/settings_web.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/pledge_unpledge_screen.dart';
@@ -57,7 +57,7 @@ class PanelContentBuilder {
                 height: double.infinity,
                 color:
                     theme.isDarkMode ? WebDarkColors.background : Colors.white,
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return HoldingScreenWeb(
@@ -78,7 +78,7 @@ class PanelContentBuilder {
                 height: double.infinity,
                 color:
                     theme.isDarkMode ? WebDarkColors.background : Colors.white,
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return PositionScreenWeb(listofPosition: portfolio.allPostionList);

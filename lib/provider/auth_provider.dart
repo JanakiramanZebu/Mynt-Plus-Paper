@@ -1036,8 +1036,13 @@ class AuthProvider extends DefaultChangeNotifier {
         }
 
         if (currentRouteName != Routes.loginScreen) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, Routes.loginScreen, (route) => false);
+          // Use GoRouter for web, Navigator for mobile
+          if (kIsWeb) {
+            context.go(WebRoutes.login);
+          } else {
+            Navigator.pushNamedAndRemoveUntil(
+                context, Routes.loginScreen, (route) => false);
+          }
         }
       }else if(_logoutModel!.emsg == "Session Expired :  Invalid Session Key"){
         ref.read(authProvider).ifSessionExpired(context);
@@ -2212,14 +2217,14 @@ class AuthProvider extends DefaultChangeNotifier {
 
     // Navigate to login screen if not already there
     if (context.mounted && currentRouteName != Routes.loginScreen) {
-      Navigator.pushNamedAndRemoveUntil(
-          context, Routes.loginScreen, (route) => false);
-
-      // Show error message
+      // Use GoRouter for web, Navigator for mobile
       if (kIsWeb) {
+        context.go(WebRoutes.login);
         ResponsiveSnackBar.showWarning(context,
             "Connection issue. Please check your internet and try again.");
       } else {
+        Navigator.pushNamedAndRemoveUntil(
+            context, Routes.loginScreen, (route) => false);
         warningMessage(context,
             "Connection issue. Please check your internet and try again.");
       }
@@ -2340,14 +2345,14 @@ class AuthProvider extends DefaultChangeNotifier {
         // A short delay ensures that any pending UI operations are completed
         Future.delayed(Duration.zero, () {
           if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-                context, Routes.loginScreen, (route) => false);
-
-            // Show the message only after navigation for better UX
+            // Use GoRouter for web, Navigator for mobile
             if (kIsWeb) {
+              context.go(WebRoutes.login);
               ResponsiveSnackBar.showWarning(
                   context, "Session Expired, Please log in again");
             } else {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, Routes.loginScreen, (route) => false);
               warningMessage(context, "Session Expired, Please log in again");
             }
           }

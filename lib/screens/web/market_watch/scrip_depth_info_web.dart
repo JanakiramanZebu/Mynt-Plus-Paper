@@ -38,6 +38,7 @@ import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
 // import 'set_alert_web.dart';
 
@@ -1338,12 +1339,12 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                             ]),
                                           ),
                                           if (scripInfo.scripDepthloader)
-                                            const Center(
+                                            Center(
                                               child: Padding(
                                                 padding:
-                                                    EdgeInsets.only(top: 120),
+                                                    const EdgeInsets.only(top: 120),
                                                 child:
-                                                    CircularProgressIndicator(),
+                                                    MyntLoader.simple(),
                                               ),
                                             ),
                                           const SizedBox.shrink(),

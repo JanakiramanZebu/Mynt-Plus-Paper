@@ -129,10 +129,11 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return; // If system handled back, do nothing
         },
-        child: Column(
+        child: SizedBox(
+          height: 280,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
               const CustomDragHandler(),
               const SizedBox(height: 10),
@@ -163,9 +164,9 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
                       fw: 0,
                     ),
                   ])),
-              const SizedBox(height: 24),
+              const Spacer(),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.fromLTRB(8, 24, 8, 16),
                 child: SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
@@ -186,7 +187,7 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
                             color: colors.colorWhite,
                             fw: 2))),
               ),
-             
-            ]));
+            ]),
+        ));
   }
 }

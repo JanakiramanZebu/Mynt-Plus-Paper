@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/notification_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/exch_message_link.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/sharedWidget/exch_message_link_web.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'dart:convert';
 
@@ -13,8 +12,7 @@ class BrokerMsg extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final noftification = ref.watch(notificationprovider);
-    final theme = ref.read(themeProvider);
+    final notification = ref.watch(notificationprovider);
 
     String cleanMessage(String text) {
       try {
@@ -49,15 +47,15 @@ class BrokerMsg extends ConsumerWidget {
     }
 
     // Check if data is loading
-    if (noftification.loading) {
+    if (notification.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     // Check if brokermsg is null or empty
-    final brokermsg = noftification.brokermsg;
+    final brokermsg = notification.brokermsg;
     if (brokermsg == null || brokermsg.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 220),
+        padding: EdgeInsets.symmetric(vertical: 100),
         child: NoDataFound(
           secondaryEnabled: false,
         ),
@@ -67,7 +65,7 @@ class BrokerMsg extends ConsumerWidget {
     // Check if first message has no content
     if (brokermsg[0].dmsg == null || brokermsg[0].dmsg!.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 220),
+        padding: EdgeInsets.symmetric(vertical: 100),
         child: NoDataFound(
           secondaryEnabled: false,
         ),
@@ -75,47 +73,47 @@ class BrokerMsg extends ConsumerWidget {
     }
 
     // Display list of messages
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        shrinkWrap: true,
-        physics: const ClampingScrollPhysics(),
-        itemCount: brokermsg.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.paraText(
-                  text: "${brokermsg[index].norentm ?? ''}",
-                  theme: false,
-                  color: colors.textSecondaryLight,
-                  fw: 0,
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      itemCount: brokermsg.length,
+      itemBuilder: (BuildContext context, int index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Timestamp
+              Text(
+                brokermsg[index].norentm ?? '',
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  ),
                 ),
-                const SizedBox(
-                  height: 5,
-                ),
-                LinkExtractor(
-                  theme: theme,
-                  text: cleanMessage("${brokermsg[index].dmsg ?? ''}"),
-                )
-              ],
-            ),
-          );
-        },
-        separatorBuilder: (BuildContext context, int index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-            ),
-          );
-        },
-      ),
+              ),
+              const SizedBox(height: 6),
+              // Message content - using web version
+              LinkExtractorWeb(
+                text: cleanMessage(brokermsg[index].dmsg ?? ''),
+              ),
+            ],
+          ),
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return Divider(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.dividerDark,
+            light: MyntColors.divider,
+          ),
+          height: 1,
+        );
+      },
     );
   }
 }

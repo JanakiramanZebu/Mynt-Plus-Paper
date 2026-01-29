@@ -27,6 +27,7 @@ import '../../../../utils/responsive_navigation.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -1248,8 +1249,8 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
             }
 
             // Show loading indicator while waiting
-            return const Center(
-                child: CircularProgressIndicator(color: Color(0xff0037B7)));
+            return Center(
+                child: MyntLoader.simple());
           });
     }
 
@@ -2641,12 +2642,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      ),
+                      MyntLoader.inline(),
                       const SizedBox(width: 8),
                       TextWidget.subText(
                         text: "Placing...",

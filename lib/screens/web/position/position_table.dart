@@ -863,7 +863,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   columnWidths: columnWidths.map((index, width) {
                     return MapEntry(index, shadcn.FixedTableSize(width));
                   }),
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: headers.map((header) {

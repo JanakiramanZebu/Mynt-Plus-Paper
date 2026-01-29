@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../utils/url_utils.dart';
@@ -232,7 +233,21 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   setOrderIp() async {
-    _ip = await IpAddress().getIp();
+    if (kIsWeb) {
+      // Use CORS-friendly service for web
+      try {
+        final response = await http.get(Uri.parse('https://api.ipify.org?format=text'))
+            .timeout(const Duration(seconds: 5));
+        if (response.statusCode == 200) {
+          _ip = response.body.trim();
+          return;
+        }
+      } catch (_) {}
+      _ip = '';
+    } else {
+      // Use package for mobile
+      _ip = await IpAddress().getIp();
+    }
   }
 
   setDOrderloader(bool value) {

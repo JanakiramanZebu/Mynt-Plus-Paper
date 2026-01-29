@@ -109,9 +109,15 @@ class _mforderdetscreen extends State<mforderdetscreen>
                       ],
                     ),
                   ),
-                  Divider(
-                    thickness: 0,
-                    color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
+                          width: 1,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _buildOrderHeader(theme, mfdata),
@@ -413,19 +419,28 @@ class _mforderdetscreen extends State<mforderdetscreen>
     );
   }
 
-  Column rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Column(
-      children: [
-        const SizedBox(height: 12),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+  Widget rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
           Expanded(
             child: Text(
               title1,
               style: MyntWebTextStyles.body(
-              context,
-              color: theme.isDarkMode
-                  ? MyntColors.textSecondaryDark
-                  : MyntColors.textSecondary,
+                context,
+                color: theme.isDarkMode
+                    ? MyntColors.textSecondaryDark
+                    : MyntColors.textSecondary,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -433,24 +448,19 @@ class _mforderdetscreen extends State<mforderdetscreen>
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-                value1,
-                style: MyntWebTextStyles.body(
+              value1,
+              style: MyntWebTextStyles.body(
                 context,
                 color: theme.isDarkMode
                     ? MyntColors.textPrimaryDark
                     : MyntColors.textPrimary,
-                fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.right,
+                fontWeight: MyntFonts.medium,
+              ),
+              textAlign: TextAlign.right,
             ),
           ),
-        ]),
-        const SizedBox(height: 8),
-        Divider(
-          thickness: 0,
-          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
-        )
-      ],
+        ],
+      ),
     );
   }
 }

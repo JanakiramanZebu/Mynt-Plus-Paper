@@ -31,6 +31,16 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
   ];
 
   // Active SIPs sorting state
+class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
+    with SingleTickerProviderStateMixin {
+  // Tab state
+  late TabController _tabController;
+  final tablistitems = [
+    {"title": "Active SIP's", "index": 0},
+    {"title": "SIP Order Book", "index": 1}
+  ];
+
+  // Active SIPs sorting state
   int? _sortColumnIndex;
   bool _sortAscending = true;
 
@@ -39,8 +49,18 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
   bool _orderBookSortAscending = true;
 
   // Scroll controllers for Active SIPs
+  // Order book sorting state
+  int? _orderBookSortColumnIndex;
+  bool _orderBookSortAscending = true;
+
+  // Scroll controllers for Active SIPs
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
+
+  // Scroll controllers for Order Book
+  final ScrollController _orderBookVerticalScrollController = ScrollController();
+  final ScrollController _orderBookHorizontalScrollController = ScrollController();
+
 
   // Scroll controllers for Order Book
   final ScrollController _orderBookVerticalScrollController = ScrollController();
@@ -76,6 +96,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
 
   @override
   void dispose() {
+    _tabController.dispose();
     _tabController.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -151,10 +172,57 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
     return Column(
       children: [
         // Tab Bar and Search Row
+        // Tab Bar and Search Row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
+              // Tabs
+              Expanded(
+                child: SizedBox(
+                  height: 45,
+                  child: TabBar(
+                    controller: _tabController,
+                    tabAlignment: TabAlignment.start,
+                    isScrollable: true,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    indicator: BoxDecoration(
+                      color: theme.isDarkMode
+                          ? colors.searchBgDark
+                          : const Color(0xffF1F3F8),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    labelStyle: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                    ).copyWith(
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                    ),
+                    unselectedLabelStyle: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                    ).copyWith(
+                      color: theme.isDarkMode
+                          ? colors.textSecondaryDark
+                          : colors.textSecondaryLight,
+                    ),
+                    unselectedLabelColor: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    tabs: tablistitems.asMap().entries.map((entry) {
+                      final tabData = entry.value;
+                      return Tab(
+                        text: tabData['title'].toString(),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Search
               // Tabs
               Expanded(
                 child: SizedBox(
@@ -217,6 +285,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
           ),
         ),
         // Content
+        // Content
         Expanded(
           child: MyntLoaderOverlay(
             isLoading: mfData.bestmfloader ?? false,
@@ -241,7 +310,29 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                     padding: const EdgeInsets.all(16.0),
                     child: _buildSipOrderBookTable(context, theme, mfData),
                   ),
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: [
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await mfData.fetchmfsiplist();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildActiveSipsTable(context, theme, mfData),
+                  ),
                 ),
+                RefreshIndicator(
+                  onRefresh: () async {
+                    await mfData.fetchmfsipnotlivelist();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildSipOrderBookTable(context, theme, mfData),
+                  ),
+                ),
+              ],
               ],
             ),
           ),
@@ -250,6 +341,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
     );
   }
 
+  // ==================== ACTIVE SIPs TABLE ====================
+  Widget _buildActiveSipsTable(
   // ==================== ACTIVE SIPs TABLE ====================
   Widget _buildActiveSipsTable(
     BuildContext context,
@@ -559,6 +652,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
           }
 
           final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
+          final totalMinWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
 
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
@@ -582,12 +676,14 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               for (int i = 0; i < 9; i++) {
                 if (growthFactors[i]! > 0) {
                   final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  final extraForThisColumn = (extraSpace * growthFactors[i]!) / totalGrowthFactor;
                   columnWidths[i] = columnWidths[i]! + extraForThisColumn;
                 }
               }
             }
           }
 
+          final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
           final totalRequiredWidth = columnWidths.values.fold<double>(0.0, (sum, width) => sum + width);
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
@@ -620,6 +716,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                         _buildHeaderCell('Installment amt', 6, true, true),
                         _buildHeaderCell('SIP Register No.', 7, false, true),
                         _buildHeaderCell('Status', 8, false, true),
+                        _buildHeaderCell('SIP Register Date', 0, false, true),
+                        _buildHeaderCell('Start Date', 1, false, true),
+                        _buildHeaderCell('End Date', 2, false, true),
+                        _buildHeaderCell('Next SIP Date', 3, false, true),
+                        _buildHeaderCell('Fund name', 4, false, true),
+                        _buildHeaderCell('Frequency Type', 5, false, true),
+                        _buildHeaderCell('Installment amt', 6, true, true),
+                        _buildHeaderCell('SIP Register No.', 7, false, true),
+                        _buildHeaderCell('Status', 8, false, true),
                       ],
                     ),
                   ],
@@ -629,12 +734,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                   child: sortedOrders.isEmpty
                       ? LayoutBuilder(
                           builder: (context, constraints) => SingleChildScrollView(
+                          builder: (context, constraints) => SingleChildScrollView(
                             physics: const AlwaysScrollableScrollPhysics(),
                             child: ConstrainedBox(
+                              constraints: BoxConstraints(minHeight: constraints.maxHeight),
                               constraints: BoxConstraints(minHeight: constraints.maxHeight),
                               child: const Center(
                                 child: NoDataFound(
                                   title: "No SIP Orders Found",
+                                  subtitle: "There's nothing here yet.",
                                   subtitle: "There's nothing here yet.",
                                   secondaryEnabled: false,
                                 ),
@@ -643,6 +751,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                           ),
                         )
                       : RawScrollbar(
+                          controller: _orderBookVerticalScrollController,
                           controller: _orderBookVerticalScrollController,
                           thumbVisibility: true,
                           trackVisibility: true,
@@ -653,8 +762,10 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                           interactive: true,
                           child: SingleChildScrollView(
                             controller: _orderBookVerticalScrollController,
+                            controller: _orderBookVerticalScrollController,
                             scrollDirection: Axis.vertical,
                             child: shadcn.Table(
+                              key: ValueKey('orderbook_table_${_orderBookSortColumnIndex}_$_orderBookSortAscending'),
                               key: ValueKey('orderbook_table_${_orderBookSortColumnIndex}_$_orderBookSortAscending'),
                               columnWidths: {
                                 0: shadcn.FixedTableSize(columnWidths[0]!),
@@ -677,11 +788,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                     cells: [
                                       // SIP Register Date
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 0,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          _formatDate(item.sIPRegnDate ?? '-'),
                                           _formatDate(item.sIPRegnDate ?? '-'),
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -689,11 +804,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // Start Date
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 1,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          _formatDate(item.startDate ?? '-'),
                                           _formatDate(item.startDate ?? '-'),
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -701,11 +820,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // End Date
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 2,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          _formatDate(item.endDate ?? '-'),
                                           _formatDate(item.endDate ?? '-'),
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -713,11 +836,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // Next SIP Date
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 3,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          _formatDate(item.NextSIPDate ?? '-'),
                                           _formatDate(item.NextSIPDate ?? '-'),
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -768,11 +895,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // Frequency Type
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 5,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          item.frequencyType ?? '-',
                                           item.frequencyType ?? '-',
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -780,9 +911,12 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // Installment amt
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 6,
                                         alignRight: true,
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
@@ -792,11 +926,15 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // SIP Register No.
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 7,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Text(
+                                          item.sIPRegnNo ?? '-',
                                           item.sIPRegnNo ?? '-',
                                           style: _getTextStyle(context),
                                           overflow: TextOverflow.ellipsis,
@@ -804,20 +942,28 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                                       ),
                                       // Status
                                       _buildCellWithHover(
+                                      _buildCellWithHover(
                                         rowIndex: rowIndex,
                                         columnIndex: 8,
                                         isOrderBook: true,
                                         onTap: () => _showSipDetail(mfData, item, context),
+                                        isOrderBook: true,
+                                        onTap: () => _showSipDetail(mfData, item, context),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
+                                            color: _getStatusColor(item.status, theme).withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(4),
                                             color: _getStatusColor(item.status, theme).withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
                                             _getStatusText(item.status).toUpperCase(),
+                                            _getStatusText(item.status).toUpperCase(),
                                             style: MyntWebTextStyles.bodySmall(
                                               context,
+                                              color: _getStatusColor(item.status, theme),
                                               color: _getStatusColor(item.status, theme),
                                               fontWeight: MyntFonts.medium,
                                             ),
@@ -841,6 +987,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
           if (needsHorizontalScroll) {
             return RawScrollbar(
               controller: _orderBookHorizontalScrollController,
+              controller: _orderBookHorizontalScrollController,
               thumbVisibility: true,
               trackVisibility: true,
               trackColor: Colors.grey.withValues(alpha: 0.1),
@@ -849,6 +996,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               radius: const Radius.circular(3),
               interactive: true,
               child: SingleChildScrollView(
+                controller: _orderBookHorizontalScrollController,
                 controller: _orderBookHorizontalScrollController,
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
@@ -868,14 +1016,19 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
   // ==================== COMMON CELL & HEADER BUILDERS ====================
 
   shadcn.TableCell _buildCellWithHover({
+  // ==================== COMMON CELL & HEADER BUILDERS ====================
+
+  shadcn.TableCell _buildCellWithHover({
     required Widget child,
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
     bool isOrderBook = false,
+    bool isOrderBook = false,
     VoidCallback? onTap,
   }) {
     final isFirstColumn = columnIndex == 0;
+    final isLastColumn = isOrderBook ? columnIndex == 8 : columnIndex == 5;
     final isLastColumn = isOrderBook ? columnIndex == 8 : columnIndex == 5;
 
     EdgeInsets cellPadding;
@@ -942,7 +1095,9 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
   }
 
   shadcn.TableCell _buildHeaderCell(String label, int columnIndex, bool alignRight, bool isOrderBook) {
+  shadcn.TableCell _buildHeaderCell(String label, int columnIndex, bool alignRight, bool isOrderBook) {
     final isFirstColumn = columnIndex == 0;
+    final isLastColumn = isOrderBook ? columnIndex == 8 : columnIndex == 5;
     final isLastColumn = isOrderBook ? columnIndex == 8 : columnIndex == 5;
 
     EdgeInsets headerPadding;
@@ -953,6 +1108,9 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
     } else {
       headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
     }
+
+    final sortColumnIndex = isOrderBook ? _orderBookSortColumnIndex : _sortColumnIndex;
+    final sortAscending = isOrderBook ? _orderBookSortAscending : _sortAscending;
 
     final sortColumnIndex = isOrderBook ? _orderBookSortColumnIndex : _sortColumnIndex;
     final sortAscending = isOrderBook ? _orderBookSortAscending : _sortAscending;
@@ -970,18 +1128,23 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
       ),
       child: InkWell(
         onTap: () => isOrderBook ? _onOrderBookSort(columnIndex) : _onSort(columnIndex),
+        onTap: () => isOrderBook ? _onOrderBookSort(columnIndex) : _onSort(columnIndex),
         child: Container(
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
             mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
             children: [
               if (alignRight && sortColumnIndex == columnIndex)
+              if (alignRight && sortColumnIndex == columnIndex)
                 Icon(
+                  sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
                   color: MyntColors.textSecondaryDark,
                 ),
+              if (alignRight && sortColumnIndex == columnIndex) const SizedBox(width: 4),
               if (alignRight && sortColumnIndex == columnIndex) const SizedBox(width: 4),
               Text(
                 label,
@@ -989,7 +1152,10 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               ),
               if (!alignRight && sortColumnIndex == columnIndex) const SizedBox(width: 4),
               if (!alignRight && sortColumnIndex == columnIndex)
+              if (!alignRight && sortColumnIndex == columnIndex) const SizedBox(width: 4),
+              if (!alignRight && sortColumnIndex == columnIndex)
                 Icon(
+                  sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
                   size: 16,
                   color: MyntColors.textSecondaryDark,
@@ -1000,6 +1166,8 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
       ),
     );
   }
+
+  // ==================== SORTING ====================
 
   // ==================== SORTING ====================
 
@@ -1026,7 +1194,66 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
   }
 
   // Active SIPs column widths
+  void _onOrderBookSort(int columnIndex) {
+    setState(() {
+      if (_orderBookSortColumnIndex == columnIndex) {
+        _orderBookSortAscending = !_orderBookSortAscending;
+      } else {
+        _orderBookSortColumnIndex = columnIndex;
+        _orderBookSortAscending = true;
+      }
+    });
+  }
+
+  // Active SIPs column widths
   Map<int, double> _calculateMinWidths(List orders, BuildContext context) {
+    final textStyle = const TextStyle(fontSize: 14);
+    const padding = 24.0;
+    const sortIconWidth = 24.0;
+
+    final headers = ['Scheme', 'SIP Reg No', 'Amount', 'Frequency', 'Next Installment', 'Status'];
+    final minWidths = <int, double>{};
+
+    for (int col = 0; col < headers.length; col++) {
+      double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
+
+      for (final order in orders.take(5)) {
+        String cellText = '';
+        switch (col) {
+          case 0:
+            cellText = order.name ?? 'N/A';
+            break;
+          case 1:
+            cellText = order.sIPRegnNo ?? '-';
+            break;
+          case 2:
+            cellText = "₹${order.installmentAmount ?? 'N/A'}";
+            break;
+          case 3:
+            cellText = order.frequencyType ?? '-';
+            break;
+          case 4:
+            cellText = order.NextSIPDate ?? '-';
+            break;
+          case 5:
+            cellText = _getStatusText(order.status);
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, textStyle);
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      minWidths[col] = maxWidth + padding;
+    }
+
+    return minWidths;
+  }
+
+  // Order Book column widths
+  Map<int, double> _calculateOrderBookMinWidths(List orders, BuildContext context) {
     final textStyle = const TextStyle(fontSize: 14);
     const padding = 24.0;
     const sortIconWidth = 24.0;
@@ -1093,6 +1320,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
     final minWidths = <int, double>{};
 
     for (int col = 0; col < headers.length; col++) {
+      double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
       double maxWidth = _measureTextWidth(headers[col], textStyle) + sortIconWidth;
 
       for (final order in orders.take(5)) {
@@ -1192,6 +1420,41 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
       int comparison = 0;
 
       switch (_orderBookSortColumnIndex!) {
+        case 0: // Scheme
+          comparison = (a.name ?? '').compareTo(b.name ?? '');
+          break;
+        case 1: // SIP Reg No
+          comparison = (a.sIPRegnNo ?? '').compareTo(b.sIPRegnNo ?? '');
+          break;
+        case 2: // Amount
+          comparison = (double.tryParse(a.installmentAmount ?? '0') ?? 0.0)
+              .compareTo(double.tryParse(b.installmentAmount ?? '0') ?? 0.0);
+          break;
+        case 3: // Frequency
+          comparison = (a.frequencyType ?? '').compareTo(b.frequencyType ?? '');
+          break;
+        case 4: // Next Installment
+          comparison = (a.NextSIPDate ?? '').compareTo(b.NextSIPDate ?? '');
+          break;
+        case 5: // Status
+          comparison = (a.status ?? '').compareTo(b.status ?? '');
+          break;
+      }
+
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    return sorted;
+  }
+
+  List _getSortedOrderBookOrders(List orders) {
+    if (_orderBookSortColumnIndex == null) return orders;
+
+    final sorted = List.from(orders);
+    sorted.sort((a, b) {
+      int comparison = 0;
+
+      switch (_orderBookSortColumnIndex!) {
         case 0: // SIP Register Date
           comparison = (a.sIPRegnDate ?? '').compareTo(b.sIPRegnDate ?? '');
           break;
@@ -1222,6 +1485,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
           break;
       }
 
+      return _orderBookSortAscending ? comparison : -comparison;
       return _orderBookSortAscending ? comparison : -comparison;
     });
 
@@ -1538,6 +1802,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               );
             },
             transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
+            transitionBuilder: (dialogContext, animation, secondaryAnimation, child) {
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(1, 0),
@@ -1556,6 +1821,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to load SIP details: ${e.toString()}")),
             SnackBar(content: Text("Failed to load SIP details: ${e.toString()}")),
           );
         }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import '../../../models/mf_model/mf_lumpsum_order.dart';
@@ -12,7 +11,7 @@ import '../../../provider/transcation_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
 import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
@@ -179,10 +178,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               children: [
                 Text(
                   fundName,
-                  style: WebTextStyles.title(
-                    isDarkTheme: isDark,
-                    color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                    fontWeight: FontWeight.w600,
+                  style: MyntWebTextStyles.title(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -190,9 +190,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                 const SizedBox(height: 4),
                 Text(
                   mfOrder.mfOrderTpye == "One-time" ? "One-time" : "SIP",
-                  style: WebTextStyles.para(
-                    isDarkTheme: isDark,
-                    color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                  style: MyntWebTextStyles.para(
+                    context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
                   ),
                 ),
               ],
@@ -210,7 +211,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                 child: Icon(
                   Icons.close,
                   size: 24,
-                  color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                  color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
                 ),
               ),
             ),
@@ -227,12 +228,12 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
       children: [
         Text(
           "One-Time",
-          style: WebTextStyles.sub(
-            isDarkTheme: isDark,
+          style: MyntWebTextStyles.bodyMedium(
+            context,
             color: !isSIP
-                ? (isDark ? WebColors.textPrimaryDark : WebColors.textPrimary)
-                : (isDark ? WebColors.textSecondaryDark : WebColors.textSecondary),
-            fontWeight: !isSIP ? FontWeight.w600 : FontWeight.w400,
+                ? (isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary)
+                : (isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary),
+            fontWeight: !isSIP ? MyntFonts.semiBold : MyntFonts.regular,
           ),
         ),
         const SizedBox(width: 12),
@@ -247,7 +248,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             width: 50,
             height: 28,
             decoration: BoxDecoration(
-              color: isSIP ? WebColors.primary : const Color(0xFFE0E0E0),
+              color: isSIP ? MyntColors.primary : const Color(0xFFE0E0E0),
               borderRadius: BorderRadius.circular(14),
             ),
             child: AnimatedAlign(
@@ -268,12 +269,12 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
         const SizedBox(width: 12),
         Text(
           "Monthly SIP",
-          style: WebTextStyles.sub(
-            isDarkTheme: isDark,
+          style: MyntWebTextStyles.bodyMedium(
+            context,
             color: isSIP
-                ? (isDark ? WebColors.textPrimaryDark : WebColors.textPrimary)
-                : (isDark ? WebColors.textSecondaryDark : WebColors.textSecondary),
-            fontWeight: isSIP ? FontWeight.w600 : FontWeight.w400,
+                ? (isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary)
+                : (isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary),
+            fontWeight: isSIP ? MyntFonts.semiBold : MyntFonts.regular,
           ),
         ),
       ],
@@ -296,10 +297,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               children: [
                 Text(
                   "Mandates",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: isDark,
-                    color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                    fontWeight: FontWeight.w500,
+                  style: MyntWebTextStyles.bodyMedium(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
                   ),
                 ),
                 if (hasError) ...[
@@ -322,10 +324,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             ),
             Text(
               "Amt: $selectedAmount",
-              style: WebTextStyles.sub(
-                isDarkTheme: isDark,
-                color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                fontWeight: FontWeight.w500,
+              style: MyntWebTextStyles.bodyMedium(
+                context,
+                fontWeight: MyntFonts.medium,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
               ),
             ),
           ],
@@ -351,9 +354,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               children: [
                 Text(
                   "No mandates available",
-                  style: WebTextStyles.para(
-                    isDarkTheme: isDark,
-                    color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                  style: MyntWebTextStyles.para(
+                    context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
                   ),
                 ),
               ],
@@ -369,10 +373,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             onTap: () => _showCreateMandateDialog(),
             child: Text(
               "+ Create mandate",
-              style: WebTextStyles.sub(
-                isDarkTheme: isDark,
-                color: WebColors.primary,
-                fontWeight: FontWeight.w500,
+              style: MyntWebTextStyles.bodyMedium(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: MyntColors.primary,
               ),
             ),
           ),
@@ -405,8 +409,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: isDark
-                    ? WebColors.outlinedBorderDark
-                    : WebColors.outlinedBorder,
+                    ? MyntColors.outlinedBorderDark
+                    : MyntColors.outlinedBorder,
                 width: 1,
               ),
             ),
@@ -415,15 +419,16 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               children: [
                 Text(
                   selectedMandate?.mandateId ?? "Select mandate",
-                  style: WebTextStyles.sub(
-                    isDarkTheme: isDark,
-                    color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                    fontWeight: FontWeight.w500,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
                   ),
                 ),
                 Icon(
                   _isMandateDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                  color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                  color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
                   size: 20,
                 ),
               ],
@@ -441,8 +446,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
                 color: isDark
-                    ? WebColors.outlinedBorderDark
-                    : WebColors.outlinedBorder,
+                    ? MyntColors.outlinedBorderDark
+                    : MyntColors.outlinedBorder,
                 width: 1,
               ),
               boxShadow: [
@@ -460,8 +465,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               separatorBuilder: (_, __) => Divider(
                 height: 1,
                 color: isDark
-                    ? WebColors.outlinedBorderDark
-                    : WebColors.outlinedBorder,
+                    ? MyntColors.outlinedBorderDark
+                    : MyntColors.outlinedBorder,
               ),
               itemBuilder: (context, index) {
                 final mandate = mfOrder.mandateData![index];
@@ -476,7 +481,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     color: isSelected
-                        ? (isDark ? WebColors.primary.withOpacity(0.1) : WebColors.primary.withOpacity(0.05))
+                        ? (isDark ? MyntColors.primary.withOpacity(0.1) : MyntColors.primary.withOpacity(0.05))
                         : Colors.transparent,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,10 +494,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                 children: [
                                   Text(
                                     "Mandate Id : ${mandate.mandateId}",
-                                    style: WebTextStyles.sub(
-                                      isDarkTheme: isDark,
-                                      color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                                      fontWeight: FontWeight.w500,
+                                    style: MyntWebTextStyles.bodySmall(
+                                      context,
+                                      fontWeight: MyntFonts.medium,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(width: 6),
@@ -502,25 +508,28 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 mandate.bankName ?? "Unknown Bank",
-                                style: WebTextStyles.para(
-                                  isDarkTheme: isDark,
-                                  color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 status,
-                                style: WebTextStyles.para(
-                                  isDarkTheme: isDark,
-                                  color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 _formatDate(mandate.regnDate ?? ''),
-                                style: WebTextStyles.para(
-                                  isDarkTheme: isDark,
-                                  color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -531,17 +540,18 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                           children: [
                             Text(
                               double.parse(mandate.amount ?? '0').toStringAsFixed(2),
-                              style: WebTextStyles.sub(
-                                isDarkTheme: isDark,
-                                color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
-                                fontWeight: FontWeight.w600,
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                fontWeight: MyntFonts.semiBold,
+                                darkColor: MyntColors.textPrimaryDark,
+                                lightColor: MyntColors.textPrimary,
                               ),
                             ),
                             if (isSelected) ...[
                               const SizedBox(height: 8),
                               Icon(
                                 Icons.check_circle,
-                                color: WebColors.primary,
+                                color: MyntColors.primary,
                                 size: 20,
                               ),
                             ],
@@ -586,10 +596,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
       children: [
         Text(
           isLumpsum ? "Investment amount" : "Instalment amount",
-          style: WebTextStyles.sub(
-            isDarkTheme: isDark,
-            color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
-            fontWeight: FontWeight.w500,
+          style: MyntWebTextStyles.bodyMedium(
+            context,
+            fontWeight: MyntFonts.medium,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
           ),
         ),
         const SizedBox(height: 10),
@@ -602,7 +613,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
+              color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
             ),
             onChanged: (value) {
               mfOrder.isValidUpiId(widget.mfData, '');
@@ -612,7 +623,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               hintStyle: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: isDark ? WebColors.textSecondaryDark : WebColors.textSecondary,
+                color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
               ),
               prefixIcon: Padding(
                 padding: const EdgeInsets.only(left: 12, right: 8),
@@ -621,7 +632,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? WebColors.textPrimaryDark : WebColors.textPrimary,
+                    color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                   ),
                 ),
               ),
@@ -634,8 +645,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: errorText != null && errorText.isNotEmpty
-                      ? (isDark ? WebColors.lossDark : WebColors.loss)
-                      : (isDark ? WebColors.outlinedBorderDark : WebColors.outlinedBorder),
+                      ? (isDark ? MyntColors.lossDark : MyntColors.loss)
+                      : (isDark ? MyntColors.outlinedBorderDark : MyntColors.outlinedBorder),
                   width: 1,
                 ),
                 borderRadius: BorderRadius.circular(5),
@@ -643,8 +654,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: errorText != null && errorText.isNotEmpty
-                      ? (isDark ? WebColors.lossDark : WebColors.loss)
-                      : (isDark ? WebColors.outlinedBorderDark : WebColors.outlinedBorder),
+                      ? (isDark ? MyntColors.lossDark : MyntColors.loss)
+                      : (isDark ? MyntColors.outlinedBorderDark : MyntColors.outlinedBorder),
                   width: 1,
                 ),
                 borderRadius: BorderRadius.circular(5),
@@ -658,9 +669,9 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
           const SizedBox(height: 8),
           Text(
             errorText,
-            style: WebTextStyles.para(
-              isDarkTheme: isDark,
-              color: isDark ? WebColors.lossDark : WebColors.loss,
+            style: MyntWebTextStyles.para(
+              context,
+              color: isDark ? MyntColors.lossDark : MyntColors.loss,
             ),
           ),
         ],
@@ -680,16 +691,16 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             children: [
               Text(
                 "Monthly on ${mfOrder.dates}${getDateSuffix(int.tryParse(mfOrder.dates) ?? 1)}",
-                style: WebTextStyles.sub(
-                  isDarkTheme: isDark,
-                  color: WebColors.primary,
-                  fontWeight: FontWeight.w500,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: MyntColors.primary,
                 ),
               ),
               const SizedBox(width: 4),
               Icon(
                 Icons.keyboard_arrow_down,
-                color: WebColors.primary,
+                color: MyntColors.primary,
                 size: 20,
               ),
             ],
@@ -722,8 +733,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
           child: ElevatedButton(
             onPressed: mfOrder.investloader ? null : () => _handlePayment(mfOrder),
             style: ElevatedButton.styleFrom(
-              backgroundColor: WebColors.primary,
-              disabledBackgroundColor: WebColors.primary.withOpacity(0.5),
+              backgroundColor: MyntColors.primary,
+              disabledBackgroundColor: MyntColors.primary.withOpacity(0.5),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -740,10 +751,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                   )
                 : Text(
                     buttonText,
-                    style: WebTextStyles.sub(
-                      isDarkTheme: false,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
           ),
@@ -996,8 +1007,23 @@ void _showCalendarDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
+      final screenWidth = MediaQuery.of(context).size.width;
+
+      // Responsive width
+      final double dialogWidth;
+      if (screenWidth >= 1100) {
+        dialogWidth = 380;
+      } else if (screenWidth >= 600) {
+        dialogWidth = 360;
+      } else {
+        dialogWidth = screenWidth * 0.85;
+      }
+
+      // Responsive calendar height
+      final double calendarHeight = screenWidth < 400 ? 280 : 320;
+
       return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+        insetPadding: EdgeInsets.symmetric(horizontal: screenWidth < 400 ? 12 : 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -1011,10 +1037,8 @@ void _showCalendarDialog(
                   : colors.colorWhite,
             ),
           ),
-          width: MediaQuery.of(context).size.width >= 1100
-              ? MediaQuery.of(context).size.width * 0.25
-              : MediaQuery.of(context).size.width * 0.90,
-          padding: const EdgeInsets.all(16.0),
+          width: dialogWidth,
+          padding: EdgeInsets.all(screenWidth < 400 ? 12.0 : 16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1033,7 +1057,7 @@ void _showCalendarDialog(
               ),
               const SizedBox(height: 12),
               SizedBox(
-                height: 350,
+                height: calendarHeight,
                 child: _SIPCalendar(
                   theme: theme,
                   mfOrder: mfOrder,
@@ -1165,7 +1189,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             style: ElevatedButton.styleFrom(
               elevation: 0,
               minimumSize: const Size(0, 45),
-              backgroundColor: WebColors.primary,
+              backgroundColor: MyntColors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1193,7 +1217,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
       bgColor = const Color(0xFFE0E0E0);
       textColor = const Color(0xFFBDBDBD);
     } else if (isSelected) {
-      bgColor = WebColors.primary;
+      bgColor = MyntColors.primary;
       textColor = colors.colorWhite;
     } else {
       bgColor = const Color(0xffF1F3F8);

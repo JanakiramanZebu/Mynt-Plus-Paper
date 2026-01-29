@@ -15,6 +15,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../utils/rupee_convert_format.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -216,118 +217,51 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Use 2 cards per row when width is less than 800
-        final useCompactLayout = constraints.maxWidth < 800;
+        final columns = constraints.maxWidth >= 800 ? 4 : 2;
 
-        if (useCompactLayout) {
-          // 2x2 grid layout for small screens
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      label: 'Invested',
-                      value: invested,
-                      valueColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary,
-                      ),
-                      theme: theme,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      label: 'Current Value',
-                      value: currentValue,
-                      valueColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary,
-                      ),
-                      theme: theme,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      label: 'Profit/Loss',
-                      value: totalPnL,
-                      percentage: totalPnLPercent,
-                      valueColor: getValueColor(context, totalPnL),
-                      theme: theme,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      label: 'Day Change',
-                      value: dayChange,
-                      percentage: dayChangePercent,
-                      valueColor: getValueColor(context, dayChange),
-                      theme: theme,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        }
-
-        // Default: 4 cards in one row for larger screens
-        return Row(
+        return GridView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: 100, // Fixed height - won't change with width
+          ),
           children: [
-            Expanded(
-              child: _buildStatCard(
-                label: 'Invested',
-                value: invested,
-                valueColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-                theme: theme,
+            _buildStatCard(
+              label: 'Invested',
+              value: invested.toIndianRupee(),
+              valueColor: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
+              theme: theme,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Current Value',
-                value: currentValue,
-                valueColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-                theme: theme,
+            _buildStatCard(
+              label: 'Current Value',
+              value: currentValue.toIndianRupee(),
+              valueColor: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
               ),
+              theme: theme,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Profit/Loss',
-                value: totalPnL,
-                percentage: totalPnLPercent,
-                valueColor: getValueColor(context, totalPnL),
-                theme: theme,
-              ),
+            _buildStatCard(
+              label: 'Profit/Loss',
+              value: totalPnL.toIndianRupee(),
+              percentage: totalPnLPercent,
+              valueColor: getValueColor(context, totalPnL),
+              theme: theme,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildStatCard(
-                label: 'Day Change',
-                value: dayChange,
-                percentage: dayChangePercent,
-                valueColor: getValueColor(context, dayChange),
-                theme: theme,
-              ),
+            _buildStatCard(
+              label: 'Day Change',
+              value: dayChange.toIndianRupee(),
+              percentage: dayChangePercent,
+              valueColor: getValueColor(context, dayChange),
+              theme: theme,
             ),
           ],
         );
@@ -444,101 +378,44 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
 
         return LayoutBuilder(
           builder: (context, constraints) {
-            // Use 2 cards per row when width is less than 800
-            final useCompactLayout = constraints.maxWidth < 800;
+            final columns = constraints.maxWidth >= 800 ? 3 : 2;
 
-            if (useCompactLayout) {
-              // Compact layout: 2 cards top row, 1 card bottom row
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          label: 'Invested',
-                          value: investedValue,
-                          valueColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary,
-                          ),
-                          theme: theme,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          label: 'Current Value',
-                          value: currentValue,
-                          valueColor: resolveThemeColor(
-                            context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary,
-                          ),
-                          theme: theme,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          label: 'Returns',
-                          value: absReturnValue,
-                          percentage: absReturnPercent,
-                          valueColor: getValueColor(context, absReturnValue),
-                          theme: theme,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Empty expanded to maintain grid alignment
-                      const Expanded(child: SizedBox()),
-                    ],
-                  ),
-                ],
-              );
-            }
-
-            // Default: 3 cards in one row for larger screens
-            return Row(
+            return GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                mainAxisExtent: 100, // Fixed height - won't change with width
+              ),
               children: [
-                Expanded(
-                  child: _buildStatCard(
-                    label: 'Invested',
-                    value: investedValue,
-                    valueColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary,
-                    ),
-                    theme: theme,
+                _buildStatCard(
+                  label: 'Invested',
+                  value: investedValue.toIndianRupee(),
+                  valueColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
                   ),
+                  theme: theme,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    label: 'Current Value',
-                    value: currentValue,
-                    valueColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary,
-                    ),
-                    theme: theme,
+                _buildStatCard(
+                  label: 'Current Value',
+                  value: currentValue.toIndianRupee(),
+                  valueColor: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
                   ),
+                  theme: theme,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    label: 'Returns',
-                    value: absReturnValue,
-                    percentage: absReturnPercent,
-                    valueColor: getValueColor(context, absReturnValue),
-                    theme: theme,
-                  ),
+                _buildStatCard(
+                  label: 'Returns',
+                  value: absReturnValue.toIndianRupee(),
+                  percentage: absReturnPercent,
+                  valueColor: getValueColor(context, absReturnValue),
+                  theme: theme,
                 ),
               ],
             );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 import '../res/mynt_web_color_styles.dart';
-import '../res/mynt_web_text_styles.dart';
 
 /// Common loader widget library for Mynt Plus project
 /// Provides consistent loading indicators across the application
@@ -202,12 +201,8 @@ class MyntLoader extends StatelessWidget {
     final loaderStrokeWidth = _getStrokeWidth();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final loaderColor = color ??
-        resolveThemeColor(
-          context,
-          dark: MyntColors.primaryDark,
-          light: MyntColors.primary,
-        );
+    // Use Colors.blue for branded loaders (with logo), MyntColors.primary for others
+    final loaderColor = color ?? (showLogo ? Colors.blue : MyntColors.primary);
 
     Widget loader;
 

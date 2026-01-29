@@ -17,6 +17,7 @@ import '../../../../sharedWidget/hover_actions_web.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 
 class StocksScreenWeb extends ConsumerStatefulWidget {
   const StocksScreenWeb({super.key});
@@ -35,10 +36,7 @@ class _StocksScreenWebState extends ConsumerState<StocksScreenWeb> {
 
       if (ref.watch(portfolioProvider).loading) {
         return Center(
-          child: CircularProgressIndicator(
-            color: resolveThemeColor(context,
-                dark: MyntColors.primary, light: MyntColors.primary),
-          ),
+          child: MyntLoader.simple(),
         );
       }
 

@@ -22,7 +22,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/functions.dart';
-import '../../../../sharedWidget/splash_loader.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../utils/no_emoji_inputformatter.dart';
 import '../../../../utils/responsive_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -498,7 +498,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         return Scaffold(
           backgroundColor:
               theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,
-          body: const Center(child: CircularLoaderImage()),
+          body: Center(child: MyntLoader.branded()),
         );
       }
 
@@ -598,9 +598,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     Container(
                                         height: 350, width: 350,
                                         alignment: Alignment.center,
-                                        child: wa.qrLoginImageUrl != null 
-                                          ? Image.network(wa.qrLoginImageUrl!) 
-                                          : const CircularProgressIndicator()
+                                        child: wa.qrLoginImageUrl != null
+                                          ? Image.network(wa.qrLoginImageUrl!)
+                                          : MyntLoader.simple(size: MyntLoaderSize.medium)
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
@@ -954,11 +954,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                    elevation: 0,
                                  ),
                                  child: (_isProcessing || auth.loading)
-                                     ? const SizedBox(
-                                         height: 20,
-                                         width: 20,
-                                         child: CircularProgressIndicator(
-                                             color: Colors.white, strokeWidth: 2))
+                                     ? MyntLoader.inline()
                                      : Text(
                                          "Continue",
                                          style: MyntWebTextStyles.title(
@@ -1103,11 +1099,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                    elevation: 0,
                                  ),
                                  child: (forpass.loading)
-                                     ? const SizedBox(
-                                         height: 20,
-                                         width: 20,
-                                         child: CircularProgressIndicator(
-                                             color: Colors.white, strokeWidth: 2))
+                                     ? MyntLoader.inline()
                                      : Text(
                                          "Continue",
                                          style: MyntWebTextStyles.title(
@@ -1371,11 +1363,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                   elevation: 0,
                                 ),
                                 child: (_isProcessing || auth.loading)
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white, strokeWidth: 2))
+                                    ? MyntLoader.inline()
                                     : Text(
                                         "Login",
                                         style: MyntWebTextStyles.title(

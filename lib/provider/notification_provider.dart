@@ -171,6 +171,27 @@ class NotificationProvider extends DefaultChangeNotifier {
   //     notifyListeners();
   //   } finally {}
   // }
+
+  // Fetching exchange status/alerts from API
+  Future fetchexchstatus(BuildContext context) async {
+    try {
+      _exchangestatus = await api.getexchstatus();
+      if (_exchangestatus != null &&
+          _exchangestatus!.isNotEmpty &&
+          _exchangestatus![0].emsg == "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      } else {
+        ConstantName.sessCheck = true;
+      }
+      notifyListeners();
+      return _exchangestatus;
+    } catch (e) {
+      ref.read(indexListProvider)
+          .logError
+          .add({"type": "Exchange status", "Error": "$e"});
+      notifyListeners();
+    }
+  }
 // Fetching data from the api and stored in a variable
   Future fetchbrokermsg(BuildContext context) async {
     try {

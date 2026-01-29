@@ -884,7 +884,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                     5: shadcn.FixedTableSize(columnWidths[5]!),
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [

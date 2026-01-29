@@ -77,68 +77,116 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
     final hasInsufficientBalance = cashBalance < investmentAmount;
     final shortfall = investmentAmount - cashBalance;
 
+    // Responsive sizing
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Width: scales from 85% on very small screens to 400px max
+    final double popupWidth;
+    if (screenWidth < 360) {
+      popupWidth = screenWidth * 0.85;
+    } else if (screenWidth < 450) {
+      popupWidth = screenWidth * 0.88;
+    } else if (screenWidth < 600) {
+      popupWidth = 380.0;
+    } else {
+      popupWidth = 400.0;
+    }
+
+    // Padding scales with screen size
+    final horizontalPadding = screenWidth < 360 ? 12.0 : (screenWidth < 450 ? 16.0 : 24.0);
+    final verticalPadding = screenWidth < 360 ? 12.0 : (screenWidth < 450 ? 16.0 : 24.0);
+    final isSmallScreen = screenWidth < 450;
+    final isVerySmallScreen = screenWidth < 360;
+
     return Container(
-      width: 400,
-      padding: const EdgeInsets.all(26),
+      width: popupWidth,
+      constraints: BoxConstraints(
+        maxHeight: screenHeight * 0.85,
+      ),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(isVerySmallScreen ? 8 : 12),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          _buildHeader(context, isDark),
-          const SizedBox(height: 16),
-          Divider(
+          // Header with padding
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              verticalPadding,
+              horizontalPadding,
+              isVerySmallScreen ? 12 : 16,
+            ),
+            child: _buildHeader(context, isDark, isSmallScreen),
+          ),
+          // Full width divider
+          Container(
+            width: double.infinity,
             height: 1,
             color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
+                dark: MyntColors.dividerDark, light: const Color(0xFFE8E8E8)),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20)),
 
           // Units label with range
-          _buildUnitsLabel(context, isDark),
-          const SizedBox(height: 12),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: _buildUnitsLabel(context, isDark),
+          ),
+          SizedBox(height: isVerySmallScreen ? 6 : 10),
 
           // Quantity selector using MyntTextField
-          _buildQuantitySelector(context, isDark, bonds),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: _buildQuantitySelector(context, isDark, bonds, isSmallScreen),
+          ),
 
           // Error messages
           if (bondDetails.quantityerrortext.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              bondDetails.quantityerrortext,
-              style: MyntWebTextStyles.para(
-                context,
-                color: const Color(0xFFE53935),
+            SizedBox(height: isVerySmallScreen ? 6 : 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Text(
+                bondDetails.quantityerrortext,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: MyntColors.primary,
+                ),
               ),
             ),
           ],
 
           // Insufficient balance warning
           if (hasInsufficientBalance && bondDetails.quantityerrortext.isEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Insufficient balance, Add fund ₹${shortfall.toStringAsFixed(2)}',
-              style: MyntWebTextStyles.para(
-                context,
-                color: const Color(0xFFE53935),
+            SizedBox(height: isVerySmallScreen ? 6 : 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Text(
+                'Insufficient balance, Add fund ₹${shortfall.toStringAsFixed(2)}',
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: MyntColors.error,
+                ),
               ),
             ),
           ],
 
-          const SizedBox(height: 28),
+          SizedBox(height: isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 24)),
 
           // Bottom section - Cash / Investment
-          _buildBottomSection(context, isDark, cashBalance, investmentAmount, hasInsufficientBalance),
+          Padding(
+            padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, verticalPadding),
+            child: _buildBottomSection(context, isDark, cashBalance, investmentAmount, hasInsufficientBalance, screenWidth),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark) {
+  Widget _buildHeader(BuildContext context, bool isDark, bool isSmallScreen) {
     final cutoffPrice = double.tryParse(widget.bondInfo.cutoffPrice ?? '0') ?? 0;
 
     return Row(
@@ -151,40 +199,60 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             children: [
               Text(
                 widget.bondInfo.name ?? '',
-                style: MyntWebTextStyles.bodyMedium(
-                  context,
-                  darkColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-                  lightColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-                  fontWeight: MyntFonts.medium,
-                ),
+                style: isSmallScreen
+                    ? MyntWebTextStyles.body(
+                        context,
+                        fontWeight: MyntFonts.semiBold,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                      )
+                    : MyntWebTextStyles.title(
+                        context,
+                        fontWeight: MyntFonts.semiBold,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                      ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: isSmallScreen ? 2 : 4),
               Text(
                 '${widget.bondInfo.symbol ?? ''} ${widget.bondInfo.isin ?? ''}',
-                style: MyntWebTextStyles.para(
-                  context,
-                  darkColor: MyntColors.textSecondaryDark,
-                  lightColor: MyntColors.textSecondary,
-                ),
+                style: isSmallScreen
+                    ? MyntWebTextStyles.caption(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
+                      )
+                    : MyntWebTextStyles.para(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
+                      ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: isSmallScreen ? 8 : 16),
         // Price
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
               '₹ ${cutoffPrice.toStringAsFixed(1)}',
-                style: MyntWebTextStyles.bodyMedium(
-                context,
-                darkColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-                lightColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-                fontWeight: MyntFonts.medium,
-              ),
+              style: isSmallScreen
+                  ? MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                    )
+                  : MyntWebTextStyles.title(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                    ),
             ),
             const SizedBox(height: 2),
             Text(
@@ -197,7 +265,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             ),
           ],
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: isSmallScreen ? 8 : 12),
         // Close button
         Material(
           color: Colors.transparent,
@@ -205,10 +273,10 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             onTap: () => Navigator.pop(context),
             borderRadius: BorderRadius.circular(20),
             child: Padding(
-              padding: const EdgeInsets.all(4),
+              padding: EdgeInsets.all(isSmallScreen ? 2 : 4),
               child: Icon(
                 Icons.close,
-                size: 24,
+                size: isSmallScreen ? 18 : 20,
                 color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
               ),
             ),
@@ -226,18 +294,18 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             text: 'Units ',
             style: MyntWebTextStyles.body(
               context,
+              fontWeight: MyntFonts.semiBold,
               darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textPrimary,
-              fontWeight: MyntFonts.semiBold,
             ),
           ),
           TextSpan(
             text: '($minUnits - $maxUnits)',
             style: MyntWebTextStyles.body(
               context,
+              fontWeight: MyntFonts.regular,
               darkColor: MyntColors.textSecondaryDark,
               lightColor: const Color(0xFF666666),
-              fontWeight: MyntFonts.regular,
             ),
           ),
         ],
@@ -245,22 +313,34 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
     );
   }
 
-  Widget _buildQuantitySelector(BuildContext context, bool isDark, BondsProvider bonds) {
+  Widget _buildQuantitySelector(BuildContext context, bool isDark, BondsProvider bonds, bool isSmallScreen) {
+    final fieldHeight = isSmallScreen ? 40.0 : 48.0;
+    final buttonSize = isSmallScreen ? 40.0 : 48.0;
+    final iconSize = isSmallScreen ? 20.0 : 24.0;
+
     return MyntTextField(
       controller: bondDetails.quantityController,
       placeholder: '',
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      textAlign: TextAlign.start,
-      height: 48,
-      borderRadius: 4,
-      backgroundColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF3F5F7),
+      textAlign: TextAlign.left,
+      height: fieldHeight,
+      borderRadius: 8,
+      backgroundColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F7FA),
       borderColor: MyntColors.primary,
-      textStyle: MyntWebTextStyles.body(
-          context,
-          darkColor: MyntColors.textPrimaryDark,
-          lightColor: MyntColors.textPrimary,
-          fontWeight: MyntFonts.medium),
+      textStyle: isSmallScreen
+          ? MyntWebTextStyles.body(
+              context,
+              fontWeight: MyntFonts.medium,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+            )
+          : MyntWebTextStyles.titlesub(
+              context,
+              fontWeight: MyntFonts.medium,
+              darkColor: MyntColors.textPrimaryDark,
+              lightColor: MyntColors.textPrimary,
+            ),
       leadingWidget: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -270,15 +350,15 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
                   bonds.substractQuantity(bondDetails);
                   setState(() {});
                 },
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            width: 48,
-            height: 48,
+            width: buttonSize,
+            height: buttonSize,
             alignment: Alignment.center,
             child: Icon(
               Icons.remove_circle_outline,
               color: MyntColors.primary,
-              size: 26,
+              size: iconSize,
             ),
           ),
         ),
@@ -292,15 +372,15 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
                   bonds.addQuantity(bondDetails);
                   setState(() {});
                 },
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            width: 48,
-            height: 48,
+            width: buttonSize,
+            height: buttonSize,
             alignment: Alignment.center,
             child: Icon(
               Icons.add_circle_outline,
               color: MyntColors.primary,
-              size: 26,
+              size: iconSize,
             ),
           ),
         ),
@@ -312,35 +392,46 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
     );
   }
 
-  Widget _buildBottomSection(BuildContext context, bool isDark, double cashBalance, double investmentAmount, bool hasInsufficientBalance) {
+  Widget _buildBottomSection(BuildContext context, bool isDark, double cashBalance, double investmentAmount, bool hasInsufficientBalance, double screenWidth) {
+    final isSmallScreen = screenWidth < 450;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Cash / Investment
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '₹${cashBalance.toStringAsFixed(1)} / ₹${investmentAmount.toStringAsFixed(1)}',
-              style: MyntWebTextStyles.title(
-                context,
-                darkColor: MyntColors.textPrimaryDark,
-                lightColor: Colors.black,
-                fontWeight: MyntFonts.semiBold,
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '₹${cashBalance.toStringAsFixed(1)} / ₹${investmentAmount.toStringAsFixed(1)}',
+                style: MyntWebTextStyles.title(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: Colors.black,
+                ),
               ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              'Cash / Invesment',
-              style: MyntWebTextStyles.para(
-                context,
-                darkColor: MyntColors.textSecondaryDark,
-                lightColor: const Color(0xFF666666),
+              const SizedBox(height: 4),
+              Text(
+                'Cash / Invesment',
+                style: isSmallScreen
+                    ? MyntWebTextStyles.caption(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: const Color(0xFF666666),
+                      )
+                    : MyntWebTextStyles.para(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: const Color(0xFF666666),
+                      ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        SizedBox(width: isSmallScreen ? 8 : 16),
         // Add Fund / Place Order button
         ElevatedButton(
           onPressed: hasInsufficientBalance
@@ -358,18 +449,27 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             backgroundColor: MyntColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 18),
+            padding: EdgeInsets.symmetric(
+              horizontal: isSmallScreen ? 16 : 24,
+              vertical: isSmallScreen ? 12 : 14,
+            ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
           child: Text(
             hasInsufficientBalance ? 'Add Fund' : 'Place Order',
-            style: MyntWebTextStyles.body(
-              context,
-              color: Colors.white,
-              fontWeight: MyntFonts.semiBold,
-            ),
+            style: isSmallScreen
+                ? MyntWebTextStyles.bodySmall(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: Colors.white,
+                  )
+                : MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: Colors.white,
+                  ),
           ),
         ),
       ],

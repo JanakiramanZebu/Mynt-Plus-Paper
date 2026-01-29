@@ -36,7 +36,7 @@ import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../sharedWidget/internet_widget.dart';
-import '../../../sharedWidget/splash_loader.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
 import 'profile/profile_main_screen.dart';
 // import 'profile/settings_web.dart';
@@ -345,7 +345,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
                 color: theme.isDarkMode
                     ? WebDarkColors.background
                     : material.Colors.white,
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return HoldingScreenWeb(listofHolding: holdingsModel);
@@ -369,7 +369,7 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
                 color: theme.isDarkMode
                     ? WebDarkColors.background
                     : material.Colors.white,
-                child: const CircularLoaderImage(),
+                child: MyntLoader.branded(),
               );
             }
             return PositionScreenWeb(listofPosition: allPostionList);
@@ -1491,7 +1491,7 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
         height: double.infinity,
         color:
             theme.isDarkMode ? WebDarkColors.background : material.Colors.white,
-        child: const CircularLoaderImage(),
+        child: MyntLoader.branded(),
       );
     }
     return const SecureFundWeb();

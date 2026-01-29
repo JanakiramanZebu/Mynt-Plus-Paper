@@ -771,7 +771,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                     6: shadcn.FixedTableSize(columnWidths[6]!),
                     7: shadcn.FixedTableSize(columnWidths[7]!),
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(40),
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
                   rows: [
                     shadcn.TableHeader(
                       cells: [

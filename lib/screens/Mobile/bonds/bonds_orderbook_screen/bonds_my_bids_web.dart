@@ -12,7 +12,6 @@ import '../../../../sharedWidget/no_data_found.dart';
 
 
 import '../../../../sharedWidget/common_search_fields_web.dart';
-import '../../../../provider/sidebar_provider.dart';
 import 'bonds_details_sidebar_web.dart';
 import '../../../../res/res.dart';
 import '../../../../provider/thems.dart';
@@ -256,28 +255,31 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                     child: Column(
                     children: [
                       // Fixed Header Table
-                      shadcn.Table(
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(col0),
-                          1: shadcn.FixedTableSize(col1),
-                          2: shadcn.FixedTableSize(col2),
-                          3: shadcn.FixedTableSize(col3),
-                          4: shadcn.FixedTableSize(col4),
-                          5: shadcn.FixedTableSize(col5),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(48),
-                        rows: [
-                          shadcn.TableHeader(
-                            cells: [
-                              _buildHeaderCell("Symbol", 0),
-                              _buildHeaderCell("Order Number", 1),
-                              _buildHeaderCell("Datetime", 2),
-                              _buildHeaderCell("Amount", 3),
-                              _buildHeaderCell("Reason", 4),
-                              _buildHeaderCell("Status", 5),
-                            ],
-                          ),
-                        ],
+                      SizedBox(
+                        height: 48,
+                        child: shadcn.Table(
+                          columnWidths: {
+                            0: shadcn.FixedTableSize(col0),
+                            1: shadcn.FixedTableSize(col1),
+                            2: shadcn.FixedTableSize(col2),
+                            3: shadcn.FixedTableSize(col3),
+                            4: shadcn.FixedTableSize(col4),
+                            5: shadcn.FixedTableSize(col5),
+                          },
+                          defaultRowHeight: const shadcn.FixedTableSize(48),
+                          rows: [
+                            shadcn.TableHeader(
+                              cells: [
+                                _buildHeaderCell("Symbol", 0),
+                                _buildHeaderCell("Order Number", 1),
+                                _buildHeaderCell("Datetime", 2),
+                                _buildHeaderCell("Amount", 3),
+                                _buildHeaderCell("Reason", 4),
+                                _buildHeaderCell("Status", 5),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       // Scrollable Body Table
                       Expanded(
@@ -320,7 +322,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                                 4: shadcn.FixedTableSize(col4),
                                 5: shadcn.FixedTableSize(col5),
                               },
-                              defaultRowHeight: const shadcn.FixedTableSize(64),
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: displayData.asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final order = entry.value;
@@ -497,6 +499,19 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
     required int columnIndex,
     VoidCallback? onTap,
   }) {
+    // Add extra horizontal padding for first and last columns
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 5;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
     return shadcn.TableCell(
       theme: const shadcn.TableCellTheme(
         border: shadcn.WidgetStatePropertyAll(
@@ -509,45 +524,57 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
         ),
       ),
       child: MouseRegion(
-         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-         onExit: (_) => _hoveredRowIndex.value = null,
-         child: ValueListenableBuilder<int?>(
-           valueListenable: _hoveredRowIndex,
-           builder: (context, hoveredIndex, _) {
-             final isRowHovered = hoveredIndex == rowIndex;
-             return Material(
-               color: Colors.transparent,
-               child: InkWell(
-                 onTap: onTap,
-                 child: Container(
-                   decoration: BoxDecoration(
-                      color: isRowHovered 
-                     ? resolveThemeColor(context,
-                          dark: WebColors.primary.withValues(alpha: 0.08),
-                          light: WebColors.primary.withValues(alpha: 0.08))
-                     : null,
-                     border: Border(
-                       bottom: BorderSide(
-                         color: resolveThemeColor(context, dark: Colors.white10, light: Colors.grey.withOpacity(0.1)),
-                         width: 1
-                       )
-                     )
-                   ),
-                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                   alignment: Alignment.centerLeft,
-                   child: child,
-                 ),
-               ),
-             );
-           }
-         ),
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: GestureDetector(
+          onTap: onTap,
+          child: ValueListenableBuilder<int?>(
+            valueListenable: _hoveredRowIndex,
+            builder: (context, hoveredIndex, _) {
+              final isRowHovered = hoveredIndex == rowIndex;
+              return Container(
+                padding: cellPadding,
+                color: isRowHovered
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        light: MyntColors.primary.withValues(alpha: 0.08))
+                    : null,
+                alignment: Alignment.centerLeft,
+                child: child,
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
   void _openDetails(BondsOrderBookModel order) {
-    ref.read(sidebarProvider.notifier).setSidebar(BondsDetailsSidebarWeb(order: order, isOpenOrder: _selectedSubTab == 0));
-    ref.read(sidebarProvider.notifier).openSidebar();
+    shadcn.openSheet(
+      context: context,
+      builder: (sheetContext) {
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+        return Container(
+          width: sheetWidth,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(-2, 0),
+              ),
+            ],
+          ),
+          child: BondsDetailsSidebarWeb(order: order, isOpenOrder: _selectedSubTab == 0),
+        );
+      },
+      position: shadcn.OverlayPosition.end,
+      barrierColor: Colors.transparent,
+    );
   }
 
   // Build symbol cell with hover dropdown button
@@ -570,78 +597,65 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
       child: MouseRegion(
         onEnter: (_) => _hoveredRowIndex.value = rowIndex,
         onExit: (_) => _hoveredRowIndex.value = null,
-        child: ValueListenableBuilder<int?>(
-          valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isHovered
-                        ? resolveThemeColor(context,
-                            dark: WebColors.primary.withValues(alpha: 0.08),
-                            light: WebColors.primary.withValues(alpha: 0.08))
-                        : null,
-                    border: Border(
-                      bottom: BorderSide(
-                        color: resolveThemeColor(context,
-                            dark: Colors.white10,
-                            light: Colors.grey.withOpacity(0.1)),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Symbol content
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(order.symbol ?? '',
-                                    style: MyntWebTextStyles.body(context,
-                                        fontWeight: MyntFonts.medium)),
-                                Text(
-                                    (order.symbol?.contains('T') == true &&
-                                            !(order.symbol?.contains('GS') == true))
-                                        ? 'T-BILL'
-                                        : 'G-SEC',
-                                    style: MyntWebTextStyles.caption(context,
-                                        color: WebColors.textSecondary)),
-                              ],
-                            ),
+        child: GestureDetector(
+          onTap: onTap,
+          child: ValueListenableBuilder<int?>(
+            valueListenable: _hoveredRowIndex,
+            builder: (context, hoveredIndex, _) {
+              final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+              return Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+                color: isHovered
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        light: MyntColors.primary.withValues(alpha: 0.08))
+                    : null,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Stack(
+                    clipBehavior: Clip.hardEdge,
+                    children: [
+                      // Symbol content
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(order.symbol ?? '',
+                                  style: MyntWebTextStyles.body(context,
+                                      fontWeight: MyntFonts.medium)),
+                              Text(
+                                  (order.symbol?.contains('T') == true &&
+                                          !(order.symbol?.contains('GS') == true))
+                                      ? 'T-BILL'
+                                      : 'G-SEC',
+                                  style: MyntWebTextStyles.caption(context,
+                                      color: WebColors.textSecondary)),
+                            ],
                           ),
                         ),
-                        // Dropdown button on hover
-                        if (isHovered)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: _buildOptionsMenuButton(order, rowIndex),
-                            ),
+                      ),
+                      // Dropdown button on hover
+                      if (isHovered)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: _buildOptionsMenuButton(order, rowIndex),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -654,15 +668,20 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
   }
 
   Widget _buildStatusChip(BuildContext context, String? status) {
-    bool isFailed = (status ?? '').toLowerCase() == 'failed';
-    
-    // Light mode colors
-    Color bgLight = isFailed ? const Color(0xFFFFCDD2) : const Color(0xFFC8E6C9);
-    Color textLight = isFailed ? const Color(0xFFC62828) : const Color(0xFF2E7D32);
-    
-    // Dark mode colors
-    Color bgDark = isFailed ? const Color(0xFFEF5350).withOpacity(0.2) : const Color(0xFF66BB6A).withOpacity(0.2);
-    Color textDark = isFailed ? const Color(0xFFEF5350) : const Color(0xFF66BB6A);
+    final theme = ref.read(themeProvider);
+    final statusLower = (status ?? '').toLowerCase();
+    final bool isFailed = statusLower == 'failed';
+    final bool isSuccess = statusLower == 'success';
+
+    // Get status color based on status type
+    Color statusColor;
+    if (isSuccess) {
+      statusColor = theme.isDarkMode ? colors.profitDark : colors.profitLight;
+    } else if (isFailed) {
+      statusColor = theme.isDarkMode ? colors.lossDark : colors.lossLight;
+    } else {
+      statusColor = colors.pending;
+    }
 
     String displayText = status ?? '-';
     if (displayText.isNotEmpty && displayText != '-') {
@@ -670,16 +689,18 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: resolveThemeColor(context, light: bgLight, dark: bgDark),
-        borderRadius: BorderRadius.circular(6),
+        color: statusColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        displayText,
-        style: MyntWebTextStyles.body(context, 
-            color: resolveThemeColor(context, light: textLight, dark: textDark),
-            fontWeight: FontWeight.w500).copyWith(fontSize: 14),
+        displayText.toUpperCase(),
+        style: MyntWebTextStyles.bodySmall(
+          context,
+          color: statusColor,
+          fontWeight: MyntFonts.medium,
+        ),
       ),
     );
   }

@@ -388,6 +388,24 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               },
             ),
 
+            // Notification
+            _buildMenuItem(
+              context,
+              icon: Icons.notifications_outlined,
+              title: 'Notification',
+              subtitle: 'Alerts & Exchange messages',
+              iconColor: iconColor,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              onPressed: (ctx) {
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.notification);
+                } else {
+                  Navigator.pushNamed(widget.parentContext, Routes.notificationscreenweb);
+                }
+              },
+            ),
+
           const MenuDivider(),
 
           // Swap Panels

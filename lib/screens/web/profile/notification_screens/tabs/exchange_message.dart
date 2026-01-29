@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mynt_plus/provider/notification_provider.dart';
-import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
-import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
 class ExchangeMessage extends ConsumerWidget {
@@ -12,20 +11,18 @@ class ExchangeMessage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final noftification = ref.watch(notificationprovider);
+    final notification = ref.watch(notificationprovider);
 
-    final theme = ref.read(themeProvider);
-    
     // Check if data is loading
-    if (noftification.loading) {
+    if (notification.loading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     // Check if exchangemessage is null or empty
-    final exchangemessage = noftification.exchangemessage;
+    final exchangemessage = notification.exchangemessage;
     if (exchangemessage == null || exchangemessage.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 220),
+        padding: EdgeInsets.symmetric(vertical: 100),
         child: NoDataFound(
           secondaryEnabled: false,
         ),
@@ -35,7 +32,7 @@ class ExchangeMessage extends ConsumerWidget {
     // Check if first message has no content
     if (exchangemessage[0].exchMsg == null || exchangemessage[0].exchMsg!.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 220),
+        padding: EdgeInsets.symmetric(vertical: 100),
         child: NoDataFound(
           secondaryEnabled: false,
         ),
@@ -43,79 +40,84 @@ class ExchangeMessage extends ConsumerWidget {
     }
 
     // Display list of messages
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        shrinkWrap: true,
-        physics: const ClampingScrollPhysics(),
-        itemCount: exchangemessage.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextWidget.paraText(
-                  text: "${exchangemessage[index].exchTm ?? ''} (${exchangemessage[index].exch ?? ''})",
-                  theme: false,
-                  color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  fw: 0,
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                ReadMoreText(
-                  "${exchangemessage[index].exchMsg ?? ''}",
-                  style: TextWidget.textStyle(
-                      fontSize: 14,
-                      theme: false,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      height: 1.5,
-                      fw: 0,
-                      letterSpacing: 0.5),
-                  textAlign: TextAlign.left,
-                  trimLines: 5,
-                  moreStyle: TextWidget.textStyle(
-                    fontSize: 12,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    fw: 2,
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      itemCount: exchangemessage.length,
+      itemBuilder: (BuildContext context, int index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Timestamp and Exchange
+              Text(
+                '${exchangemessage[index].exchTm ?? ''} (${exchangemessage[index].exch ?? ''})',
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
                   ),
-                  lessStyle: TextWidget.textStyle(
-                    fontSize: 12,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.colorLightBlue
-                        : colors.colorBlue,
-                    fw: 2,
-                  ),
-                  colorClickableText: theme.isDarkMode
-                      ? colors.colorLightBlue
-                      : colors.colorBlue,
-                  trimMode: TrimMode.Line,
-                  trimCollapsedText: 'Read more',
-                  trimExpandedText: ' Read less',
                 ),
-              ],
-            ),
-          );
-        },
-        separatorBuilder: (BuildContext context, int index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Divider(
-              color: theme.isDarkMode
-                  ? colors.darkColorDivider
-                  : colors.colorDivider,
-            ),
-          );
-        },
-      ),
+              ),
+              const SizedBox(height: 6),
+              // Message content with ReadMore
+              ReadMoreText(
+                exchangemessage[index].exchMsg ?? '',
+                style: MyntWebTextStyles.body(
+                  context,
+                    fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                ).copyWith(height: 1.5),
+                textAlign: TextAlign.left,
+                trimLines: 5,
+                moreStyle: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
+                ),
+                lessStyle: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ),
+                ),
+                colorClickableText: resolveThemeColor(
+                  context,
+                  dark: MyntColors.primaryDark,
+                  light: MyntColors.primary,
+                ),
+                trimMode: TrimMode.Line,
+                trimCollapsedText: 'Read more',
+                trimExpandedText: ' Read less',
+              ),
+            ],
+          ),
+        );
+      },
+      separatorBuilder: (BuildContext context, int index) {
+        return Divider(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.dividerDark,
+            light: MyntColors.divider,
+          ),
+          height: 1,
+        );
+      },
     );
   }
 }
