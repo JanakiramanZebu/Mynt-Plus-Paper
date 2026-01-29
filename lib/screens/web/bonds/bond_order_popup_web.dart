@@ -151,7 +151,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             children: [
               Text(
                 widget.bondInfo.name ?? '',
-                style: MyntWebTextStyles.title(
+                style: MyntWebTextStyles.bodyMedium(
                   context,
                   darkColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                   lightColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
@@ -179,7 +179,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
           children: [
             Text(
               '₹ ${cutoffPrice.toStringAsFixed(1)}',
-              style: MyntWebTextStyles.title(
+                style: MyntWebTextStyles.bodyMedium(
                 context,
                 darkColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                 lightColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
