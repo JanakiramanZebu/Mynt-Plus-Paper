@@ -44,7 +44,7 @@ class _ExitAllPositionsDialogWebState
     _disableAllChartIframes();
   }
 
-  /// Handle exit all positions and close dialog when done
+  /// Handle exit positions and close dialog when done
   Future<void> _handleExitAllPositions() async {
     if (_isLoading) return;
 
@@ -54,7 +54,11 @@ class _ExitAllPositionsDialogWebState
 
     try {
       final positionBook = ref.read(portfolioProvider);
-      await positionBook.exitPosition(context, true);
+      // FIX: Pass widget.isExitAll instead of hardcoded true
+      // When isExitAll=true: exit ALL positions
+      // When isExitAll=false: exit only SELECTED positions
+      // Bug was introduced in commit 060b256a by divakar
+      await positionBook.exitPosition(context, widget.isExitAll);
 
       // Close the dialog after successful exit
       if (mounted) {

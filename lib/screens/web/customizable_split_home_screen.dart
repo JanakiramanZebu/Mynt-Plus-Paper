@@ -363,6 +363,12 @@ class _CustomizableSplitHomeScreenState
           // Handle back navigation if needed
         },
       );
+
+      // Set up browser back/forward navigation handler
+      WebNavigationHelper.setOnBrowserNavigation((String urlPath) {
+        debugPrint('Browser navigation event: $urlPath');
+        _handleBrowserNavigation(urlPath);
+      });
     });
 
     ref.read(networkStateProvider).networkStream();
@@ -3304,6 +3310,47 @@ class _CustomizableSplitHomeScreenState
       }
     });
     });
+  }
+
+  /// Handle browser back/forward navigation
+  /// Maps URL paths to screen handlers without adding new history entries
+  void _handleBrowserNavigation(String urlPath) {
+    if (!mounted) return;
+
+    debugPrint('_handleBrowserNavigation: $urlPath');
+
+    // Map URL path to screen type and navigate
+    switch (urlPath) {
+      case WebRoutes.holdings: // '/holdings'
+        _handleHoldingsTap();
+        break;
+      case WebRoutes.positions: // '/positions'
+        _handlePositionsTap();
+        break;
+      case WebRoutes.orders: // '/orders'
+        _handleOrderBookTap();
+        break;
+      case WebRoutes.funds: // '/funds'
+        _handleFundsTap();
+        break;
+      case WebRoutes.ipo: // '/ipo'
+        _handleIPOTap();
+        break;
+      case WebRoutes.mutualFunds: // '/mutual-funds'
+        _handleMutualFundTap();
+        break;
+      case WebRoutes.reports: // '/reports'
+        _handleReportsTap();
+        break;
+      case WebRoutes.optionChain: // '/option-chain'
+        // Option chain requires arguments, navigate to dashboard instead
+        _handleDashboardTap();
+        break;
+      case WebRoutes.home: // '/'
+      default:
+        _handleDashboardTap();
+        break;
+    }
   }
 
   // New handler methods for separate portfolio screens

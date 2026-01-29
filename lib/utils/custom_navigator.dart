@@ -16,6 +16,12 @@ class WebNavigationHelper {
   // ignore: unused_field
   static BuildContext? _context;
 
+  // Cancel function for popstate listener
+  static Function? _cancelPopStateListener;
+
+  // Callback for handling browser back/forward navigation
+  static Function(String urlPath)? _onBrowserNavigation;
+
   // Initialize the web navigation helper with the main controller's methods
   static void initialize({
     required GlobalKey<NavigatorState> navigatorKey,
@@ -27,6 +33,45 @@ class WebNavigationHelper {
     _navigateToScreen = navigateToScreen;
     _replaceScreen = replaceScreen;
     _goBack = goBack;
+
+    // Set up browser back/forward listener for web
+    if (kIsWeb) {
+      _setupPopStateListener();
+    }
+  }
+
+  /// Set up listener for browser back/forward button
+  static void _setupPopStateListener() {
+    // Cancel any existing listener
+    _cancelPopStateListener?.call();
+
+    _cancelPopStateListener = url_strategy.onPopState((String path) {
+      debugPrint('WebNavigationHelper: Browser navigation to $path');
+      _handleBrowserNavigation(path);
+    });
+  }
+
+  /// Handle browser back/forward navigation
+  static void _handleBrowserNavigation(String urlPath) {
+    // Notify external listener if registered
+    if (_onBrowserNavigation != null) {
+      _onBrowserNavigation!(urlPath);
+      return;
+    }
+
+    // Default handling: navigate to screen based on URL
+    final routeName = _urlPathToRouteName(urlPath);
+    if (routeName != null && _replaceScreen != null) {
+      // Use replaceScreen to avoid adding another history entry
+      _replaceScreen!(routeName);
+      debugPrint('WebNavigationHelper: Navigated to $routeName from browser back/forward');
+    }
+  }
+
+  /// Register callback for browser navigation events
+  /// This allows the main screen controller to handle navigation
+  static void setOnBrowserNavigation(Function(String urlPath)? callback) {
+    _onBrowserNavigation = callback;
   }
 
   // Set context for URL updates (call this from widget's build method)
@@ -100,6 +145,36 @@ class WebNavigationHelper {
     }
   }
 
+  // Map URL paths back to route names (for browser back/forward)
+  static String? _urlPathToRouteName(String urlPath) {
+    // Remove leading slash if present
+    final path = urlPath.startsWith('/') ? urlPath : '/$urlPath';
+
+    switch (path) {
+      case WebRoutes.holdings:
+        return 'holdings';
+      case WebRoutes.positions:
+        return 'positions';
+      case WebRoutes.orders:
+        return Routes.orderBook;
+      case WebRoutes.funds:
+        return 'funds';
+      case WebRoutes.ipo:
+        return 'ipo';
+      case WebRoutes.mutualFunds:
+        return 'mutualFunds';
+      case WebRoutes.reports:
+        return 'reports';
+      case WebRoutes.optionChain:
+        return 'optionChain';
+      case WebRoutes.home:
+      case '/':
+        return 'dashboard';
+      default:
+        return null;
+    }
+  }
+
   /// Update browser URL WITHOUT triggering GoRouter navigation
   /// This uses the browser's History API directly to avoid widget rebuilds
   static void updateUrl(String urlPath) {
@@ -112,6 +187,30 @@ class WebNavigationHelper {
     }
   }
 
+  /// Replace URL without adding to history (for redirects)
+  static void replaceUrl(String urlPath) {
+    if (!kIsWeb) return;
+    try {
+      url_strategy.replaceBrowserUrl(urlPath);
+      debugPrint('WebNavigationHelper: Replaced URL to $urlPath');
+    } catch (e) {
+      debugPrint('WebNavigationHelper: Failed to replace URL: $e');
+    }
+  }
+
+  /// Get current browser URL path
+  static String getCurrentPath() {
+    if (!kIsWeb) return '';
+    return url_strategy.getCurrentPath();
+  }
+
   // Check if navigation is available
   static bool get isAvailable => _navigateToScreen != null;
+
+  /// Clean up resources
+  static void dispose() {
+    _cancelPopStateListener?.call();
+    _cancelPopStateListener = null;
+    _onBrowserNavigation = null;
+  }
 }
