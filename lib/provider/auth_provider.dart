@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart'
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../routes/web_router.dart';
+import '../utils/custom_navigator.dart';
 // import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1903,8 +1904,16 @@ class AuthProvider extends DefaultChangeNotifier {
             // Navigate to home screen IMMEDIATELY without waiting for data
             if (s.isEmpty) {
               // For web, use GoRouter for URL-based navigation
+              // Only navigate to home if coming from login/splash
+              // Don't navigate if already on an authenticated route (preserves URL on refresh)
               if (kIsWeb) {
-                if (context.mounted) context.go(WebRoutes.home);
+                final currentPath = WebNavigationHelper.getCurrentPath();
+                final isOnAuthRoute = currentPath == WebRoutes.login ||
+                                      currentPath == WebRoutes.splash ||
+                                      currentPath.isEmpty;
+                if (context.mounted && isOnAuthRoute) {
+                  context.go(WebRoutes.home);
+                }
               } else {
                 final targetRoute = getResponsiveWidth(context) == 600
                     ? Routes.mainControlerScreenForWeb
@@ -2090,8 +2099,16 @@ class AuthProvider extends DefaultChangeNotifier {
             
             if (s.isEmpty) {
               // For web, use GoRouter for URL-based navigation
+              // Only navigate to home if coming from login/splash
+              // Don't navigate if already on an authenticated route (preserves URL on refresh)
               if (kIsWeb) {
-                if (context.mounted) context.go(WebRoutes.home);
+                final currentPath = WebNavigationHelper.getCurrentPath();
+                final isOnAuthRoute = currentPath == WebRoutes.login ||
+                                      currentPath == WebRoutes.splash ||
+                                      currentPath.isEmpty;
+                if (context.mounted && isOnAuthRoute) {
+                  context.go(WebRoutes.home);
+                }
               } else {
                 getResponsiveWidth(context) == 600
                     ? Navigator.pushNamedAndRemoveUntil(
