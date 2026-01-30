@@ -42,6 +42,7 @@ class _OrderBookDetailScreenWebState
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
   bool _isProcessingRepeat = false;
+  bool _isProcessingExit = false;
   bool _hasFetchedOrderHistory = false;
 
   @override
@@ -112,6 +113,9 @@ class _OrderBookDetailScreenWebState
     copy.snonum = original.snonum;
     copy.prd = original.prd;
     copy.ret = original.ret;
+    // BO/CO order fields for Target and Stop Loss
+    copy.blprc = original.blprc;
+    copy.bpprc = original.bpprc;
     return copy;
   }
 
@@ -384,15 +388,20 @@ class _OrderBookDetailScreenWebState
         _orderData.status == "OPEN" ||
         _orderData.status == "TRIGGER_PENDING";
 
+    // Check if this is a BO/CO order with snonum
+    final isBOCOWithSnonum = (_orderData.sPrdtAli == "BO" || _orderData.sPrdtAli == "CO") &&
+        _orderData.snonum != null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (isPending) ...[
-            // Cancel and Modify buttons in a row
+            // Modify + Exit/Cancel buttons
             Row(
               children: [
+                // Modify button on the left
                 Expanded(
                   child: _buildActionButton(
                     "Modify",
@@ -403,15 +412,28 @@ class _OrderBookDetailScreenWebState
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    "Cancel",
-                    false,
-                    theme,
-                    _handleCancelOrder,
-                    isLoading: _isProcessingCancel,
+                // Exit/Cancel button on the right
+                if (isBOCOWithSnonum) ...[
+                  Expanded(
+                    child: _buildActionButton(
+                      "Exit",
+                      false,
+                      theme,
+                      _handleExitOrder,
+                      isLoading: _isProcessingExit,
+                    ),
                   ),
-                ),
+                ] else ...[
+                  Expanded(
+                    child: _buildActionButton(
+                      "Cancel",
+                      false,
+                      theme,
+                      _handleCancelOrder,
+                      isLoading: _isProcessingCancel,
+                    ),
+                  ),
+                ],
               ],
             ),
           ] else ...[
@@ -429,22 +451,6 @@ class _OrderBookDetailScreenWebState
                 ),
               ],
             ),
-            if (_orderData.status == "OPEN") ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildActionButton(
-                      "Cancel",
-                      false,
-                      theme,
-                      _handleCancelOrder,
-                      isLoading: _isProcessingCancel,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
         ],
       ),
@@ -875,18 +881,84 @@ class _OrderBookDetailScreenWebState
       await orderProviderRef.fetchOrderCancel(
             "$orderNo",
             targetContext,
-            false,
+            true,
           );
-
-      if (targetContext.mounted) {
-        ResponsiveSnackBar.showSuccess(targetContext, 'Order Cancelled');
-        await orderProviderRef.fetchOrderBook(targetContext, true);
-      }
     } catch (e) {
       final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {
-        ResponsiveSnackBar.showError(
-            rootCtx, 'Failed to cancel order: ${e.toString()}');
+        ResponsiveSnackBar.showError(rootCtx, 'Failed to cancel order');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingCancel = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleExitOrder() async {
+    if (_isProcessingExit) return;
+
+    try {
+      setState(() {
+        _isProcessingExit = true;
+      });
+
+      final targetContext = widget.parentContext ?? getNavigatorContext();
+      if (targetContext == null) {
+        if (mounted) {
+          setState(() {
+            _isProcessingExit = false;
+          });
+          ResponsiveSnackBar.showError(
+              context, "Unable to access target context");
+        }
+        return;
+      }
+
+      // Save provider reference and order data BEFORE closing sheet
+      final orderProviderRef = ref.read(orderProvider);
+      final theme = ref.read(themeProvider);
+      final snonum = _orderData.snonum;
+      final prd = _orderData.prd;
+
+      // Close the sheet first
+      if (mounted) {
+        try {
+          shadcn.closeSheet(context);
+        } catch (e) {
+          // Ignore sheet close errors
+        }
+      }
+
+      // Wait for sheet to close, then show dialog
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      // Show exit confirmation dialog after sheet closes
+      final shouldExit = await _showExitPositionDialog(theme, targetContext);
+
+      if (shouldExit != true) {
+        return;
+      }
+
+      // Use saved provider reference instead of ref.read()
+      await orderProviderRef.fetchExitSNOOrd(
+        "$snonum",
+        "$prd",
+        targetContext,
+        true,
+      );
+    } catch (e) {
+      final rootCtx = getNavigatorContext();
+      if (rootCtx != null && rootCtx.mounted) {
+        ResponsiveSnackBar.showError(rootCtx, 'Failed to exit order');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingExit = false;
+        });
       }
     }
   }
@@ -1213,6 +1285,137 @@ class _OrderBookDetailScreenWebState
                           ),
                           child: Text(
                             'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              dialogContext,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool?> _showExitPositionDialog(
+      ThemesProvider theme, BuildContext targetContext) async {
+    final symbol = _orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+
+    return showDialog<bool>(
+      context: targetContext,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(
+                dialogContext,
+                dark: Colors.black,
+                light: Colors.white,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          dialogContext,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Exit Position',
+                        style: MyntWebTextStyles.title(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(
+                                dialogContext,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to exit "$symbol" position?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          dialogContext,
+                          color: resolveThemeColor(
+                            dialogContext,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary,
+                          ),
+                        ),
+                      ),
+
+                      // Exit button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: resolveThemeColor(
+                              dialogContext,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Exit',
                             style: MyntWebTextStyles.buttonMd(
                               dialogContext,
                               color: Colors.white,
