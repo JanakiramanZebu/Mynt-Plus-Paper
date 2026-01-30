@@ -9,7 +9,7 @@ import '../../../../res/res.dart';
 // import '../../bonds/bond_screen.dart';
 // import '../../ipo/ipo_main_screen.dart';
 // import '../../mutual_fund/mutual_fund_screen.dart';
-import '../../../../sharedWidget/loader_ui.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import 'stocks/stock_screens.dart';
 
 class ExploreScreens extends ConsumerStatefulWidget {
@@ -45,7 +45,7 @@ class _ExploreScreensState extends ConsumerState<ExploreScreens>
   @override
   Widget build(BuildContext context) {
     final explore = ref.watch(authProvider);
-    return TransparentLoaderScreen(
+    return MyntLoaderOverlay(
       isLoading: explore.loading,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

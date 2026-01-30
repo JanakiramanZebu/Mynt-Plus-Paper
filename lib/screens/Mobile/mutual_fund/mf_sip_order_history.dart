@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -35,24 +35,20 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
         leading: const CustomBackBtn(),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            TransparentLoaderScreen(
-              isLoading: mfData.bestmfloader ?? false,
-              child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-                  ? const Center(child: NoDataFound(
-                    secondaryEnabled: false,
-                  ))
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _buildSipOrderList(context, mfData, theme),
-                        ),
-                      ],
+        child: MyntLoaderOverlay(
+          isLoading: mfData.bestmfloader ?? false,
+          child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
+              ? const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ))
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildSipOrderList(context, mfData, theme),
                     ),
-            ),
-          ],
+                  ],
+                ),
         ),
       ),
     );

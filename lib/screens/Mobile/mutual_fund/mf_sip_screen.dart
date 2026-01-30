@@ -148,6 +148,13 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
     final theme = ref.watch(themeProvider);
     final mfData = ref.watch(mfProvider);
 
+    // Show loader while data is being fetched
+    if (mfData.bestmfloader == true) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     return Column(
       children: [
         // Tab Bar and Search Row

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/ipo_orderbook_screen/ipo_order_book_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/upcoming/ipo_upcoming.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../../../../provider/auth_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/loader_ui.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../res/global_state_text.dart';
 import 'main_sme_list/main_sme_list.dart';
@@ -76,7 +76,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     final explore = ref.watch(authProvider);
     final theme = ref.watch(themeProvider);
 
-    return TransparentLoaderScreen(
+    return MyntLoaderOverlay(
       isLoading: explore.loading,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

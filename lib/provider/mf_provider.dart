@@ -1453,6 +1453,7 @@ class MFProvider extends DefaultChangeNotifier {
   Future<void> fetchmfsipnotlivelist() async {
     try {
       _bestmfloader = true;
+      notifyListeners();
       _mfnotlivesiporderlist = await api.getSiplist('notlive');
       // print("sipppppres${_mfsiporderlist?.toJson()}");
       notifyListeners();
@@ -1543,6 +1544,7 @@ class MFProvider extends DefaultChangeNotifier {
   Future<void> fetchmfholdingnew() async {
     try {
       _holdstatload = true;
+      notifyListeners();
       _mfholdingnew = await api.getmfholdnewapi();
       // print("themffffff${value}");
 
@@ -2111,6 +2113,7 @@ class MFProvider extends DefaultChangeNotifier {
   Future fetchMfOrderbook(BuildContext context) async {
     try {
       _mforderloader = true;
+      notifyListeners();
       _mfLumpSumOrderbook = await api.getorderbook();
       // if (_mfLumpSumOrderbook != null) {
       //   _mfLumpSumOrderbook!.data!.sort((a, b) {

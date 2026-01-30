@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../provider/mf_provider.dart';
@@ -211,7 +211,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
               ),
             ),
           ),
-          body: TransparentLoaderScreen(
+          body: MyntLoaderOverlay(
             isLoading: mfData.bestmfloader ?? false,
             child: Column(
               children: [

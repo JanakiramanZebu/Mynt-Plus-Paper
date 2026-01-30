@@ -1527,9 +1527,9 @@ class IPOProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future getmainstreamipo(BuildContext context) async {
+  Future getmainstreamipo(BuildContext context, {bool showLoader = true}) async {
     try {
-      toggleLoadingOn(true);
+      if (showLoader) toggleLoadingOn(true);
       _mainStreamIpoModel = await api.fetchmainstreamoipo();
       // print("object ${_mainStreamIpoModel!.mainIPO![0].asbanonasba}");
       getipoorderbookmodel(context, true);
@@ -1539,13 +1539,13 @@ class IPOProvider extends DefaultChangeNotifier {
     } catch (e) {
       print("MainStream IPOs error:: $e");
     } finally {
-      toggleLoadingOn(false);
+      if (showLoader) toggleLoadingOn(false);
     }
   }
 
-  Future getSmeIpo() async {
+  Future getSmeIpo({bool showLoader = true}) async {
     try {
-      toggleLoadingOn(true);
+      if (showLoader) toggleLoadingOn(true);
       _smeIpoModel = await api.fetchsmeipo();
 
       // tabSize();
@@ -1553,6 +1553,17 @@ class IPOProvider extends DefaultChangeNotifier {
       return _smeIpoModel;
     } catch (e) {
       print("SME IPOs error:: $e");
+    } finally {
+      if (showLoader) toggleLoadingOn(false);
+    }
+  }
+
+  /// Combined method to fetch both SME and Mainstream IPOs with single loader
+  Future fetchAllOpenIpos(BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      await getSmeIpo(showLoader: false);
+      await getmainstreamipo(context, showLoader: false);
     } finally {
       toggleLoadingOn(false);
     }

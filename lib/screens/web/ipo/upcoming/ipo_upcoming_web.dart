@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/iop_provider.dart';
@@ -35,6 +36,13 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
   Widget build(BuildContext context) {
     final ipos = ref.watch(ipoProvide);
     final theme = ref.watch(themeProvider);
+
+    // Show loader while data is being fetched
+    if (ipos.loading) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
 
     // Get filtered upcoming IPOs based on search
     List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);

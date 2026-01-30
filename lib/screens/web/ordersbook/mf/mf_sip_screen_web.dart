@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart' show InkWell, Icons, IconData, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Widget, BuildContext, Color, Colors, EdgeInsets, Alignment, MainAxisAlignment, MainAxisSize, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, Padding, BoxDecoration, BorderRadius, Border, showDialog, ValueNotifier, ValueListenableBuilder, Stack, Positioned, Clip, Tooltip, MediaQuery, BoxShadow, Offset;
+import 'package:flutter/material.dart' show InkWell, Icons, IconData, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Widget, BuildContext, Color, Colors, EdgeInsets, Alignment, MainAxisAlignment, MainAxisSize, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, Padding, BoxDecoration, BorderRadius, Border, showDialog, ValueNotifier, ValueListenableBuilder, Stack, Positioned, Clip, Tooltip, MediaQuery, BoxShadow, Offset, Center;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -7,6 +7,7 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../res/web_colors.dart';
 import 'mf_sip_detail_screen_web.dart';
 import 'sip_pause_dialogue_web.dart';
@@ -463,6 +464,14 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
+
+    // Show loader while data is being fetched
+    if (mfData.bestmfloader == true) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
 
     return Column(
       children: [

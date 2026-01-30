@@ -8,7 +8,7 @@ import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 
 class MFSipSinglePageScreen extends StatefulWidget {
   const MFSipSinglePageScreen({super.key});
@@ -68,14 +68,12 @@ class _MFSipSinglePageScreen extends State<MFSipSinglePageScreen>
                 color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
             ),
           ),
-          body: Stack(children: [
-            TransparentLoaderScreen(
+          body: MyntLoaderOverlay(
               isLoading: mfdata.bestmfloader ?? false,
               child: hasData
                   ? _buildHoldingDetails(context, theme, mfdata)
                   : const Center(child: Text("No holding data available")),
-            )
-          ]));
+            ));
     });
   }
 

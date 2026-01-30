@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
@@ -50,7 +50,7 @@ class MFCategoryListScreen extends ConsumerWidget {
           theme: theme.isDarkMode,
         ),
       ),
-      body: TransparentLoaderScreen(
+      body: MyntLoaderOverlay(
         isLoading: mfData.bestmfloader ?? false,
         child: mfData.catnewlist?.isEmpty ?? true
             ? const Center(child: NoDataFound(

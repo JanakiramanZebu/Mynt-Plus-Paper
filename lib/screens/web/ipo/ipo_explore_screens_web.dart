@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../../../provider/auth_provider.dart';
 import '../../../provider/iop_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/loader_ui.dart';
 import 'ipo_orderbook_screen/ipo_order_book_main_screen_web.dart';
 import 'upcoming/ipo_upcoming_web.dart';
 import 'main_sme_list/main_sme_list_web.dart';
@@ -82,7 +82,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
     final theme = ref.watch(themeProvider);
     final ipo = ref.watch(ipoProvide);
 
-    return TransparentLoaderScreen(
+    return MyntLoaderOverlay(
       isLoading: explore.loading,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
