@@ -39,6 +39,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   bool _isProcessingCancel = false;
   bool _isProcessingModify = false;
+  bool _isProcessingExit = false;
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
 
@@ -916,6 +917,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                   isVisible: isHovered,
                   actions: [
                     if (isPending) ...[
+                      // Modify button - shown for all pending orders
                       HoverActionButton(
                         label: 'Modify',
                         size: 44,
@@ -942,8 +944,9 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                   onProcessingStateChanged: (processing) {
                                     setState(() {
                                       _isProcessingModify = processing;
-                                      if (!processing)
+                                      if (!processing) {
                                         _processingOrderToken = null;
+                                      }
                                     });
                                   },
                                   modifyDialogPosition: _modifyDialogPosition,
@@ -953,58 +956,45 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                 );
                               },
                       ),
-                      HoverActionButton(
-                        label: 'Cancel',
-                        size: 44,
-                        borderRadius: 5,
-                        color: Colors.white,
-                        backgroundColor: resolveThemeColor(
-                          context,
-                          dark: MyntColors.tertiary,
-                          light: MyntColors.tertiary,
+                      // BO/CO order with snonum - show Exit button
+                      if ((order.sPrdtAli == "BO" || order.sPrdtAli == "CO") &&
+                          order.snonum != null) ...[
+                        HoverActionButton(
+                          label: 'Exit',
+                          size: 44,
+                          borderRadius: 5,
+                          color: Colors.white,
+                          backgroundColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          borderColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.tertiary,
+                            light: MyntColors.tertiary,
+                          ),
+                          onPressed: (isProcessing && _isProcessingExit)
+                              ? null
+                              : () async {
+                                  setState(() {
+                                    _processingOrderToken = uniqueId;
+                                  });
+                                  await actionHandler.exitBOCOOrder(
+                                    order,
+                                    onProcessingStateChanged: (processing) {
+                                      setState(() {
+                                        _isProcessingExit = processing;
+                                        if (!processing) {
+                                          _processingOrderToken = null;
+                                        }
+                                      });
+                                    },
+                                  );
+                                },
                         ),
-                        borderColor: resolveThemeColor(
-                          context,
-                          dark: MyntColors.tertiary,
-                          light: MyntColors.tertiary,
-                        ),
-                        onPressed: (isProcessing && _isProcessingCancel)
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _processingOrderToken = uniqueId;
-                                });
-                                await actionHandler.cancelOrder(
-                                  order,
-                                  onProcessingStateChanged: (processing) {
-                                    setState(() {
-                                      _isProcessingCancel = processing;
-                                      if (!processing)
-                                        _processingOrderToken = null;
-                                    });
-                                  },
-                                );
-                              },
-                      ),
-                    ] else ...[
-                      HoverActionButton(
-                        label: 'Repeat',
-                        size: 44,
-                        borderRadius: 5,
-                        color: Colors.white,
-                        backgroundColor: resolveThemeColor(
-                          context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary,
-                        ),
-                        borderColor: resolveThemeColor(
-                          context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary,
-                        ),
-                        onPressed: () => actionHandler.repeatOrder(order),
-                      ),
-                      if (order.status == "OPEN")
+                      ] else ...[
+                        // Regular pending order - show Cancel
                         HoverActionButton(
                           label: 'Cancel',
                           size: 44,
@@ -1038,6 +1028,26 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                                   );
                                 },
                         ),
+                      ],
+                    ] else ...[
+                      // Non-pending orders (completed/canceled/rejected) - show Repeat only
+                      HoverActionButton(
+                        label: 'Repeat',
+                        size: 44,
+                        borderRadius: 5,
+                        color: Colors.white,
+                        backgroundColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        borderColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        onPressed: () => actionHandler.repeatOrder(order),
+                      ),
                     ],
                   ],
                 ),

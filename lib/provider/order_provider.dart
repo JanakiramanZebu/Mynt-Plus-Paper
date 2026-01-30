@@ -1494,16 +1494,18 @@ class OrderProvider extends DefaultChangeNotifier {
         if (loop) {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
-          Navigator.pop(context);
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
           } else {
-            successMessage(context, 'Order Cancelled');
+          Navigator.pop(context);
+          successMessage(context, 'Order Cancelled');
+          Navigator.pop(context);
           }
 
-          Navigator.pop(context);
         }
-      } else {
+      } else if (_cancelOrderModel!.stat == "Not_Ok" &&
+          _cancelOrderModel!.emsg ==
+              "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
 
@@ -1526,15 +1528,17 @@ class OrderProvider extends DefaultChangeNotifier {
         if (loop) {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
-          Navigator.pop(context);
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Exited');
           } else {
-            successMessage(context, 'Order Exited');
-          }
           Navigator.pop(context);
+          successMessage(context, 'Order Exited');
+          Navigator.pop(context);
+          }
         }
-      } else {
+      } else if (_cancelOrderModel!.stat == "Not_Ok" &&
+          _cancelOrderModel!.emsg ==
+              "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
 
