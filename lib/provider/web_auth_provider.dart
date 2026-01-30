@@ -183,16 +183,16 @@ class WebAuthProvider extends ChangeNotifier {
       // 3. Check if validation successful
       if (result != null && result['stat'] == 'Ok') {
         debugPrint('Auto-login successful for $clientId');
-        
+
         // Ensure other preferences are set if needed (e.g. clientName from result['uname'])
         if (result['uname'] != null) {
           await pref.setClientName(result['uname']);
         }
-        
-        // Navigate to Home using GoRouter for web
+
+        // Call initialLoadMethods FIRST (it will handle navigation internally)
+        // This ensures all data loading uses the correct context flow
         if (context.mounted) {
-           context.go(WebRoutes.home);
-           ref.read(authProvider).initialLoadMethods(context, "");
+          await ref.read(authProvider).initialLoadMethods(context, "");
         }
         return true;
       } else {
@@ -553,10 +553,10 @@ class WebAuthProvider extends ChangeNotifier {
     await pref.setLogout(false);
     await pref.setMobileLogin(true);
 
-    // Navigate to Home using GoRouter for web
+    // Call initialLoadMethods FIRST (it will handle navigation internally)
+    // This ensures all data loading uses the correct context flow
     if (context.mounted) {
-      context.go(WebRoutes.home);
-      ref.read(authProvider).initialLoadMethods(context, "");
+      await ref.read(authProvider).initialLoadMethods(context, "");
     }
   }
 
@@ -572,10 +572,10 @@ class WebAuthProvider extends ChangeNotifier {
     await pref.setLogout(false);
     await pref.setMobileLogin(true);
 
-    // Navigate to Home using GoRouter for web
+    // Call initialLoadMethods FIRST (it will handle navigation internally)
+    // This ensures all data loading uses the correct context flow
     if (context.mounted) {
-      context.go(WebRoutes.home);
-      ref.read(authProvider).initialLoadMethods(context, "");
+      await ref.read(authProvider).initialLoadMethods(context, "");
     }
   }
 

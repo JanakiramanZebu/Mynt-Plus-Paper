@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:html' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +50,10 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
   final ScrollController _scrollController = ScrollController();
   final FocusNode _searchFocusNode = FocusNode();
   Preferences pref = Preferences();
+
+  // Debounce timer for search to prevent excessive API calls on rapid typing
+  Timer? _searchDebounceTimer;
+  static const _searchDebounceDuration = Duration(milliseconds: 300);
   late bool scripisAscending;
   late bool pricepisAscending;
   late bool perchangisAscending;
@@ -91,6 +96,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
     _tabController.addListener(_tabControllerListener!);
 
     // Add text controller listener to handle clear button and other text changes
+    // Using debounce to prevent excessive API calls on rapid typing
     _textController.addListener(() {
       final currentText = _textController.text;
       if (currentText != _searchValue) {
@@ -98,12 +104,21 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
           _searchValue = currentText;
         });
 
+        // Cancel previous debounce timer
+        _searchDebounceTimer?.cancel();
+
         final searchScrip = ref.read(marketWatchProvider);
         if (currentText.isEmpty) {
+          // Clear immediately without debounce
           searchScrip.searchClear();
         } else {
-          searchScrip.scripSearch(
-              currentText, context, _tabController.index, widget.isBasket);
+          // Debounce search API calls
+          _searchDebounceTimer = Timer(_searchDebounceDuration, () {
+            if (mounted && _searchValue == currentText) {
+              searchScrip.scripSearch(
+                  currentText, context, _tabController.index, widget.isBasket);
+            }
+          });
         }
       }
     });
@@ -157,6 +172,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
 
   @override
   void dispose() {
+    // Cancel search debounce timer
+    _searchDebounceTimer?.cancel();
     _tabScrollController.dispose();
     _scrollController.dispose();
     _searchFocusNode.dispose();
@@ -300,18 +317,8 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                                   FilteringTextInputFormatter.deny(
                                       RegExp('[π£•₹€℅™∆√¶/.,]'))
                                 ],
-                                onChanged: (value) async {
-                                  final searchScrip = ref.read(marketWatchProvider);
-                                  setState(() {
-                                    _searchValue = value;
-                                  });
-                                  if (value.isEmpty) {
-                                    await searchScrip.searchClear();
-                                  } else {
-                                    searchScrip.scripSearch(value, context,
-                                        _tabController.index, widget.isBasket);
-                                  }
-                                },
+                                // Note: Search is handled by _textController.addListener with debounce
+                                // No onChanged here to avoid duplicate API calls
                               ),
                             ),
                             SizedBox(width: 10),

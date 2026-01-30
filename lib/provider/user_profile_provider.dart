@@ -283,12 +283,13 @@ class UserProfileProvider extends DefaultChangeNotifier {
 
   Future fetchUserDetail(BuildContext context) async {
     try {
-      // toggleLoadingOn(true);
       _userDetailModel = await api.getUserDetail();
 
       if (_userDetailModel!.emsg == "Session Expired :  Invalid Session Key" &&
           _userDetailModel!.stat == "Not_Ok") {
-        ref.read(authProvider).ifSessionExpired(context);
+        if (context.mounted) {
+          ref.read(authProvider).ifSessionExpired(context);
+        }
       }
 
       notifyListeners();
@@ -299,8 +300,6 @@ class UserProfileProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API User Detail", "Error": "$e"});
       notifyListeners();
-    } finally {
-      // toggleLoadingOn(false);
     }
   }
 // Fetching data from the api and stored in a variable

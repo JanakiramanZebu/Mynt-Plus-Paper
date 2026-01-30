@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
@@ -237,6 +238,10 @@ class _CustomizableSplitHomeScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedLayout();
 
+      // Check session validity and load data on page refresh
+      // This handles the case when user refreshes on /holdings, /positions, etc.
+      _validateSessionAndLoadData();
+
       // Ensure index data is loaded (may not be loaded if session was restored)
       final indexProvider = ref.read(indexListProvider);
       if (indexProvider.defaultIndexList == null ||
@@ -414,6 +419,50 @@ class _CustomizableSplitHomeScreenState
 
   void _initializeDefaultPanels() {
     _createPanelsForCount(_panelCount);
+  }
+
+  /// Validate session and load data on page refresh/direct URL access
+  /// This handles the case when user refreshes on /holdings, /positions, etc.
+  /// Without this, the app would show empty data on refresh
+  Future<void> _validateSessionAndLoadData() async {
+    if (!mounted) return;
+
+    final pref = locator<Preferences>();
+    final session = pref.clientSession;
+    final clientId = pref.clientId;
+
+    // Check if session exists
+    if (session == null || session.isEmpty || clientId == null || clientId.isEmpty) {
+      // No session - redirect to login
+      debugPrint('CustomizableSplitHomeScreen: No session, redirecting to login');
+      if (mounted) {
+        context.go(WebRoutes.login);
+      }
+      return;
+    }
+
+    // Check if data is already being loaded (from login flow)
+    // This prevents duplicate initialLoadMethods calls
+    final auth = ref.read(authProvider);
+    if (auth.initLoad) {
+      debugPrint('CustomizableSplitHomeScreen: Data already loading, skipping');
+      return;
+    }
+
+    // Check if data is already loaded (session was validated)
+    // indexListProvider.checkSess is set after session validation in initialLoadMethods
+    final indexProvider = ref.read(indexListProvider);
+    if (indexProvider.checkSess != null && indexProvider.checkSess!.stat == "Ok") {
+      debugPrint('CustomizableSplitHomeScreen: Data already loaded, skipping');
+      return;
+    }
+
+    // Session exists but data not loaded - this is a page refresh scenario
+    // Call initialLoadMethods to load all essential data
+    debugPrint('CustomizableSplitHomeScreen: Page refresh detected, calling initialLoadMethods');
+    if (mounted) {
+      await ref.read(authProvider).initialLoadMethods(context, "");
+    }
   }
 
   /// Apply the initial right panel from URL routing (GoRouter)

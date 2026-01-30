@@ -115,8 +115,8 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     ref.listenManual<WebAuthProvider>(webAuthProvider, (previous, next) {
       if (_showQrScreen && next.mobileOtp?.stat == 'Ok' && next.mobileOtp?.apitoken != null) {
         // Login Successful via QR
-        Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
-        ref.read(authProvider).initialLoadMethods(context, "");
+        // Note: Navigation and initialLoadMethods are handled by web_auth_provider
+        // No need to call them here to avoid duplicate API calls
       }
     });
   }
@@ -233,11 +233,8 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
             startTimer();
           }
         } else if (webAuth.mobileLogin?.apitoken != null) {
-          // Direct login success - navigate to home
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
-            ref.read(authProvider).initialLoadMethods(context, "");
-          }
+          // Direct login success - navigation and data loading handled by web_auth_provider
+          // No action needed here to avoid duplicate API calls
         }
       }
 
@@ -285,12 +282,10 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
           return;
         }
 
-        // Navigate to dashboard after successful OTP verification
+        // OTP verification successful - navigation and data loading handled by web_auth_provider
         ref.read(authProvider).otpCtrl.clear();
         webAuth.otpController.clear();
-        Navigator.pushReplacementNamed(context, Routes.mainControlerScreenForWeb);
-
-        ref.read(authProvider).initialLoadMethods(context, "");
+        // Note: No need to navigate or call initialLoadMethods here to avoid duplicate API calls
       }
     } finally {
       if (mounted) {
