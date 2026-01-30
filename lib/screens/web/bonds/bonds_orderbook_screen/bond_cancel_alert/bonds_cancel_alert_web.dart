@@ -6,16 +6,13 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
-import '../../../../../models/ipo_model/ipo_order_book_model.dart';
-import '../../../../../models/ipo_model/ipo_place_order_model.dart';
-import '../../../../../provider/iop_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 
-class BondCancelAlert extends ConsumerWidget {
+class BondCancelAlertWeb extends ConsumerWidget {
   final BondsOrderBookModel bondcancel;
-  const BondCancelAlert({super.key, required this.bondcancel});
+  const BondCancelAlertWeb({super.key, required this.bondcancel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

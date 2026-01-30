@@ -8,20 +8,19 @@ import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../sharedWidget/ipo_error_widget.dart';
 
-class ApplyBondsScreen extends ConsumerStatefulWidget {
+class ApplyBondsScreenWeb extends ConsumerStatefulWidget {
   final BondsList bondInfo;
-  const ApplyBondsScreen({
+  const ApplyBondsScreenWeb({
     required this.bondInfo,
     super.key,
   });
 
   @override
-  ConsumerState<ApplyBondsScreen> createState() => _ApplyBondsScreenState();
+  ConsumerState<ApplyBondsScreenWeb> createState() => _ApplyBondsScreenState();
 }
 
-class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
+class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreenWeb> {
   // bool ischecked = true;
   // String upierrortext = "Please enter the UPI Id";
   // int required = 0;
@@ -36,7 +35,7 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
     setState(() {
       bondDetails = BondDetails(
           quantitytext:
-              "${(int.parse(widget.bondInfo.minBidQuantity!) / double.parse(widget.bondInfo.faceValue!).toInt()).toInt()}",
+              "${int.parse(widget.bondInfo.minBidQuantity!) ~/ double.parse(widget.bondInfo.faceValue!).toInt()}",
           bidprice: "${double.parse(widget.bondInfo.cutoffPrice!).toInt()}",
           lotsize: (int.parse(widget.bondInfo.lotSize!) /
                   double.parse(widget.bondInfo.faceValue!))
@@ -145,11 +144,11 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
               ),
               body: 
               SingleChildScrollView(
-                physics: ClampingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 child: Column(
                   children: [
                     Container(
-                      color: Color(0xFFFCEFD4),
+                      color: const Color(0xFFFCEFD4),
                       height: 30,
                       child: Center(
                         child: Text(

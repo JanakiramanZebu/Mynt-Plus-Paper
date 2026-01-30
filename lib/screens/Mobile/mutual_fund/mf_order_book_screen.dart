@@ -678,18 +678,30 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           ),
         ),
       ),
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          padding: cellPadding,
-          alignment: cellAlignment,
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: child,
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex;
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: cellPadding,
+                alignment: cellAlignment,
+                decoration: BoxDecoration(
+                  color: isHovered
+                      ? MyntColors.primary.withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: child,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -922,7 +934,9 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               behavior: HitTestBehavior.opaque,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                color: Colors.transparent,
+                color: isHovered
+                    ? MyntColors.primary.withValues(alpha: 0.08)
+                    : Colors.transparent,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [

@@ -549,13 +549,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                           style: MyntWebTextStyles.bodyMedium(
                             context,
                             fontWeight: MyntFonts.medium,
-                            color: rowIsHovered
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.primary,
-                                    light: MyntColors.primary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary),
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,

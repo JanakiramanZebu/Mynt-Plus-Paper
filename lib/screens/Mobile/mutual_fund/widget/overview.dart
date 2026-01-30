@@ -5,14 +5,23 @@ import '../../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 
 class MFOverview extends ConsumerWidget {
   final MutualFundList mfStockData;
-  const MFOverview({super.key, required this.mfStockData});
+  final String? fundName;
+  final String? fundCategory;
+  final String? fundImage;
+
+  const MFOverview({
+    super.key,
+    required this.mfStockData,
+    this.fundName,
+    this.fundCategory,
+    this.fundImage,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,426 +36,132 @@ class MFOverview extends ConsumerWidget {
     }
 
     final isDarkMode = theme.isDarkMode;
-
-    // Safely create data source
-    final List<NavGraphData> dataSource =
-        mfProvide.singleloader == true ? [] : (navGraph?.data?.toList() ?? []);
+    final List<NavGraphData> dataSource = navGraph?.data?.toList() ?? [];
 
     return Container(
       color: isDarkMode ? Colors.black : Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDarkMode ? colors.colorBlack : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+            width: 1,
+          ),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 16),
-
-            // Fund Description Section
-            _buildFundDescriptionSection(
-                context, theme, mfProvide, factSheetData),
-
-            const SizedBox(height: 24),
-
-            // Trailing Returns Title
-            Text(
-              "Trailing Returns (%)",
-              style: MyntWebTextStyles.title(
-                context,
-                color: isDarkMode
-                    ? MyntColors.textPrimaryDark
-                    : MyntColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Benchmark indicator
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? colors.profitDark : colors.profitLight,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Benchmark",
-                  style: MyntWebTextStyles.body(
-                    context,
-                    color: isDarkMode
-                        ? MyntColors.textPrimaryDark
-                        : MyntColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    "(${factSheetData.benchmark ?? ""})",
-                    style: MyntWebTextStyles.para(
-                      context,
-                      color: isDarkMode
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Returns Grid and Chart Row
-            _buildReturnsAndChartSection(
-                context, theme, mfProvide, dataSource, isDarkMode),
-
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFundDescriptionSection(
-    BuildContext context,
-    ThemesProvider theme,
-    MFProvider mfProvide,
-    dynamic factSheetData,
-  ) {
-    final isDarkMode = theme.isDarkMode;
-
-    // Build fund name with category
-    final fundName =
-        factSheetData.name ?? mfStockData.schemeName ?? 'Unknown Fund';
-    final category = mfStockData.type ?? factSheetData.category ?? '';
-    final displayTitle =
-        category.isNotEmpty ? "$fundName - $category" : fundName;
-
-    // Build description paragraph
-    final managerName = factSheetData.fundManager ?? 'N/A';
-    final launchDate = factSheetData.launchDate ?? 'N/A';
-    final currentNav = factSheetData.currentNAV ?? '0';
-    final navDate = factSheetData.navDate ?? 'N/A';
-    final aum = _formatAum(factSheetData.AUM);
-    final minPurchase = factSheetData.purchaseMinAmount ?? '0';
-    final minSip = factSheetData.sipMinAmount ?? '0';
-    final expenseRatio = factSheetData.expenseRatio ?? '0';
-    final riskLevel = factSheetData.risk ?? '0';
-    final benchmark = factSheetData.benchmark ?? 'N/A';
-    final oneYear = factSheetData.d1Year ?? '0';
-    final threeYear = factSheetData.d3Year ?? '0';
-    final fiveYear = factSheetData.d5Year ?? '0';
-    final tenYear = factSheetData.d10Year ?? '0';
-
-    final description =
-        "The $fundName is managed by $managerName. Launched on $launchDate, "
-        "the fund has a current NAV of ₹$currentNav as of $navDate. "
-        "It has an AUM of ₹$aum Crores, with a minimum investment of ₹$minPurchase for purchase and ₹$minSip for SIP. "
-        "The expense ratio is $expenseRatio% with a risk level of $riskLevel. "
-        "The benchmark is $benchmark. "
-        "Returns are $oneYear% for 1 year, $threeYear% for 3 years, $fiveYear% for 5 years, and $tenYear% for 10 years.";
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left Side: Fund Title and Description (60% width)
-        Expanded(
-          flex: 6,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Fund Title with Category
-              Text(
-                displayTitle,
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: isDarkMode
-                      ? MyntColors.textPrimaryDark
-                      : MyntColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              // Fund Description
-              Text(
-                description,
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: isDarkMode
-                      ? MyntColors.textSecondaryDark
-                      : MyntColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 24),
-        // Right Side: Stats Grid (40% width)
-        Expanded(
-          flex: 4,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildGridStatItem(
-                      context,
-                      "Aum (cr)",
-                      aum,
-                      isDarkMode,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildGridStatItem(
-                      context,
-                      "NAV",
-                      currentNav,
-                      isDarkMode,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildGridStatItem(
-                      context,
-                      "Min. Inv",
-                      minPurchase,
-                      isDarkMode,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildGridStatItem(
-                      context,
-                      "5Yr CAGR",
-                      "$fiveYear%",
-                      isDarkMode,
-                      isPercentage: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGridStatItem(
-    BuildContext context,
-    String label,
-    String value,
-    bool isDarkMode, {
-    bool isPercentage = false,
-  }) {
-    Color valueColor =
-        isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary;
-
-    if (isPercentage && value != '--%') {
-      final numValue = double.tryParse(value.replaceAll('%', '')) ?? 0;
-      if (numValue > 0) {
-        valueColor = isDarkMode ? MyntColors.profitDark : MyntColors.profit;
-      } else if (numValue < 0) {
-        valueColor = isDarkMode ? MyntColors.lossDark : MyntColors.loss;
-      }
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: MyntWebTextStyles.para(
-            context,
-            color: isDarkMode
-                ? MyntColors.textSecondaryDark
-                : MyntColors.textSecondary,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: MyntWebTextStyles.body(
-            context,
-            color: valueColor,
-            fontWeight: FontWeight.w600,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
-        Divider(
-          color: isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
-          height: 1,
-          thickness: 0.5,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReturnsAndChartSection(
-    BuildContext context,
-    ThemesProvider theme,
-    MFProvider mfProvide,
-    List<NavGraphData> dataSource,
-    bool isDarkMode,
-  ) {
-    // Create tooltip behavior for chart
-    final interactiveTooltip = InteractiveTooltip(
-      enable: true,
-      format: 'Nav : point.y',
-      borderColor: colors.colorBlue,
-      textStyle: const TextStyle(color: Colors.white),
-    );
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Returns Grid (Left Side - 30%)
-        Expanded(
-          flex: 3,
-          child: _buildReturnsGrid(context, theme, mfProvide, isDarkMode),
-        ),
-        const SizedBox(width: 16),
-        // Chart (Right Side - 70%)
-        Expanded(
-          flex: 7,
-          child: _buildChartSection(
-              context, isDarkMode, dataSource, interactiveTooltip, mfProvide),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReturnsGrid(
-    BuildContext context,
-    ThemesProvider theme,
-    MFProvider mfProvide,
-    bool isDarkMode,
-  ) {
-    if (mfProvide.mfReturnsGridview.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Text(
-            "No returns data available",
-            style: MyntWebTextStyles.body(
-              context,
-              color: isDarkMode
-                  ? MyntColors.textSecondaryDark
-                  : MyntColors.textSecondary,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return GridView.count(
-      padding: EdgeInsets.zero,
-      crossAxisCount: 3,
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      crossAxisSpacing: 8,
-      mainAxisSpacing: 8,
-      childAspectRatio: 1.2,
-      children: List.generate(mfProvide.mfReturnsGridview.length > 6 ? 6 : mfProvide.mfReturnsGridview.length, (index) {
-        final item = mfProvide.mfReturnsGridview[index];
-        final value = item['value']?.toString() ?? "0";
-        final isNegative = value.startsWith("-");
-        final returnValue = item['return']?.toString() ?? "0";
-        final isReturnNegative = returnValue.startsWith("-");
-        final durName = item['durName']?.toString() ?? "";
-
-        return Container(
-          decoration: BoxDecoration(
-            color: isNegative
-                ? (isDarkMode
-                    ? colors.lossDark.withOpacity(0.1)
-                    : colors.lossLight.withOpacity(0.1))
-                : (isDarkMode
-                    ? colors.profitDark.withOpacity(0.1)
-                    : colors.profitLight.withOpacity(0.1)),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Column(
-            children: [
-              // Top section with value and duration (Centered)
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            // Header Section (Fund Name & Category + Stats + Description)
+            if (fundName != null) ...[
+              // Title row with fund info and stats
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: Row(
                   children: [
-                    // Fund Value
-                    Text(
-                      "$value%",
-                      style: MyntWebTextStyles.body(
-                        context,
-                        color: isNegative
-                            ? (isDarkMode
-                                ? MyntColors.lossDark
-                                : MyntColors.loss)
-                            : (isDarkMode
-                                ? MyntColors.profitDark
-                                : MyntColors.profit),
-                        fontWeight: FontWeight.w600,
+                    // Fund Icon
+                    if (fundImage != null && fundImage!.isNotEmpty)
+                      Container(
+                        width: 40,
+                        height: 40,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+                            width: 1,
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(
+                            fundImage!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.account_balance,
+                              color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Fund Name & Category
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "$fundName - ${fundCategory ?? 'Equity'}",
+                            style: MyntWebTextStyles.title(
+                              context,
+                              color: isDarkMode
+                                  ? MyntColors.textPrimaryDark
+                                  : MyntColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    // Duration Name
-                    Text(
-                      durName,
-                      style: MyntWebTextStyles.para(
-                        context,
-                        color: isDarkMode
-                            ? MyntColors.textSecondaryDark
-                            : MyntColors.textSecondary,
-                      ),
+                    // Stats on right side of header
+                    Row(
+                      children: [
+                        _buildHeaderStat(context, isDarkMode, "NAV", "₹${factSheetData.currentNAV ?? '0'}"),
+                        const SizedBox(width: 48),
+                        _buildHeaderStat(context, isDarkMode, "AUM (Cr)", "₹${_formatAum(factSheetData.AUM)}"),
+                        const SizedBox(width: 48),
+                        _buildHeaderStat(context, isDarkMode, "Min. Inv", "₹${factSheetData.purchaseMinAmount ?? '0'}"),
+                        const SizedBox(width: 48),
+                        _buildHeaderStat(context, isDarkMode, "Expense", "${factSheetData.expenseRatio ?? '0'}%"),
+                      ],
                     ),
                   ],
                 ),
               ),
-              // Benchmark Value (bottom section - Pinned to bottom)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                decoration: BoxDecoration(
-                  color: isReturnNegative
-                      ? (isDarkMode
-                          ? colors.lossDark.withOpacity(0.3)
-                          : colors.lossLight.withOpacity(0.2))
-                      : (isDarkMode
-                          ? colors.profitDark.withOpacity(0.3)
-                          : colors.profitLight.withOpacity(0.2)),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(6),
-                    bottomRight: Radius.circular(6),
-                  ),
-                ),
+              // Full width Divider
+              Divider(
+                height: 0.5,
+                thickness: 0.5,
+                color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+              ),
+              // Fund Description
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
                 child: Text(
-                  "$returnValue%",
-                  textAlign: TextAlign.center,
+                  _buildFundDescription(factSheetData, mfProvide),
                   style: MyntWebTextStyles.para(
                     context,
                     color: isDarkMode
-                        ? MyntColors.textPrimaryDark
-                        : MyntColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        ? MyntColors.textSecondaryDark
+                        : MyntColors.textSecondary,
+                  ).copyWith(height: 1.6),
                 ),
               ),
             ],
-          ),
-        );
-      }),
+            // Main content area
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Left Side - Chart (60%)
+                  Expanded(
+                    flex: 6,
+                    child: _buildChartSection(context, isDarkMode, dataSource, mfProvide),
+                  ),
+                  // Right Side - Info Panel (40%)
+                  Expanded(
+                    flex: 4,
+                    child: _buildStatsPanel(context, isDarkMode, factSheetData, mfProvide),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -454,132 +169,326 @@ class MFOverview extends ConsumerWidget {
     BuildContext context,
     bool isDarkMode,
     List<NavGraphData> dataSource,
-    InteractiveTooltip interactiveTooltip,
     MFProvider mfProvide,
   ) {
-    // Get the last NAV value for display
-    final lastNav = dataSource.isNotEmpty
-        ? dataSource.last.nav?.toStringAsFixed(3) ?? '--'
-        : '--';
-    final lastDate = dataSource.isNotEmpty
-        ? _formatChartDate(dataSource.last.navDate)
-        : '--';
+    final interactiveTooltip = InteractiveTooltip(
+      enable: true,
+      format: 'NAV : point.y',
+      borderColor: colors.colorBlue,
+      textStyle: const TextStyle(color: Colors.white),
+    );
 
+    return SfCartesianChart(
+      margin: const EdgeInsets.all(12),
+      backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
+      borderWidth: 0,
+      plotAreaBorderWidth: 0,
+      primaryXAxis: CategoryAxis(
+        isVisible: false,
+        majorGridLines: const MajorGridLines(width: 0),
+        axisLine: const AxisLine(width: 0),
+      ),
+      primaryYAxis: NumericAxis(
+        isVisible: true,
+        majorGridLines: MajorGridLines(
+          width: 0.5,
+          color: isDarkMode
+              ? colors.darkColorDivider.withValues(alpha: 0.3)
+              : colors.colorDivider.withValues(alpha: 0.5),
+          dashArray: const [4, 4],
+        ),
+        axisLine: const AxisLine(width: 0),
+        labelStyle: TextStyle(
+          fontSize: 11,
+          color: isDarkMode
+              ? MyntColors.textSecondaryDark
+              : MyntColors.textSecondary,
+        ),
+      ),
+      trackballBehavior: TrackballBehavior(
+        enable: true,
+        activationMode: ActivationMode.singleTap,
+        tooltipSettings: interactiveTooltip,
+        tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+        lineColor: colors.colorBlue.withValues(alpha: 0.5),
+        lineWidth: 1,
+      ),
+      series: <CartesianSeries<NavGraphData, String>>[
+        AreaSeries<NavGraphData, String>(
+          name: "Historical NAV",
+          color: colors.colorBlue.withValues(alpha: 0.1),
+          borderColor: colors.colorBlue,
+          borderWidth: 2,
+          dataSource: dataSource,
+          xValueMapper: (NavGraphData data, _) {
+            if (data.navDate == null) return "";
+            return _formatChartDate(data.navDate);
+          },
+          yValueMapper: (NavGraphData data, _) => data.nav,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsPanel(
+    BuildContext context,
+    bool isDarkMode,
+    dynamic factSheetData,
+    MFProvider mfProvide,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Returns Grid (3x2)
+          _buildReturnsGrid(context, isDarkMode, mfProvide, factSheetData),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderStat(BuildContext context, bool isDarkMode, String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Chart Container
-        Container(
-          height: 280,
-          decoration: BoxDecoration(
-            color: isDarkMode ? colors.colorBlack : Colors.white,
-            borderRadius: BorderRadius.circular(8),
+        Text(
+          label,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: isDarkMode
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
           ),
-          child: Stack(
-            children: [
-              SfCartesianChart(
-                margin: const EdgeInsets.all(8),
-                backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
-                borderWidth: 0,
-                plotAreaBorderWidth: 0,
-                primaryXAxis: CategoryAxis(
-                  isVisible: false,
-                  majorGridLines: const MajorGridLines(width: 0),
-                  axisLine: const AxisLine(width: 0),
-                ),
-                primaryYAxis: NumericAxis(
-                  isVisible: false,
-                  majorGridLines: const MajorGridLines(width: 0),
-                ),
-                trackballBehavior: TrackballBehavior(
-                  enable: true,
-                  activationMode: ActivationMode.singleTap,
-                  tooltipSettings: interactiveTooltip,
-                  tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
-                ),
-                series: <CartesianSeries<NavGraphData, String>>[
-                  LineSeries<NavGraphData, String>(
-                    name: "Historical NAV",
-                    color: colors.colorBlue,
-                    width: 2,
-                    dataSource: dataSource,
-                    xValueMapper: (NavGraphData data, _) {
-                      if (data.navDate == null) return "";
-                      return data.navDate!.length > 14
-                          ? data.navDate!
-                              .substring(0, data.navDate!.length - 14)
-                          : data.navDate!;
-                    },
-                    yValueMapper: (NavGraphData data, _) => data.nav,
-                  ),
-                ],
-              ),
-              // NAV Display overlay (bottom right)
-              // Positioned(
-              //   bottom: 8,
-              //   right: 8,
-              //   child: Container(
-              //     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              //     decoration: BoxDecoration(
-              //       color: isDarkMode ? colors.colorBlack.withOpacity(0.9) : Colors.white.withOpacity(0.9),
-              //       borderRadius: BorderRadius.circular(6),
-              //       border: Border.all(
-              //         color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-              //       ),
-              //     ),
-              //     child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.end,
-              //       mainAxisSize: MainAxisSize.min,
-              //       children: [
-              //         Text(
-              //           lastDate,
-              //           style: MyntWebTextStyles.para(
-              //             context,
-              //             color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-              //           ),
-              //         ),
-              //         const SizedBox(height: 2),
-              //         Row(
-              //           mainAxisSize: MainAxisSize.min,
-              //           children: [
-              //             Container(
-              //               width: 8,
-              //               height: 8,
-              //               decoration: BoxDecoration(
-              //                 color: colors.colorBlue,
-              //                 shape: BoxShape.circle,
-              //               ),
-              //             ),
-              //             const SizedBox(width: 6),
-              //             Text(
-              //               "Nav : $lastNav",
-              //               style: MyntWebTextStyles.body(
-              //                 context,
-              //                 color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
-              //                 fontWeight: FontWeight.w600,
-              //               ),
-              //             ),
-              //           ],
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-            ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: MyntWebTextStyles.body(
+            context,
+            color: isDarkMode
+                ? MyntColors.textPrimaryDark
+                : MyntColors.textPrimary,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
     );
   }
 
+  Widget _buildReturnsGrid(BuildContext context, bool isDarkMode, MFProvider mfProvide, dynamic factSheetData) {
+    if (mfProvide.mfReturnsGridview.isEmpty) {
+      return const SizedBox();
+    }
+
+    final benchmark = factSheetData?.benchmark ?? 'Benchmark';
+    final returns = mfProvide.mfReturnsGridview.length > 6
+        ? mfProvide.mfReturnsGridview.sublist(0, 6)
+        : mfProvide.mfReturnsGridview;
+
+    // Split into 2 rows of 3
+    final firstRow = returns.length >= 3 ? returns.sublist(0, 3) : returns;
+    final secondRow = returns.length > 3 ? returns.sublist(3) : <dynamic>[];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Returns heading
+        Text(
+          "Trailing Returns (%)",
+          style: MyntWebTextStyles.bodyMedium(
+            context,
+            color: isDarkMode
+                ? MyntColors.textPrimaryDark
+                : MyntColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Benchmark indicator
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isDarkMode ? MyntColors.profitDark : MyntColors.profit,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                "Benchmark ($benchmark)",
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: isDarkMode
+                      ? MyntColors.textSecondaryDark
+                      : MyntColors.textSecondary,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // First row
+        Row(
+          children: firstRow.asMap().entries.map<Widget>((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final value = item['value']?.toString() ?? "0";
+            final benchmarkValue = item['return']?.toString() ?? "0";
+            final isNegative = value.startsWith("-");
+            final durName = item['durName']?.toString() ?? "";
+            return Expanded(
+              child: Container(
+                margin: EdgeInsets.only(right: index < firstRow.length - 1 ? 12 : 0),
+                child: _buildReturnItem(context, isDarkMode, value, durName, isNegative, benchmarkValue),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+        // Second row
+        if (secondRow.isNotEmpty)
+          Row(
+            children: secondRow.asMap().entries.map<Widget>((entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final value = item['value']?.toString() ?? "0";
+              final benchmarkValue = item['return']?.toString() ?? "0";
+              final isNegative = value.startsWith("-");
+              final durName = item['durName']?.toString() ?? "";
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: index < secondRow.length - 1 ? 12 : 0),
+                  child: _buildReturnItem(context, isDarkMode, value, durName, isNegative, benchmarkValue),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildReturnItem(BuildContext context, bool isDarkMode, String value, String durName, bool isNegative, String benchmarkValue) {
+    // Background colors based on positive/negative - matching reference image
+    // Top card: More saturated color
+    final bgColor = isNegative
+        ? (isDarkMode ? const Color(0xFF3D2A2A) : const Color(0xFFFFD9D9))
+        : (isDarkMode ? const Color(0xFF2A3D2A) : const Color(0xFFD4F5D4));
+
+    // Bottom card: Much lighter, almost white with tint
+    final benchmarkBgColor = isNegative
+        ? (isDarkMode ? const Color(0xFF2D2222) : const Color(0xFFFFF0F0))
+        : (isDarkMode ? const Color(0xFF223322) : const Color(0xFFEAFAEA));
+
+    final textColor = isNegative
+        ? (isDarkMode ? MyntColors.lossDark : MyntColors.loss)
+        : (isDarkMode ? MyntColors.profitDark : MyntColors.profit);
+
+    return Column(
+      children: [
+        // Fund return card (top)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(6),
+              topRight: Radius.circular(6),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "$value%",
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                durName,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: isDarkMode
+                      ? MyntColors.textSecondaryDark
+                      : MyntColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        // Benchmark return card (bottom)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
+            color: benchmarkBgColor,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(6),
+              bottomRight: Radius.circular(6),
+            ),
+          ),
+          child: Text(
+            "$benchmarkValue%",
+            style: MyntWebTextStyles.bodySmall(
+              context,
+              color: isDarkMode
+                  ? MyntColors.textSecondaryDark
+                  : MyntColors.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _buildFundDescription(dynamic factSheetData, MFProvider mfProvide) {
+    final fundManager = factSheetData.fundManager ?? 'N/A';
+    final launchDate = factSheetData.launchDate ?? 'N/A';
+    final currentNAV = factSheetData.currentNAV ?? '0';
+    final navDate = factSheetData.navDate ?? 'N/A';
+    final aum = _formatAum(factSheetData.AUM);
+    final minPurchase = factSheetData.purchaseMinAmount ?? '0';
+    final minSip = factSheetData.sipMinAmount ?? '0';
+    final expenseRatio = factSheetData.expenseRatio ?? '0';
+    final risk = factSheetData.risk ?? '0';
+    final benchmark = factSheetData.benchmark ?? 'N/A';
+
+    // Build returns string from mfReturnsGridview
+    String returnsStr = '';
+    if (mfProvide.mfReturnsGridview.isNotEmpty) {
+      final returnsList = mfProvide.mfReturnsGridview.map((item) {
+        final value = item['value']?.toString() ?? '0';
+        final durName = item['durName']?.toString() ?? '';
+        return '$value% for $durName';
+      }).toList();
+      if (returnsList.isNotEmpty) {
+        returnsStr = ' Returns are ${returnsList.join(', ')}.';
+      }
+    }
+
+    return 'The fund is managed by $fundManager. Launched on $launchDate, the fund has a current NAV of ₹$currentNAV as of $navDate. It has an AUM of ₹$aum Crores, with a minimum investment of ₹$minPurchase for purchase and ₹$minSip for SIP. The expense ratio is $expenseRatio% with a risk level of $risk. The benchmark is $benchmark.$returnsStr';
+  }
+
   String _formatChartDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '--';
+    if (dateStr == null || dateStr.isEmpty) return '';
     try {
-      // Parse date string and format it
-      // Assuming format like "2024-02-13" or similar
       final parts = dateStr.split(' ')[0].split('-');
       if (parts.length >= 3) {
-        return "${parts[0]}-${parts[1]}-${parts[2]}";
+        // Return short format: DD/MM
+        return "${parts[2]}/${parts[1]}";
       }
       return dateStr.split(' ')[0];
     } catch (e) {

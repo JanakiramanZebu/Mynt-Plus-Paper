@@ -2,16 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/screens/mobile/bonds/bonds_order_screen/orderscreenbottompage.dart';
 import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-
-import '../bonds_order_screen/orderscreenbottompage.dart';
 
 class BondsListScreen extends StatelessWidget {
   const BondsListScreen({super.key});
@@ -24,13 +24,13 @@ class BondsListScreen extends StatelessWidget {
       List<BondsList>? bondsList = bonds.bondsList;
       // final upi = ref.watch(transcationProvider);
       final theme = ref.watch(themeProvider);
-      final devHeight = MediaQuery.of(context).size.height;
+      final dev_height = MediaQuery.of(context).size.height;
       return bondsList!.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.only(top: 225),
-                child: SizedBox(
-                  height: devHeight - 140,
+                child: Container(
+                  height: dev_height - 140,
                   child: const Column(
                     children: [
                       NoDataFound(),

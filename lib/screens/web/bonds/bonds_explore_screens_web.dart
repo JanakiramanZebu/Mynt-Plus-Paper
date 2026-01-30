@@ -1,32 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/screens/mobile/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
-import 'package:mynt_plus/screens/mobile/bonds/live_bonds/bonds_list.dart';
-import 'package:mynt_plus/screens/mobile/bonds/live_bonds/govt_bonds.dart';
-import 'package:mynt_plus/screens/mobile/bonds/live_bonds/sovereign_gold_bonds.dart';
-import 'package:mynt_plus/screens/mobile/bonds/live_bonds/state_bonds.dart';
-import 'package:mynt_plus/screens/mobile/bonds/live_bonds/treasury_bonds.dart';
-import '../../../provider/auth_provider.dart';
-import '../../../res/res.dart';
-import '../../../sharedWidget/loader_ui.dart';
-import '../../../res/global_state_text.dart';
+import 'package:mynt_plus/screens/Mobile/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
+import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/bonds_list.dart';
+import 'package:mynt_plus/screens/web/bonds/bonds_orderbook_screen/bonds_order_book_main_screen_web.dart';
+import 'package:mynt_plus/screens/web/bonds/live_bonds/bonds_list_web.dart';
+import '../../../../provider/auth_provider.dart';
+import '../../../../res/res.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import '../../../../res/global_state_text.dart';
 
-class BondsExploreScreens extends ConsumerStatefulWidget {
+import '../../../../sharedWidget/common_search_fields_web.dart';
+
+
+class BondsExploreScreensWeb extends ConsumerStatefulWidget {
   final ThemesProvider theme;
   final int? initialTabIndex;
   final Function(bool)? onBoundaryReached; // Callback for boundary detection
-  const BondsExploreScreens(
+  const BondsExploreScreensWeb(
       {super.key, required this.theme, this.initialTabIndex, this.onBoundaryReached});
 
   @override
-  ConsumerState<BondsExploreScreens> createState() => _ExploreScreensState();
+  ConsumerState<BondsExploreScreensWeb> createState() => _ExploreScreensState();
 }
 
-class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
+class _ExploreScreensState extends ConsumerState<BondsExploreScreensWeb>
     with TickerProviderStateMixin {
   late TabController _allBondsTabController;
 
@@ -96,72 +95,99 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
         final bonds = ref.watch(bondsProvider);
         final theme = ref.read(themeProvider);
         //  List<Map<String, Object>> tablistitems = btablistitems;
-        return TransparentLoaderScreen(
+        return MyntLoaderOverlay(
           isLoading: explore.loading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  top: 8,
+                  bottom: 8,
+                ),
+
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: widget.theme.isDarkMode
-                          ? colors.darkColorDivider
-                          : colors.colorDivider,
-                      width: 0,
-                    ),
-                  ),
+                  // border: Border(
+                  //   bottom: BorderSide(
+                  //     color: widget.theme.isDarkMode
+                  //         ? colors.darkColorDivider
+                  //         : colors.colorDivider,
+                  //     width: 0,
+                  //   ),
+                  // ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(
-                    tablistitems.length,
-                    (tab) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        // borderRadius: BorderRadius.circular(6),
-                        splashColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
-                        highlightColor: theme.isDarkMode
-                            ? Colors.white.withOpacity(0.01)
-                            : Colors.black.withOpacity(0.01),
-                        onTap: () {
-                          setState(() {
-                            selectedTab = tab;
-                          });
-                          _allBondsTabController.animateTo(tab);
-                          // Also update the page controller to jump directly
-                          if (_allBondsTabController.index != tab) {
-                            _allBondsTabController.index = tab;
-                          }
-                          ref.read(bondsProvider).bondscommonsearchcontroller.clear();
-                          ref.read(bondsProvider).clearCommonBondsSearch();
-                          FocusScope.of(context).unfocus();
-                          
-
-                        },
-                        child: tabConstruce(
-                          tablistitems[tab]['title'].toString(),
-                          theme,
-                          tab,
-                          () {},
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(
+                        tablistitems.length,
+                        (tab) => Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            // borderRadius: BorderRadius.circular(6),
+                            splashColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.05)
+                                : Colors.black.withOpacity(0.05),
+                            highlightColor: theme.isDarkMode
+                                ? Colors.white.withOpacity(0.01)
+                                : Colors.black.withOpacity(0.01),
+                            onTap: () {
+                              setState(() {
+                                selectedTab = tab;
+                              });
+                              _allBondsTabController.animateTo(tab);
+                              // Also update the page controller to jump directly
+                              if (_allBondsTabController.index != tab) {
+                                _allBondsTabController.index = tab;
+                              }
+                              ref
+                                  .read(bondsProvider)
+                                  .bondscommonsearchcontroller
+                                  .clear();
+                              ref.read(bondsProvider).clearCommonBondsSearch();
+                              FocusScope.of(context).unfocus();
+                            },
+                            child: tabConstruce(
+                              tablistitems[tab]['title'].toString(),
+                              theme,
+                              tab,
+                              () {},
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: selectedTab == 0
+                          ? SizedBox(
+                              width: 300,
+                              child: MyntSearchTextField(
+                                controller: bonds.bondscommonsearchcontroller,
+                                placeholder: "Search & add",
+                                leadingIcon: assets.searchIcon,
+                                onChanged: (value) {
+                                  bonds.searchCommonBonds(value, context);
+                                },
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
                 child: _CustomTabBarView(
                   controller: _allBondsTabController,
-                  children: [
-                    BondsListScreen(), 
-                    BondsOrderbookMainScreen()
-                  ],
                   onBoundaryReached: widget.onBoundaryReached,
+                  children: const [
+                    BondsListScreenWeb(), 
+                    BondsOrderbookMainScreenWeb()
+                  ],
                 ),
               ),
             ],
@@ -170,6 +196,8 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreens>
       },
     );
   }
+
+
 
   Widget tabConstruce(
       String title, ThemesProvider theme, int tab, VoidCallback onPressed) {
@@ -229,7 +257,7 @@ class _CustomTabBarView extends StatefulWidget {
 
 class _CustomTabBarViewState extends State<_CustomTabBarView> {
   late PageController _pageController;
-  bool _isExternalTabChange = false;
+  final bool _isExternalTabChange = false;
 
   // Track pointer events for edge swipes
   double _startX = 0;

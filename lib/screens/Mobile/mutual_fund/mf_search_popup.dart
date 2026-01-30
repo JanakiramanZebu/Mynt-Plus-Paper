@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
@@ -37,12 +38,14 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
           maxHeight: MediaQuery.of(context).size.height * 0.8,
           maxWidth: 600, // Limit width for web/tablet
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.only(top: 16),
         child: Column(
           children: [
             // Header: Search Bar + Close Icon
-            Row(
-              children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
                 Expanded(
                   child: Container(
                     height: 48,
@@ -97,6 +100,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                 ),
               ],
             ),
+            ),
 
             // Content Area
             Expanded(
@@ -114,12 +118,19 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                               padding: const EdgeInsets.only(top: 24),
                               itemCount:
                                   mfData.mutualFundsearchdata?.length ?? 0,
-                              separatorBuilder: (context, index) => Divider(
-                                height: 1,
-                                thickness: 0.5,
-                                color: theme.isDarkMode
-                                    ? const Color(0xff333333)
-                                    : const Color(0xffF0F0F0),
+                              separatorBuilder: (context, index) => Container(
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: resolveThemeColor(
+                                        context,
+                                        dark: MyntColors.dividerDark,
+                                        light: MyntColors.divider,
+                                      ),
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                ),
                               ),
                               itemBuilder: (context, index) {
                                 final item =
@@ -193,19 +204,19 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
     final isAdded = item.isAdd ?? false;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.only(left: 16, right: 12, top: 10, bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // AMC Logo
           CircleAvatar(
-            radius: 20,
+            radius: 18,
             backgroundColor: Colors.transparent,
             backgroundImage: NetworkImage(
               "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           // Title & Subtitle
           Expanded(
@@ -214,21 +225,28 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
               children: [
                 Text(
                   item.schemeName ?? item.mfsearchnamename ?? "Unknown Fund",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: theme.isDarkMode ? Colors.white : Colors.black87,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary,
+                    ),
+                    fontWeight: MyntFonts.medium,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   item.schemeType ?? item.type ?? "Equity",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color:
-                        theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  style: MyntWebTextStyles.caption(
+                    context,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
@@ -236,31 +254,47 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
           ),
 
           // Action Icon
-          const SizedBox(width: 8),
-          InkWell(
-            onTap: () async {
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              splashColor: Colors.grey.withValues(alpha: 0.2),
+              highlightColor: Colors.grey.withValues(alpha: 0.1),
+              onTap: () async {
                 final isin = item.iSIN;
                 if (isin != null) {
-                await mfData.fetchcommonsearchWadd(
+                  await mfData.fetchcommonsearchWadd(
                     isin,
                     isAdded ? "delete" : "add",
                     context,
-                    false, // isToast
-                );
-                // setState(() {}); // UI updates via provider usually, but force refresh if needed
+                    false,
+                  );
                 }
-            },
-            child: isAdded 
-            ? Icon(
-                Icons.bookmark,
-                color: colors.colorBlue, // Assuming this is available in global colors or use generic blue
-                size: 24,
-              )
-            : Icon(
-                Icons.bookmark_add_outlined, // Or fa_bookmark style
-                 color: theme.isDarkMode ? Colors.white70 : Colors.black54,
-                size: 24,
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(7),
+                child: SvgPicture.asset(
+                  isAdded ? assets.bookmarkIcon : assets.bookmarkedIcon,
+                  colorFilter: ColorFilter.mode(
+                    isAdded
+                        ? resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          )
+                        : resolveThemeColor(
+                            context,
+                            dark: MyntColors.iconDark,
+                            light: MyntColors.icon,
+                          ),
+                    BlendMode.srcIn,
+                  ),
+                  height: 18,
+                  width: 18,
+                ),
               ),
+            ),
           ),
         ],
       ),

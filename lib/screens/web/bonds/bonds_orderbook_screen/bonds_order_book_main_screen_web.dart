@@ -3,25 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/screens/mobile/bonds/bonds_loader/logo_loader.dart';
+import 'package:mynt_plus/screens/web/bonds/bonds_orderbook_screen/bonds_order_book_tab/close_bonds_tab_web.dart';
+import 'package:mynt_plus/screens/web/bonds/bonds_orderbook_screen/bonds_order_book_tab/open_bonds_tab_web.dart';
 // import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 // import '../../../sharedWidget/functions.dart';
-import 'bonds_order_book_tab/close_bonds_tab.dart';
-import 'bonds_order_book_tab/open_bonds_tab.dart';
+import 'bonds_my_bids_web.dart';
 
-class BondsOrderbookMainScreen extends ConsumerStatefulWidget {
-  const BondsOrderbookMainScreen({super.key});
+class BondsOrderbookMainScreenWeb extends ConsumerStatefulWidget {
+  const BondsOrderbookMainScreenWeb({super.key});
 
   @override
-  ConsumerState<BondsOrderbookMainScreen> createState() =>
+  ConsumerState<BondsOrderbookMainScreenWeb> createState() =>
       _BondsOrderbookMainScreenState();
 }
 
 class _BondsOrderbookMainScreenState
-    extends ConsumerState<BondsOrderbookMainScreen> {
+    extends ConsumerState<BondsOrderbookMainScreenWeb> {
   @override
   void initState() {
     super.initState();
@@ -37,6 +38,14 @@ class _BondsOrderbookMainScreenState
       final bonds = ref.watch(bondsProvider);
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
+      final devWidth = MediaQuery.of(context).size.width;
+
+      if (devWidth > 800) {
+        return const Scaffold(
+            backgroundColor: Colors.transparent,
+            body: BondsMyBidsWeb()
+        );
+      }
 
       return Scaffold(
         body: _buildContent(bonds, theme, devHeight),
@@ -46,6 +55,13 @@ class _BondsOrderbookMainScreenState
 
   Widget _buildContent(
       BondsProvider bonds, ThemesProvider theme, double devHeight) {
+    // Show loader while data is being fetched
+    if (bonds.bondsMyBidsload) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     // Apply search filter for My Bids via provider's search controller
     final filteredOpen = bonds.filterOpenOrdersBySearch();
     final filteredClose = bonds.filterCloseOrdersBySearch();
@@ -57,7 +73,7 @@ class _BondsOrderbookMainScreenState
     }
 
     if(bonds.bondsOrderBook!.isEmpty){
-      return NoDataFound(
+      return const NoDataFound(
         title: "No Open or Closed Orders Found",
         subtitle: "There's nothing here yet. Buy some Bonds to see them here.",
         primaryEnabled: false,
@@ -66,20 +82,20 @@ class _BondsOrderbookMainScreenState
     }
 
     return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (filteredOpen.isNotEmpty)
             _buildOrderSection(
                 "Open Orders",
-                BondsOpenOrderList(
+                BondsOpenOrderListWeb(
                     orders: filteredOpen, theme: theme),
                 theme),
           if (filteredClose.isNotEmpty)
             _buildOrderSection(
                 "Closed Orders",
-                BondsCloseOrderList(
+                BondsCloseOrderListWeb(
                     orders: filteredClose, theme: theme),
                 theme),
           // const SizedBox(height: 80),
