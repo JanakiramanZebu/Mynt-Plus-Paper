@@ -17,11 +17,18 @@ class WebChartManager {
 
   static const String viewType = 'web-chart-singleton';
 
+  // Default token (NIFTY 50) used when iframe is created without a pending symbol
+  static const String _defaultToken = '26000';
+
   html.IFrameElement? _iframe;
   bool _isRegistered = false;
   String? _currentToken;
   bool _isVisible = false;
   bool _isIframeCreated = false; // Track if iframe has been created and added to DOM
+
+  // Track if a user-selected symbol has been successfully loaded via URL
+  // This helps detect when postMessage might fail (TradingView not ready)
+  bool _hasLoadedUserSymbol = false;
 
   // Pending symbol to use when iframe is created (if changeSymbol called before iframe ready)
   Map<String, dynamic>? _pendingSymbol;
@@ -53,6 +60,8 @@ class WebChartManager {
               prefs: prefs,
             );
             _currentToken = _pendingSymbol!['token'];
+            // Mark that a user-selected symbol was loaded (via URL, not postMessage)
+            _hasLoadedUserSymbol = true;
             debugPrint('WebChartManager: Creating iframe with pending symbol: ${_pendingSymbol!['tsym']}');
             // NOTE: Don't clear _pendingSymbol - keep it so subsequent iframes
             // also use the correct symbol (multiple HtmlElementView widgets may exist)
@@ -60,12 +69,12 @@ class WebChartManager {
             // Default to Nifty 50
             initialUrl = _buildUrl(
               exch: 'NSE',
-              token: '26000',
+              token: _defaultToken,
               tsym: 'Nifty 50',
               isDarkMode: false,
               prefs: prefs,
             );
-            _currentToken = '26000';
+            _currentToken = _defaultToken;
           }
 
           _iframe = html.IFrameElement()
@@ -118,14 +127,20 @@ class WebChartManager {
     required String tsym,
     required bool isDarkMode,
   }) {
-    // Skip if same token
-    if (token == _currentToken) {
+    // Skip if same token (but NOT if we haven't successfully loaded a user symbol yet)
+    // This prevents skipping when we failed to load the first symbol due to timing issues
+    if (token == _currentToken && _hasLoadedUserSymbol) {
       debugPrint('WebChartManager: Same token ($token), skipping');
       return;
     }
 
-    debugPrint('WebChartManager: Changing symbol from $_currentToken to $token ($tsym)');
-    _currentToken = token;
+    // Check if we're changing from the default NIFTY 50 token or retrying a failed load
+    // In this case, TradingView may not be ready to receive postMessage,
+    // so we should use URL reload to ensure the symbol loads correctly
+    final isFirstUserSymbol = !_hasLoadedUserSymbol;
+    final previousToken = _currentToken;
+
+    debugPrint('WebChartManager: Changing symbol from $previousToken to $token ($tsym), isFirstUserSymbol: $isFirstUserSymbol, hasLoadedUserSymbol: $_hasLoadedUserSymbol');
 
     // ALWAYS store as pending symbol - this ensures any NEW iframe created
     // (e.g., when panel renders ChartScreenWebViews) will use the correct symbol
@@ -142,17 +157,50 @@ class WebChartManager {
 
     if (allChartIframes.isEmpty) {
       // Iframe might not be in DOM yet - will use pending symbol when created
+      // DON'T update _currentToken here - we haven't actually changed the symbol
       if (!_isIframeCreated) {
         debugPrint('WebChartManager: Iframe not created yet, stored pending symbol: $tsym');
       } else {
         debugPrint('WebChartManager: No iframes found in DOM, stored pending symbol: $tsym');
+        // Try to find iframe using stored reference if available
+        if (_iframe != null) {
+          debugPrint('WebChartManager: Using stored iframe reference for reload');
+          final prefs = locator<Preferences>();
+          final newUrl = _buildUrl(
+            exch: exch,
+            token: token,
+            tsym: tsym,
+            isDarkMode: isDarkMode,
+            prefs: prefs,
+          );
+          try {
+            _iframe!.src = newUrl;
+            _currentToken = token;
+            _hasLoadedUserSymbol = true;
+            debugPrint('WebChartManager: Reloaded stored iframe with $tsym');
+          } catch (e) {
+            debugPrint('WebChartManager: Failed to reload stored iframe: $e');
+          }
+        }
       }
       return;
     }
 
-    // Use postMessage for all symbol changes (faster, no reload)
-    // If TradingView hasn't loaded yet, postMessage will be ignored but
-    // the pending symbol will be used when the user navigates back
+    // For the first user-selected symbol (or retry after failed load),
+    // use URL reload instead of postMessage to ensure it loads correctly
+    // (TradingView may not be ready to receive postMessage yet)
+    if (isFirstUserSymbol) {
+      debugPrint('WebChartManager: First user symbol, using URL reload for: $tsym');
+      _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
+      _currentToken = token;
+      _hasLoadedUserSymbol = true;
+      return;
+    }
+
+    // Update token now that we're about to change it
+    _currentToken = token;
+
+    // Use postMessage for subsequent symbol changes (faster, no reload)
     int successCount = 0;
     for (final iframe in allChartIframes) {
       try {

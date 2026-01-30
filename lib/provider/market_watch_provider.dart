@@ -4771,32 +4771,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     try {
       _alertPendingModel = await api.getPendingAlert();
 
-      List ltpArgs = [];
-
       if (_alertPendingModel!.isNotEmpty) {
         if (_alertPendingModel![0].stat != "Not_Ok") {
-          // ref.read(indexListProvider).bottomMenu(3, context);
           ConstantName.sessCheck = true;
-          for (var element in _alertPendingModel!) {
-            ltpArgs
-                .add({"exch": "${element.exch}", "token": "${element.token}"});
-          }
-          final response = await api.getLTP(ltpArgs);
-          Map res = jsonDecode(response.body);
-          for (var element in _alertPendingModel!) {
-            if (element.token.toString() ==
-                "${res["data"]["${element.token}"]['token']}") {
-              element.ltp = "${res["data"]["${element.token}"]["lp"]}";
-              element.close = "${res["data"]["${element.token}"]["close"]}";
-
-              element.perChange =
-                  "${res["data"]["${element.token}"]["change"]}";
-              element.change = (double.parse(
-                          "${element.ltp == "0" ? element.close : element.ltp}") -
-                      double.parse("${element.close}"))
-                  .toStringAsFixed(2);
-            }
-          }
+          // LTP will be updated via WebSocket subscription in pending_alert_card_web.dart
+          // No need to call getLTP API here - WebSocket provides real-time updates
 
           // Apply default sorting (Scrip Name ascending) when alerts are initially loaded
           filterPendingAlert("ASC");

@@ -14,7 +14,7 @@ import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../../../utils/responsive_snackbar.dart';
-import '../../../../main.dart';
+import '../../../../main.dart' show getNavigatorContext;
 
 class TradeDetailScreenWeb extends ConsumerStatefulWidget {
   final TradeBookModel trade;
@@ -467,8 +467,7 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
       });
 
       final targetContext = widget.parentContext ??
-          rootNavigatorKey
-              .currentContext; // Use widget.parentContext which works in this screen or fallback
+          getNavigatorContext(); // Use widget.parentContext which works in this screen or fallback
 
       // If widget.parentContext is null (it's optional in widget), we need a valid context.
       // Usually passed in or we can try 'context' if available, but repeat order often needs root or scaffold context.

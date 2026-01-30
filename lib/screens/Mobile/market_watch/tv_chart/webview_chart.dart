@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mynt_plus/main.dart';
+import 'package:mynt_plus/main.dart' show getNavigatorContext, getNavigatorState;
 import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../locator/constant.dart';
@@ -449,7 +449,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
                       }
                   ref.read(chartProvider.notifier).hideChart();
                   mktwth.chngDephBtn("Overview");
-                  final safeContext = rootNavigatorKey.currentContext ?? context;
+                  final safeContext = getNavigatorContext() ?? context;
                   if(ref.read(marketWatchProvider).scripsize){
                 Navigator.pop(context);
                 }
@@ -787,7 +787,7 @@ class _ChartScreenWebViewState extends State<ChartScreenWebView> {
 
     ref.read(chartProvider.notifier).hideChart();
     // Navigator.pop(context);
-    rootNavigatorKey.currentState?.pushNamed(Routes.placeOrderScreen, arguments: {
+    getNavigatorState()?.pushNamed(Routes.placeOrderScreen, arguments: {
       "orderArg": orderArgs,
       "scripInfo": ref.read(marketWatchProvider).scripInfoModel!,
       "isBskt": '',

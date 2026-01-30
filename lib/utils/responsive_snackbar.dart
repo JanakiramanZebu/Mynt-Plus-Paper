@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/main.dart';
+import 'package:mynt_plus/main.dart' show getNavigatorContext, getNavigatorState, rootScaffoldMessengerKey;
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/responsive_extensions.dart';
@@ -25,7 +25,7 @@ class ResponsiveSnackBar {
     if (context.isWebLayout) {
       // Desktop: Show as stacked toast in bottom-right corner
       _showDesktopToast(
-        context: rootNavigatorKey.currentContext ?? context,
+        context: getNavigatorContext() ?? context,
         message: message,
         type: type,
         duration: duration,
@@ -83,7 +83,7 @@ class ResponsiveSnackBar {
       OverlayState? overlay;
 
       // Method 1: Try Navigator's overlay from rootNavigatorKey
-      final navigatorState = rootNavigatorKey.currentState;
+      final navigatorState = getNavigatorState();
       if (navigatorState != null) {
         overlay = navigatorState.overlay;
       }
@@ -93,7 +93,7 @@ class ResponsiveSnackBar {
 
       // Method 3: Try from rootNavigatorKey context
       if (overlay == null) {
-        final rootContext = rootNavigatorKey.currentContext;
+        final rootContext = getNavigatorContext();
         if (rootContext != null) {
           overlay = Overlay.maybeOf(rootContext);
         }
@@ -106,7 +106,7 @@ class ResponsiveSnackBar {
         // Schedule for next frame in case Navigator isn't ready yet
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_overlayEntry != null && !_overlayEntry!.mounted) {
-            final navigatorState = rootNavigatorKey.currentState;
+            final navigatorState = getNavigatorState();
             if (navigatorState?.overlay != null) {
               navigatorState!.overlay!.insert(_overlayEntry!);
             } else {

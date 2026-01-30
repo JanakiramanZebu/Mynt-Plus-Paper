@@ -15,7 +15,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_navigation.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
-import '../../../main.dart';
+import '../../../main.dart' show getNavigatorContext;
 import '../order/modify_place_order_web_screen.dart';
 
 class OrderBookDetailScreenWeb extends ConsumerStatefulWidget {
@@ -834,7 +834,7 @@ class _OrderBookDetailScreenWebState
       });
 
       final targetContext =
-          widget.parentContext ?? rootNavigatorKey.currentContext;
+          widget.parentContext ?? getNavigatorContext();
       if (targetContext == null) {
         if (mounted) {
           setState(() {
@@ -883,7 +883,7 @@ class _OrderBookDetailScreenWebState
         await orderProviderRef.fetchOrderBook(targetContext, true);
       }
     } catch (e) {
-      final rootCtx = rootNavigatorKey.currentContext;
+      final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {
         ResponsiveSnackBar.showError(
             rootCtx, 'Failed to cancel order: ${e.toString()}');
@@ -919,7 +919,7 @@ class _OrderBookDetailScreenWebState
 
       // Use same pattern as repeat order - fallback to rootNavigatorKey if parentContext is null
       final targetContext =
-          widget.parentContext ?? rootNavigatorKey.currentContext;
+          widget.parentContext ?? getNavigatorContext();
       if (targetContext == null || !targetContext.mounted) {
         print(
             '🟢 [DETAILS SHEET MODIFY] ERROR: targetContext is null or not mounted');
@@ -1016,7 +1016,7 @@ class _OrderBookDetailScreenWebState
 
       print('🟢 [DETAILS SHEET MODIFY] showDraggable called successfully');
     } catch (e) {
-      final rootCtx = rootNavigatorKey.currentContext;
+      final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {
         ResponsiveSnackBar.showError(
             rootCtx, 'Failed to open modify order: ${e.toString()}');
@@ -1039,7 +1039,7 @@ class _OrderBookDetailScreenWebState
       });
 
       final targetContext =
-          widget.parentContext ?? rootNavigatorKey.currentContext;
+          widget.parentContext ?? getNavigatorContext();
       if (targetContext == null) {
         if (mounted) {
           setState(() {

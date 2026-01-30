@@ -18,7 +18,7 @@ import '../../../utils/responsive_navigation.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import 'convert_position_dialogue_web.dart';
-import '../../../main.dart';
+import '../../../main.dart' show getNavigatorContext;
 
 class PositionDetailScreenWeb extends ConsumerStatefulWidget {
   final PositionBookModel positionList;
@@ -432,7 +432,7 @@ class _PositionDetailScreenWebState
   Future<void> _handleExit() async {
     try {
       // Get root navigator context
-      final rootContext = rootNavigatorKey.currentContext;
+      final rootContext = getNavigatorContext();
       if (rootContext == null) {
         if (mounted) {
           showResponsiveWarningMessage(
@@ -519,7 +519,7 @@ class _PositionDetailScreenWebState
         }
       }
 
-      final rootCtx = rootNavigatorKey.currentContext;
+      final rootCtx = getNavigatorContext();
       if (rootCtx != null) {
         try {
           showResponsiveWarningMessage(
@@ -542,7 +542,7 @@ class _PositionDetailScreenWebState
 
     try {
       // Get root context before closing the sheet
-      final rootContext = rootNavigatorKey.currentContext;
+      final rootContext = getNavigatorContext();
       debugPrint('Root context obtained: ${rootContext != null}');
 
       if (rootContext == null) {

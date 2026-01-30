@@ -4,7 +4,7 @@ import 'package:mynt_plus/provider/chart_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
-import 'package:mynt_plus/main.dart';
+import 'package:mynt_plus/main.dart' show getNavigatorState;
 
 import '../screens/Mobile/market_watch/tv_chart/webview_chart.dart';
 
@@ -29,7 +29,7 @@ class ChartOverlayWidget extends ConsumerWidget {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (prevRoute == Routes.optionChain && originalArgs != null) {
                 // Use the stored original DepthInputArgs to navigate back to option chain
-                rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                getNavigatorState()?.pushNamedAndRemoveUntil(
                   Routes.optionChain, 
                   (route) => route.settings.name == Routes.homeScreen || route.isFirst,
                   arguments: originalArgs
@@ -38,12 +38,12 @@ class ChartOverlayWidget extends ConsumerWidget {
                          prevRoute == Routes.positionDetail ||
                          prevRoute == Routes.holdingDetail) {
                 // For portfolio screens, navigate back without special arguments
-                rootNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                getNavigatorState()?.pushNamedAndRemoveUntil(
                   prevRoute, 
                   (route) => route.settings.name == Routes.homeScreen || route.isFirst
                 );
               } else {
-                rootNavigatorKey.currentState?.pushReplacementNamed(prevRoute);
+                getNavigatorState()?.pushReplacementNamed(prevRoute);
               }
             });
           }
@@ -73,7 +73,7 @@ class ChartOverlayWidget extends ConsumerWidget {
                       onSearchTap: () {
                         // Hide chart overlay before opening search
                         ref.read(chartProvider.notifier).hideChart();
-                        rootNavigatorKey.currentState?.pushNamed(
+                        getNavigatorState()?.pushNamed(
                           Routes.searchScrip,
                           arguments: "Chart||Is",
                         );

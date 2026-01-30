@@ -14,7 +14,7 @@ import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../res/res.dart';
-import '../../../main.dart' show rootNavigatorKey;
+import '../../../routes/web_router.dart' show webNavigatorKey;
 
 class PendingAlertDetailScreenWeb extends ConsumerStatefulWidget {
   final AlertPendingModel alert;
@@ -298,31 +298,39 @@ class _PendingAlertDetailScreenWebState
               (isModifying || isCancelling)
                   ? null
                   : () async {
+                      // Capture all needed data BEFORE closing sheet
                       final marketWatchProviderRef =
                           ref.read(marketWatchProvider);
                       final String alertId = "${widget.alert.alId}";
-                      final targetContext = rootNavigatorKey.currentContext;
+                      final symbol =
+                          widget.alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
 
-                      // Close the sheet first
-                      if (mounted) shadcn.closeSheet(context);
+                      // Close the sheet FIRST
+                      shadcn.closeSheet(context);
 
-                      if (targetContext == null) return;
+                      // Get navigator context for dialog and snackbar
+                      final navigatorContext = webNavigatorKey.currentContext;
+                      if (navigatorContext == null) return;
 
-                      final shouldCancel =
-                          await _showCancelAlertDialog(theme, targetContext);
+                      // Show confirmation dialog after sheet is closed
+                      final shouldCancel = await _showCancelAlertDialogStandalone(
+                          theme, navigatorContext, symbol);
                       if (shouldCancel != true) return;
 
+                      // Perform cancel operation
                       try {
                         await marketWatchProviderRef.fetchCancelAlert(
-                            alertId, targetContext);
+                            alertId, navigatorContext);
                         await marketWatchProviderRef
-                            .fetchPendingAlert(targetContext);
-                        if (targetContext.mounted) {
-                          showResponsiveSuccess(targetContext, "Alert Cancelled");
+                            .fetchPendingAlert(navigatorContext);
+
+                        if (navigatorContext.mounted) {
+                          showResponsiveSuccess(
+                              navigatorContext, "Alert Cancelled");
                         }
                       } catch (e) {
-                        if (targetContext.mounted) {
-                          showResponsiveErrorMessage(targetContext,
+                        if (navigatorContext.mounted) {
+                          showResponsiveErrorMessage(navigatorContext,
                               "Failed to cancel alert: ${e.toString()}");
                         }
                       }
@@ -569,12 +577,12 @@ class _PendingAlertDetailScreenWebState
     );
   }
 
-  Future<bool?> _showCancelAlertDialog(
-      ThemesProvider theme, BuildContext targetContext) async {
-    final symbol = widget.alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
-
+  /// Show cancel confirmation dialog - call AFTER closing sheet
+  /// Uses the provided navigatorContext directly (should be from webNavigatorKey)
+  Future<bool?> _showCancelAlertDialogStandalone(
+      ThemesProvider theme, BuildContext navigatorContext, String symbol) async {
     return showDialog<bool>(
-      context: targetContext,
+      context: navigatorContext,
       barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(

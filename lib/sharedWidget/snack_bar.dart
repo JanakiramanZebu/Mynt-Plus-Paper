@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../main.dart' show rootScaffoldMessengerKey, getNavigatorContext;
 import '../utils/responsive_snackbar.dart';
 
 //It serves to display information to the user.
 
 void error(BuildContext context, String errorText) {
   if (kIsWeb) {
-    ResponsiveSnackBar.showError(rootNavigatorKey.currentContext ?? context, errorText);
+    ResponsiveSnackBar.showError(getNavigatorContext() ?? context, errorText);
     return;
   }
   rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
@@ -61,7 +61,7 @@ void error(BuildContext context, String errorText) {
 
 void successMessage(BuildContext context, String success) {
   if (kIsWeb) {
-    ResponsiveSnackBar.showSuccess(rootNavigatorKey.currentContext ?? context, success);
+    ResponsiveSnackBar.showSuccess(getNavigatorContext() ?? context, success);
     return;
   }
   rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
@@ -116,7 +116,7 @@ void successMessage(BuildContext context, String success) {
 
 void warningMessage(BuildContext context, String warning) {
   if (kIsWeb) {
-    ResponsiveSnackBar.showWarning(rootNavigatorKey.currentContext ?? context, warning);
+    ResponsiveSnackBar.showWarning(getNavigatorContext() ?? context, warning);
     return;
   }
   rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
@@ -173,7 +173,7 @@ void warningMessage(BuildContext context, String warning) {
 
 void warningToaster(BuildContext context, String warningtoaster) {
   if (kIsWeb) {
-    ResponsiveSnackBar.showWarning(rootNavigatorKey.currentContext ?? context, warningtoaster);
+    ResponsiveSnackBar.showWarning(getNavigatorContext() ?? context, warningtoaster);
     return;
   }
   rootScaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
@@ -233,28 +233,28 @@ void warningToaster(BuildContext context, String warningtoaster) {
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveError(BuildContext context, String message) {
   ResponsiveSnackBar.showError(
-      rootNavigatorKey.currentContext ?? context, message);
+      getNavigatorContext() ?? context, message);
 }
 
 /// Shows responsive warning message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveWarning(BuildContext context, String message) {
   ResponsiveSnackBar.showWarning(
-      rootNavigatorKey.currentContext ?? context, message);
+      getNavigatorContext() ?? context, message);
 }
 
 /// Shows responsive success message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveSuccess(BuildContext context, String message) {
   ResponsiveSnackBar.showSuccess(
-      rootNavigatorKey.currentContext ?? context, message);
+      getNavigatorContext() ?? context, message);
 }
 
 /// Shows responsive info message
 /// Desktop: Toast in bottom-right corner | Mobile: Standard SnackBar
 void showResponsiveInfo(BuildContext context, String message) {
   ResponsiveSnackBar.showInfo(
-      rootNavigatorKey.currentContext ?? context, message);
+      getNavigatorContext() ?? context, message);
 }
 
 /// Replaces ScaffoldMessenger.of(context).showSnackBar(warningMessage(context, message))

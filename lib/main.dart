@@ -43,6 +43,38 @@ final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Get the appropriate navigator key based on platform
+/// - Web: uses webNavigatorKey from GoRouter
+/// - Mobile: uses rootNavigatorKey from MaterialApp
+GlobalKey<NavigatorState> getNavigatorKey() {
+  if (kIsWeb) {
+    // Import webNavigatorKey dynamically to avoid circular imports
+    // The actual key is defined in web_router.dart
+    return _webNavigatorKeyGetter();
+  }
+  return rootNavigatorKey;
+}
+
+/// Get the appropriate navigator context based on platform
+/// Returns null if no context is available
+BuildContext? getNavigatorContext() {
+  return getNavigatorKey().currentContext;
+}
+
+/// Get the appropriate navigator state based on platform
+/// Returns null if no state is available
+NavigatorState? getNavigatorState() {
+  return getNavigatorKey().currentState;
+}
+
+// Getter for web navigator key - set during web router initialization
+GlobalKey<NavigatorState> Function() _webNavigatorKeyGetter = () => rootNavigatorKey;
+
+/// Register the web navigator key getter (called from web_router.dart)
+void registerWebNavigatorKey(GlobalKey<NavigatorState> Function() getter) {
+  _webNavigatorKeyGetter = getter;
+}
+
 // Global provider to track Firebase initialization status
 final firebaseInitializedProvider = StateProvider<bool>((ref) => false);
 

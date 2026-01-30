@@ -5,6 +5,7 @@ import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
 import '../utils/custom_navigator.dart';
+import '../main.dart' show registerWebNavigatorKey;
 
 /// GoRouter for web - enables URL synchronization with browser
 /// Only used when kIsWeb is true
@@ -39,10 +40,18 @@ class WebRoutes {
 /// Access via context.go() or context.push() methods
 late final GoRouter webRouter;
 
+/// Navigator key for web - used for showing dialogs from sheets/overlays
+final GlobalKey<NavigatorState> webNavigatorKey = GlobalKey<NavigatorState>();
+
 /// Initialize the web router
 /// Call this in main() before runApp() when kIsWeb is true
 void initializeWebRouter() {
+  // Register webNavigatorKey with main.dart's helper functions
+  // This allows getNavigatorKey()/getNavigatorContext() to work on web
+  registerWebNavigatorKey(() => webNavigatorKey);
+
   webRouter = GoRouter(
+    navigatorKey: webNavigatorKey,
     initialLocation: WebRoutes.splash,
     debugLogDiagnostics: kDebugMode,
     routes: [

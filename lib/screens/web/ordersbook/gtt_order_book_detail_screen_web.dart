@@ -13,7 +13,7 @@ import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
-import '../../../main.dart';
+import '../../../main.dart' show getNavigatorContext;
 
 class GttOrderBookDetailScreenWeb extends ConsumerStatefulWidget {
   final GttOrderBookModel gttOrder;
@@ -735,7 +735,7 @@ class _GttOrderBookDetailScreenWebState
   Future<void> _handleCancel() async {
     try {
       final targetContext =
-          widget.parentContext ?? rootNavigatorKey.currentContext;
+          widget.parentContext ?? getNavigatorContext();
       if (targetContext == null) {
         if (mounted) {
           ResponsiveSnackBar.showError(
@@ -773,7 +773,7 @@ class _GttOrderBookDetailScreenWebState
       // Cancel the GTT order using saved provider reference
       await orderProviderRef.cancelGttOrder(gttOrderId, targetContext);
     } catch (e) {
-      final rootCtx = rootNavigatorKey.currentContext;
+      final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {
         ResponsiveSnackBar.showError(
             rootCtx, 'Failed to cancel GTT order: ${e.toString()}');
@@ -912,7 +912,7 @@ class _GttOrderBookDetailScreenWebState
     try {
       // Use parent context (table context) - same as action handler uses
       final targetContext =
-          widget.parentContext ?? rootNavigatorKey.currentContext;
+          widget.parentContext ?? getNavigatorContext();
       if (targetContext == null) {
         if (mounted) {
           ResponsiveSnackBar.showError(
@@ -963,7 +963,7 @@ class _GttOrderBookDetailScreenWebState
         scripInfo: scripInfo,
       );
     } catch (e) {
-      final rootCtx = rootNavigatorKey.currentContext;
+      final rootCtx = getNavigatorContext();
       if (rootCtx != null && rootCtx.mounted) {
         ResponsiveSnackBar.showError(
             rootCtx, 'Failed to open modify GTT order: ${e.toString()}');

@@ -15,7 +15,7 @@ import '../../../models/order_book_model/order_book_model.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/snack_bar.dart';
-import '../../../main.dart';
+import '../../../main.dart' show getNavigatorContext;
 
 class HoldingDetailScreenWeb extends ConsumerStatefulWidget {
   final dynamic holding;
@@ -618,7 +618,7 @@ class _HoldingDetailScreenWebState
       });
 
       // Get root navigator context - this is crucial for overlay access
-      final rootContext = rootNavigatorKey.currentContext;
+      final rootContext = getNavigatorContext();
       if (rootContext == null) {
         print("ERROR: Root context is null");
         if (mounted) {
@@ -749,7 +749,7 @@ class _HoldingDetailScreenWebState
           _isProcessingBuy = false;
         });
 
-        final rootCtx = rootNavigatorKey.currentContext;
+        final rootCtx = getNavigatorContext();
         if (rootCtx != null) {
           try {
             showResponsiveWarningMessage(
@@ -799,7 +799,7 @@ class _HoldingDetailScreenWebState
       });
 
       // Get root navigator context - this is crucial for overlay access
-      final rootContext = rootNavigatorKey.currentContext;
+      final rootContext = getNavigatorContext();
       if (rootContext == null) {
         print("ERROR: Root context is null");
         if (mounted) {
@@ -1061,7 +1061,7 @@ class _HoldingDetailScreenWebState
           _isProcessingSell = false;
         });
 
-        final rootCtx = rootNavigatorKey.currentContext;
+        final rootCtx = getNavigatorContext();
         if (rootCtx != null) {
           try {
             showResponsiveWarningMessage(

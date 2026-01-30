@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/notification_screens/notification_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../main.dart' show rootNavigatorKey;
+import '../main.dart' show getNavigatorState;
 import '../routes/route_names.dart';
 import 'notification_navigation_service.dart';
 
@@ -160,8 +160,9 @@ class NotificationService extends ChangeNotifier {
       } else {
       
         // Navigate to notification screen
-        if (rootNavigatorKey.currentState != null) {
-          rootNavigatorKey.currentState!.pushNamed(Routes.notificationpage);
+        final navigatorState = getNavigatorState();
+        if (navigatorState != null) {
+          navigatorState.pushNamed(Routes.notificationpage);
         }
 
         // Send navigation event after a delay to allow screen to initialize
