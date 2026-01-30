@@ -9,6 +9,8 @@ import 'package:flutter/material.dart'
         BorderRadius,
         TextPainter,
         TextSpan,
+        WidgetSpan,
+        PlaceholderAlignment,
         TextStyle,
         TextDirection,
         GestureDetector,
@@ -30,7 +32,6 @@ import 'package:flutter/material.dart'
         Container,
         MouseRegion,
         Expanded,
-        Flexible,
         Align,
         Text,
         ScrollController,
@@ -41,11 +42,8 @@ import 'package:flutter/material.dart'
         Padding,
         Tooltip,
         RichText,
-        Stack,
-        Clip,
         ValueNotifier,
         ValueListenableBuilder,
-        Positioned,
         MediaQuery,
         Builder,
         BoxShadow,
@@ -225,11 +223,15 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }
 
   // Builds a cell with hover detection that covers the entire cell including padding
+  // Row tap is handled automatically when holding/exchTsym are provided
+  // Inner buttons (Exit, 3-dot menu) take precedence due to Flutter's gesture arena
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
+    dynamic holding, // Pass holding data for automatic row tap handling
+    dynamic exchTsym, // Pass exchTsym data for automatic row tap handling
   }) {
     // Add extra horizontal padding for first and last columns
     final isFirstColumn = columnIndex == 0;
@@ -284,7 +286,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 (_activePopoverController != null &&
                     _popoverRowIndex == rowIndex);
 
-            return Container(
+            final container = Container(
               padding: cellPadding,
               color: isRowHovered
                   ? resolveThemeColor(context,
@@ -294,6 +296,20 @@ class _TableExample1State extends ConsumerState<TableExample1> {
               alignment: alignRight ? Alignment.topRight : null,
               child: cachedChild,
             );
+
+            // Automatically wrap with GestureDetector for row tap when holding data is provided
+            // Inner buttons (Exit, 3-dot menu) will naturally take precedence in gesture arena
+            if (holding != null) {
+              return GestureDetector(
+                onTap: () {
+                  _hoveredRowIndex.value = null;
+                  _showHoldingDetail(holding, exchTsym);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: container,
+              );
+            }
+            return container;
           },
         ),
       ),
@@ -456,8 +472,28 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
         switch (col) {
           case 0: // Instrument
-            cellText = _formatInstrumentText(exchTsym);
-            break;
+            // Measure symbol + exchange separately (exchange uses smaller font)
+            final symbol =
+                (exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim();
+            final exchange = exchTsym?.exch ?? '';
+
+            // Measure symbol with normal font
+            final symbolWidth = _measureTextWidth(symbol, textStyle);
+
+            // Measure exchange with smaller font (10px, matches rendering)
+            final exchangeStyle = const TextStyle(fontSize: 10);
+            final exchangeWidth = exchange.isNotEmpty
+                ? _measureTextWidth(' $exchange', exchangeStyle)
+                : 0.0;
+
+            // Total width = symbol + exchange + space for Exit button + 3-dot menu
+            // Exit button (~30px) + gap (6px) + 3-dot menu (~30px) = ~66px
+            final totalWidth = symbolWidth + exchangeWidth + 66.0;
+
+            if (totalWidth > maxWidth) {
+              maxWidth = totalWidth;
+            }
+            continue; // Skip normal cellWidth calculation - already handled above
           case 1: // Net Qty
             final qty = holding.currentQty ?? 0;
             cellText = qty > 0 ? '+$qty' : '$qty';
@@ -496,9 +532,12 @@ class _TableExample1State extends ConsumerState<TableExample1> {
         }
       }
 
-      // For instrument column, no need to reserve space for buttons
-      // Buttons will overlay on the right side, covering only half the text
-      // Text can use full width, buttons appear on hover as overlay
+      // Ensure minimum width for Instrument column to prevent excessive truncation
+      if (col == 0) {
+        const minInstrumentWidth = 160.0; // Needs space for Exit + 3-dot menu
+        maxWidth =
+            maxWidth < minInstrumentWidth ? minInstrumentWidth : maxWidth;
+      }
 
       // Set minimum width (max of header/data + padding)
       minWidths[col] = maxWidth + padding;
@@ -706,7 +745,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
             // Define absolute minimum widths (cannot shrink below these)
             final absoluteMinWidths = <int, double>{
-              0: 120.0, // Instrument (needs space for 3-dot menu)
+              0: 160.0, // Instrument (needs space for Exit + 3-dot menu)
               1: 50.0,  // Net Qty
               2: 65.0,  // Avg Price
               3: 50.0,  // LTP
@@ -835,348 +874,314 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
                             return shadcn.TableRow(
                               cells: [
-                                // Instrument with action buttons on hover - Make clickable for row tap
+                                // Instrument with action buttons on hover
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 0,
+                                  holding: holding,
+                                  exchTsym: exchTsym,
                                   child: shadcn.ValueListenableBuilder(
                                       valueListenable: _hoveredRowIndex,
                                       builder: (context, hoveredIndex, _) {
                                         final isRowHovered =
                                             hoveredIndex == index;
-                                        return GestureDetector(
-                                          onTap: () => _showHoldingDetail(
-                                              holding, exchTsym),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            child: Stack(
-                                              clipBehavior: Clip.hardEdge,
+                                        // No GestureDetector here - tap is handled by buildCellWithHover's onTap
+                                        return SizedBox(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          // Row layout: text shrinks with ellipsis when buttons appear (no overlay)
+                                          child: Row(
                                               children: [
-                                                // Instrument name - full width, can be partially covered by buttons
-                                                // Only truncate when hovered (buttons visible), otherwise show full text
-                                                Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: Tooltip(
-                                                    message:
-                                                        '${(exchTsym?.tsym ?? 'N/A').replaceAll("-EQ", "").trim()}${exchTsym?.exch != null && exchTsym!.exch!.isNotEmpty ? ' ${exchTsym.exch}' : ''}',
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                          right: isRowHovered
-                                                              ? 8.0
-                                                              : 0.0),
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Flexible(
-                                                            child: RichText(
-                                                              overflow: TextOverflow.ellipsis,
-                                                              maxLines: 1,
-                                                              softWrap: false,
-                                                              text: TextSpan(
-                                                                children: [
-                                                                  // Symbol (normal color, without -EQ, fixed 14px)
+                                                // Instrument name - Expanded so it shrinks when buttons appear
+                                                Expanded(
+                                                  child: Align(
+                                                    alignment:
+                                                        Alignment.centerLeft,
+                                                    child: Builder(
+                                                      builder: (ctx) {
+                                                        // Get pledged qty to include in tooltip and RichText
+                                                        final pledgedQty =
+                                                            int.tryParse(holding
+                                                                        .brkcolqty ??
+                                                                    '0') ??
+                                                                0;
+                                                        final symbolText =
+                                                            (exchTsym?.tsym ??
+                                                                    'N/A')
+                                                                .replaceAll(
+                                                                    "-EQ", "")
+                                                                .trim();
+                                                        final exchangeText =
+                                                            (exchTsym?.exch !=
+                                                                        null &&
+                                                                    exchTsym!
+                                                                        .exch!
+                                                                        .isNotEmpty)
+                                                                ? ' ${exchTsym.exch}'
+                                                                : '';
+
+                                                        // Build tooltip message with pledged info
+                                                        String tooltipMsg =
+                                                            '$symbolText$exchangeText';
+                                                        if (pledgedQty > 0) {
+                                                          tooltipMsg +=
+                                                              ' (Pledged: $pledgedQty)';
+                                                        }
+
+                                                        return Tooltip(
+                                                          message: tooltipMsg,
+                                                          child: RichText(
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                            maxLines: 1,
+                                                            softWrap: false,
+                                                            text: TextSpan(
+                                                              children: [
+                                                                // Symbol (normal color, without -EQ)
+                                                                TextSpan(
+                                                                  text:
+                                                                      symbolText,
+                                                                  style:
+                                                                      _getTextStyle(
+                                                                          ctx),
+                                                                ),
+                                                                // Exchange (smaller font)
+                                                                if (exchangeText
+                                                                    .isNotEmpty)
                                                                   TextSpan(
-                                                                    text: (exchTsym?.tsym ??
-                                                                            'N/A')
-                                                                        .replaceAll(
-                                                                            "-EQ",
-                                                                            "")
-                                                                        .trim(),
-                                                                    style: _getTextStyle(
-                                                                        context),
+                                                                    text:
+                                                                        exchangeText,
+                                                                    style: MyntWebTextStyles
+                                                                        .para(
+                                                                      ctx,
+                                                                      darkColor:
+                                                                          MyntColors
+                                                                              .textSecondaryDark,
+                                                                      lightColor:
+                                                                          MyntColors
+                                                                              .textSecondary,
+                                                                      fontWeight:
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                    ).copyWith(
+                                                                        fontSize:
+                                                                            10),
                                                                   ),
-                                                                  // Exchange (mutedForeground color, smaller font, fixed 10px)
-                                                                  if (exchTsym?.exch !=
-                                                                          null &&
-                                                                      exchTsym!
-                                                                          .exch!
-                                                                          .isNotEmpty)
-                                                                    TextSpan(
-                                                                      text:
-                                                                          ' ${exchTsym.exch}',
-                                                                      style: MyntWebTextStyles
-                                                                          .para(
-                                                                        context,
-                                                                        darkColor:
-                                                                            MyntColors.textSecondaryDark,
-                                                                        lightColor:
-                                                                            MyntColors.textSecondary,
-                                                                        fontWeight:
-                                                                            MyntFonts.medium,
-                                                                      ).copyWith(
-                                                                          fontSize:
-                                                                              10),
+                                                                // Lock icon + pledged qty (inside RichText so it truncates together)
+                                                                if (pledgedQty >
+                                                                    0) ...[
+                                                                  // Space before lock icon (SizedBox for precise control)
+                                                                  const WidgetSpan(
+                                                                    child:
+                                                                        SizedBox(
+                                                                            width:
+                                                                                4),
+                                                                  ),
+                                                                  WidgetSpan(
+                                                                    alignment:
+                                                                        PlaceholderAlignment
+                                                                            .middle,
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .lock,
+                                                                      size: 14,
+                                                                      color: MyntColors
+                                                                          .secondary,
                                                                     ),
+                                                                  ),
+                                                                  TextSpan(
+                                                                    text:
+                                                                        ' $pledgedQty',
+                                                                    style: MyntWebTextStyles
+                                                                        .para(
+                                                                      ctx,
+                                                                      color: MyntColors
+                                                                          .secondary,
+                                                                      darkColor:
+                                                                          MyntColors
+                                                                              .secondary,
+                                                                      lightColor:
+                                                                          MyntColors
+                                                                              .secondary,
+                                                                      fontWeight:
+                                                                          MyntFonts
+                                                                              .medium,
+                                                                    ),
+                                                                  ),
                                                                 ],
-                                                              ),
+                                                              ],
                                                             ),
                                                           ),
-                                                          // Show lock icon with pledged qty if brkcolqty > 0
-                                                          Builder(
-                                                            builder: (ctx) {
-                                                              final pledgedQty =
-                                                                  int.tryParse(holding
-                                                                              .brkcolqty ??
-                                                                          '0') ??
-                                                                      0;
-                                                              if (pledgedQty >
-                                                                  0) {
-                                                                return Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                          left:
-                                                                              6),
-                                                                  child:
-                                                                      Tooltip(
-                                                                    message:
-                                                                        'Pledged Qty: $pledgedQty',
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .min,
-                                                                      children: [
-                                                                        const Icon(
-                                                                          Icons
-                                                                              .lock,
-                                                                          size:
-                                                                              12,
-                                                                          color:
-                                                                              MyntColors.secondary,
-                                                                        ),
-                                                                        const SizedBox(
-                                                                            width:
-                                                                                2),
-                                                                        Text(
-                                                                          '$pledgedQty',
-                                                                          style:
-                                                                              MyntWebTextStyles.para(
-                                                                            ctx,
-                                                                            color:
-                                                                                MyntColors.secondary,
-                                                                            darkColor:
-                                                                                MyntColors.secondary,
-                                                                            lightColor:
-                                                                                MyntColors.secondary,
-                                                                            fontWeight:
-                                                                                MyntFonts.medium,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              }
-                                                              return const SizedBox
-                                                                  .shrink();
-                                                            },
-                                                          ),
-                                                        ],
-                                                      ),
+                                                        );
+                                                      },
                                                     ),
                                                   ),
                                                 ),
-                                                // Exit button + 3-dot options menu - positioned on the right
+                                                // Exit button + 3-dot options menu - siblings in Row (no overlay)
                                                 if (isRowHovered ||
                                                     (_activePopoverController !=
                                                             null &&
                                                         _popoverRowIndex ==
-                                                            index))
-                                                  Positioned(
-                                                    right: 0,
-                                                    top: 0,
-                                                    bottom: 0,
-                                                    child: Align(
-                                                      alignment:
-                                                          Alignment.centerRight,
-                                                      child: Row(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          // Exit button (only for holdings with qty)
-                                                          if (qty > 0)
-                                                            _buildExitButton(holding, exchTsym),
-                                                          if (qty > 0)
-                                                            const SizedBox(width: 6),
-                                                          _buildOptionsMenuButton(
-                                                            holding,
-                                                            exchTsym,
-                                                            index,
-                                                            qty,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
+                                                            index)) ...[
+                                                  const SizedBox(width: 8),
+                                                  // Exit button (only for holdings with qty)
+                                                  if (qty > 0)
+                                                    _buildExitButton(
+                                                        holding, exchTsym),
+                                                  if (qty > 0)
+                                                    const SizedBox(width: 6),
+                                                  _buildOptionsMenuButton(
+                                                    holding,
+                                                    exchTsym,
+                                                    index,
+                                                    qty,
                                                   ),
                                               ],
-                                            ),
+                                            ],
                                           ),
                                         );
                                       }),
                                 ),
-                                // Net Qty - Make clickable for row tap
+                                // Net Qty
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 1,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        qty > 0 ? '$qty' : '$qty',
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      qty > 0 ? '$qty' : '$qty',
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
-                                // Avg Price - Make clickable for row tap
+                                // Avg Price
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 2,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        (double.tryParse(
-                                                    holding.avgPrc ?? '0') ??
-                                                0.0)
-                                            .toStringAsFixed(2),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (double.tryParse(
+                                                  holding.avgPrc ?? '0') ??
+                                              0.0)
+                                          .toStringAsFixed(2),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
-                                // LTP - with WebSocket updates - Make clickable for row tap
+                                // LTP - with WebSocket updates
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 3,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: token.isNotEmpty
-                                          ? _LTPCell(
-                                              token: token,
-                                              initialLtp:
-                                                  exchTsym?.lp ?? '0.00',
-                                            )
-                                          : Text(
-                                              exchTsym?.lp ?? '0.00',
-                                              style: _getTextStyle(context),
-                                            ),
-                                    ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: token.isNotEmpty
+                                        ? _LTPCell(
+                                            token: token,
+                                            initialLtp:
+                                                exchTsym?.lp ?? '0.00',
+                                          )
+                                        : Text(
+                                            exchTsym?.lp ?? '0.00',
+                                            style: _getTextStyle(context),
+                                          ),
                                   ),
                                 ),
-                                // Invested - Make clickable for row tap
+                                // Invested
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 4,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        holding.invested ?? '0.00',
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      holding.invested ?? '0.00',
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
-                                // Current Value - with WebSocket updates - Make clickable for row tap
+                                // Current Value - with WebSocket updates
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 5,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: token.isNotEmpty
-                                          ? _CurrentValueCell(
-                                              token: token,
-                                              qty: qty,
-                                              initialValue:
-                                                  holding.currentValue ??
-                                                      '0.00',
-                                            )
-                                          : Text(
-                                              holding.currentValue ?? '0.00',
-                                              style: _getTextStyle(context),
-                                            ),
-                                    ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: token.isNotEmpty
+                                        ? _CurrentValueCell(
+                                            token: token,
+                                            qty: qty,
+                                            initialValue:
+                                                holding.currentValue ??
+                                                    '0.00',
+                                          )
+                                        : Text(
+                                            holding.currentValue ?? '0.00',
+                                            style: _getTextStyle(context),
+                                          ),
                                   ),
                                 ),
-                                // Day P&L - with WebSocket updates (includes percentage) - Make clickable for row tap
+                                // Day P&L - with WebSocket updates (includes percentage)
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 6,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: token.isNotEmpty
-                                          ? _DayPnLCell(
-                                              token: token,
-                                              qty: qty,
-                                              close: double.tryParse(
-                                                      exchTsym?.close ?? '0') ??
-                                                  0.0,
-                                              initialValue:
-                                                  exchTsym?.oneDayChg ?? '0.00',
-                                              initialPercent:
-                                                  exchTsym?.perChange ?? '0.00',
-                                            )
-                                          : _buildColoredText(
-                                              '${exchTsym?.oneDayChg ?? '0.00'}(${exchTsym?.perChange ?? '0.00'}%)'),
-                                    ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: token.isNotEmpty
+                                        ? _DayPnLCell(
+                                            token: token,
+                                            qty: qty,
+                                            close: double.tryParse(
+                                                    exchTsym?.close ?? '0') ??
+                                                0.0,
+                                            initialValue:
+                                                exchTsym?.oneDayChg ?? '0.00',
+                                            initialPercent:
+                                                exchTsym?.perChange ?? '0.00',
+                                          )
+                                        : _buildColoredText(
+                                            '${exchTsym?.oneDayChg ?? '0.00'}(${exchTsym?.perChange ?? '0.00'}%)'),
                                   ),
                                 ),
-                                // Overall P&L - with WebSocket updates (includes percentage) - Make clickable for row tap
+                                // Overall P&L - with WebSocket updates (includes percentage)
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 7,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        _showHoldingDetail(holding, exchTsym),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: token.isNotEmpty
-                                          ? _OverallPnLCell(
-                                              token: token,
-                                              qty: qty,
-                                              avgPrice: avgPrice,
-                                              initialValue:
-                                                  exchTsym?.profitNloss ??
-                                                      '0.00',
-                                              initialPercent:
-                                                  exchTsym?.pNlChng ?? '0.00',
-                                            )
-                                          : _buildColoredText(
-                                              '${exchTsym?.profitNloss ?? '0.00'}(${exchTsym?.pNlChng ?? '0.00'}%)'),
-                                    ),
+                                  holding: holding,
+                                  exchTsym: exchTsym,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: token.isNotEmpty
+                                        ? _OverallPnLCell(
+                                            token: token,
+                                            qty: qty,
+                                            avgPrice: avgPrice,
+                                            initialValue:
+                                                exchTsym?.profitNloss ??
+                                                    '0.00',
+                                            initialPercent:
+                                                exchTsym?.pNlChng ?? '0.00',
+                                          )
+                                        : _buildColoredText(
+                                            '${exchTsym?.profitNloss ?? '0.00'}(${exchTsym?.pNlChng ?? '0.00'}%)'),
                                   ),
                                 ),
                               ],
@@ -1464,6 +1469,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   Widget _buildExitButton(dynamic holding, dynamic exchTsym) {
     return GestureDetector(
       onTap: () {
+        // Clear hover state before navigating to prevent stuck hover
+        _hoveredRowIndex.value = null;
         _handleExitHolding(holding, exchTsym);
       },
       child: Container(
@@ -1518,6 +1525,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     _closePopover();
+                    // Clear hover state before navigating to prevent stuck hover
+                    _hoveredRowIndex.value = null;
                     _handleAddHolding(holding, exchTsym);
                   },
                 ),
@@ -1538,6 +1547,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   _closePopover();
+                  // Clear hover state before showing detail to prevent stuck hover
+                  _hoveredRowIndex.value = null;
                   _showHoldingDetail(holding, exchTsym);
                 },
               ),
@@ -1552,6 +1563,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   _closePopover();
+                  // Clear hover state before navigating to prevent stuck hover
+                  _hoveredRowIndex.value = null;
                   _handleChartTap(holding, exchTsym);
                 },
               ),

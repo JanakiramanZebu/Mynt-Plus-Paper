@@ -23,7 +23,6 @@ import 'package:flutter/material.dart'
         EdgeInsets,
         Alignment,
         MainAxisAlignment,
-        MainAxisSize,
         TextOverflow,
         Axis,
         Container,
@@ -39,12 +38,9 @@ import 'package:flutter/material.dart'
         LayoutBuilder,
         showDialog,
         RichText,
-        Stack,
-        Clip,
         Tooltip,
         ValueNotifier,
         ValueListenableBuilder,
-        Positioned,
         MediaQuery,
         BoxShadow,
         Offset,
@@ -231,12 +227,14 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   }
 
   // Builds a cell with hover detection
+  // Pass position data for automatic row tap handling (centralized - no duplication)
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
     bool isClosed = false,
+    dynamic position, // Pass position data for automatic row tap handling
   }) {
     final isFirstColumn = columnIndex == 0; // Select checkbox column
     final isInstrumentColumn = columnIndex == 2; // Instrument column (now index 2)
@@ -311,12 +309,25 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   light: MyntColors.primary.withValues(alpha: 0.08));
             }
 
-            return Container(
+            final container = Container(
               padding: cellPadding,
               color: backgroundColor,
               alignment: alignRight ? Alignment.topRight : null,
               child: cachedChild, // Use cached child - won't rebuild on hover!
             );
+
+            // Automatically wrap with GestureDetector for row tap when position data is provided
+            if (position != null) {
+              return GestureDetector(
+                onTap: () {
+                  _hoveredRowIndex.value = null;
+                  _showPositionDetail(position);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: container,
+              );
+            }
+            return container;
           },
         ),
       ),
@@ -931,6 +942,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                   columnIndex: columnIndex,
                                   alignRight: isNumeric,
                                   isClosed: isClosed,
+                                  position: position,
                                   child: ValueListenableBuilder<int?>(
                                     valueListenable: _hoveredRowIndex,
                                     builder: (context, hoveredIndex, _) {
@@ -958,34 +970,17 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                   columnIndex: columnIndex,
                                   alignRight: isNumeric,
                                   isClosed: isClosed,
-                                  child: isClickable
-                                      ? GestureDetector(
-                                          onTap: () =>
-                                              _showPositionDetail(position),
-                                          behavior: HitTestBehavior.opaque,
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            child: _buildCellContent(
-                                              context,
-                                              header,
-                                              position,
-                                              theme,
-                                              isClosed,
-                                              false, // Not hover-dependent
-                                              positionBook,
-                                            ),
-                                          ),
-                                        )
-                                      : _buildCellContent(
-                                          context,
-                                          header,
-                                          position,
-                                          theme,
-                                          isClosed,
-                                          false, // Not hover-dependent
-                                          positionBook,
-                                        ),
+                                  // Pass position for clickable cells (not Select column)
+                                  position: isClickable ? position : null,
+                                  child: _buildCellContent(
+                                    context,
+                                    header,
+                                    position,
+                                    theme,
+                                    isClosed,
+                                    false, // Not hover-dependent
+                                    positionBook,
+                                  ),
                                 );
                               }
                             }).toList(),
@@ -1219,11 +1214,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
       builder: (context, ref, child) {
         final openPositions =
             ref.watch(portfolioProvider.select((p) => p.openPosition ?? []));
-        final positionIndex =
-            openPositions.indexWhere((p) => p.token == position.token);
-        final isSelected = positionIndex >= 0
-            ? (openPositions[positionIndex].isExitSelection ?? false)
-            : (position.isExitSelection ?? false);
+        // Match by both token AND product to differentiate same-symbol positions with different products (MIS vs NRML)
+        final positionIndex = openPositions.indexWhere(
+            (p) => p.token == position.token && p.sPrdtAli == position.sPrdtAli);
+        // Closed positions should never show as selected (even if same token as open position)
+        final isSelected = isClosed
+            ? false
+            : (positionIndex >= 0
+                ? (openPositions[positionIndex].isExitSelection ?? false)
+                : (position.isExitSelection ?? false));
 
         return Align(
           alignment: Alignment.centerLeft,
@@ -1293,27 +1292,23 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     final textColor =
         isClosed ? colorScheme.mutedForeground : colorScheme.foreground;
 
-    return GestureDetector(
-      onTap: () => _showPositionDetail(position),
-      behavior: HitTestBehavior.deferToChild, // Allow children (PopupMenuButton) to handle taps first
-      child: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Stack(
-          clipBehavior: Clip.none,
+    // No GestureDetector here - tap is handled by buildCellWithHover's onTap (covers entire cell including padding)
+    // Buttons (Exit, 3-dot menu) have their own GestureDetectors and will handle their own taps
+    return SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      // Row layout: text shrinks with ellipsis when buttons appear (no overlay)
+      child: Row(
           children: [
-            // Instrument name
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Tooltip(
-                message:
-                    '${_formatInstrumentText(position)}${position.exch != null && position.exch!.isNotEmpty && (position.expDate == null || position.expDate!.isEmpty) ? ' ${position.exch}' : ''}',
-                child: Padding(
-                  padding: EdgeInsets.only(right: isRowHovered ? 40.0 : 0.0),
+            // Instrument name - Expanded so it shrinks when buttons appear
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Tooltip(
+                  message:
+                      '${_formatInstrumentText(position)}${position.exch != null && position.exch!.isNotEmpty && (position.expDate == null || position.expDate!.isEmpty) ? ' ${position.exch}' : ''}',
                   child: RichText(
-                    overflow: isRowHovered
-                        ? TextOverflow.ellipsis
-                        : TextOverflow.visible,
+                    overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     softWrap: false,
                     text: TextSpan(
@@ -1342,38 +1337,26 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 ),
               ),
             ),
-            // Exit button + 3-dot menu button (appears on hover)
-            if (isRowHovered)
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Exit button (only for exitable positions)
-                      if (!isClosed &&
-                          position.qty != "0" &&
-                          position.sPrdtAli != "BO" &&
-                          position.sPrdtAli != "CO" &&
-                          !positionBook.isDay)
-                        _buildExitButton(context, position),
-                      if (!isClosed &&
-                          position.qty != "0" &&
-                          position.sPrdtAli != "BO" &&
-                          position.sPrdtAli != "CO" &&
-                          !positionBook.isDay)
-                        const SizedBox(width: 6),
-                      // 3-dot menu button
-                      _buildOptionsMenuButton(context, position, isClosed, positionBook, rowIndex: rowIndex),
-                    ],
-                  ),
-                ),
-              ),
+            // Exit button + 3-dot menu button - siblings in Row (no overlay)
+            if (isRowHovered) ...[
+              const SizedBox(width: 8),
+              // Exit button (only for exitable positions)
+              if (!isClosed &&
+                  position.qty != "0" &&
+                  position.sPrdtAli != "BO" &&
+                  position.sPrdtAli != "CO" &&
+                  !positionBook.isDay)
+                _buildExitButton(context, position),
+              if (!isClosed &&
+                  position.qty != "0" &&
+                  position.sPrdtAli != "BO" &&
+                  position.sPrdtAli != "CO" &&
+                  !positionBook.isDay)
+                const SizedBox(width: 6),
+              // 3-dot menu button
+              _buildOptionsMenuButton(context, position, isClosed, positionBook, rowIndex: rowIndex),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -1383,6 +1366,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     return GestureDetector(
       onTap: () {
         debugPrint('Exit button pressed');
+        // Clear hover state before navigating to prevent stuck hover
+        _hoveredRowIndex.value = null;
         _handleExitPosition(position);
       },
       child: Container(
@@ -1452,10 +1437,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             // Build menu items dynamically based on position state
             List<shadcn.MenuItem> menuItems = [];
 
-            // Add option (only for open positions, not BO/CO, not day positions)
-            if (!isClosed &&
-                position.qty != "0" &&
-                position.sPrdtAli != "BO" &&
+            // Add option (for both open and closed positions, not BO/CO, not day positions)
+            if (position.sPrdtAli != "BO" &&
                 position.sPrdtAli != "CO" &&
                 !positionBook.isDay) {
               menuItems.add(
@@ -1466,6 +1449,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Add pressed');
+                    // Clear hover state before navigating to prevent stuck hover
+                    _hoveredRowIndex.value = null;
                     _handleAddPosition(position);
                   },
                 ),
@@ -1482,6 +1467,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Convert pressed');
+                    // Clear hover state before opening dialog to prevent stuck hover
+                    _hoveredRowIndex.value = null;
                     _handleConvertPosition(position);
                   },
                 ),
@@ -1502,6 +1489,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   debugPrint('Info pressed');
+                  // Clear hover state before showing detail to prevent stuck hover
+                  _hoveredRowIndex.value = null;
                   _showPositionDetail(position);
                 },
               ),

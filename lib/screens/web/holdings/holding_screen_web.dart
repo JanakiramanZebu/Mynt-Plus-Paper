@@ -65,6 +65,10 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   DateTime _lastUpdate = DateTime.now();
   static const Duration _updateInterval = Duration(milliseconds: 300);
 
+  // RefreshTrigger key for shadcn refresh animation
+  final GlobalKey<shadcn.RefreshTriggerState> _refreshTriggerKey =
+      GlobalKey<shadcn.RefreshTriggerState>();
+
   @override
   void initState() {
     super.initState();
@@ -162,7 +166,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             light: MyntColors.backgroundColor),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: RefreshIndicator(
+          child: shadcn.RefreshTrigger(
+            key: _refreshTriggerKey,
             onRefresh: () async {
               if (_selectedTabIndex == 0) {
                 await portfolioData.fetchHoldings(context, "Refresh");
@@ -226,7 +231,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             crossAxisCount: columns,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            mainAxisExtent: 100, // Fixed height - won't change with width
+            mainAxisExtent: 115, // Fixed height - allows space for wrapped percentage
           ),
           children: [
             _buildStatCard(
@@ -281,7 +286,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
         child: shadcn.Card(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
             child: Row(
               children: [
                 // Icon in circle
@@ -329,22 +334,21 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                         ),
                       ),
                       const SizedBox(height: 1),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                      // Use Wrap to move percentage to next line when space is limited
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 2,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Flexible(
-                            child: Text(
-                              value,
-                              style: MyntWebTextStyles.head(
-                                context,
-                                color: valueColor,
-                                fontWeight: MyntFonts.medium,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            value,
+                            style: MyntWebTextStyles.head(
+                              context,
+                              color: valueColor,
+                              fontWeight: MyntFonts.medium,
                             ),
                           ),
-                          if (percentage != null) ...[
-                            const SizedBox(width: 6),
+                          if (percentage != null)
                             Text(
                               '($percentage%)',
                               style: MyntWebTextStyles.bodySmall(
@@ -353,7 +357,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                                 fontWeight: MyntFonts.medium,
                               ),
                             ),
-                          ],
                         ],
                       ),
                     ],
@@ -387,7 +390,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 crossAxisCount: columns,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                mainAxisExtent: 100, // Fixed height - won't change with width
+                mainAxisExtent: 100, // Fixed height - allows space for wrapped percentage
               ),
               children: [
                 _buildStatCard(
@@ -690,15 +693,12 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
-              // Reload button
+              // Reload button - triggers shadcn RefreshTrigger animation
               _buildIconButton(
                 icon: Icons.refresh,
-                onPressed: () async {
-                  if (_selectedTabIndex == 0) {
-                    await portfolioData.fetchHoldings(context, "Refresh");
-                  } else {
-                    await ref.read(mfProvider).fetchmfholdingnew();
-                  }
+                onPressed: () {
+                  _refreshTriggerKey.currentState?.refresh();
+                  
                 },
                 theme: theme,
               ),

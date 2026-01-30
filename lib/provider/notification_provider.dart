@@ -227,5 +227,16 @@ class NotificationProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {}
   }
-  
+
+  /// Clears all notification data on logout to prevent data leaking between users
+  void clearData() {
+    _exchangemessage = null;
+    _exchangestatus = null;
+    _brokermsg = null;
+    _informationMessages = null;
+    _triggeredAlertSearch = [];
+    _highlightedMessageId = null;
+    _selectedTab = 0;
+    notifyListeners();
+  }
 }

@@ -59,6 +59,7 @@ class _PositionDetailScreenWebState
     copy.token = original.token;
     copy.exch = original.exch;
     copy.tsym = original.tsym;
+    copy.dname = original.dname; // Copy dname for instrument display
     copy.symbol = original.symbol;
     copy.expDate = original.expDate;
     copy.option = original.option;
@@ -316,8 +317,39 @@ class _PositionDetailScreenWebState
     );
   }
 
+  // Helper method to format instrument display text (same logic as position_table.dart)
+  String _formatInstrumentText() {
+    // Priority 1: Use dname (display name) if available
+    if (_positionData.dname != null && _positionData.dname!.isNotEmpty) {
+      return _positionData.dname!.replaceAll("-EQ", "").trim();
+    }
+
+    // Priority 2: Use tsym if dname is not available
+    if (_positionData.tsym != null && _positionData.tsym!.isNotEmpty) {
+      return _positionData.tsym!.replaceAll("-EQ", "").trim();
+    }
+
+    // Fallback: build from components if both are not available
+    final symbol = (_positionData.symbol ?? '').replaceAll("-EQ", "").trim();
+    final expDate = _positionData.expDate ?? '';
+    final option = _positionData.option ?? '';
+
+    // Build display text: symbol + expDate + option
+    String displayText = symbol;
+    if (expDate.isNotEmpty) {
+      displayText += expDate;
+    }
+    if (option.isNotEmpty) {
+      displayText += option;
+    }
+    return displayText;
+  }
+
   Widget _buildSymbolSection(ThemesProvider theme,
       MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
+    // Check if this is an equity stock (no expiry date) - only show exchange for equity
+    final isEquity = _positionData.expDate == null || _positionData.expDate!.isEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -327,7 +359,7 @@ class _PositionDetailScreenWebState
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
-              "${_positionData.symbol?.replaceAll("-EQ", "") ?? ''}-EQ",
+              _formatInstrumentText(),
               style: MyntWebTextStyles.head(
                 context,
                 color: resolveThemeColor(context,
@@ -336,16 +368,19 @@ class _PositionDetailScreenWebState
                 fontWeight: MyntFonts.semiBold,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              _positionData.exch ?? "NSE",
-              style: MyntWebTextStyles.para(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+            // Only show exchange for equity stocks (same as table)
+            if (isEquity && _positionData.exch != null && _positionData.exch!.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text(
+                _positionData.exch!,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 1),

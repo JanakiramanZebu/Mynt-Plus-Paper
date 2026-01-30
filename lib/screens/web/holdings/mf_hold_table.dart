@@ -41,11 +41,8 @@ import 'package:flutter/material.dart'
         Column,
         WidgetsBinding,
         Padding,
-        Stack,
-        Clip,
         MediaQuery,
         Tooltip,
-        Positioned,
         BoxShadow,
         Offset,
         ValueNotifier,
@@ -53,6 +50,7 @@ import 'package:flutter/material.dart'
         RawScrollbar,
         Radius,
         Builder;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
@@ -193,11 +191,13 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
   }
 
   // Builds a cell with hover detection that covers the entire cell including padding
+  // Pass holding data for automatic row tap handling (centralized - no duplication)
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
     required int columnIndex,
     bool alignRight = false,
+    dynamic holding, // Pass holding data for automatic row tap handling
   }) {
     final isFirstColumn = columnIndex == 0; // Fund Name column
     final isLastColumn = columnIndex == 6; // P&L column
@@ -251,7 +251,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 (_activePopoverController != null &&
                     _popoverRowIndex == rowIndex);
 
-            return Container(
+            final container = Container(
               padding: cellPadding,
               color: isRowHovered
                   ? resolveThemeColor(context,
@@ -261,6 +261,19 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
               alignment: alignRight ? Alignment.topRight : null,
               child: cachedChild,
             );
+
+            // Automatically wrap with GestureDetector for row tap when holding data is provided
+            if (holding != null) {
+              return GestureDetector(
+                onTap: () {
+                  _hoveredRowIndex.value = null;
+                  _showHoldingDetail(holding);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: container,
+              );
+            }
+            return container;
           },
         ),
       ),
@@ -602,6 +615,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     _closePopover();
+                    // Clear hover state before navigating to prevent stuck hover
+                    _hoveredRowIndex.value = null;
                     _handleRedeem(holding);
                   },
                 ),
@@ -622,6 +637,8 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   _closePopover();
+                  // Clear hover state before showing detail to prevent stuck hover
+                  _hoveredRowIndex.value = null;
                   _showHoldingDetail(holding);
                 },
               ),
@@ -944,71 +961,47 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                 buildCellWithHover(
                                   rowIndex: index,
                                   columnIndex: 0,
+                                  holding: holding,
                                   child: ValueListenableBuilder<int?>(
                                     valueListenable: _hoveredRowIndex,
                                     builder: (context, hoveredIndex, _) {
                                       final isRowHovered =
                                           hoveredIndex == index;
-                                      return GestureDetector(
-                                        onTap: () =>
-                                            _showHoldingDetail(holding),
-                                        behavior: HitTestBehavior.opaque,
-                                        child: SizedBox(
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          child: Stack(
-                                            clipBehavior: Clip.hardEdge,
+                                      // No GestureDetector here - tap is handled by buildCellWithHover's onTap
+                                      return SizedBox(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        // Row layout: text shrinks with ellipsis when buttons appear (no overlay)
+                                        child: Row(
                                             children: [
-                                              // Fund name - full width, can be partially covered by buttons
-                                              // Only truncate when hovered (buttons visible), otherwise show full text
-                                              Align(
-                                                alignment: Alignment.centerLeft,
-                                                child: Tooltip(
-                                                  message:
-                                                      holding.name ?? 'N/A',
-                                                  child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                        right: isRowHovered
-                                                            ? 8.0
-                                                            : 0.0),
+                                              // Fund name - Expanded so it shrinks when buttons appear
+                                              Expanded(
+                                                child: Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Tooltip(
+                                                    message: holding.name ?? 'N/A',
                                                     child: Text(
                                                       holding.name ?? 'N/A',
-                                                      overflow: isRowHovered
-                                                          ? TextOverflow
-                                                              .ellipsis
-                                                          : TextOverflow
-                                                              .visible,
+                                                      overflow: TextOverflow.ellipsis,
                                                       maxLines: 1,
                                                       softWrap: false,
-                                                      style: _getTextStyle(
-                                                          context),
+                                                      style: _getTextStyle(context),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                              // 3-dot options menu - positioned on the right
+                                              // 3-dot options menu - appears on hover
                                               if (isRowHovered ||
-                                                  (_activePopoverController !=
-                                                          null &&
-                                                      _popoverRowIndex ==
-                                                          index))
-                                                Positioned(
-                                                  right: 0,
-                                                  top: 0,
-                                                  bottom: 0,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child:
-                                                        _buildOptionsMenuButton(
-                                                      holding,
-                                                      index,
-                                                      avgQty,
-                                                    ),
-                                                  ),
+                                                  (_activePopoverController != null &&
+                                                      _popoverRowIndex == index)) ...[
+                                                const SizedBox(width: 8),
+                                                _buildOptionsMenuButton(
+                                                  holding,
+                                                  index,
+                                                  avgQty,
                                                 ),
                                             ],
-                                          ),
+                                          ],
                                         ),
                                       );
                                     },
@@ -1019,19 +1012,16 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 1,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        // holding.avgQty ?? '0',
-                                        (double.tryParse(
-                                                    holding.avgQty ?? '0') ??
-                                                0.0)
-                                            .toStringAsFixed(4),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      // holding.avgQty ?? '0',
+                                      (double.tryParse(
+                                                  holding.avgQty ?? '0') ??
+                                              0.0)
+                                          .toStringAsFixed(4),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
@@ -1040,18 +1030,15 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 2,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        (double.tryParse(
-                                                    holding.avgNav ?? '0') ??
-                                                0.0)
-                                            .toStringAsFixed(4),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (double.tryParse(
+                                                  holding.avgNav ?? '0') ??
+                                              0.0)
+                                          .toStringAsFixed(4),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
@@ -1060,18 +1047,15 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 3,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        (double.tryParse(
-                                                    holding.curNav ?? '0') ??
-                                                0.0)
-                                            .toStringAsFixed(4),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (double.tryParse(
+                                                  holding.curNav ?? '0') ??
+                                              0.0)
+                                          .toStringAsFixed(4),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
@@ -1080,19 +1064,16 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 4,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        (double.tryParse(
-                                                    holding.investedValue ??
-                                                        '0') ??
-                                                0.0)
-                                            .toStringAsFixed(2),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (double.tryParse(
+                                                  holding.investedValue ??
+                                                      '0') ??
+                                              0.0)
+                                          .toStringAsFixed(2),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
@@ -1101,18 +1082,15 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 5,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        (double.tryParse(holding.currentValue ??
-                                                    '0') ??
-                                                0.0)
-                                            .toStringAsFixed(2),
-                                        style: _getTextStyle(context),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      (double.tryParse(holding.currentValue ??
+                                                  '0') ??
+                                              0.0)
+                                          .toStringAsFixed(2),
+                                      style: _getTextStyle(context),
                                     ),
                                   ),
                                 ),
@@ -1121,22 +1099,19 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
                                   rowIndex: index,
                                   columnIndex: 6,
                                   alignRight: true,
-                                  child: GestureDetector(
-                                    onTap: () => _showHoldingDetail(holding),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child: _buildPnLWithPercentage(
-                                        (double.tryParse(holding.profitLoss ??
-                                                    '0') ??
-                                                0.0)
-                                            .toStringAsFixed(2),
-                                        (double.tryParse(
-                                                    holding.changeprofitLoss ??
-                                                        '0') ??
-                                                0.0)
-                                            .toStringAsFixed(2),
-                                      ),
+                                  holding: holding,
+                                  child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildPnLWithPercentage(
+                                      (double.tryParse(holding.profitLoss ??
+                                                  '0') ??
+                                              0.0)
+                                          .toStringAsFixed(2),
+                                      (double.tryParse(
+                                                  holding.changeprofitLoss ??
+                                                      '0') ??
+                                              0.0)
+                                          .toStringAsFixed(2),
                                     ),
                                   ),
                                 ),

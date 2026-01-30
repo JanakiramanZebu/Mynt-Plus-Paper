@@ -9,6 +9,7 @@ import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
+import 'package:mynt_plus/provider/notification_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
@@ -397,7 +398,15 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               iconColor: iconColor,
               textColor: textColor,
               subtitleColor: subtitleColor,
-              onPressed: (ctx) {
+              onPressed: (ctx) async {
+                // Pre-fetch notification data before navigating
+                final notificationProviderRef = ref.read(notificationprovider);
+                // Start all fetches in parallel (don't await all - just start them)
+                notificationProviderRef.fetchbrokermsg(widget.parentContext);
+                notificationProviderRef.fetchexchagemsg(widget.parentContext);
+                notificationProviderRef.fetchInformationMessages(widget.parentContext);
+                notificationProviderRef.fetchexchstatus(widget.parentContext);
+
                 if (widget.onNavigateToScreen != null) {
                   widget.onNavigateToScreen!(ScreenType.notification);
                 } else {

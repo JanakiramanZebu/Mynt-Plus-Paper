@@ -302,12 +302,11 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         widget.watchListData['holdingQty'] !=
                                             "null") ...[
                                       SvgPicture.asset(assets.suitcase,
-                                          height: 14,
-                                          width: 18,
-                                          color: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.primaryDark,
-                                            light: MyntColors.primary,
+                                          height: 16,
+                                          width: 16,
+                                          color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary.withOpacity(0.8)
                                           )),
                                       const SizedBox(width: 4),
                                       Text(
@@ -315,11 +314,9 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                         style: MyntWebTextStyles.exch(
                                           context,
                                           fontWeight: FontWeight.w500,
-                                          color: resolveThemeColor(
-                                            context,
-                                            dark: MyntColors.textSecondaryDark,
-                                            light: MyntColors.textSecondary,
-                                          ),
+                                           color: resolveThemeColor(context,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary)
                                         ),
                                       ),
                                     ]
