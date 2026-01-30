@@ -518,7 +518,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       return _buildEmptyState(ref.read(marketWatchProvider));
     }
 
-    return _buildWatchlistView(scrips, sortBy);
+    return _buildWatchlistView(scrips, sortBy, pageName, ref);
   }
 
   Widget _buildSearchBar(
@@ -890,27 +890,84 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
     );
   }
 
-  Widget _buildWatchlistView(List scrips, String sortBy) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return Container(
-          color: resolveThemeColor(context,
-              dark: MyntColors.backgroundColorDark,
-              light: MyntColors.backgroundColor),
-          child: ListView.separated(
-            key: ValueKey('${scrips.length}_$sortBy'),
-            itemCount: scrips.length,
-            cacheExtent: 500,
-            padding: const EdgeInsets.only(
-                right: 12.0,
-                bottom:
-                    8.0), // Add right padding to prevent scrollbar from hiding content
-            separatorBuilder: (_, __) => const ListDivider(),
-            itemBuilder: (_, i) => RepaintBoundary(
-                child: WatchlistCardWeb(watchListData: scrips[i])),
-          ),
-        );
-      },
+  Widget _buildWatchlistView(List scrips, String sortBy, String wlName, WidgetRef ref) {
+    final marketWatch = ref.read(marketWatchProvider);
+    final isPreDef = marketWatch.isPreDefWLs == "Yes";
+
+    return Container(
+      color: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          canvasColor: Colors.transparent,
+        ),
+        child: ReorderableListView.builder(
+          key: ValueKey('${scrips.length}_$sortBy'),
+          itemCount: scrips.length,
+          buildDefaultDragHandles: false, // No default drag handles - use long press instead
+          padding: const EdgeInsets.only(
+              right: 12.0,
+              bottom: 8.0),
+          proxyDecorator: (child, index, animation) {
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                final double elevation = Tween<double>(begin: 0, end: 6)
+                    .animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    ))
+                    .value;
+                return Material(
+                  elevation: elevation,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.backgroundColorDark,
+                      light: MyntColors.backgroundColor),
+                  borderRadius: BorderRadius.circular(8),
+                  shadowColor: Colors.black26,
+                  child: child,
+                );
+              },
+              child: child,
+            );
+          },
+          onReorder: isPreDef
+              ? (_, __) {} // No-op for pre-defined watchlists
+              : (oldIndex, newIndex) {
+                  // Call the provider's reOrderList method
+                  marketWatch.reOrderList(
+                    context: context,
+                    oldIndex: oldIndex,
+                    newIndex: newIndex,
+                    wlName: wlName,
+                  );
+                },
+          itemBuilder: (_, i) {
+            final child = Column(
+              key: ValueKey('${scrips[i]['token']}_$i'),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RepaintBoundary(
+                  child: WatchlistCardWeb(watchListData: scrips[i]),
+                ),
+                if (i < scrips.length - 1) const ListDivider(),
+              ],
+            );
+
+            // Wrap with long-press drag listener for non-predefined watchlists
+            if (isPreDef) {
+              return child;
+            }
+
+            return ReorderableDelayedDragStartListener(
+              key: ValueKey('drag_${scrips[i]['token']}_$i'),
+              index: i,
+              child: child,
+            );
+          },
+        ),
+      ),
     );
   }
 
