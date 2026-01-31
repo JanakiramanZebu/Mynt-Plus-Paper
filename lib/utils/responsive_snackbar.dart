@@ -21,11 +21,14 @@ class ResponsiveSnackBar {
     String? actionLabel,
     VoidCallback? onActionPressed,
   }) {
-    // Use centralized breakpoint check
-    if (context.isWebLayout) {
+    // Use navigator context if available, fallback to passed context
+    final effectiveContext = getNavigatorContext() ?? context;
+
+    // Use centralized breakpoint check with effective context
+    if (effectiveContext.isWebLayout) {
       // Desktop: Show as stacked toast in bottom-right corner
       _showDesktopToast(
-        context: getNavigatorContext() ?? context,
+        context: effectiveContext,
         message: message,
         type: type,
         duration: duration,
@@ -35,7 +38,7 @@ class ResponsiveSnackBar {
     } else {
       // Mobile: Use standard SnackBar
       _showMobileSnackBar(
-        context: context,
+        context: effectiveContext,
         message: message,
         type: type,
         duration: duration,

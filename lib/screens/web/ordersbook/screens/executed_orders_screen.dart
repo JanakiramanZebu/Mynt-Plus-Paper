@@ -1,19 +1,17 @@
-// import 'dart:async'; // COMMENTED OUT - not used currently
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-// import 'package:mynt_plus/provider/websocket_provider.dart'; // COMMENTED OUT - not used currently
+import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
-// import '../refactored/utils/cell_formatters.dart'; // COMMENTED OUT - not used currently
 
 /// Separate screen widget for Executed Orders tab
 class ExecutedOrdersScreen extends ConsumerStatefulWidget {
@@ -41,8 +39,87 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   String? _processingOrderToken;
   Offset _modifyDialogPosition = const Offset(100, 100);
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     super.dispose();
   }
@@ -71,16 +148,17 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     );
   }
 
-  // Column definitions - 7 columns matching the image
-  // Headers: Time | Type | Instrument | Product | Qty. | Avg. price | Status
+  // Column definitions - 8 columns
+  // Headers: Time | Type | Instrument | Product | Qty. | LTP | Avg. price | Status
   final List<String> _columns = [
     'Time',        // 0
     'Type',        // 1 - BUY/SELL (trantype)
     'Instrument',  // 2
     'Product',     // 3
     'Qty.',        // 4
-    'Avg. price',  // 5
-    'Status',      // 6
+    'LTP',         // 5
+    'Avg. price',  // 6
+    'Status',      // 7
   ];
 
   // Old column definitions (commented out)
@@ -111,36 +189,8 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         ? (orderBook.orderSearchItem ?? [])
         : (orderBook.executedOrder ?? []);
 
-    // Show loading or empty state
-    if (orders.isEmpty) {
-      if (orderBook.loading) {
-        return SizedBox.expand(
-          child: Center(
-            child: MyntLoader.centered(message: 'Loading orders...'),
-          ),
-        );
-      } else {
-        return SizedBox.expand(
-          child: Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: NoDataFound(
-                title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
-                subtitle: searchQuery.isNotEmpty
-                    ? "No executed orders match your search \"$searchQuery\"."
-                    : "You don't have any executed orders yet.",
-                primaryEnabled: false,
-                secondaryEnabled: false,
-              ),
-            ),
-          ),
-        );
-      }
-    }
-
-    // Sort orders
-    final sortedOrders = _getSortedOrders(orders);
+    // Sort orders (only if not empty)
+    final sortedOrders = orders.isNotEmpty ? _getSortedOrders(orders) : <OrderBookModel>[];
 
     return SizedBox.expand(
       child: Container(
@@ -149,9 +199,9 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         child: shadcn.OutlinedContainer(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Calculate equal column widths for 7 columns
+              // Calculate equal column widths for 8 columns
               final availableWidth = constraints.maxWidth;
-              final columnCount = 7;
+              final columnCount = 8;
               final equalWidth = availableWidth / columnCount;
 
               // Build table content
@@ -176,6 +226,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                           4: shadcn.FixedTableSize(equalWidth),
                           5: shadcn.FixedTableSize(equalWidth),
                           6: shadcn.FixedTableSize(equalWidth),
+                          7: shadcn.FixedTableSize(equalWidth),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
@@ -184,26 +235,43 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                               buildHeaderCell('Time', 0),
                               buildHeaderCell('Type', 1),
                               buildHeaderCell('Instrument', 2),
-                              buildHeaderCell('Product', 3,true),
-                              buildHeaderCell('Qty.', 4,true),
-                              buildHeaderCell('Avg. price', 5,true),
-                              buildHeaderCell('Status', 6,true),
+                              buildHeaderCell('Product', 3, true),
+                              buildHeaderCell('Qty.', 4, true),
+                              buildHeaderCell('LTP', 5, true),
+                              buildHeaderCell('Avg. price', 6, true),
+                              buildHeaderCell('Status', 7, true),
                             ],
                           ),
                         ],
                       ),
-                      // Scrollable Body (vertical scroll)
+                      // Scrollable Body (vertical scroll) - shows loader/no data/table rows
                       Expanded(
-                        child: RawScrollbar(
+                        child: sortedOrders.isEmpty
+                            ? (orderBook.loading
+                                ? Center(child: MyntLoader.simple())
+                                : Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: NoDataFound(
+                                        title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
+                                        subtitle: searchQuery.isNotEmpty
+                                            ? "No executed orders match your search \"$searchQuery\"."
+                                            : "You don't have any executed orders yet.",
+                                        primaryEnabled: false,
+                                        secondaryEnabled: false,
+                                      ),
+                                    ),
+                                  ))
+                            : RawScrollbar(
                           controller: widget.verticalScrollController,
                           thumbVisibility: true,
                           trackVisibility: true,
                           trackColor: resolveThemeColor(context,
-                              dark: Colors.grey.withOpacity(0.1),
-                              light: Colors.grey.withOpacity(0.1)),
+                              dark: Colors.grey.withValues(alpha: 0.1),
+                              light: Colors.grey.withValues(alpha: 0.1)),
                           thumbColor: resolveThemeColor(context,
-                              dark: Colors.grey.withOpacity(0.3),
-                              light: Colors.grey.withOpacity(0.3)),
+                              dark: Colors.grey.withValues(alpha: 0.3),
+                              light: Colors.grey.withValues(alpha: 0.3)),
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
@@ -221,6 +289,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                 4: shadcn.FixedTableSize(equalWidth),
                                 5: shadcn.FixedTableSize(equalWidth),
                                 6: shadcn.FixedTableSize(equalWidth),
+                                7: shadcn.FixedTableSize(equalWidth),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: [
@@ -278,136 +347,19 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 2,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
                                         child: ValueListenableBuilder<int?>(
                                           valueListenable: _hoveredRowIndex,
                                           builder: (context, hoveredIndex, _) {
-                                            final isRowHovered =
-                                                hoveredIndex == index;
-                                            return Stack(
-                                              clipBehavior: Clip.hardEdge,
-                                              children: [
-                                                Positioned.fill(
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerLeft,
-                                                    child: Tooltip(
-                                                      message:
-                                                          '${_formatInstrumentText(order)}${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                right:
-                                                                    isRowHovered
-                                                                        ? 90.0
-                                                                        : 0.0),
-                                                        child: RichText(
-                                                          overflow: isRowHovered
-                                                              ? TextOverflow
-                                                                  .ellipsis
-                                                              : TextOverflow
-                                                                  .ellipsis,
-                                                          maxLines: 1,
-                                                          softWrap: false,
-                                                          text: TextSpan(
-                                                            children: [
-                                                              TextSpan(
-                                                                text:
-                                                                    _formatInstrumentText(
-                                                                        order),
-                                                                style:
-                                                                    _getTextStyle(
-                                                                        context),
-                                                              ),
-                                                              if (order.exch !=
-                                                                      null &&
-                                                                  order.exch!
-                                                                      .isNotEmpty)
-                                                                TextSpan(
-                                                                  text:
-                                                                      ' ${order.exch}',
-                                                                  style: MyntWebTextStyles
-                                                                      .para(
-                                                                    context,
-                                                                    darkColor:
-                                                                        MyntColors
-                                                                            .textSecondaryDark,
-                                                                    lightColor:
-                                                                        MyntColors
-                                                                            .textSecondary,
-                                                                    fontWeight:
-                                                                        MyntFonts
-                                                                            .medium,
-                                                                  ).copyWith(
-                                                                      fontSize:
-                                                                          10),
-                                                                ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                if (isRowHovered)
-                                                  Positioned(
-                                                    right: 0,
-                                                    top: 0,
-                                                    bottom: 0,
-                                                    child: GestureDetector(
-                                                      onTap: () {},
-                                                      behavior: HitTestBehavior
-                                                          .opaque,
-                                                      child: Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 12),
-                                                        alignment: Alignment
-                                                            .centerRight,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          gradient:
-                                                              LinearGradient(
-                                                            begin: Alignment
-                                                                .centerLeft,
-                                                            end: Alignment
-                                                                .centerRight,
-                                                            colors: [
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.0),
-                                                              shadcn.Theme.of(
-                                                                      context)
-                                                                  .colorScheme
-                                                                  .background
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.95),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        child:
-                                                            HoverActionsContainer(
-                                                          isVisible:
-                                                              isRowHovered,
-                                                          actions:
-                                                              _buildActionButtons(
-                                                            order,
-                                                            uniqueId,
-                                                            actionHandler,
-                                                            theme,
-                                                            context,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                              ],
+                                            // Row is hovered if mouse is over it OR if its dropdown menu is open
+                                            final isHovered = hoveredIndex == index ||
+                                                (_activePopoverController != null && _popoverRowIndex == index);
+                                            return _buildInstrumentCell(
+                                              order,
+                                              theme,
+                                              uniqueId,
+                                              actionHandler,
+                                              isHovered,
+                                              rowIndex: index,
                                             );
                                           },
                                         ),
@@ -439,10 +391,23 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      // Avg. price
+                                      // LTP
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 5,
+                                        alignRight: true,
+                                        onTap: () => actionHandler
+                                            .openOrderDetail(order),
+                                        child: _OrderBookLTPCell(
+                                          token: order.token ?? '',
+                                          initialLtp: _getValidLTP(order),
+                                          order: order,
+                                        ),
+                                      ),
+                                      // Avg. price
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 6,
                                         alignRight: true,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
@@ -455,7 +420,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       // Status
                                       buildCellWithHover(
                                         rowIndex: index,
-                                        columnIndex: 6,
+                                        columnIndex: 7,
                                         alignRight: true,
                                         onTap: () => actionHandler
                                             .openOrderDetail(order),
@@ -471,7 +436,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                               color: _getStatusColor(
                                                       _getStatusText(order),
                                                       context)
-                                                  .withOpacity(0.12),
+                                                  .withValues(alpha: 0.12),
                                               borderRadius:
                                                   BorderRadius.circular(4),
                                             ),
@@ -564,7 +529,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     );
   }
 
-  // Builds a cell with hover detection (matches holdings pattern)
+  // Builds a cell with hover detection (matches positions pattern)
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
@@ -574,7 +539,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   }) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 2; // Instrument column
-    final isLastColumn = columnIndex == 6; // Status column
+    final isLastColumn = columnIndex == 7; // Status column
 
     // Match the cell padding logic
     EdgeInsets cellPadding;
@@ -600,12 +565,28 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         ),
       ),
       child: MouseRegion(
-        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
-        onExit: (_) => _hoveredRowIndex.value = null,
+        onEnter: (_) {
+          _hoveredRowIndex.value = rowIndex;
+          // Cancel any pending close if re-entering the popover's row
+          if (_activePopoverController != null && _popoverRowIndex == rowIndex) {
+            _cancelPopoverCloseTimer();
+          }
+        },
+        onExit: (_) {
+          _hoveredRowIndex.value = null;
+          // If popover is open and not hovering dropdown, start close timer
+          if (_activePopoverController != null && !_isHoveringDropdown) {
+            _startPopoverCloseTimer();
+          }
+        },
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+          child: child,
+          builder: (context, hoveredIndex, cachedChild) {
+            // Row is hovered if mouse is over it OR if its dropdown menu is open
+            final isRowHovered = hoveredIndex == rowIndex ||
+                (_activePopoverController != null && _popoverRowIndex == rowIndex);
+
             return GestureDetector(
               onTap: onTap,
               behavior: HitTestBehavior.opaque,
@@ -615,16 +596,14 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                 padding: cellPadding,
                 alignment:
                     alignRight ? Alignment.centerRight : Alignment.centerLeft,
-                decoration: BoxDecoration(
-                  color: isRowHovered
-                      ? resolveThemeColor(
-                          context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary,
-                        ).withValues(alpha: 0.08)
-                      : Colors.transparent,
-                ),
-                child: child,
+                color: isRowHovered
+                    ? resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ).withValues(alpha: 0.08)
+                    : Colors.transparent,
+                child: cachedChild,
               ),
             );
           },
@@ -638,7 +617,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Time column
     final isInstrumentColumn = columnIndex == 2; // Instrument column
-    final isLastColumn = columnIndex == 6; // Status column
+    final isLastColumn = columnIndex == 7; // Status column
 
     // Match the cell padding logic
     EdgeInsets headerPadding;
@@ -670,13 +649,13 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
           height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
-          // decoration: BoxDecoration(
-          //   color: resolveThemeColor(
-          //     context,
-          //     dark: Colors.white.withOpacity(0.04),
-          //     light: Colors.black.withOpacity(0.03),
-          //   ),
-          // ),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: Colors.white.withValues(alpha: 0.04),
+              light: Colors.black.withValues(alpha: 0.03),
+            ),
+          ),
           child: Row(
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -719,143 +698,306 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     });
   }
 
-  List<Widget> _buildActionButtons(
+  Widget _buildInstrumentCell(
     OrderBookModel order,
+    ThemesProvider theme,
     String uniqueId,
     OrderActionHandler actionHandler,
-    ThemesProvider theme,
-    BuildContext context,
-  ) {
-    final isProcessing = _processingOrderToken == uniqueId;
+    bool isHovered, {
+    int? rowIndex,
+  }) {
     final isPending = order.status == "PENDING" ||
         order.status == "OPEN" ||
         order.status == "TRIGGER_PENDING";
 
-    if (isPending) {
-      return [
-        HoverActionButton(
-          label: 'Modify',
-          size: 44,
-          borderRadius: 5,
-          color: Colors.white,
-          backgroundColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ),
-          borderColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ),
-          onPressed: isProcessing && _isProcessingModify
-              ? null
-              : () async {
-                  setState(() {
-                    _processingOrderToken = uniqueId;
-                  });
-                  await actionHandler.modifyOrder(
-                    order,
-                    onProcessingStateChanged: (processing) {
-                      setState(() {
-                        _isProcessingModify = processing;
-                        if (!processing) _processingOrderToken = null;
-                      });
-                    },
-                    modifyDialogPosition: _modifyDialogPosition,
-                    onPositionChanged: (pos) {
-                      _modifyDialogPosition = pos;
-                    },
-                  );
-                },
-        ),
-        HoverActionButton(
-          label: 'Cancel',
-          size: 44,
-          borderRadius: 5,
-          color: Colors.white,
-          backgroundColor: resolveThemeColor(
-            context,
-            dark: MyntColors.tertiary,
-            light: MyntColors.tertiary,
-          ),
-          borderColor: resolveThemeColor(
-            context,
-            dark: MyntColors.tertiary,
-            light: MyntColors.tertiary,
-          ),
-          onPressed: isProcessing && _isProcessingCancel
-              ? null
-              : () async {
-                  setState(() {
-                    _processingOrderToken = uniqueId;
-                  });
-                  await actionHandler.cancelOrder(
-                    order,
-                    onProcessingStateChanged: (processing) {
-                      setState(() {
-                        _isProcessingCancel = processing;
-                        if (!processing) _processingOrderToken = null;
-                      });
-                    },
-                  );
-                },
-        ),
-      ];
-    } else {
-      return [
-        HoverActionButton(
-          label: 'Repeat',
-          size: 54,
-          borderRadius: 5,
-          color: Colors.white,
-          backgroundColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ),
-          borderColor: resolveThemeColor(
-            context,
-            dark: MyntColors.primaryDark,
-            light: MyntColors.primary,
-          ),
-          onPressed: () => actionHandler.repeatOrder(order),
-        ),
-        if (order.status == "OPEN")
-          HoverActionButton(
-            label: 'Cancel',
-            size: 54,
-            borderRadius: 5,
-            color: Colors.white,
-            backgroundColor: resolveThemeColor(
-              context,
-              dark: MyntColors.tertiary,
-              light: MyntColors.tertiary,
+    // Format instrument: remove "-EQ" and don't include exchange
+    final displayText = _formatInstrumentText(order);
+
+    return GestureDetector(
+      onTap: () => actionHandler.openOrderDetail(order),
+      behavior: HitTestBehavior.deferToChild,
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Instrument name - full width, can be partially covered by buttons
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message:
+                    '$displayText${order.exch != null && order.exch!.isNotEmpty ? ' ${order.exch}' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(right: isHovered ? 70.0 : 0.0),
+                  child: RichText(
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    text: TextSpan(
+                      children: [
+                        // Symbol (14px, 500)
+                        TextSpan(
+                          text: displayText,
+                          style: _getTextStyle(context),
+                        ),
+                        // Exchange (10px, 500, muted color) - matching positions table style
+                        if (order.exch != null && order.exch!.isNotEmpty)
+                          TextSpan(
+                            text: ' ${order.exch}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ).copyWith(fontSize: 10),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-            borderColor: resolveThemeColor(
-              context,
-              dark: MyntColors.tertiary,
-              light: MyntColors.tertiary,
+            // Cancel button + 3-dot menu button (appears on hover)
+            if (isHovered)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Cancel button (X icon) - only for pending/open orders
+                      if (isPending)
+                        _buildCancelButton(order, uniqueId, actionHandler),
+                      if (isPending)
+                        const SizedBox(width: 6),
+                      // 3-dot menu button
+                      _buildOptionsMenuButton(
+                        order,
+                        uniqueId,
+                        actionHandler,
+                        isPending,
+                        rowIndex: rowIndex,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Cancel button with X icon (tertiary/loss color) - matches positions Exit button
+  Widget _buildCancelButton(
+    OrderBookModel order,
+    String uniqueId,
+    OrderActionHandler actionHandler,
+  ) {
+    final isProcessing = _processingOrderToken == uniqueId && _isProcessingCancel;
+
+    return GestureDetector(
+      onTap: isProcessing
+          ? null
+          : () async {
+              setState(() {
+                _processingOrderToken = uniqueId;
+              });
+              await actionHandler.cancelOrder(
+                order,
+                onProcessingStateChanged: (processing) {
+                  setState(() {
+                    _isProcessingCancel = processing;
+                    if (!processing) _processingOrderToken = null;
+                  });
+                },
+              );
+            },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Helper to build menu item matching positions dropdown style
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
             ),
-            onPressed: isProcessing && _isProcessingCancel
-                ? null
-                : () async {
-                    setState(() {
-                      _processingOrderToken = uniqueId;
-                    });
-                    await actionHandler.cancelOrder(
-                      order,
-                      onProcessingStateChanged: (processing) {
-                        setState(() {
-                          _isProcessingCancel = processing;
-                          if (!processing) _processingOrderToken = null;
-                        });
-                      },
-                    );
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    OrderBookModel order,
+    String uniqueId,
+    OrderActionHandler actionHandler,
+    bool isPending, {
+    int? rowIndex,
+  }) {
+    final iconColor = resolveThemeColor(context,
+        dark: MyntColors.iconDark, light: MyntColors.icon);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Build menu items dynamically based on order state
+            List<shadcn.MenuItem> menuItems = [];
+
+            // Modify option (only for pending orders)
+            if (isPending) {
+              final isProcessing =
+                  _processingOrderToken == uniqueId && _isProcessingModify;
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.edit_outlined,
+                  title: 'Modify',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: isProcessing
+                      ? (_) {}
+                      : (ctx) async {
+                          _closePopover();
+                          setState(() {
+                            _processingOrderToken = uniqueId;
+                          });
+                          await actionHandler.modifyOrder(
+                            order,
+                            onProcessingStateChanged: (processing) {
+                              setState(() {
+                                _isProcessingModify = processing;
+                                if (!processing) _processingOrderToken = null;
+                              });
+                            },
+                            modifyDialogPosition: _modifyDialogPosition,
+                            onPositionChanged: (pos) {
+                              _modifyDialogPosition = pos;
+                            },
+                          );
+                        },
+                ),
+              );
+            }
+
+            // Repeat option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.replay,
+                title: 'Repeat',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  actionHandler.repeatOrder(order);
+                },
+              ),
+            );
+
+            // Add divider before info
+            menuItems.add(const shadcn.MenuDivider());
+
+            // Info option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  actionHandler.openOrderDetail(order);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
                   },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close - gives time for mouse to move back to row
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
           ),
-      ];
-    }
+        );
+      },
+    );
   }
 
   List<OrderBookModel> _getSortedOrders(List<OrderBookModel> orders) {
@@ -885,28 +1027,17 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
           comparison = (int.tryParse(a.qty ?? '0') ?? 0)
               .compareTo(int.tryParse(b.qty ?? '0') ?? 0);
           break;
-        case 5: // Avg price
+        case 5: // LTP
+          comparison = (double.tryParse(a.ltp ?? '0') ?? 0.0)
+              .compareTo(double.tryParse(b.ltp ?? '0') ?? 0.0);
+          break;
+        case 6: // Avg price
           comparison = (double.tryParse(a.avgprc ?? '0') ?? 0.0)
               .compareTo(double.tryParse(b.avgprc ?? '0') ?? 0.0);
           break;
-        case 6: // Status
+        case 7: // Status
           comparison = (a.status ?? '').compareTo(b.status ?? '');
           break;
-        // COMMENTED OUT - Old column sorting
-        // case 7: // LTP
-        //   comparison = (double.tryParse(a.ltp ?? '0') ?? 0.0)
-        //       .compareTo(double.tryParse(b.ltp ?? '0') ?? 0.0);
-        //   break;
-        // case 8: // Price
-        //   final priceA = double.tryParse(a.prc ?? '0') ?? 0.0;
-        //   final priceB = double.tryParse(b.prc ?? '0') ?? 0.0;
-        //   comparison = priceA.compareTo(priceB);
-        //   break;
-        // case 9: // Trigger price
-        //   final triggerA = double.tryParse(a.trgprc ?? '0') ?? 0.0;
-        //   final triggerB = double.tryParse(b.trgprc ?? '0') ?? 0.0;
-        //   comparison = triggerA.compareTo(triggerB);
-        //   break;
       }
 
       return _sortAscending ? comparison : -comparison;
@@ -932,13 +1063,12 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     return '$filledQty / $totalQty';
   }
 
-  // COMMENTED OUT - Kept for reference
-  // String _getValidLTP(OrderBookModel order) {
-  //   if (order.ltp != null && order.ltp != '0' && order.ltp != '0.00') {
-  //     return order.ltp!;
-  //   }
-  //   return '0.00';
-  // }
+  String _getValidLTP(OrderBookModel order) {
+    if (order.ltp != null && order.ltp != '0' && order.ltp != '0.00') {
+      return order.ltp!;
+    }
+    return '0.00';
+  }
 
   // COMMENTED OUT - Kept for reference
   // String _getValidPrice(OrderBookModel order) {
@@ -1022,63 +1152,63 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   }
 }
 
-// Live LTP cell widget - COMMENTED OUT (not used in current view)
-// class _OrderBookLTPCell extends ConsumerStatefulWidget {
-//   final String token;
-//   final String initialLtp;
-//   final OrderBookModel order;
+// Live LTP cell widget with websocket updates
+class _OrderBookLTPCell extends ConsumerStatefulWidget {
+  final String token;
+  final String initialLtp;
+  final OrderBookModel order;
 
-//   const _OrderBookLTPCell({
-//     required this.token,
-//     required this.initialLtp,
-//     required this.order,
-//   });
+  const _OrderBookLTPCell({
+    required this.token,
+    required this.initialLtp,
+    required this.order,
+  });
 
-//   @override
-//   ConsumerState<_OrderBookLTPCell> createState() => _OrderBookLTPCellState();
-// }
+  @override
+  ConsumerState<_OrderBookLTPCell> createState() => _OrderBookLTPCellState();
+}
 
-// class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
-//   late String ltp;
-//   StreamSubscription? _subscription;
+class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
+  late String ltp;
+  StreamSubscription? _subscription;
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     ltp = widget.initialLtp;
+  @override
+  void initState() {
+    super.initState();
+    ltp = widget.initialLtp;
 
-//     if (widget.token.isNotEmpty) {
-//       _subscription =
-//           ref.read(websocketProvider).socketDataStream.listen((data) {
-//         if (!mounted || !data.containsKey(widget.token)) return;
+    if (widget.token.isNotEmpty) {
+      _subscription =
+          ref.read(websocketProvider).socketDataStream.listen((data) {
+        if (!mounted || !data.containsKey(widget.token)) return;
 
-//         final newLtp = data[widget.token]['lp']?.toString();
-//         if (newLtp != null &&
-//             newLtp != ltp &&
-//             newLtp != '0.00' &&
-//             newLtp != 'null') {
-//           setState(() => ltp = newLtp);
-//         }
-//       });
-//     }
-//   }
+        final newLtp = data[widget.token]['lp']?.toString();
+        if (newLtp != null &&
+            newLtp != ltp &&
+            newLtp != '0.00' &&
+            newLtp != 'null') {
+          setState(() => ltp = newLtp);
+        }
+      });
+    }
+  }
 
-//   @override
-//   void dispose() {
-//     _subscription?.cancel();
-//     super.dispose();
-//   }
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Text(
-//       ltp,
-//       style: MyntWebTextStyles.tableCell(
-//         context,
-//         darkColor: MyntColors.textPrimaryDark,
-//         lightColor: MyntColors.textPrimary,
-//         fontWeight: MyntFonts.medium,
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      ltp,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
+      ),
+    );
+  }
+}

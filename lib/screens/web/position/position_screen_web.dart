@@ -52,6 +52,10 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   // WebSocket subscription for live updates (like mobile)
   StreamSubscription? _socketSubscription;
 
+  // RefreshTrigger key for shadcn refresh animation
+  final GlobalKey<shadcn.RefreshTriggerState> _refreshTriggerKey =
+      GlobalKey<shadcn.RefreshTriggerState>();
+
   @override
   void initState() {
     super.initState();
@@ -142,7 +146,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: RefreshIndicator(
+          child: shadcn.RefreshTrigger(
+            key: _refreshTriggerKey,
             onRefresh: () async {
               await positionBook.fetchPositionBook(context, false);
             },
@@ -535,11 +540,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
 
           SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-          // Refresh Button
+          // Refresh Button - triggers shadcn RefreshTrigger animation
           _buildIconButton(
             icon: Icons.refresh,
-            onPressed: () async {
-              await positionBook.fetchPositionBook(context, false);
+            onPressed: () {
+              _refreshTriggerKey.currentState?.refresh();
             },
             theme: theme,
           ),
@@ -865,11 +870,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             },
           ),
           const SizedBox(width: 16),
-          // Refresh Button
+          // Refresh Button - triggers shadcn RefreshTrigger animation
           MyntIconButton(
             icon: Icons.refresh,
-            onPressed: () async {
-              await positionBook.fetchPositionBook(context, false);
+            onPressed: () {
+              _refreshTriggerKey.currentState?.refresh();
             },
             size: MyntButtonSize.medium,
           ),

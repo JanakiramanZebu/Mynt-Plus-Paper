@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/Mobile/ipo/preclose_ipo/preclose_ipo_screen.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../models/ipo_model/ipo_sme_model.dart';
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -57,6 +58,12 @@ class MainSmeListCard extends StatelessWidget {
           preOpenIpos.isNotEmpty ||
           (ipos.ipoPreClose?.msg.isNotEmpty ?? false);
 
+      // Show loader while data is being fetched
+      if (ipos.loading) {
+        return const Center(
+          child: MyntLoader(size: MyntLoaderSize.large),
+        );
+      }
 
      if(ref.watch(stocksProvide).searchController.text.isNotEmpty &&
        ipos.ipoCommonSearchList.isEmpty){

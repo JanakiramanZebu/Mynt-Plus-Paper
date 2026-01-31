@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/iop_provider.dart';
@@ -22,6 +23,13 @@ class UpcomingIpo extends StatelessWidget {
       // Get filtered upcoming IPOs based on search
       List<dynamic> filteredUpcomingIPOs = _getFilteredUpcomingIPOs(ipos);
       final hasUpcomingIPOs = filteredUpcomingIPOs.isNotEmpty;
+
+      // Show loader while data is being fetched
+      if (ipos.loading) {
+        return const Center(
+          child: MyntLoader(size: MyntLoaderSize.large),
+        );
+      }
 
       if (!hasUpcomingIPOs && ipos.ipocommonsearchcontroller.text.isNotEmpty) {
         return _NoDataSection(devHeight: devHeight);

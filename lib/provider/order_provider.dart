@@ -147,6 +147,7 @@ class OrderProvider extends DefaultChangeNotifier {
   final TextEditingController orderTradebookCtrl = TextEditingController();
 
   OrderProvider(this.ref) {
+    getBasketName();
     tabSize();
   }
 
@@ -1494,16 +1495,18 @@ class OrderProvider extends DefaultChangeNotifier {
         if (loop) {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
-          Navigator.pop(context);
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
           } else {
-            successMessage(context, 'Order Cancelled');
+          Navigator.pop(context);
+          successMessage(context, 'Order Cancelled');
+          Navigator.pop(context);
           }
 
-          Navigator.pop(context);
         }
-      } else {
+      } else if (_cancelOrderModel!.stat == "Not_Ok" &&
+          _cancelOrderModel!.emsg ==
+              "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
 
@@ -1526,15 +1529,17 @@ class OrderProvider extends DefaultChangeNotifier {
         if (loop) {
           ConstantName.sessCheck = true;
           await fetchOrderBook(context, true);
-          Navigator.pop(context);
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Exited');
           } else {
-            successMessage(context, 'Order Exited');
-          }
           Navigator.pop(context);
+          successMessage(context, 'Order Exited');
+          Navigator.pop(context);
+          }
         }
-      } else {
+      } else if (_cancelOrderModel!.stat == "Not_Ok" &&
+          _cancelOrderModel!.emsg ==
+              "Session Expired :  Invalid Session Key") {
         ref.read(authProvider).ifSessionExpired(context);
       }
 
@@ -2613,11 +2618,11 @@ class OrderProvider extends DefaultChangeNotifier {
     print("_bsktList.isEmpty: ${_bsktList.isEmpty}");
     print("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
     print("Calling notifyListeners()...");
-    log("basket scrips$_bsktScrips");
+    tabSize();
     notifyListeners();
     print("notifyListeners() completed");
     print("========================");
-  }
+  } 
 
   // removeBasket(int index) async {
 

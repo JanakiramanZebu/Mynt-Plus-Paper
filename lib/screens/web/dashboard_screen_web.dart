@@ -1079,6 +1079,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     bool showPrice = true,
     required double width,
   }) {
+    final stocksProvider = ref.watch(stocksProvide);
+    final isLoaded = stocksProvider.isTradeActionLoaded;
     final hasStocks = stocks.isNotEmpty;
     final displayStocks = stocks.take(5).toList();
     final isVolumeBreakout = title == 'Volume breakout';
@@ -1179,7 +1181,22 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                 },
               ),
             )
+          else if (isLoaded)
+            // Show "No data" when data has been loaded but is empty
+            Expanded(
+              child: Center(
+                child: Text(
+                  'No data',
+                  style: MyntWebTextStyles.body(
+                    context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
+                  ),
+                ),
+              ),
+            )
           else
+            // Show loader while data is being fetched
             Expanded(
               child: Center(
                 child: MyntLoader.simple(),

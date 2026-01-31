@@ -4,7 +4,6 @@ import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/res.dart';
-import '../../../sharedWidget/mynt_loader.dart';
 import 'mf_order_screen.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -12,6 +11,7 @@ import 'widget/allocation.dart';
 import 'widget/overview.dart';
 import 'widget/performance.dart';
 import 'widget/scheme.dart';
+import 'widget/comparison_table.dart';
 
 class MFStockDetailScreen extends StatefulWidget {
   final MutualFundList mfStockData;
@@ -36,23 +36,31 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
   final List<String> _tabTitles = ['Overview', 'Scheme', 'Allocation'];
 
-  // Keys to track section positions
-  final GlobalKey _overviewKey = GlobalKey();
-  final GlobalKey _schemeKey = GlobalKey();
-  final GlobalKey _allocationKey = GlobalKey();
+  // Track section offsets instead of using GlobalKeys for scroll detection
+  double _schemeOffset = 0;
+  double _allocationOffset = 0;
+  bool _isScrollListenerEnabled = true;
+
+  // Button loading state
+  bool _isOneTimeLoading = false;
+  bool _isSIPLoading = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _scrollController.addListener(_onScroll);
-
-    // Add listener to handle tab clicks
     _tabController.addListener(_onTabTapped);
+
+    // Calculate offsets after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSectionOffsets();
+    });
   }
 
   @override
   void dispose() {
+    _isScrollListenerEnabled = false;
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _tabController.removeListener(_onTabTapped);
@@ -60,64 +68,68 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     super.dispose();
   }
 
+  void _updateSectionOffsets() {
+    // Use approximate fixed offsets based on typical section heights
+    // This avoids needing to access render objects during rebuilds
+    _schemeOffset = 600; // Approximate offset for scheme section
+    _allocationOffset = 1000; // Approximate offset for allocation section
+  }
+
   void _onTabTapped() {
+    if (!mounted || !_isScrollListenerEnabled) return;
     if (_tabController.indexIsChanging) {
       _scrollToSection(_tabController.index);
     }
   }
 
   void _scrollToSection(int index) {
-    GlobalKey? targetKey;
+    if (!mounted || !_isScrollListenerEnabled) return;
+
+    double targetOffset = 0;
     switch (index) {
       case 0:
-        targetKey = _overviewKey;
+        targetOffset = 0;
         break;
       case 1:
-        targetKey = _schemeKey;
+        targetOffset = _schemeOffset;
         break;
       case 2:
-        targetKey = _allocationKey;
+        targetOffset = _allocationOffset;
         break;
     }
 
-    if (targetKey?.currentContext != null) {
-      Scrollable.ensureVisible(
-        targetKey!.currentContext!,
+    try {
+      _scrollController.animateTo(
+        targetOffset,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    } catch (e) {
+      // Ignore errors
     }
   }
 
   void _onScroll() {
-    final overviewPos = _getWidgetPosition(_overviewKey);
-    final schemePos = _getWidgetPosition(_schemeKey);
-    final allocationPos = _getWidgetPosition(_allocationKey);
+    if (!mounted || !_isScrollListenerEnabled) return;
 
-    // Determine which section is currently visible (closest to top)
-    const threshold = 100.0; // Offset from top to trigger tab change
+    try {
+      final scrollOffset = _scrollController.offset;
 
-    int newIndex = 0;
-    if (allocationPos != null && allocationPos <= threshold) {
-      newIndex = 2;
-    } else if (schemePos != null && schemePos <= threshold) {
-      newIndex = 1;
-    } else {
-      newIndex = 0;
+      int newIndex = 0;
+      if (scrollOffset >= _allocationOffset - 100) {
+        newIndex = 2;
+      } else if (scrollOffset >= _schemeOffset - 100) {
+        newIndex = 1;
+      } else {
+        newIndex = 0;
+      }
+
+      if (_tabController.index != newIndex && !_tabController.indexIsChanging) {
+        _tabController.animateTo(newIndex);
+      }
+    } catch (e) {
+      // Ignore errors during rebuilds
     }
-
-    if (_tabController.index != newIndex && !_tabController.indexIsChanging) {
-      _tabController.animateTo(newIndex);
-    }
-  }
-
-  double? _getWidgetPosition(GlobalKey key) {
-    final RenderObject? renderObject = key.currentContext?.findRenderObject();
-    if (renderObject is RenderBox) {
-      final position = renderObject.localToGlobal(Offset.zero);
-      return position.dy;
-    }
-    return null;
   }
 
   @override
@@ -144,36 +156,20 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Fund info card with stats (now scrollable)
-                        _buildFundInfoCard(isDark, mfData),
-
                         // Overview Section
-                        Container(
-                          key: _overviewKey,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isDark
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              width: 1,
+                        Column(
+                          children: [
+                            MFOverview(
+                              mfStockData: widget.mfStockData,
+                              fundName: _formatFundName(mfData),
+                              fundCategory: widget.mfStockData.type ?? "Equity",
+                              fundImage: "https://v3.mynt.in/mfapi/static/images/mf/${mfData.factSheetDataModel?.data?.amccode ?? widget.mfStockData.aMCCode ?? 'default'}.png",
                             ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Column(
-                              children: [
-                                MFOverview(mfStockData: widget.mfStockData),
-                                MFPerformance(mfStockData: widget.mfStockData),
-                              ],
-                            ),
-                          ),
+                            MFPerformance(mfStockData: widget.mfStockData),
+                          ],
                         ),
                         // Scheme Section
                         Container(
-                          key: _schemeKey,
                           margin: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
@@ -193,38 +189,18 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                         ),
                         // Allocation Section
                         Container(
-                          key: _allocationKey,
                           margin: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isDark
-                                  ? colors.darkColorDivider
-                                  : colors.colorDivider,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child:
-                                MFAllocation(mfStockData: widget.mfStockData),
-                          ),
+                          child: MFAllocation(mfStockData: widget.mfStockData),
                         ),
+                        // Comparison Table Section
+                        MFComparisonTable(mfStockData: widget.mfStockData),
                       ],
                     ),
                   ),
                 ),
               ],
             ),
-            // Loading overlay
-            if (mfData.singleloader == true)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
-                  child: MyntLoader(size: MyntLoaderSize.large),
-                ),
-              ),
           ],
         ),
       );
@@ -302,164 +278,88 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               // One-time button (outlined)
               SizedBox(
                 height: 36,
+                width: 100,
                 child: OutlinedButton(
-                  onPressed: mfData.singleloader == true
+                  onPressed: (_isOneTimeLoading || _isSIPLoading)
                       ? null
                       : () => _handleOneTimeTap(mfData),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    side: const BorderSide(
-                      color: WebColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    side: BorderSide(
+                      color: (_isOneTimeLoading || _isSIPLoading)
+                          ? WebColors.primary.withValues(alpha: 0.5)
+                          : WebColors.primary,
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: Text(
-                    "One-time",
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: MyntColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isOneTimeLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                WebColors.primary),
+                          ),
+                        )
+                      : Text(
+                          "One-time",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: _isSIPLoading
+                                ? MyntColors.primary.withValues(alpha: 0.5)
+                                : MyntColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(width: 10),
               // SIP button (filled)
               SizedBox(
                 height: 36,
+                width: 80,
                 child: ElevatedButton(
-                  onPressed: mfData.singleloader == true
+                  onPressed: (_isOneTimeLoading || _isSIPLoading)
                       ? null
                       : () => _handleSIPTap(mfData),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    backgroundColor: WebColors.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    backgroundColor: (_isOneTimeLoading || _isSIPLoading)
+                        ? WebColors.primary.withValues(alpha: 0.5)
+                        : WebColors.primary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
-                  child: Text(
-                    "SIP",
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFundInfoCard(bool isDark, MFProvider mfData) {
-    final factSheet = mfData.factSheetDataModel?.data;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? colors.darkColorDivider : colors.colorDivider,
-            width: 0.5,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Fund logo, name, and type
-          Row(
-            children: [
-              // Fund logo
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color:
-                        isDark ? colors.darkColorDivider : colors.colorDivider,
-                    width: 1,
-                  ),
-                ),
-                child: ClipOval(
-                  child: Image.network(
-                    "https://v3.mynt.in/mfapi/static/images/mf/${factSheet?.amccode ?? widget.mfStockData.aMCCode ?? 'default'}.png",
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.account_balance,
-                      size: 20,
-                      color: isDark
-                          ? WebColors.textSecondaryDark
-                          : WebColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatFundName(mfData),
-                      style: MyntWebTextStyles.title(
-                        context,
-                        color: isDark
-                            ? MyntColors.textPrimaryDark
-                            : MyntColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        // Text(
-                        //   "NAV: ₹${factSheet?.currentNAV ?? '--'}",
-                        //   style: MyntWebTextStyles.para(
-                        //     context,
-                        //     color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                        //   ),
-                        // ),
-                        // const SizedBox(width: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            // color: (isDark ? WebColors.textSecondaryDark : WebColors.textSecondary).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
+                  child: _isSIPLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
-                          child: Text(
-                            widget.mfStockData.type ?? "Equity",
-                            style: MyntWebTextStyles.para(
-                              context,
-                              color: isDark
-                                  ? MyntColors.textSecondaryDark
-                                  : MyntColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        )
+                      : Text(
+                          "SIP",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
             ],
           ),
         ],
+        ),
       ),
     );
   }
@@ -468,13 +368,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     final isin = widget.mfStockData.iSIN;
     final schemeCode = widget.mfStockData.schemeCode;
 
-    // Show loader while fetching dependencies
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) =>
-          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
-    );
+    setState(() => _isOneTimeLoading = true);
 
     if (widget.mfStockData.sIPFLAG == "Y" &&
         isin != null &&
@@ -487,8 +381,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     mfData.orderpagetite("SDS");
     mfData.chngOrderType("One-time");
 
-    // Close loader
-    if (mounted) Navigator.pop(context);
+    if (mounted) setState(() => _isOneTimeLoading = false);
 
     // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;
@@ -516,13 +409,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     final isin = widget.mfStockData.iSIN;
     final schemeCode = widget.mfStockData.schemeCode;
 
-    // Show loader while fetching dependencies
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) =>
-          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
-    );
+    setState(() => _isSIPLoading = true);
 
     if (widget.mfStockData.sIPFLAG == "Y" &&
         isin != null &&
@@ -535,8 +422,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     mfData.chngOrderType("SIP");
     mfData.orderpagetite("SDS");
 
-    // Close loader
-    if (mounted) Navigator.pop(context);
+    if (mounted) setState(() => _isSIPLoading = false);
 
     // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;

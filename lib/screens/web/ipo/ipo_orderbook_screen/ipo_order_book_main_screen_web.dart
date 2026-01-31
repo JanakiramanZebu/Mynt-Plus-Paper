@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -65,6 +66,13 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
     final hasOpenOrders = filteredOpenOrders.isNotEmpty;
     final hasCloseOrders = filteredCloseOrders.isNotEmpty;
     final hasAnyOrders = hasOpenOrders || hasCloseOrders;
+
+    // Show loader while data is being fetched
+    if (ipo.myBidsload) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
 
     if (!hasAnyOrders && ipo.ipocommonsearchcontroller.text.isNotEmpty) {
       return const Center(

@@ -14,7 +14,7 @@ import '../../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
-import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import 'mf_order_screen.dart';
 
 class MFNFOScreen extends ConsumerStatefulWidget {
@@ -423,22 +423,6 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
               );
             }
 
-            // Divider
-            menuItems.add(const shadcn.MenuDivider());
-
-            // Details option
-            menuItems.add(
-              _buildMenuButton(
-                icon: Icons.info_outline,
-                title: 'Details',
-                iconColor: iconColor,
-                textColor: textColor,
-                onPressed: (ctx) {
-                  _closePopover();
-                  // Navigate to details - can be implemented later
-                },
-              ),
-            );
 
             // Create a controller for this popover
             final controller = shadcn.PopoverController();
@@ -538,8 +522,11 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
           ? colors.kColorDarkThemeBackground
           : colors.kColorlightThemeBackground,
       body: SafeArea(
-        child: TransparentLoaderScreen(
+        child: MyntLoaderOverlay(
           isLoading: mf.investloader,
+          showLogo: false,
+          overlayOpacity: 0.5,
+          loaderSize: MyntLoaderSize.medium,
           child: Column(
             children: [
               // --- Header Section ---
@@ -661,8 +648,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                         secondaryEnabled: false, title: "No NFOs Found")
                     : LayoutBuilder(builder: (context, constraints) {
                         final double totalWidth = constraints.maxWidth;
-                        final double fundNameWidth = totalWidth * 0.55;
-                        final double otherColumnWidth = totalWidth * 0.15;
+                        final double fundNameWidth = totalWidth * 0.40;
+                        final double otherColumnWidth = totalWidth * 0.20;
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 0),

@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/screens/mobile/bonds/bonds_loader/logo_loader.dart';
 // import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 // import '../../../sharedWidget/functions.dart';
-import 'bonds_my_bids_web.dart';
 import 'bonds_order_book_tab/close_bonds_tab.dart';
 import 'bonds_order_book_tab/open_bonds_tab.dart';
 
@@ -37,14 +37,6 @@ class _BondsOrderbookMainScreenState
       final bonds = ref.watch(bondsProvider);
       final theme = ref.watch(themeProvider);
       final devHeight = MediaQuery.of(context).size.height;
-      final devWidth = MediaQuery.of(context).size.width;
-
-      if (devWidth > 800) {
-        return const Scaffold(
-            backgroundColor: Colors.transparent,
-            body: BondsMyBidsWeb()
-        );
-      }
 
       return Scaffold(
         body: _buildContent(bonds, theme, devHeight),
@@ -65,7 +57,7 @@ class _BondsOrderbookMainScreenState
     }
 
     if(bonds.bondsOrderBook!.isEmpty){
-      return const NoDataFound(
+      return NoDataFound(
         title: "No Open or Closed Orders Found",
         subtitle: "There's nothing here yet. Buy some Bonds to see them here.",
         primaryEnabled: false,
@@ -74,7 +66,7 @@ class _BondsOrderbookMainScreenState
     }
 
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

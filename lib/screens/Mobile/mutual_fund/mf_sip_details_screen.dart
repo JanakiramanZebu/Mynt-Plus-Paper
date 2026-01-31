@@ -14,7 +14,7 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/global_font_web.dart';
 // import '../../../sharedWidget/custom_drag_handler.dart';
-import '../../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 
 class mfSipdetScren extends StatefulWidget {
   final dynamic data;
@@ -62,7 +62,7 @@ class _mfSipdetScren extends State<mfSipdetScren>
                 ),
               ),
             ),
-            child: TransparentLoaderScreen(
+            child: MyntLoaderOverlay(
               isLoading: mfdata.bestmfloader ?? false,
               child: widget.data == null
                   ? const Center(

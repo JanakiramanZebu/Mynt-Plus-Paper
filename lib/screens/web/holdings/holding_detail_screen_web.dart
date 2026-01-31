@@ -286,6 +286,9 @@ class _HoldingDetailScreenWebState
 
   Widget _buildSymbolSection(ThemesProvider theme,
       MarketWatchProvider scripInfo, DepthInputArgs depthArgs) {
+    // Format instrument text same as hold_table.dart - remove -EQ, show exchange separately
+    final symbolText = (_exchTsym.tsym ?? 'N/A').replaceAll("-EQ", "").trim();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -295,7 +298,7 @@ class _HoldingDetailScreenWebState
           textBaseline: TextBaseline.alphabetic,
           children: [
             Text(
-              "${_exchTsym.tsym?.replaceAll("-EQ", "") ?? ''}-EQ",
+              symbolText,
               style: MyntWebTextStyles.head(
                 context,
                 color: resolveThemeColor(context,
@@ -304,16 +307,18 @@ class _HoldingDetailScreenWebState
                 fontWeight: MyntFonts.semiBold,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              _exchTsym.exch ?? "NSE",
-              style: MyntWebTextStyles.para(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+            if (_exchTsym.exch != null && _exchTsym.exch!.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Text(
+                _exchTsym.exch!,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         const SizedBox(height: 1),

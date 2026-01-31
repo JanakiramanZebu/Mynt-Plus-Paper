@@ -2,11 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/bonds_order_screen/orderscreenbottompage.dart';
+import 'package:mynt_plus/screens/mobile/bonds/bonds_order_screen/orderscreenbottompage.dart';
+import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/stocks_provider.dart';
 import '../../../../res/global_state_text.dart';
 
@@ -38,7 +43,7 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
       // List<BondsList>? bondsList = bonds.bondsList;
       // final upi = ref.watch(transcationProvider);
       final theme = ref.watch(themeProvider);
-      final devHeight = MediaQuery.of(context).size.height;
+      final dev_height = MediaQuery.of(context).size.height;
 
       if (bonds.govtBonds?.ncbGSec?.isEmpty ?? true) {
         return const SizedBox();
@@ -55,8 +60,8 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
     });
   }
 
-  Widget _buildBondsList(BuildContext context, BondsProvider bonds,
-      ThemesProvider theme, WidgetRef ref) {
+  Widget _buildBondsList(
+      BuildContext context, BondsProvider bonds, ThemesProvider theme, WidgetRef ref) {
     // Safe null checks for bonds data
     final govtBonds = bonds.govtBonds?.ncbGSec;
     if (govtBonds == null || govtBonds.isEmpty) {
@@ -91,8 +96,7 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
     final bond = filteredBonds[index];
 
     return InkWell(
-      onTap: () => _showOrderBottomSheet(
-          getResponsiveWidth(context), context, bonds, bond),
+      onTap: () => _showOrderBottomSheet(context, bonds, bond),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
@@ -216,8 +220,7 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
             theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
         highlightColor:
             theme.isDarkMode ? colors.highlightDark : colors.highlightLight,
-        onTap: () => _showOrderBottomSheet(
-            getResponsiveWidth(context), context, bonds, bond),
+        onTap: () => _showOrderBottomSheet(context, bonds, bond),
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: Center(
@@ -251,14 +254,15 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
     );
   }
 
-  Future<void> _showOrderBottomSheet(double responsiveWidth,
+  Future<void> _showOrderBottomSheet(
       BuildContext context, BondsProvider bonds, dynamic bond) async {
     // Prevent opening multiple bottom sheets
     if (_isBottomSheetOpen) return;
 
     _isBottomSheetOpen = true;
     await bonds.fetchLedgerBal();
-    showModalBottomSheet(
+    
+    await showModalBottomSheet(
       isScrollControlled: true,
       useSafeArea: true,
       isDismissible: true,
@@ -274,6 +278,8 @@ class _GovtBondsScreenState extends State<GovtBondsScreen> {
         ),
       ),
     );
-     _isBottomSheetOpen = false;
+    
+    // Reset flag when bottom sheet is dismissed
+    _isBottomSheetOpen = false;
   }
 }

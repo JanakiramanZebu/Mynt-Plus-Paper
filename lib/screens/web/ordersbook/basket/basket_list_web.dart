@@ -22,7 +22,6 @@ import '../../../../res/mynt_web_color_styles.dart' as styles;
 import '../../../../utils/responsive_snackbar.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import '../../../../sharedWidget/no_data_found_web.dart';
 import '../../../../sharedWidget/hover_actions_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import 'create_basket_web.dart';
@@ -46,8 +45,87 @@ class _BasketListState extends ConsumerState<BasketList> {
   final ScrollController _verticalScrollController = ScrollController();
   bool _isDeleting = false;
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  String? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _hoveredRowIndex.dispose();
@@ -121,7 +199,7 @@ class _BasketListState extends ConsumerState<BasketList> {
               height: double.infinity,
               padding: EdgeInsets.symmetric(
                   horizontal: horizontalPadding, vertical: 8),
-              alignment: alignRight ? Alignment.topRight : null,
+              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               decoration: BoxDecoration(
                 color: hoveredRowId == '$rowIndex'
                     ? resolveThemeColor(
@@ -171,9 +249,18 @@ class _BasketListState extends ConsumerState<BasketList> {
       child: InkWell(
         onTap: () => _onSortTable(columnIndex, true),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding:
               EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: Colors.white.withValues(alpha: 0.04),
+              light: Colors.black.withValues(alpha: 0.03),
+            ),
+          ),
           child: Row(
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -342,93 +429,211 @@ class _BasketListState extends ConsumerState<BasketList> {
     final bsktName = basket['bsketName'] ?? 'N/A';
     final colorScheme = shadcn.Theme.of(context).colorScheme;
 
-    return Stack(
-      clipBehavior: Clip.hardEdge,
-      children: [
-        // Basket icon and name - full width, can be partially covered by buttons
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: EdgeInsets.only(right: isRowHovered ? 80.0 : 0.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SvgPicture.asset(
-                    assets.basketdashboard,
-                    width: 10,
-                    height: 18,
-                    colorFilter: ColorFilter.mode(
-                      colorScheme.mutedForeground,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      bsktName,
-                      style: _geistTextStyle(
-                        color: colorScheme.foreground,
+    return GestureDetector(
+      onTap: () => _handleBasketTap(context, basket),
+      behavior: HitTestBehavior.deferToChild,
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Basket icon and name - full width, can be partially covered by buttons
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(right: isRowHovered ? 70.0 : 0.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      assets.basketdashboard,
+                      width: 10,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(
+                        colorScheme.mutedForeground,
+                        BlendMode.srcIn,
                       ),
-                      maxLines: 1,
-                      overflow: isRowHovered
-                          ? TextOverflow.ellipsis
-                          : TextOverflow.visible,
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Action buttons - positioned at the right edge
-        if (isRowHovered)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: () {}, // Empty handler to stop propagation
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding: const EdgeInsets.only(left: 12),
-                alignment: Alignment.centerRight,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.0),
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.95),
-                    ],
-                  ),
-                ),
-                child: HoverActionsContainer(
-                  isVisible: isRowHovered,
-                  actions: [
-                    HoverActionButton(
-                      label: 'Delete',
-                      size: 54,
-                      borderRadius: 5,
-                      color: Colors.white,
-                      onPressed: () =>
-                          _handleDeleteBasket(context, basket, index),
-                      backgroundColor: resolveThemeColor(context,
-                          dark: MyntColors.tertiary,
-                          light: MyntColors.tertiary),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        bsktName,
+                        style: MyntWebTextStyles.tableCell(
+                          context,
+                          fontWeight: MyntFonts.medium,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
+            // Delete button + 3-dot menu button (appears on hover)
+            if (isRowHovered)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Delete button (X icon)
+                      _buildDeleteButton(basket, index),
+                      const SizedBox(width: 6),
+                      // 3-dot menu button
+                      _buildBasketOptionsMenuButton(
+                        basket,
+                        uniqueId,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Delete button with X icon (tertiary/loss color)
+  Widget _buildDeleteButton(
+    Map<String, dynamic> basket,
+    int index,
+  ) {
+    return GestureDetector(
+      onTap: _isDeleting
+          ? null
+          : () => _handleDeleteBasket(context, basket, index),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Helper to build menu item matching positions dropdown style
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildBasketOptionsMenuButton(
+    Map<String, dynamic> basket,
+    String uniqueId,
+  ) {
+    final iconColor = resolveThemeColor(context,
+        dark: styles.MyntColors.iconDark, light: styles.MyntColors.icon);
+    final textColor = resolveThemeColor(context,
+        dark: styles.MyntColors.textPrimaryDark, light: styles.MyntColors.textPrimary);
+
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Build menu items
+            List<shadcn.MenuItem> menuItems = [];
+
+            // Info option
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _handleBasketTap(context, basket);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = uniqueId;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close - gives time for mouse to move back to row
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: styles.MyntColors.textPrimaryDark,
+                  light: styles.MyntColors.textPrimary),
+            ),
           ),
-      ],
+        );
+      },
     );
   }
 
@@ -437,13 +642,13 @@ class _BasketListState extends ConsumerState<BasketList> {
     ThemesProvider theme,
     Alignment alignment,
   ) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     return Align(
       alignment: alignment,
       child: Text(
         text,
-        style: _geistTextStyle(
-          color: colorScheme.foreground,
+        style: MyntWebTextStyles.tableCell(
+          context,
+          fontWeight: MyntFonts.medium,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -468,20 +673,10 @@ class _BasketListState extends ConsumerState<BasketList> {
   }
 
   Widget _buildBasketTable(ThemesProvider theme, List<dynamic> baskets) {
-    if (baskets.isEmpty) {
-      return const SizedBox.expand(
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(secondaryEnabled: false),
-          ),
-        ),
-      );
-    }
-
-    // Sort baskets
-    final sortedBaskets = _getSortedBaskets(baskets);
+    // Sort baskets - handle empty case for showing header always
+    final sortedBaskets = baskets.isNotEmpty
+        ? _getSortedBaskets(baskets)
+        : <dynamic>[];
 
     return SizedBox.expand(
       child: shadcn.OutlinedContainer(
@@ -566,75 +761,82 @@ class _BasketListState extends ConsumerState<BasketList> {
                       ),
                     ],
                   ),
-                  // Scrollable Body
+                  // Scrollable Body - shows empty state or table rows
                   Expanded(
-                    child: Scrollbar(
-                      controller: _verticalScrollController,
-                      thumbVisibility: true,
-                      trackVisibility: true,
-                      interactive: true,
-                      child: SingleChildScrollView(
-                        controller: _verticalScrollController,
-                        scrollDirection: Axis.vertical,
-                        child: ValueListenableBuilder<String?>(
-                          valueListenable: _hoveredRowIndex,
-                          builder: (context, hoveredRowId, _) {
-                            return shadcn.Table(
-                              key: ValueKey(
-                                  'table_${_sortColumnIndex}_$_sortAscending'),
-                              columnWidths: {
-                                0: shadcn.FixedTableSize(columnWidths[0]!),
-                                1: shadcn.FixedTableSize(columnWidths[1]!),
-                                2: shadcn.FixedTableSize(columnWidths[2]!),
-                              },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: sortedBaskets.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final basket =
-                                    entry.value as Map<String, dynamic>;
-                                final uniqueId = '$index';
-                                final isRowHovered = hoveredRowId == uniqueId;
+                    child: sortedBaskets.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: NoDataFound(secondaryEnabled: false),
+                            ),
+                          )
+                        : Scrollbar(
+                            controller: _verticalScrollController,
+                            thumbVisibility: true,
+                            trackVisibility: true,
+                            interactive: true,
+                            child: SingleChildScrollView(
+                              controller: _verticalScrollController,
+                              scrollDirection: Axis.vertical,
+                              child: ValueListenableBuilder<String?>(
+                                valueListenable: _hoveredRowIndex,
+                                builder: (context, hoveredRowId, _) {
+                                  return shadcn.Table(
+                                    key: ValueKey(
+                                        'table_${_sortColumnIndex}_$_sortAscending'),
+                                    columnWidths: {
+                                      0: shadcn.FixedTableSize(columnWidths[0]!),
+                                      1: shadcn.FixedTableSize(columnWidths[1]!),
+                                      2: shadcn.FixedTableSize(columnWidths[2]!),
+                                    },
+                                    defaultRowHeight: const shadcn.FixedTableSize(50),
+                                    rows: sortedBaskets.asMap().entries.map((entry) {
+                                      final index = entry.key;
+                                      final basket =
+                                          entry.value as Map<String, dynamic>;
+                                      final uniqueId = '$index';
+                                      final isRowHovered = hoveredRowId == uniqueId;
 
-                                return shadcn.TableRow(
-                                  cells: [
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 0,
-                                      onTap: () =>
-                                          _handleBasketTap(context, basket),
-                                      child: _buildBasketNameCell(basket, theme,
-                                          uniqueId, index, isRowHovered),
-                                    ),
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 1,
-                                      onTap: () =>
-                                          _handleBasketTap(context, basket),
-                                      child: _buildTextCell(
-                                        (basket['curLength'] ?? 0).toString(),
-                                        theme,
-                                        Alignment.centerLeft,
-                                      ),
-                                    ),
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 2,
-                                      onTap: () =>
-                                          _handleBasketTap(context, basket),
-                                      child: _buildTextCell(
-                                        basket['createdDate']?.toString() ?? '',
-                                        theme,
-                                        Alignment.centerLeft,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
+                                      return shadcn.TableRow(
+                                        cells: [
+                                          buildCellWithHover(
+                                            rowIndex: index,
+                                            columnIndex: 0,
+                                            onTap: () =>
+                                                _handleBasketTap(context, basket),
+                                            child: _buildBasketNameCell(basket, theme,
+                                                uniqueId, index, isRowHovered),
+                                          ),
+                                          buildCellWithHover(
+                                            rowIndex: index,
+                                            columnIndex: 1,
+                                            onTap: () =>
+                                                _handleBasketTap(context, basket),
+                                            child: _buildTextCell(
+                                              (basket['curLength'] ?? 0).toString(),
+                                              theme,
+                                              Alignment.centerLeft,
+                                            ),
+                                          ),
+                                          buildCellWithHover(
+                                            rowIndex: index,
+                                            columnIndex: 2,
+                                            onTap: () =>
+                                                _handleBasketTap(context, basket),
+                                            child: _buildTextCell(
+                                              basket['createdDate']?.toString() ?? '',
+                                              theme,
+                                              Alignment.centerLeft,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               );
@@ -792,6 +994,10 @@ class _BasketListState extends ConsumerState<BasketList> {
       await basketProvider.removeBasket(index);
       if (mounted) {
         setState(() => _isDeleting = false);
+        ResponsiveSnackBar.showSuccess(
+          context,
+          'Basket "${bsktName.toString().toUpperCase()}" deleted successfully',
+        );
       }
     }
   }
@@ -917,26 +1123,23 @@ class _BasketListState extends ConsumerState<BasketList> {
           ),
         ),
         const SizedBox(height: 16),
-        basket.isBasketLoading
-            ? SizedBox(
-                height: 400, child: Center(child: MyntLoader.simple()))
-            : basket.bsktList.isEmpty
-                ? SizedBox(height: 400, child: NoDataFound(secondaryEnabled: false))
-                : Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: SizedBox(
-                            width: constraints.maxWidth,
-                            height: constraints.maxHeight,
-                            child: _buildBasketTable(
-                                theme, _getFilteredBaskets(basket.bsktList)),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+        Expanded(
+          child: basket.isBasketLoading
+              ? Center(child: MyntLoader.simple())
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: SizedBox(
+                        width: constraints.maxWidth,
+                        height: constraints.maxHeight,
+                        child: _buildBasketTable(
+                            theme, _getFilteredBaskets(basket.bsktList)),
+                      ),
+                    );
+                  },
+                ),
+        ),
       ],
     );
   }
@@ -1062,13 +1265,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     }
 
     return shadcn.TableCell(
-      theme: shadcn.TableCellTheme(
-        backgroundColor: shadcn.WidgetStatePropertyAll(
-          theme.isDarkMode
-              ? styles.MyntColors.searchBgDark
-              : const Color(0xffF9FAFB),
-        ),
-        border: const shadcn.WidgetStatePropertyAll(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
           shadcn.Border(
             top: shadcn.BorderSide.none,
             bottom: shadcn.BorderSide.none,
@@ -1080,8 +1278,17 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       child: InkWell(
         onTap: () => _onSortTable(columnIndex, true),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: Colors.white.withValues(alpha: 0.04),
+              light: Colors.black.withValues(alpha: 0.03),
+            ),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment:
@@ -1159,7 +1366,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     if (header == 'Qty.' ||
         header == 'Price' ||
         header == 'LTP' ||
-        header == 'Actions') return true;
+        header == 'Status' ||
+        header == 'Actions' ||
+        header == 'Type/Product') return true;
     return false;
   }
 
@@ -1254,7 +1463,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               : MyntColors.backgroundColor,
         ),
         child: const Center(
-          child: NoDataFoundWeb(),
+          child: NoDataFound(
+            title: "No Results Found",
+            subtitle: "Try searching with a different keyword.",
+            primaryEnabled: false,
+            secondaryEnabled: false,
+          ),
         ),
       );
     }
@@ -1841,9 +2055,10 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                       : Builder(
                           builder: (context) {
                             // Process basket items to extract symbol info
-                            final processedItems =
-                                List<Map<String, dynamic>>.from(
-                                    basket.bsktScripList);
+                            // IMPORTANT: Create deep copy to avoid mutating original data
+                            final processedItems = basket.bsktScripList
+                                .map((item) => Map<String, dynamic>.from(item))
+                                .toList();
                             for (int i = 0; i < processedItems.length; i++) {
                               processedItems[i]['_originalIndex'] = i;
                               if (processedItems[i]['exch'] == "BFO" &&
@@ -1884,23 +2099,23 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                 final headers = [
                                   'Instrument ($count / $maxCount)',
                                   'Type',
-                                  'Order type',
-                                  'Product',
+                                  'Type/Product',
                                   'Qty.',
                                   'LTP',
                                   'Price',
+                                  'Status',
                                   'Actions'
                                 ];
 
                                 // Define fixed minimum widths for columns
                                 final minWidths = <int, double>{
-                                  0: 100.0, // Instrument
-                                  1: 100.0, // Type
-                                  2: 100.0, // Order type
-                                  3: 100.0, // Product
-                                  4: 100.0, // Qty.
-                                  5: 140.0, // LTP
-                                  6: 100.0, // Price
+                                  0: 140.0, // Instrument
+                                  1: 70.0, // Type
+                                  2: 120.0, // Type/Product
+                                  3: 100.0, // Qty.
+                                  4: 140.0, // LTP
+                                  5: 100.0, // Price
+                                  6: 100.0, // Status
                                   7: 140.0, // Actions
                                 };
 
@@ -2209,44 +2424,73 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                     ),
                     const SizedBox(width: 16),
 
-                    // Place Order Button
+                    // Place Order / Reset Orders Button
                     SizedBox(
                       height: 36,
-                      child: ElevatedButton(
-                        onPressed: _hasMultipleExchanges(basket.bsktScripList)
-                            ? null // Disabled if multiple exchanges
-                            : () async {
-                                if (_hasOrdersPlacedInBasket(
-                                    widget.bsktName, basket)) {
-                                  basket.resetBasketOrderTracking(
-                                      widget.bsktName);
-                                  ResponsiveSnackBar.showSuccess(context,
-                                      "Basket reset. You can place orders again.");
-                                } else {
-                                  await basket.placeBasketOrder(context,
-                                      navigateToOrderBook: false);
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4)),
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          _hasOrdersPlacedInBasket(widget.bsktName, basket)
-                              ? "Reset Orders"
-                              : "Place Order",
-                          style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: MyntColors.backgroundColor, // Always white
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
+                      child: _hasOrdersPlacedInBasket(widget.bsktName, basket)
+                          // Reset Orders - Outlined style matching the image
+                          ? OutlinedButton(
+                              onPressed: basket.bsktScripList.isEmpty
+                                  ? null
+                                  : () {
+                                      basket.resetBasketOrderTracking(
+                                          widget.bsktName);
+                                      ResponsiveSnackBar.showSuccess(context,
+                                          "Basket reset. You can place orders again.");
+                                    },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary,
+                                  ),
+                                  width: 1,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)),
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                              ),
+                              child: Text(
+                                "Reset Orders",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary,
+                                    ),
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            )
+                          // Place Order - Primary filled style
+                          : ElevatedButton(
+                              onPressed: basket.bsktScripList.isEmpty ||
+                                      _hasMultipleExchanges(basket.bsktScripList)
+                                  ? null
+                                  : () async {
+                                      await basket.placeBasketOrder(context,
+                                          navigateToOrderBook: false);
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: theme.isDarkMode
+                                    ? WebDarkColors.primary
+                                    : WebColors.primary,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)),
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                "Place Order",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: MyntColors.backgroundColor,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
                     ),
                   ],
                 ),
@@ -2353,23 +2597,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             ),
           ),
         );
-      case 'Order type':
+      case 'Type/Product':
         final prctype = item["prctype"]?.toString() ?? "LMT";
-        return SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              prctype,
-              style: MyntWebTextStyles.tableCell(
-                context,
-                fontWeight: MyntFonts.medium,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        );
-      case 'Product':
         String product = "CNC";
         switch (item["prd"]) {
           case "I":
@@ -2384,9 +2613,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         }
         return SizedBox.expand(
           child: Align(
-            alignment: Alignment.centerLeft,
+            alignment: Alignment.centerRight,
             child: Text(
-              product,
+              '$prctype / $product',
               style: MyntWebTextStyles.tableCell(
                 context,
                 fontWeight: MyntFonts.medium,
@@ -2397,12 +2626,13 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
         );
       case 'Qty.':
-        final qty = item["qty"]?.toString() ?? '0';
+        final filledQty = item["fillshares"]?.toString() ?? '0';
+        final totalQty = item["qty"]?.toString() ?? '0';
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
             child: Text(
-              qty,
+              '$filledQty / $totalQty',
               style: MyntWebTextStyles.tableCell(
                 context,
                 fontWeight: MyntFonts.medium,
@@ -2424,9 +2654,6 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         );
       case 'Price':
         final price = item["prc"]?.toString() ?? '0.00';
-        final trantype = item["trantype"]?.toString();
-        final isBuy = trantype != "S";
-        final color = isBuy ? styles.MyntColors.profit : styles.MyntColors.loss;
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
@@ -2434,13 +2661,48 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               price,
               style: MyntWebTextStyles.tableCell(
                 context,
-                color: color,
-                darkColor: color,
-                lightColor: color,
                 fontWeight: MyntFonts.medium,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        );
+      case 'Status':
+        final orderStatus = item["orderStatus"]?.toString().toUpperCase() ?? 'PENDING';
+        Color statusColor;
+        if (orderStatus == 'PLACED') {
+          statusColor = resolveThemeColor(
+            context,
+            dark: styles.MyntColors.profitDark,
+            light: styles.MyntColors.profit,
+          );
+        } else if (orderStatus == 'FAILED' || orderStatus == 'REJECTED') {
+          statusColor = resolveThemeColor(
+            context,
+            dark: styles.MyntColors.lossDark,
+            light: styles.MyntColors.loss,
+          );
+        } else {
+          statusColor = styles.MyntColors.warning;
+        }
+        return SizedBox.expand(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                orderStatus,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: statusColor,
+                  fontWeight: MyntFonts.medium,
+                ),
+              ),
             ),
           ),
         );
@@ -3022,7 +3284,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
                 context,
                 darkColor: styles.MyntColors.textSecondaryDark,
                 lightColor: styles.MyntColors.textSecondary,
-              ),
+              ).copyWith(fontSize: 10),
             ),
           ],
         ),
@@ -3105,18 +3367,12 @@ class _BasketLtpCellState extends ConsumerState<_BasketLtpCell> {
 
   @override
   Widget build(BuildContext context) {
-    final pcVal = double.tryParse(pc) ?? 0.0;
-    final color = pcVal > 0
-        ? styles.MyntColors.profit
-        : (pcVal < 0 ? styles.MyntColors.loss : null);
-
     return Text(
       "$ltp",
       style: MyntWebTextStyles.tableCell(
         context,
-        color: color,
-        darkColor: color,
-        lightColor: color,
+        darkColor: styles.MyntColors.textPrimaryDark,
+        lightColor: styles.MyntColors.textPrimary,
         fontWeight: MyntFonts.medium,
       ),
     );

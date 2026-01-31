@@ -8,6 +8,7 @@ import 'package:mynt_plus/sharedWidget/custom_exch_badge.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../../sharedWidget/ipo_error_widget.dart';
 
 class ApplyBondsScreen extends ConsumerStatefulWidget {
   final BondsList bondInfo;
@@ -35,7 +36,7 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
     setState(() {
       bondDetails = BondDetails(
           quantitytext:
-              "${int.parse(widget.bondInfo.minBidQuantity!) ~/ double.parse(widget.bondInfo.faceValue!).toInt()}",
+              "${(int.parse(widget.bondInfo.minBidQuantity!) / double.parse(widget.bondInfo.faceValue!).toInt()).toInt()}",
           bidprice: "${double.parse(widget.bondInfo.cutoffPrice!).toInt()}",
           lotsize: (int.parse(widget.bondInfo.lotSize!) /
                   double.parse(widget.bondInfo.faceValue!))
@@ -144,11 +145,11 @@ class _ApplyBondsScreenState extends ConsumerState<ApplyBondsScreen> {
               ),
               body: 
               SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                physics: ClampingScrollPhysics(),
                 child: Column(
                   children: [
                     Container(
-                      color: const Color(0xFFFCEFD4),
+                      color: Color(0xFFFCEFD4),
                       height: 30,
                       child: Center(
                         child: Text(

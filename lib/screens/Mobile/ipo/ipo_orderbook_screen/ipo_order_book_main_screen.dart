@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../res/global_state_text.dart';
@@ -39,6 +40,13 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
   }
 
   Widget _buildBody(ipo, theme, double devHeight) {
+    // Show loader while data is being fetched
+    if (ipo.myBidsload) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     // Get filtered orders based on search
     final filteredOpenOrders = _getFilteredOpenOrders(ipo);
     final filteredCloseOrders = _getFilteredCloseOrders(ipo);

@@ -16,6 +16,7 @@ import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_top_category_list.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
+import 'package:mynt_plus/screens/web/bonds/bonds_main_screen_web.dart';
 
 
 
@@ -1895,7 +1896,7 @@ class _CustomizableSplitHomeScreenState
           onBack: _goBackInRightPanel,
         );
       case ScreenType.bond:
-        return const BondsScreen(isBonds: true);
+        return const BondsScreenWeb(isBonds: true,);
       case ScreenType.scripDepthInfo:
         return Consumer(
           builder: (context, ref, _) {

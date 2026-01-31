@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/web_colors.dart';
-import 'bond_cancel_alert/bonds_cancel_alert.dart';
+import 'bond_cancel_alert/bonds_cancel_alert_web.dart';
 
 class BondsDetailsSidebarWeb extends ConsumerWidget {
   final BondsOrderBookModel order;
@@ -85,7 +85,7 @@ class BondsDetailsSidebarWeb extends ConsumerWidget {
                         onPressed: () {
                           showDialog(
                             context: context,
-                            builder: (context) => BondCancelAlert(bondcancel: order),
+                            builder: (context) => BondCancelAlertWeb(bondcancel: order),
                           );
                         },
                         style: TextButton.styleFrom(

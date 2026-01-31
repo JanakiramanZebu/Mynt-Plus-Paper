@@ -65,8 +65,7 @@ class _MoreMenuBottomSheetState extends State<MoreMenuBottomSheet> {
                 return ListTile(
                     onTap: () async {
                       if (index == 0) {
-                        await ref.read(ipoProvide).getSmeIpo();
-                        await ref.read(ipoProvide).getmainstreamipo(context);
+                        await ref.read(ipoProvide).fetchAllOpenIpos(context);
                         await ref
                             .read(ipoProvide)
                             .getipoperfomance(currentYear);

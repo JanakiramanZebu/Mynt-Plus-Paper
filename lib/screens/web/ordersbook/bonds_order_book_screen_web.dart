@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../provider/bonds_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../res/res.dart';
@@ -32,6 +33,13 @@ class _BondsOrderBookScreenWebState extends ConsumerState<BondsOrderBookScreenWe
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final bonds = ref.watch(bondsProvider);
+
+    // Show loader while data is being fetched
+    if (bonds.bondsMyBidsload) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
 
     final filteredOpen = bonds.filterOpenOrdersBySearch();
     final filteredClose = bonds.filterCloseOrdersBySearch();

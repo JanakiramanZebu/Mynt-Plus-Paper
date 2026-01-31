@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -108,6 +109,13 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     final hasAnyData = openIpos.isNotEmpty ||
         preOpenIpos.isNotEmpty ||
         (preCloseMsg != null && preCloseMsg.isNotEmpty);
+
+    // Show loader while data is being fetched
+    if (ipos.loading) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
 
     if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isEmpty) {
@@ -549,13 +557,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
                           style: MyntWebTextStyles.bodyMedium(
                             context,
                             fontWeight: MyntFonts.medium,
-                            color: rowIsHovered
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.primary,
-                                    light: MyntColors.primary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary),
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,

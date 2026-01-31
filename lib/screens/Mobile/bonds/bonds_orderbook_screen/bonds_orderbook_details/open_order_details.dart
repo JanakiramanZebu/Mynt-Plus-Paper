@@ -2,10 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
+import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/screens/Mobile/bonds/bonds_orderbook_screen/bond_cancel_alert/bonds_cancel_alert.dart';
+import 'package:mynt_plus/screens/mobile/bonds/bonds_orderbook_screen/bond_cancel_alert/bonds_cancel_alert.dart';
+import 'package:mynt_plus/screens/mobile/ipo/ipo_cancel_alert/cancel_alert.dart';
 import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 import '../../../../../sharedWidget/custom_drag_handler.dart';
@@ -105,7 +108,7 @@ class BondsOpenOrderDetails extends ConsumerWidget {
                         const CustomDragHandler(),
                         Expanded(
                           child: SingleChildScrollView(
-                            physics: const ClampingScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             controller: scrollController,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -639,7 +642,7 @@ class _OrderDetailsSection extends StatelessWidget {
 
         data(
           "Quantity",
-          (double.parse(bondsdetails.totalAmountPayable!) / bondsdetails.bidDetail!.price!).toStringAsFixed(0),
+          "${(double.parse(bondsdetails.totalAmountPayable!) / bondsdetails.bidDetail!.price!).toStringAsFixed(0)}",
           theme,
         ),
 
@@ -847,7 +850,7 @@ class _BidDetailsTable extends StatelessWidget {
               DataCell(
                 TextWidget.paraText(
                   text:
-                      (double.parse(bondsdetails.totalAmountPayable!) / bondsdetails.bidDetail!.price!).toStringAsFixed(0),
+                      "${(double.parse(bondsdetails.totalAmountPayable!) / bondsdetails.bidDetail!.price!).toStringAsFixed(0)}",
                   theme: theme.isDarkMode,
                   color: theme.isDarkMode
                       ? colors.textSecondaryDark

@@ -56,6 +56,7 @@ import 'index_list_provider.dart';
 import 'iop_provider.dart';
 import 'ledger_provider.dart';
 import 'market_watch_provider.dart';
+import 'notification_provider.dart';
 import 'order_provider.dart';
 import 'portfolio_provider.dart';
 // import 'stocks_provider.dart';
@@ -1018,6 +1019,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
         // Clear pending watchlists on logout
         ref.read(marketWatchProvider).clearPendingWatchlists();
+
+        // Clear notification data on logout to prevent data leaking between users
+        ref.read(notificationprovider).clearData();
 
         // Update UI state
         ref.read(indexListProvider).bottomMenu(0, context);
@@ -2250,8 +2254,7 @@ class AuthProvider extends DefaultChangeNotifier {
 
   setIposAPicalls(BuildContext context) async {
     // await ref.read(ipoProvide).getDashboardIpos();
-    await ref.read(ipoProvide).getSmeIpo();
-    await ref.read(ipoProvide).getmainstreamipo(context);
+    await ref.read(ipoProvide).fetchAllOpenIpos(context);
     await ref.read(ipoProvide).getUpcomingIpoModel();
     await ref.read(ipoProvide).getipoperfomance(currentYear);
     await ref.read(ipoProvide).mergemainsme();

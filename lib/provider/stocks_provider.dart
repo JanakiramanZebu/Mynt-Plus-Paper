@@ -61,11 +61,13 @@ class StocksProvider extends DefaultChangeNotifier {
   List<TopGainers> _byValue = [];
   List<TopGainers> _byVolume = [];
   List<TopGainers> _topStockData = [];
+  bool _isTradeActionLoaded = false;
   List<TopGainers> get topGainers => _topGainers;
   List<TopGainers> get topLosers => _topLosers;
   List<TopGainers> get byValue => _byValue;
   List<TopGainers> get byVolume => _byVolume;
   List<TopGainers> get topStockData => _topStockData;
+  bool get isTradeActionLoaded => _isTradeActionLoaded;
 
   List<StockMoniterModel> _stockMonitor = [];
   List<StockMoniterModel> get stockMonitor => _stockMonitor;
@@ -484,8 +486,11 @@ class StocksProvider extends DefaultChangeNotifier {
           _topLosers = _topListStocks!.topLosers ?? [];
         }
       }
+      _isTradeActionLoaded = true;
       notifyListeners();
     } catch (e) {
+      _isTradeActionLoaded = true;
+      notifyListeners();
       print("$e");
     }
   }

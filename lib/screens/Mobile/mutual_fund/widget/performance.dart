@@ -16,7 +16,7 @@ class MFPerformance extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfProvide = ref.watch(mfProvider);
     final factSheetData = mfProvide.factSheetDataModel?.data;
-    
+
     // Early return if essential data is missing
     if (factSheetData == null) {
       return const SizedBox();

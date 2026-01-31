@@ -38,7 +38,8 @@ import 'package:flutter/material.dart'
         RawScrollbar,
         MediaQuery,
         Radius,
-        BorderRadius;
+        BorderRadius,
+        Center;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
@@ -46,6 +47,7 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../utils/responsive_snackbar.dart';
 import 'mf_order_detail_screen_web.dart';
 import '../../../../res/mynt_web_color_styles.dart';
@@ -409,9 +411,18 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
+    final mfData = ref.watch(mfProvider);
+
+    // Show loader while data is being fetched
+    if (mfData.mforderloader) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     final orders = _getOrders();
 
-    // Show loading or empty state
+    // Show empty state
     if (orders.isEmpty) {
       return const SizedBox(
         height: 400,

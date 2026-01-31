@@ -212,10 +212,20 @@ class _NotificationScreenWebState extends ConsumerState<NotificationScreenWeb> {
     final theme = ref.watch(themeProvider);
     final notification = ref.watch(notificationprovider);
 
-    // Get counts for each tab
-    final brokerCount = notification.brokermsg?.length ?? 0;
-    final exchangeCount = notification.exchangemessage?.length ?? 0;
-    final exchangeAlertCount = notification.exchangestatus?.length ?? 0;
+    // Get counts for each tab - filter out error responses (stat: "Not_Ok") with no actual content
+    final brokerCount = notification.brokermsg
+            ?.where((msg) => msg.dmsg != null && msg.dmsg!.isNotEmpty)
+            .length ??
+        0;
+    final exchangeCount = notification.exchangemessage
+            ?.where((msg) => msg.emsg == null || !msg.emsg!.contains('Session Expired'))
+            .where((msg) => msg.stat != 'Not_Ok')
+            .length ??
+        0;
+    final exchangeAlertCount = notification.exchangestatus
+            ?.where((msg) => msg.stat != 'Not_Ok')
+            .length ??
+        0;
     final informationCount = notification.informationMessages?.length ?? 0;
     final List<int> counts = [brokerCount, exchangeCount, exchangeAlertCount, informationCount];
 

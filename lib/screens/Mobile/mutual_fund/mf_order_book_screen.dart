@@ -53,6 +53,10 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   final ScrollController _ordersVerticalScrollController = ScrollController();
   final ScrollController _ordersHorizontalScrollController = ScrollController();
 
+  // Lazy loading state for Orders table
+  int _ordersDisplayCount = 15;
+  static const int _ordersPageSize = 10;
+
   // Popover state management for 3-dot dropdown menu
   shadcn.PopoverController? _activePopoverController;
   int? _popoverRowIndex;
@@ -62,20 +66,41 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(mfProvider).fetchMfOrderbook(context);
-    });
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        _searchController.clear();
-        ref.read(mfProvider).mfOrderBookSearch("");
-        ref.read(mfProvider).mfHoldingSearch("", context);
-        setState(() {});
-      }
-    });
+    _tabController.addListener(_onTabChanged);
     // Listen to hover changes for popover management
     _hoveredRowIndex.addListener(_onHoverChanged);
+    // Listen to scroll for lazy loading orders
+    _ordersVerticalScrollController.addListener(_onOrdersScroll);
+  }
+
+  void _onOrdersScroll() {
+    if (_ordersVerticalScrollController.position.pixels >=
+        _ordersVerticalScrollController.position.maxScrollExtent - 100) {
+      // Load more items when near bottom
+      setState(() {
+        _ordersDisplayCount += _ordersPageSize;
+      });
+    }
+  }
+
+  int _lastTabIndex = 0;
+
+  void _onTabChanged() {
+    // Only react when tab actually changes (not during animation)
+    if (!_tabController.indexIsChanging && _tabController.index != _lastTabIndex) {
+      _lastTabIndex = _tabController.index;
+      _searchController.clear();
+      ref.read(mfProvider).mfOrderBookSearch("");
+      ref.read(mfProvider).mfHoldingSearch("", context);
+
+      // Fetch Orders data when switching to Orders tab
+      if (_tabController.index == 1) {
+        _ordersDisplayCount = 15; // Reset pagination
+        ref.read(mfProvider).fetchMfOrderbook(context);
+      }
+      setState(() {});
+    }
   }
 
   void _onHoverChanged() {
@@ -127,6 +152,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     try {
       _hoveredRowIndex.removeListener(_onHoverChanged);
     } catch (_) {}
+    try {
+      _tabController.removeListener(_onTabChanged);
+    } catch (_) {}
+    try {
+      _ordersVerticalScrollController.removeListener(_onOrdersScroll);
+    } catch (_) {}
     _tabController.dispose();
     _searchController.dispose();
     _ordersVerticalScrollController.dispose();
@@ -142,13 +173,11 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
     return Consumer(builder: (context, ref, child) {
       final theme = ref.watch(themeProvider);
       final mforderbook = ref.watch(mfProvider);
-      return Stack(
+
+      // Note: Each tab handles its own loading state to allow tab switching while loading
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          MyntLoaderOverlay(
-            isLoading: mforderbook.bestmfloader == true,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 Padding(
                   padding:
                       const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
@@ -254,6 +283,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                               await mforderbook.fetchmfholdingnew();
                             } else {
                               // Refresh Orders
+                              _ordersDisplayCount = 15; // Reset pagination
                               await mforderbook.fetchMfOrderbook(context);
                             }
                           },
@@ -262,27 +292,30 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                     ],
                   ),
                 ),
-                Expanded(
-                  child: TabBarView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    controller: _tabController,
-                    children: [
-                      const MfHoldNewScreen(),
-                      _buildOrdersTab(mforderbook, theme, context),
-                    ],
-                  ),
-                ),
-              ],
+            Expanded(
+              child: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
+                controller: _tabController,
+                children: [
+                  const MfHoldNewScreen(),
+                  _buildOrdersTab(mforderbook, theme, context),
+                ],
+              ),
             ),
-          ),
-        ],
-      );
-      // );
+          ],
+        );
     });
   }
 
   Widget _buildOrdersTab(
       MFProvider mforderbook, ThemesProvider theme, BuildContext context) {
+    // Show loader while data is being fetched
+    if (mforderbook.mforderloader) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     if (mforderbook.mfOrderbookfilter == "All" &&
         mforderbook.mflumpsumorderbook?.data != null &&
         mforderbook.mflumpsumorderbook?.stat != "Not Ok") {
@@ -302,16 +335,14 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         );
       }
 
-      return MyntLoaderOverlay(
-        isLoading: mforderbook.mforderloader,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await mforderbook.fetchMfOrderbook(context);
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: _buildOrdersTable(context, theme, mforderbook, orders),
-          ),
+      return RefreshIndicator(
+        onRefresh: () async {
+          _ordersDisplayCount = 15; // Reset pagination on refresh
+          await mforderbook.fetchMfOrderbook(context);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: _buildOrdersTable(context, theme, mforderbook, orders),
         ),
       );
     }
@@ -476,8 +507,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(60),
                         rows: [
-                          // Data Rows
-                          ...sortedOrders.asMap().entries.map((entry) {
+                          // Data Rows - Limited by _ordersDisplayCount for lazy loading
+                          ...sortedOrders.take(_ordersDisplayCount).toList().asMap().entries.map((entry) {
                             final rowIndex = entry.key;
                             final orderData = entry.value;
 
@@ -678,18 +709,30 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
           ),
         ),
       ),
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          padding: cellPadding,
-          alignment: cellAlignment,
-          decoration: const BoxDecoration(
-            color: Colors.transparent,
-          ),
-          child: child,
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isHovered = hoveredIndex == rowIndex;
+            return GestureDetector(
+              onTap: onTap,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                padding: cellPadding,
+                alignment: cellAlignment,
+                decoration: BoxDecoration(
+                  color: isHovered
+                      ? MyntColors.primary.withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: child,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -922,7 +965,9 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               behavior: HitTestBehavior.opaque,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                color: Colors.transparent,
+                color: isHovered
+                    ? MyntColors.primary.withValues(alpha: 0.08)
+                    : Colors.transparent,
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [

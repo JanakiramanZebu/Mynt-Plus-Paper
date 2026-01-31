@@ -8,6 +8,7 @@ import '../../../../models/bonds_model/bonds_order_book_model.dart';
 import '../../../../provider/bonds_provider.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 
 
@@ -15,8 +16,6 @@ import '../../../../sharedWidget/common_search_fields_web.dart';
 import 'bonds_details_sidebar_web.dart';
 import '../../../../res/res.dart';
 import '../../../../provider/thems.dart';
-import '../../../../utils/custom_navigator.dart';
-import '../../../../routes/route_names.dart';
 
 class BondsMyBidsWeb extends ConsumerStatefulWidget {
   const BondsMyBidsWeb({super.key});
@@ -158,11 +157,18 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
   @override
   Widget build(BuildContext context) {
     final bonds = ref.watch(bondsProvider);
-    
+
+    // Show loader while data is being fetched
+    if (bonds.bondsMyBidsload) {
+      return const Center(
+        child: MyntLoader(size: MyntLoaderSize.large),
+      );
+    }
+
     // Get Data
     final openOrders = bonds.filterOpenOrdersBySearch();
     final closeOrders = bonds.filterCloseOrdersBySearch();
-    
+
     // Calculate counts
     final closeCount = closeOrders.length;
 
@@ -290,11 +296,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                                   subtitle: "Buy some bonds to see them here.",
                                   assetIcon: assets.documentIcon,
                                   iconSize: 120,
-                                  primaryEnabled: true,
-                                  primaryLabel: "Add Funds",
-                                  onPrimary: () {
-                                    WebNavigationHelper.navigateTo(Routes.fundscreen);
-                                  },
+                                  primaryEnabled: false,
                                   secondaryEnabled: false,
                                ))
                           : RawScrollbar(

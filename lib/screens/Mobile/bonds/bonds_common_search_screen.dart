@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../../../../provider/thems.dart';
-import '../../../../res/res.dart';
-import '../../../../sharedWidget/functions.dart';
-import '../../../../res/global_state_text.dart';
+import '../../../provider/thems.dart';
+import '../../../res/res.dart';
+import '../../../sharedWidget/functions.dart';
+import '../../../res/global_state_text.dart';
 
 class BondsCommonSearch extends ConsumerWidget {
   const BondsCommonSearch({super.key});
@@ -151,7 +151,7 @@ class BondsCommonSearch extends ConsumerWidget {
 
   Widget _buildBody(BondsProvider bonds, ThemesProvider theme) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       child: bonds.bondsCommonSearchList.isNotEmpty
           ? _buildSearchResults(bonds, theme)
           : const Center(child: NoDataFound(
@@ -212,7 +212,7 @@ class BondsCommonSearch extends ConsumerWidget {
                                 ? colors.colorWhite
                                 : colors.colorBlack,
                             14,
-                            0),
+                            FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
                     ],

@@ -114,30 +114,31 @@ class OrderActionHandler {
     try {
       onProcessingStateChanged(true);
 
+      // Check if context is mounted before showing dialog
+      if (!context.mounted) {
+        return false;
+      }
+
       // Show confirmation dialog
       final shouldCancel = await _showCancelOrderDialog(orderData);
 
       if (shouldCancel != true) {
-        onProcessingStateChanged(false);
+        return false;
+      }
+
+      // Check context is still valid after dialog
+      if (!context.mounted) {
         return false;
       }
 
       // Proceed with cancel
-      final cancelResult = await ref.read(orderProvider).fetchOrderCancel(
+      await ref.read(orderProvider).fetchOrderCancel(
             "${orderData.norenordno}",
             context,
-            false,
+            true,
           );
 
-      // Refresh order book after successful cancel
-      if (cancelResult != null && cancelResult.stat == "Ok") {
-        await ref.read(orderProvider).fetchOrderBook(context, true);
-        if (context.mounted) {
-          ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
-        }
-        return true;
-      }
-      return false;
+     return true;
     } catch (e) {
       if (context.mounted) {
         ResponsiveSnackBar.showError(context, 'Failed to cancel order');
@@ -157,6 +158,11 @@ class OrderActionHandler {
   }) async {
     try {
       onProcessingStateChanged(true);
+
+      // Check if context is mounted before starting
+      if (!context.mounted) {
+        return;
+      }
 
       print('🔵 [HOVER MODIFY] Starting modify order from hover button');
       print('🔵 [HOVER MODIFY] Order Data:');
@@ -218,19 +224,57 @@ class OrderActionHandler {
 
       print('🔵 [HOVER MODIFY] showDraggable called successfully');
 
-      // Refresh order book after a short delay
-      if (context.mounted) {
-        Future.delayed(const Duration(milliseconds: 500), () async {
-          if (context.mounted) {
-            await ref.read(orderProvider).fetchOrderBook(context, true);
-          }
-        });
-      }
+      // NOTE: Order book refresh is handled by ModifyPlaceOrderScreenWeb after successful modification
+      // Do not refresh here as user hasn't submitted the modify yet
     } catch (e) {
       if (context.mounted) {
         ResponsiveSnackBar.showError(
-            context, 'Failed to open modify order: ${e.toString()}');
+            context, 'Failed to open modify order');
       }
+    } finally {
+      onProcessingStateChanged(false);
+    }
+  }
+
+  /// Exit BO/CO order with confirmation
+  Future<bool> exitBOCOOrder(
+    OrderBookModel orderData, {
+    required Function(bool) onProcessingStateChanged,
+  }) async {
+    try {
+      onProcessingStateChanged(true);
+
+      // Check if context is mounted before showing dialog
+      if (!context.mounted) {
+        return false;
+      }
+
+      // Show confirmation dialog
+      final shouldExit = await _showExitPositionDialog(orderData);
+
+      if (shouldExit != true) {
+        return false;
+      }
+
+      // Check context is still valid after dialog
+      if (!context.mounted) {
+        return false;
+      }
+
+      // Proceed with exit - pass false to handle result manually
+      await ref.read(orderProvider).fetchExitSNOOrd(
+            "${orderData.snonum}",
+            "${orderData.prd}",
+            context,
+            true,
+          );
+
+      return true;
+    } catch (e) {
+      if (context.mounted) {
+        ResponsiveSnackBar.showError(context, 'Failed to exit order');
+      }
+      return false;
     } finally {
       onProcessingStateChanged(false);
     }
@@ -270,7 +314,7 @@ class OrderActionHandler {
     } catch (e) {
       if (context.mounted) {
         ResponsiveSnackBar.showError(
-            context, 'Failed to open place order: ${e.toString()}');
+            context, 'Failed to open place order');
       }
     }
   }
@@ -451,6 +495,127 @@ class OrderActionHandler {
                           ),
                           child: Text(
                             'Cancel',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool?> _showExitPositionDialog(OrderBookModel orderData) async {
+    final symbol = orderData.tsym?.replaceAll("-EQ", "") ?? 'N/A';
+
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: colors.colorBlack, light: colors.colorWhite),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header row with title and close button
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: NewColors.MyntColors.dividerDark,
+                          light: NewColors.MyntColors.divider,
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Exit Position',
+                        style: MyntWebTextStyles.title(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: NewColors.MyntColors.textPrimaryDark,
+                              light: NewColors.MyntColors.textPrimary),
+                        ),
+                      ),
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(dialogContext).pop(false),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(context,
+                                  dark: NewColors.MyntColors.textSecondaryDark,
+                                  light: NewColors.MyntColors.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Content area
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      // Confirmation text with symbol in quotes
+                      Text(
+                        'Are you sure you want to exit "$symbol" position?',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: NewColors.MyntColors.textPrimaryDark,
+                              light: NewColors.MyntColors.textPrimary),
+                        ),
+                      ),
+
+                      // Exit button
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(true),
+                          style: TextButton.styleFrom(
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: NewColors.MyntColors.primaryDark,
+                              light: NewColors.MyntColors.primary,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: Text(
+                            'Exit',
                             style: MyntWebTextStyles.buttonMd(
                               context,
                               color: Colors.white,
