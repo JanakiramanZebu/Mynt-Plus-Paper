@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart'
     hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/models/order_book_model/trade_book_model.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
@@ -105,7 +106,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
             alignment: Alignment.center,
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: NoDataFound(
+              child: NoDataFoundWeb(
                 title: searchQuery.isNotEmpty ? "No Trades Found" : "No Trades",
                 subtitle: searchQuery.isNotEmpty
                     ? "No trades match your search \"$searchQuery\"."

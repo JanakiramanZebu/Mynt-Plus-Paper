@@ -18,6 +18,7 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 // import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/bonds_table_web.dart';
 import 'package:mynt_plus/screens/web/bonds/bond_order_popup_web.dart';
 import 'package:mynt_plus/models/bonds_model/all_bonds_list_model.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../../provider/stocks_provider.dart';
 
@@ -153,7 +154,7 @@ class BondsListScreenWeb extends StatelessWidget {
           height: devHeight - 140,
           child: const Column(
             children: [
-              NoDataFound(
+              NoDataFoundWeb(
                 title: "No Results Found",
                 subtitle: "Try searching with different keywords",
                 primaryEnabled: false,
@@ -168,7 +169,7 @@ class BondsListScreenWeb extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return const Center(
-      child: NoDataFound(
+      child: NoDataFoundWeb(
         title: "No Bonds Found",
         subtitle: "There are no bond listings for today.",
         primaryEnabled: false,

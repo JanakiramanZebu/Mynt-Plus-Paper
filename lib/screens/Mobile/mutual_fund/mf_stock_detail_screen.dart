@@ -385,8 +385,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
     // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;
-    final dialogWidth = screenSize.width * 0.25; // 25% width
-    final dialogHeight = screenSize.height * 0.60; // 60% height
+    // Use minimum width of 380 or 30% of screen width, whichever is larger
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+    final dialogHeight = screenSize.height * 0.65; // 65% height
 
     // Show order popup
     showDialog(
@@ -426,8 +427,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
 
     // Get screen dimensions
     final screenSize = MediaQuery.of(context).size;
-    final dialogWidth = screenSize.width * 0.25; // 25% width
-    final dialogHeight = screenSize.height * 0.60; // 60% height
+    // Use minimum width of 380 or 30% of screen width, whichever is larger
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+    final dialogHeight = screenSize.height * 0.65; // 65% height
 
     // Show order popup
     showDialog(

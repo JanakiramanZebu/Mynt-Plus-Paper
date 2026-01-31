@@ -41,10 +41,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         ),
         child: Container(
           decoration: BoxDecoration(
-             borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(16),
-        topRight: Radius.circular(16),
-      ),
+             borderRadius: BorderRadius.circular(12),
            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
            border: Border(
                                     top: BorderSide(

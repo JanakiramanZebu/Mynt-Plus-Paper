@@ -48,6 +48,7 @@ import 'package:flutter/material.dart'
         Radius,
         Builder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../models/portfolio_model/position_book_model.dart';
@@ -729,7 +730,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
     if (filteredPositions.isEmpty) {
       return shadcn.OutlinedContainer(
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           title: widget.searchQuery?.isNotEmpty == true
               ? "No Positions Found"
               : "No Positions",

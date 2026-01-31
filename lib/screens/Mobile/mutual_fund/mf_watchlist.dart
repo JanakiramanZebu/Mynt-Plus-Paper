@@ -493,10 +493,12 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
   }) {
     final amcCode = item.aMCCode ?? "default";
 
-    return Stack(
-      children: [
-        // Fund info content
-        Row(
+    return ValueListenableBuilder<int?>(
+      valueListenable: _hoveredRowIndex,
+      builder: (context, hoveredIndex, _) {
+        final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+
+        return Row(
           children: [
             CircleAvatar(
               radius: 14,
@@ -527,32 +529,39 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 ],
               ),
             ),
-          ],
-        ),
-        // Positioned options button on hover
-        ValueListenableBuilder<int?>(
-          valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
-            if (!isHovered) {
-              return const SizedBox.shrink();
-            }
-            return Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: _buildOptionsMenuButton(
-                  item: item,
-                  rowIndex: rowIndex,
-                  mf: mf,
-                  onTap: onTap,
+            // Action buttons on hover
+            if (isHovered) ...[
+              const SizedBox(width: 8),
+              // Remove button (X icon)
+              GestureDetector(
+                onTap: () => _handleRemove(item, mf),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.loss.withValues(alpha: 0.1),
+                        light: MyntColors.loss.withValues(alpha: 0.1)),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: MyntColors.loss,
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-      ],
+              const SizedBox(width: 6),
+              // Options menu button (3-dot icon)
+              _buildOptionsMenuButton(
+                item: item,
+                rowIndex: rowIndex,
+                mf: mf,
+                onTap: onTap,
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -620,20 +629,6 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                 onPressed: (ctx) {
                   _closePopover();
                   onTap();
-                },
-              ),
-            );
-
-            // Remove option
-            menuItems.add(
-              _buildMenuButton(
-                icon: Icons.delete_outline,
-                title: 'Remove',
-                iconColor: MyntColors.loss,
-                textColor: MyntColors.loss,
-                onPressed: (ctx) {
-                  _closePopover();
-                  _handleRemove(item, mf);
                 },
               ),
             );
@@ -981,8 +976,9 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
 
         // Get screen dimensions
         final screenSize = MediaQuery.of(context).size;
-        final dialogWidth = screenSize.width * 0.25; // 25% width
-        final dialogHeight = screenSize.height * 0.60; // 60% height
+        // Use minimum width of 380 or 30% of screen width, whichever is larger
+        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+        final dialogHeight = screenSize.height * 0.65; // 65% height
 
         showDialog(
           context: context,

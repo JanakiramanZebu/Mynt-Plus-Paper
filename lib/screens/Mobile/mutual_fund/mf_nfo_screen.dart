@@ -177,7 +177,8 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+            // Also highlight when popover is open for this row
+            final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: isRowHovered
@@ -225,8 +226,9 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
 
       if (context.mounted) {
         final screenSize = MediaQuery.of(context).size;
-        final dialogWidth = screenSize.width * 0.25; // 25% width
-        final dialogHeight = screenSize.height * 0.60; // 60% height
+        // Use minimum width of 380 or 30% of screen width, whichever is larger
+        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+        final dialogHeight = screenSize.height * 0.65; // 65% height
 
         showDialog(
           context: context,
@@ -301,68 +303,53 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                       dark: MyntColors.primary.withValues(alpha: 0.08),
                       light: MyntColors.primary.withValues(alpha: 0.08))
                   : null,
-              child: Stack(
-                clipBehavior: Clip.none,
+              child: Row(
                 children: [
-                  // Fund info
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Colors.grey[200],
-                        backgroundImage: NetworkImage(
-                          "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: NetworkImage(
+                      "https://v3.mynt.in/mfapi/static/images/mf/${item.aMCCode ?? 'default'}.png",
+                    ),
+                    onBackgroundImageError: (_, __) {},
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          item.name ?? "Unknown Fund",
+                          style: _getTextStyle(
+                              context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                              fontSize: 14),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        onBackgroundImageError: (_, __) {},
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                item.name ?? "Unknown Fund",
-                                style: _getTextStyle(
-                                    context,
-                                    color: resolveThemeColor(context,
-                                        dark: MyntColors.textPrimaryDark,
-                                        light: MyntColors.textPrimary),
-                                    fontSize: 14),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                (item.sCHEMECATEGORY ?? "Other Scheme").toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 2),
+                        Text(
+                          (item.sCHEMECATEGORY ?? "Other Scheme").toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   // 3-dot dropdown button on hover
-                  if (isHovered)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: _buildOptionsMenuButton(
-                          item: item,
-                          rowIndex: rowIndex,
-                        ),
-                      ),
+                  if (isHovered) ...[
+                    const SizedBox(width: 8),
+                    _buildOptionsMenuButton(
+                      item: item,
+                      rowIndex: rowIndex,
                     ),
+                  ],
                 ],
               ),
             );

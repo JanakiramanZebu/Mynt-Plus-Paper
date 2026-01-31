@@ -52,6 +52,7 @@ import 'package:flutter/material.dart'
         Builder;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../provider/mf_provider.dart';
@@ -765,7 +766,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
     // Show NoDataFound if no results after filtering
     if (displayHoldings.isEmpty) {
       return shadcn.OutlinedContainer(
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           title: searchQuery.isNotEmpty
               ? "No Mutual Funds Found"
               : "No Mutual Funds",

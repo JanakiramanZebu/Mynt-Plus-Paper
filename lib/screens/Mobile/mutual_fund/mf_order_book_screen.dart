@@ -524,7 +524,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                                     _formatDate(orderData.datetime ?? "-"),
                                     style: _getTextStyle(context),
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
+                                    maxLines: 1,
                                   ),
                                 ),
                                 // Fund name (with Lumpsum tag and 3-dot dropdown)
@@ -715,7 +715,8 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            final isHovered = hoveredIndex == rowIndex;
+            // Keep row highlighted when popover menu is open for this row
+            final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
             return GestureDetector(
               onTap: onTap,
               behavior: HitTestBehavior.opaque,
@@ -872,6 +873,12 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
         if (cellWidth > maxWidth) {
           maxWidth = cellWidth;
         }
+      }
+
+      // Ensure minimum width for date column to fit full date (e.g., "30/01/2026")
+      if (col == 0) {
+        const minDateWidth = 90.0;
+        maxWidth = maxWidth < minDateWidth ? minDateWidth : maxWidth;
       }
 
       minWidths[col] = maxWidth + padding;

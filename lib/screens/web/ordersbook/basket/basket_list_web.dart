@@ -474,7 +474,7 @@ class _BasketListState extends ConsumerState<BasketList> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(secondaryEnabled: false),
+            child: NoDataFoundWeb(secondaryEnabled: false),
           ),
         ),
       );
@@ -921,7 +921,7 @@ class _BasketListState extends ConsumerState<BasketList> {
             ? SizedBox(
                 height: 400, child: Center(child: MyntLoader.simple()))
             : basket.bsktList.isEmpty
-                ? SizedBox(height: 400, child: NoDataFound(secondaryEnabled: false))
+                ? SizedBox(height: 400, child: NoDataFoundWeb(secondaryEnabled: false))
                 : Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -1837,7 +1837,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                   padding:
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                   child: basket.bsktScripList.isEmpty
-                      ? NoDataFound(secondaryEnabled: false)
+                      ? NoDataFoundWeb(secondaryEnabled: false)
                       : Builder(
                           builder: (context) {
                             // Process basket items to extract symbol info

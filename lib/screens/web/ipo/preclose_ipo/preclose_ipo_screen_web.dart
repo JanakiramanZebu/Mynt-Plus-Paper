@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_pre_close_model.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
@@ -451,7 +452,7 @@ class _NoDataSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: devHeight - 600,
-      child: const Center(child: NoDataFound()),
+      child: const Center(child: NoDataFoundWeb()),
     );
   }
 }

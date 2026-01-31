@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/thems.dart';
@@ -64,7 +65,7 @@ class _BondsSinglePageStateWeb extends State<BondsSinglePageWeb> {
         SizedBox(height: 10),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 250),
-          child: NoDataFound(
+          child: NoDataFoundWeb(
             title: "No Bonds Found",
             subtitle: "",
             primaryEnabled: false,

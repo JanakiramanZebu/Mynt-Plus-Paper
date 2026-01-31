@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/web/market_watch/future_screen_web.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 // import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
@@ -2216,7 +2217,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                               const SizedBox(height: 10),
                                               const FundamentalDataWidget(),
                                             ] else ...[
-                                              const NoDataFound()
+                                              const NoDataFoundWeb()
                                             ]
                                           ] else if (scripInfo.actDeptBtn ==
                                               "Chart") ...[

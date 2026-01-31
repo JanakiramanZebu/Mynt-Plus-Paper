@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../../models/ipo_model/ipo_performance_model.dart';
 import '../../../../provider/iop_provider.dart';
@@ -53,7 +54,7 @@ class _IPOPerformanceState extends ConsumerState<IPOPerformance> {
 
   Widget _buildContent(performance, theme, market) {
     if (performance.ipoPerformanceModel?.emsg == "no data") {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFoundWeb());
     }
 
     return performance.performancesearch!.isEmpty

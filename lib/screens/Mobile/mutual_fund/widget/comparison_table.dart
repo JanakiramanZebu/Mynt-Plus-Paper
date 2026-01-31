@@ -294,18 +294,23 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
           .replaceAll('Years', 'Yr');
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+    final headerColor = isDarkMode
+        ? MyntColors.textSecondaryDark
+        : MyntColors.textSecondary;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5),
       child: Row(
         children: [
           Expanded(
             flex: 4,
             child: Text(
               'Scheme',
-              style: MyntWebTextStyles.body(
+              style: MyntWebTextStyles.bodySmall(
                 context,
-                color: MyntColors.primary,
-                fontWeight: FontWeight.w500,
+                color: headerColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -313,11 +318,11 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
             flex: 2,
             child: Text(
               'AUM (Cr)',
-              textAlign: TextAlign.center,
-              style: MyntWebTextStyles.body(
+              textAlign: TextAlign.right,
+              style: MyntWebTextStyles.bodySmall(
                 context,
-                color: MyntColors.primary,
-                fontWeight: FontWeight.w500,
+                color: headerColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -325,11 +330,11 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
             flex: 2,
             child: Text(
               '$yearLabel %',
-              textAlign: TextAlign.center,
-              style: MyntWebTextStyles.body(
+              textAlign: TextAlign.right,
+              style: MyntWebTextStyles.bodySmall(
                 context,
-                color: MyntColors.primary,
-                fontWeight: FontWeight.w500,
+                color: headerColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -338,10 +343,10 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
             child: Text(
               'Rating',
               textAlign: TextAlign.right,
-              style: MyntWebTextStyles.body(
+              style: MyntWebTextStyles.bodySmall(
                 context,
-                color: MyntColors.primary,
-                fontWeight: FontWeight.w500,
+                color: headerColor,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -382,7 +387,7 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
             flex: 2,
             child: Text(
               aum.toStringAsFixed(2),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.right,
               style: MyntWebTextStyles.body(
                 context,
                 color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
@@ -393,7 +398,7 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
             flex: 2,
             child: Text(
               yearPer.toStringAsFixed(2),
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.right,
               style: MyntWebTextStyles.body(
                 context,
                 color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,

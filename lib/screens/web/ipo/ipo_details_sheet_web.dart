@@ -8,6 +8,7 @@ import '../../../../provider/iop_provider.dart';
 import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
+import '../../../../sharedWidget/no_data_found_web.dart';
 import '../../../../models/ipo_model/ipo_sme_model.dart';
 import 'IPO_order_screen/ipo_order_screen_web.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -173,7 +174,12 @@ class IpoDetailsSheetWeb extends ConsumerWidget {
                         }
                       }),
                     ] else ...[
-                      const Center(child: CircularProgressIndicator()),
+                      const NoDataFoundWeb(
+                        title: "No Details Available",
+                        subtitle: "IPO details are not available at the moment.",
+                        primaryEnabled: false,
+                        secondaryEnabled: false,
+                      ),
                     ],
                   ],
                 ),

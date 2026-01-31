@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'dart:math' as math;
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/marketwatch_model/scrip_overview/eodchartdata_model.dart';
@@ -692,7 +693,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       // Check if fundamental data is available, if not show error message
       if (!_isFundamentalDataAvailable(marketWatch)) {
         if (!widget.showHeader) {
-          return const Center(child: NoDataFound());
+          return const Center(child: NoDataFoundWeb());
         }
         return Scaffold(
           appBar: AppBar(
@@ -735,7 +736,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             ),
           ),
           body: const Center(
-            child: NoDataFound(),
+            child: NoDataFoundWeb(),
           ),
         );
       }
@@ -1699,7 +1700,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   Widget _buildFinancialTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
     if (marketWatch.fundamentalData?.msg == "no data found") {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFoundWeb());
     }
 
     return const SingleChildScrollView(

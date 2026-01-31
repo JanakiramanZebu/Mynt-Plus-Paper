@@ -876,6 +876,7 @@ class _CustomizableSplitHomeScreenState
                   onIPOTap: _handleIPOTap,
                   onSwapPanels: _handleSwapPanels,
                   onMutualFundTap: _handleMutualFundTap,
+                  onBondsTap: _handleBondTap,
                   onOptionZTap: _handleOptionZTap,
                   onThemeToggle: () {
                     ref.read(themeProvider.notifier).toggleTheme(

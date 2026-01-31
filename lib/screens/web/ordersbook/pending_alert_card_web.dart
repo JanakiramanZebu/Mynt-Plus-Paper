@@ -67,6 +67,7 @@ import 'package:flutter/material.dart'
         LinearGradient;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../res/mynt_web_color_styles.dart' as styles;
@@ -471,7 +472,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(secondaryEnabled: false),
+            child: NoDataFoundWeb(secondaryEnabled: false),
           ),
         ),
       );

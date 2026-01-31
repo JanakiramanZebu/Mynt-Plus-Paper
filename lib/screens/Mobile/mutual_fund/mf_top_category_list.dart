@@ -358,7 +358,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+            // Also highlight when popover is open for this row
+            final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
 
             return GestureDetector(
               onTap: onTap,
@@ -507,63 +508,48 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                         dark: MyntColors.primary.withValues(alpha: 0.08),
                         light: MyntColors.primary.withValues(alpha: 0.08))
                     : null,
-                child: Stack(
-                  clipBehavior: Clip.none,
+                child: Row(
                   children: [
-                    // Fund info
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 14,
-                          backgroundImage: NetworkImage(
-                            "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundImage: NetworkImage(
+                        "https://v3.mynt.in/mfapi/static/images/mf/$amcCode.png",
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            item.name ?? '--',
+                            style: _getTextStyle(context),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(right: isHovered ? 40.0 : 0.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  item.name ?? '--',
-                                  style: _getTextStyle(context),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "${item.type ?? 'Equity'}   ${item.subType ?? item.schemeType ?? ''}",
-                                  style: MyntWebTextStyles.para(
-                                      context,
-                                      darkColor: MyntColors.textSecondaryDark,
-                                      lightColor: MyntColors.textSecondary),
-                                ),
-                              ],
-                            ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${item.type ?? 'Equity'}   ${item.subType ?? item.schemeType ?? ''}",
+                            style: MyntWebTextStyles.para(
+                                context,
+                                darkColor: MyntColors.textSecondaryDark,
+                                lightColor: MyntColors.textSecondary),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     // 3-dot dropdown button on hover
-                    if (isHovered)
-                      Positioned(
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: _buildOptionsMenuButton(
-                            item: item,
-                            rowIndex: rowIndex,
-                            mfData: mfData,
-                            onTap: onTap,
-                          ),
-                        ),
+                    if (isHovered) ...[
+                      const SizedBox(width: 8),
+                      _buildOptionsMenuButton(
+                        item: item,
+                        rowIndex: rowIndex,
+                        mfData: mfData,
+                        onTap: onTap,
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -1019,8 +1005,9 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
 
         // Get screen dimensions
         final screenSize = MediaQuery.of(context).size;
-        final dialogWidth = screenSize.width * 0.25; // 25% width
-        final dialogHeight = screenSize.height * 0.60; // 60% height
+        // Use minimum width of 380 or 30% of screen width, whichever is larger
+        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+        final dialogHeight = screenSize.height * 0.65; // 65% height
 
         showDialog(
           context: context,

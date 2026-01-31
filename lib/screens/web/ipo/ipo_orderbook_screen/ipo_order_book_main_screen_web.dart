@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -76,13 +77,13 @@ class _IpoOrderbookMainScreenState extends ConsumerState<IpoOrderbookMainScreen>
 
     if (!hasAnyOrders && ipo.ipocommonsearchcontroller.text.isNotEmpty) {
       return const Center(
-        child: NoDataFound(),
+        child: NoDataFoundWeb(),
       );
     }
 
     if (!hasAnyOrders) {
       return const Center(
-        child: NoDataFound(),
+        child: NoDataFoundWeb(),
       );
     }
 

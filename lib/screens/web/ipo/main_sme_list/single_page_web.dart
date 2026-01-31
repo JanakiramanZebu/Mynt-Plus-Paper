@@ -12,6 +12,7 @@ import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/custom_drag_handler.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../provider/iop_provider.dart';
@@ -117,7 +118,7 @@ class _NoDataWidget extends StatelessWidget {
         SizedBox(height: 10),
         Padding(
           padding: EdgeInsets.symmetric(vertical: 250),
-          child: NoDataFound(),
+          child: NoDataFoundWeb(),
         ),
       ],
     );

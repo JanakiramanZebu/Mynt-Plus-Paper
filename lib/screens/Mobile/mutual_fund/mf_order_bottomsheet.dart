@@ -133,6 +133,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
           },
           child: SafeArea(
             child: Container(
+              width: screenWidth * 0.2,
                decoration: BoxDecoration(
                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
                   borderRadius: BorderRadius.circular(16),
@@ -169,20 +170,6 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                 ),
                 child: Stack(
                   children: [
-                    if (mfOrder.upiApiresponse != null &&
-                        mfOrder.upiApiresponse?.stat == "Ok" &&
-                        (mfOrder.paymentName == "UPI" ||
-                            mfOrder.paymentName == "NET BANKING") &&
-                        mfOrder.ispaymentcalled == true) ...[
-                      SizedBox(
-                        height: screenheight * 0.32,
-                        child: MfUPIProcessingScreen(
-                          data: widget.condval == 'reinitiatefromportfolio'
-                              ? widget.data.orderId
-                              : mfOrder.mfPlaceOrderResponces!.orderId,
-                        ),
-                      ),
-                    ] else ...[
                       mfOrder.investloader
                           ? Positioned(
                               child: SizedBox(
@@ -817,30 +804,19 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                             if (upiResponse != null) {
                                               if (upiResponse.stat == "Ok") {
                                                 // ✅ Success Case
-                                                // if (isUpi) {
-                                                //   // UPI Success – show processing bottom sheet
-                                                //   showModalBottomSheet(
-                                                //     context: context,
-                                                //     isScrollControlled: true,
-                                                //     isDismissible: false,
-                                                //     enableDrag: false,
-                                                //     shape:
-                                                //         const RoundedRectangleBorder(
-                                                //       borderRadius:
-                                                //           BorderRadius.vertical(
-                                                //               top: Radius.circular(
-                                                //                   15)),
-                                                //     ),
-                                                //     builder: (context) =>
-                                                //         WillPopScope(
-                                                //       onWillPop: () async =>
-                                                //           !mfOrder.ispaymentcalled,
-                                                //       child: MfUPIProcessingScreen(
-                                                //           data: ''),
-                                                //     ),
-                                                //   );
-                                                // } else
-                                                if (isNetBanking) {
+                                                if (isUpi) {
+                                                  // UPI Success – close bottom sheet and show processing dialog
+                                                  Navigator.pop(context);
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (context) => MfUPIProcessingScreen(
+                                                      data: widget.condval == 'reinitiatefromportfolio'
+                                                          ? widget.data.orderId
+                                                          : mfOrder.mfPlaceOrderResponces!.orderId,
+                                                    ),
+                                                  );
+                                                } else if (isNetBanking) {
                                                   // Net Banking Success – open WebView
                                                   // Navigator.pop(context);
               
@@ -1019,7 +995,6 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                 ]
                               ],
                             ),
-                    ],
                   ],
                 ),
               ),

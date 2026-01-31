@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/mf_provider.dart';
@@ -358,7 +359,7 @@ class _MfHoldingsScreenWebState extends ConsumerState<MfHoldingsScreenWeb> {
     if (filteredHoldings.isEmpty) {
       return const SizedBox(
         height: 400,
-        child: Center(child: NoDataFound()),
+        child: Center(child: NoDataFoundWeb()),
       );
     }
 

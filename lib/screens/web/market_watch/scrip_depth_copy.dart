@@ -7,6 +7,7 @@ import 'package:another_xlider/models/trackbar.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../utils/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -2202,7 +2203,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                             height: 10),
                                                         const FundamentalDataWidget(),
                                                       ] else ...[
-                                                        const NoDataFound()
+                                                        const NoDataFoundWeb()
                                                       ]
                                                     ] else if (scripInfo
                                                             .actDeptBtn ==
