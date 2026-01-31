@@ -9,7 +9,6 @@ import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
-import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
@@ -31,13 +30,16 @@ class _PendingAlertDetailScreenWebState
   bool isModifying = false;
   bool isCancelling = false;
   late TextEditingController valueCtrl;
+  late FocusNode _valueFocusNode;
   String modifiedValue = "";
   String errorText = "";
+  static const int _maxValueLength = 15;
 
   @override
   void initState() {
     super.initState();
     valueCtrl = TextEditingController(text: widget.alert.d);
+    _valueFocusNode = FocusNode();
     modifiedValue = widget.alert.d ?? "";
 
     // Listen for changes to preserve the value
@@ -90,6 +92,7 @@ class _PendingAlertDetailScreenWebState
   @override
   void dispose() {
     valueCtrl.dispose();
+    _valueFocusNode.dispose();
     super.dispose();
   }
 
@@ -113,30 +116,52 @@ class _PendingAlertDetailScreenWebState
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with close button (fixed)
+              // Header with close button and title (matching order detail)
               Container(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildSymbolSection(theme),
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                      width: 1,
                     ),
-                    MyntCloseButton(
-                      onPressed: () {
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
                         shadcn.closeSheet(context);
                       },
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Alert Details',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // Border divider
-              Container(
-                height: 1,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
               // Scrollable Content
               Expanded(
@@ -146,6 +171,9 @@ class _PendingAlertDetailScreenWebState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Symbol Info Section
+                        _buildSymbolSection(theme),
+                        const SizedBox(height: 16),
                         // Action Buttons
                         _buildActionButtons(theme),
                         // Details Section
@@ -432,12 +460,12 @@ class _PendingAlertDetailScreenWebState
           Flexible(
             child: Text(
               label,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-                fontWeight: MyntFonts.regular,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -449,7 +477,7 @@ class _PendingAlertDetailScreenWebState
                 : Text(
                     value.toString(),
                     textAlign: TextAlign.end,
-                    style: MyntWebTextStyles.bodySmall(
+                    style: MyntWebTextStyles.body(
                       context,
                       color: resolveThemeColor(context,
                           dark: MyntColors.textPrimaryDark,
@@ -478,7 +506,7 @@ class _PendingAlertDetailScreenWebState
       children: [
         Text(
           isAbove ? "Above" : "Below",
-          style: MyntWebTextStyles.bodySmall(
+          style: MyntWebTextStyles.body(
             context,
             color: resolveThemeColor(context,
                 dark: MyntColors.textPrimaryDark,
@@ -497,12 +525,17 @@ class _PendingAlertDetailScreenWebState
   }
 
   Widget _buildModifyValueField(ThemesProvider theme) {
+    final borderColor = resolveThemeColor(context,
+        dark: MyntColors.dividerDark, light: MyntColors.divider);
+    final focusedBorderColor = resolveThemeColor(context,
+        dark: MyntColors.primary, light: MyntColors.primary);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           "Modify Alert value",
-          style: MyntWebTextStyles.bodySmall(
+          style: MyntWebTextStyles.body(
             context,
             color: resolveThemeColor(context,
                 dark: MyntColors.textPrimaryDark,
@@ -511,24 +544,44 @@ class _PendingAlertDetailScreenWebState
           ),
         ),
         const SizedBox(height: 10),
-        SizedBox(
-          height: 40,
-          child: CustomTextFormField(
+        TextField(
+          controller: valueCtrl,
+          focusNode: _valueFocusNode,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          textAlign: TextAlign.start,
+          style: MyntWebTextStyles.tableCell(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary),
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+          ],
+          onChanged: (value) {
+            // Check if value exceeds max length
+            if (value.length > _maxValueLength) {
+              // Trim to max length
+              final trimmedValue = value.substring(0, _maxValueLength);
+              valueCtrl.text = trimmedValue;
+              valueCtrl.selection = TextSelection.fromPosition(
+                TextPosition(offset: trimmedValue.length),
+              );
+              // Show snackbar for limit exceeded
+              showResponsiveErrorMessage(
+                  context, "Maximum $_maxValueLength characters allowed");
+              return;
+            }
+            if (mounted) {
+              setState(() {
+                validateAlertValue(value);
+              });
+            }
+          },
+          decoration: InputDecoration(
+            filled: true,
             fillColor: resolveThemeColor(context,
                 dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
-            textCtrl: valueCtrl,
-            textAlign: TextAlign.start,
-            inputFormate: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-              LengthLimitingTextInputFormatter(15), // Limit to 15 characters for price values
-            ],
-            style: MyntWebTextStyles.tableCell(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-            ),
-            keyboardType: TextInputType.number,
             hintText: "0",
             hintStyle: MyntWebTextStyles.bodySmall(
               context,
@@ -536,6 +589,8 @@ class _PendingAlertDetailScreenWebState
                   dark: MyntColors.textSecondaryDark,
                   light: MyntColors.textSecondary),
             ),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             prefixIcon:
                 widget.alert.aiT == "CH_PER_A" || widget.alert.aiT == "CH_PER_B"
                     ? Icon(
@@ -553,13 +608,18 @@ class _PendingAlertDetailScreenWebState
                           BlendMode.srcIn,
                         ),
                         fit: BoxFit.scaleDown),
-            onChanged: (value) {
-              if (mounted) {
-                setState(() {
-                  validateAlertValue(value);
-                });
-              }
-            },
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: borderColor),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: focusedBorderColor),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: borderColor),
+              borderRadius: BorderRadius.circular(6),
+            ),
           ),
         ),
         if (errorText.isNotEmpty) ...[

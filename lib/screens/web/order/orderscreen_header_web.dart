@@ -18,31 +18,49 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    
+    // Watch websocket provider to get current socket data immediately
+    final wsProvider = ref.watch(websocketProvider);
+
+    // **FIX: Get current socket data FIRST (not just from stream)**
+    // This ensures we show LTP immediately on load, not just after stream emits
+    final currentSocketData = wsProvider.socketDatas[headerData.token];
+
     // PERFORMANCE FIX: Use ref.read() for stream access
     return StreamBuilder<Map>(
       stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
-        final socketDatas = snapshot.data ?? {};
-        
+        // Prefer stream data if available, otherwise use current socket data
+        final socketDatas = snapshot.data ?? wsProvider.socketDatas;
+
         // Update header data with real-time values
-        if (snapshot.hasData && socketDatas.containsKey(headerData.token)) {
+        if (socketDatas.containsKey(headerData.token)) {
           final lp = socketDatas[headerData.token]['lp']?.toString();
           final pc = socketDatas[headerData.token]['pc']?.toString();
-          
-          if (lp != null && lp != "null") {
+
+          if (lp != null && lp != "null" && lp != "0" && lp != "0.00") {
             headerData.ltp = lp;
           }
-          
+
           if (pc != null && pc != "null") {
             headerData.perChange = pc;
           }
         }
-        
-        // Ensure LTP has a default value
-        final ltp = headerData.ltp ?? "0.00";
-        // Ensure perChange has a default value and isn't null
-        final perChange = headerData.perChange ?? "0.00";
+
+        // **FIX: Also check current socket data if headerData.ltp is still empty/zero**
+        String ltp = headerData.ltp ?? "0.00";
+        String perChange = headerData.perChange ?? "0.00";
+
+        // If LTP is still 0 or empty, try to get from current socket data
+        if ((ltp.isEmpty || ltp == "0" || ltp == "0.00") && currentSocketData != null) {
+          final socketLtp = currentSocketData['lp']?.toString();
+          final socketPc = currentSocketData['pc']?.toString();
+          if (socketLtp != null && socketLtp != "null" && socketLtp != "0" && socketLtp != "0.00") {
+            ltp = socketLtp;
+          }
+          if (socketPc != null && socketPc != "null") {
+            perChange = socketPc;
+          }
+        }
         
         // Determine color for percentage change
         Color percentageColor = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;

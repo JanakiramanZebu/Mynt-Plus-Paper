@@ -880,76 +880,43 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 );
                               },
                             ),
-                            // const Spacer(),
-                            // // Basket mode icon
-                            // Material(
-                            //   color: Colors.transparent,
-                            //   child: InkWell(
-                            //     customBorder: const CircleBorder(),
-                            //     splashColor: resolveThemeColor(
-                            //       context,
-                            //       dark: MyntColors.rippleDark,
-                            //       light: MyntColors.rippleLight,
-                            //     ),
-                            //     highlightColor: resolveThemeColor(
-                            //       context,
-                            //       dark: MyntColors.highlightDark,
-                            //       light: MyntColors.highlightLight,
-                            //     ),
-                            //     onTap: () {
-                            //       _toggleBasketModeCallback?.call();
-                            //     },
-                            //     child: Padding(
-                            //       padding: const EdgeInsets.all(8.0),
-                            //       child: Icon(
-                            //         _isBasketMode
-                            //             ? Icons.shopping_basket
-                            //             : Icons.shopping_basket_outlined,
-                            //         size: 18,
-                            //         color: _isBasketMode
-                            //             ? MyntColors.primary
-                            //             : resolveThemeColor(
-                            //                 context,
-                            //                 dark: MyntColors.iconDark,
-                            //                 light: MyntColors.icon,
-                            //               ),
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
-                            // const SizedBox(width: 4),
-                            // // Search icon
-                            // Material(
-                            //   color: Colors.transparent,
-                            //   child: InkWell(
-                            //     customBorder: const CircleBorder(),
-                            //     splashColor: resolveThemeColor(
-                            //       context,
-                            //       dark: MyntColors.rippleDark,
-                            //       light: MyntColors.rippleLight,
-                            //     ),
-                            //     highlightColor: resolveThemeColor(
-                            //       context,
-                            //       dark: MyntColors.highlightDark,
-                            //       light: MyntColors.highlightLight,
-                            //     ),
-                            //     onTap: () {
-                            //       // Open search dialog for options
-                            //     },
-                            //     child: Padding(
-                            //       padding: const EdgeInsets.all(8.0),
-                            //       child: Icon(
-                            //         Icons.search,
-                            //         size: 18,
-                            //         color: resolveThemeColor(
-                            //           context,
-                            //           dark: MyntColors.iconDark,
-                            //           light: MyntColors.icon,
-                            //         ),
-                            //       ),
-                            //     ),
-                            //   ),
-                            // ),
+                            const Spacer(),
+                            // Basket mode toggle button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                customBorder: const CircleBorder(),
+                                splashColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
+                                onTap: () {
+                                  _toggleBasketModeCallback?.call();
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Icon(
+                                    _isBasketMode
+                                        ? Icons.shopping_basket
+                                        : Icons.shopping_basket_outlined,
+                                    size: 20,
+                                    color: _isBasketMode
+                                        ? MyntColors.primary
+                                        : resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.iconDark,
+                                            light: MyntColors.icon,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

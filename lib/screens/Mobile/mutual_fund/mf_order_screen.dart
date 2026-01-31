@@ -49,14 +49,22 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final mfProv = ref.read(mfProvider);
       // Only set invAmt if it's not already set from NFO screen
       if (mfProv.invAmt.text.isEmpty) {
         mfProv.invAmt.text = widget.mfData.minimumPurchaseAmount ?? '500';
       }
       ref.read(fundProvider).fetchFunds(context);
-      ref.read(transcationProvider).initialdata(context);
+      
+      final transProv = ref.read(transcationProvider);
+      if (transProv.bankdetails == null) {
+        await transProv.fetchfundbank(context);
+      }
+      if (transProv.decryptclientcheck == null) {
+        await transProv.fetchc(context);
+      }
+      transProv.initialdata(context);
     });
   }
 

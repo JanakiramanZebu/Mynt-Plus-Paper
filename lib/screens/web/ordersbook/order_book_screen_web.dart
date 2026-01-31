@@ -7,9 +7,12 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/market_watch_provider.dart';
+import '../../../provider/notification_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/web_colors.dart';
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
+import '../../../res/responsive_extensions.dart';
 import '../../../sharedWidget/splash_loader.dart';
 // import 'mf/mf_order_book_screen_web.dart';
 // import 'mf/mf_sip_screen_web.dart';
@@ -134,6 +137,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           break;
         case 5: // Pending Alerts
           await ref.read(marketWatchProvider).fetchPendingAlert(context);
+          await ref.read(notificationprovider).fetchbrokermsg(context);
           break;
       }
     } catch (e) {
@@ -522,40 +526,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                 ),
               ),
               // Gap between search and refresh
-              const SizedBox(width: 12),
-              // Refresh Button
-              SizedBox(
-                height: 40,
-                width: 40,
-                child: IconButton(
-                  onPressed: _isRefreshing ? null : _refreshOrders,
-                  style: IconButton.styleFrom(
-                    backgroundColor: theme.isDarkMode
-                        ? WebDarkColors.surfaceVariant
-                        : WebColors.surfaceVariant,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  icon: _isRefreshing
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
-                          ),
-                        )
-                      : Icon(
-                          Icons.refresh,
-                          size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.textSecondary
-                              : WebColors.textSecondary,
-                        ),
-                ),
+              SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+              // Refresh Button - Matching positions page style
+              _buildIconButton(
+                icon: Icons.refresh,
+                onPressed: _isRefreshing ? null : _refreshOrders,
+                theme: theme,
+                isLoading: _isRefreshing,
               ),
             ],
           );
@@ -595,6 +572,64 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
         // Pending Alerts
         const PendingAlertWeb(),
       ],
+    );
+  }
+
+  // Icon button helper matching Positions page
+  Widget _buildIconButton({
+    required IconData icon,
+    required VoidCallback? onPressed,
+    required ThemesProvider theme,
+    bool isLoading = false,
+  }) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 22,
+      tablet: 25,
+      desktop: 28,
+    );
+
+    return Container(
+      width: buttonSize,
+      height: buttonSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onPressed,
+          child: Center(
+            child: isLoading
+                ? SizedBox(
+                    width: iconSize * 0.7,
+                    height: iconSize * 0.7,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.iconDark,
+                        light: MyntColors.icon,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    size: iconSize,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.iconDark,
+                      light: MyntColors.icon,
+                    ),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 

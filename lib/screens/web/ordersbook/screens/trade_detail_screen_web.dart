@@ -115,75 +115,94 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header with Trade Details title
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.dividerDark,
-                  light: MyntColors.divider,
-                ),
-                width: 1,
-              ),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
+            width: 1,
           ),
-          child: Row(
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              InkWell(
-                onTap: () {
-                  shadcn.closeSheet(context);
-                },
-                child: Icon(
-                  Icons.close,
-                  size: 20,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
+              // Header with Trade Details title
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                      width: 1,
+                    ),
                   ),
                 ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        shadcn.closeSheet(context);
+                      },
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Trade Details',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                'Trade Details',
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
+              // Scrollable Content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSymbolSection(theme),
+                        const SizedBox(height: 16),
+                        // Action Buttons (Repeat Order)
+                        _buildActionButtons(theme),
+                        // Details Section
+                        _buildDetailsSection(theme),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ],
-          ),
-        ),
-        // Scrollable Content
-        Expanded(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSymbolSection(theme),
-                  const SizedBox(height: 16),
-                  // Action Buttons (Repeat Order)
-                  _buildActionButtons(theme),
-                  // Details Section
-                  _buildDetailsSection(theme),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -283,12 +302,18 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          MyntOutlinedButton(
-            // Assuming Repeat Order is secondary action, or Primary if it's the main one desirable. Image shows light blue bg, which might be primary or custom.
-            label: "Repeat Order",
-            isLoading: _isProcessingRepeat,
-            isFullWidth: true,
-            onPressed: _handleRepeatOrder,
+          // Repeat Order button (matching order detail pattern)
+          Row(
+            children: [
+              Expanded(
+                child: MyntOutlinedButton(
+                  label: "Repeat Order",
+                  isLoading: _isProcessingRepeat,
+                  isFullWidth: true,
+                  onPressed: _handleRepeatOrder,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -384,24 +409,32 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title1,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.regular,
+          Flexible(
+            child: Text(
+              title1,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            value1,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value1,
+              textAlign: TextAlign.end,
+              style: MyntWebTextStyles.body(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
+                fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -428,28 +461,36 @@ class _TradeDetailScreenWebState extends ConsumerState<TradeDetailScreenWeb> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: MyntWebTextStyles.body(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.medium,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: valueColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
+          Flexible(
             child: Text(
-              value,
+              title,
               style: MyntWebTextStyles.body(
                 context,
-                color: valueColor,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
                 fontWeight: MyntFonts.medium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: valueColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                value,
+                textAlign: TextAlign.end,
+                style: MyntWebTextStyles.body(
+                  context,
+                  color: valueColor,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),

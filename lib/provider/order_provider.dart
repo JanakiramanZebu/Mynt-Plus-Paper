@@ -147,6 +147,7 @@ class OrderProvider extends DefaultChangeNotifier {
   final TextEditingController orderTradebookCtrl = TextEditingController();
 
   OrderProvider(this.ref) {
+    getBasketName();
     tabSize();
   }
 
@@ -2617,11 +2618,11 @@ class OrderProvider extends DefaultChangeNotifier {
     print("_bsktList.isEmpty: ${_bsktList.isEmpty}");
     print("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
     print("Calling notifyListeners()...");
-    log("basket scrips$_bsktScrips");
+    tabSize();
     notifyListeners();
     print("notifyListeners() completed");
     print("========================");
-  }
+  } 
 
   // removeBasket(int index) async {
 
@@ -2913,13 +2914,15 @@ class OrderProvider extends DefaultChangeNotifier {
           });
         }
 
+        final qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(_bsktScripList[0]["ls"]) ).toString();
+
         // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
             exch: '${_bsktScripList[0]["exch"]}',
             prc: '${_bsktScripList[0]["prc"]}',
             prctyp: '${_bsktScripList[0]["prctyp"]}',
             prd: '${_bsktScripList[0]["prd"]}',
-            qty: '${_bsktScripList[0]["qty"]}',
+            qty: _bsktScripList[0]["exch"] == 'MCX' ? qty : '${_bsktScripList[0]["qty"]}',
             trantype: '${_bsktScripList[0]["trantype"]}',
             tsym: '${_bsktScripList[0]["tsym"]}',
             trgprc: _bsktScripList[0]["trgprc"]?.toString() ?? '',
@@ -3290,6 +3293,16 @@ class OrderProvider extends DefaultChangeNotifier {
         }
         debugPrint("Final prd code: $prdCode");
 
+          final int qty =
+        int.tryParse(element['qty']?.toString() ?? '0') ?? 0;
+
+        final int lotSize =
+            int.tryParse(element['ls']?.toString() ?? '1') ?? 1;
+
+        final int finalQty = element['exch'] == 'MCX'
+            ? (int.parse(qty.toString()) * lotSize)
+            : qty;
+
         PlaceOrderInput placeOrderInput = PlaceOrderInput(
             amo: element['amo'],
             blprc: element['blprc'],
@@ -3301,7 +3314,7 @@ class OrderProvider extends DefaultChangeNotifier {
                 : element['prc'],
             prctype: element['prctype'],
             prd: prdCode, // Use converted code
-            qty: element['qty'],
+            qty: finalQty.toString(),
             ret: retValue,
             trailprc: '',
             trantype: element['trantype'],
