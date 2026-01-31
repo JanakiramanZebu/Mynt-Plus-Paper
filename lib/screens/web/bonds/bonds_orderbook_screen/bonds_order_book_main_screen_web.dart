@@ -8,6 +8,7 @@ import 'package:mynt_plus/screens/web/bonds/bonds_orderbook_screen/bonds_order_b
 // import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
 // import '../../../sharedWidget/functions.dart';
@@ -73,7 +74,7 @@ class _BondsOrderbookMainScreenState
     }
 
     if(bonds.bondsOrderBook!.isEmpty){
-      return const NoDataFound(
+      return const NoDataFoundWeb(
         title: "No Open or Closed Orders Found",
         subtitle: "There's nothing here yet. Buy some Bonds to see them here.",
         primaryEnabled: false,
@@ -106,7 +107,7 @@ class _BondsOrderbookMainScreenState
 
   Widget _buildEmptyState(double devHeight) {
     return const Center(
-      child: NoDataFound(
+      child: NoDataFoundWeb(
         title: "No Results Found",
         subtitle: "Try searching with different keywords",
         primaryEnabled: false,

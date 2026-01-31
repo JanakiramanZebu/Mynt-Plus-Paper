@@ -41,6 +41,7 @@ import 'package:flutter/material.dart'
         BorderRadius,
         Center;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../provider/mf_provider.dart';
@@ -430,7 +431,7 @@ class _MfOrderBookScreenWebState extends ConsumerState<MfOrderBookScreenWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFoundWeb(),
           ),
         ),
       );

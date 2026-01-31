@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../provider/iop_provider.dart';
@@ -88,7 +89,7 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
               ),
               Expanded(
                 child: filteredUpcomingIPOs.isEmpty
-                    ? const Center(child: NoDataFound())
+                    ? const Center(child: NoDataFoundWeb())
                     : SingleChildScrollView(
                         child: shadcn.Table(
                           columnWidths: columnWidths,

@@ -61,6 +61,7 @@ import 'package:flutter/material.dart'
         ValueNotifier,
         ValueListenableBuilder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn
     hide Colors, Tooltip;
 import 'package:mynt_plus/models/order_book_model/gtt_order_book.dart';
@@ -339,7 +340,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           : Center(
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
-                                child: NoDataFound(
+                                child: NoDataFoundWeb(
                                   title: searchQuery.isNotEmpty
                                       ? "No GTT Orders Found"
                                       : "No GTT Orders",

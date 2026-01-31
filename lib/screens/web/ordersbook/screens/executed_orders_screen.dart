@@ -9,6 +9,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../refactored/services/order_action_handler.dart';
@@ -252,7 +253,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                 : Center(
                                     child: Padding(
                                       padding: const EdgeInsets.all(16.0),
-                                      child: NoDataFound(
+                                      child: NoDataFoundWeb(
                                         title: searchQuery.isNotEmpty ? "No Orders Found" : "No Orders",
                                         subtitle: searchQuery.isNotEmpty
                                             ? "No executed orders match your search \"$searchQuery\"."

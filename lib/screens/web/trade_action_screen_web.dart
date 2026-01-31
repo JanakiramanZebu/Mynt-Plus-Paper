@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -417,7 +418,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     final stocks = _getCurrentStocks();
 
     if (stocks.isEmpty) {
-      return const Center(child: NoDataFound());
+      return const Center(child: NoDataFoundWeb());
     }
 
     return LayoutBuilder(

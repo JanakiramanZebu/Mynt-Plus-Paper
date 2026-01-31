@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:intl/intl.dart';
 
@@ -291,7 +292,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                       Expanded(
                         child: displayData.isEmpty
                           ? Center(
-                              child: NoDataFound(
+                              child: NoDataFoundWeb(
                                   title: "There's nothing here yet.",
                                   subtitle: "Buy some bonds to see them here.",
                                   assetIcon: assets.documentIcon,
@@ -533,7 +534,8 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
           child: ValueListenableBuilder<int?>(
             valueListenable: _hoveredRowIndex,
             builder: (context, hoveredIndex, _) {
-              final isRowHovered = hoveredIndex == rowIndex;
+              // Also highlight when popover is open for this row
+              final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
               return Container(
                 padding: cellPadding,
                 color: isRowHovered

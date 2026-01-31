@@ -5,6 +5,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 class ExchangeAlert extends ConsumerWidget {
   const ExchangeAlert({super.key});
@@ -24,7 +25,7 @@ class ExchangeAlert extends ConsumerWidget {
     if (exchangeStatus == null || exchangeStatus.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );
@@ -34,7 +35,7 @@ class ExchangeAlert extends ConsumerWidget {
     if (exchangeStatus[0].stat == 'Not_Ok') {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );

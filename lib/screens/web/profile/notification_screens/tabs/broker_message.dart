@@ -7,6 +7,8 @@ import 'package:mynt_plus/sharedWidget/exch_message_link_web.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'dart:convert';
 
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
+
 class BrokerMsg extends ConsumerWidget {
   const BrokerMsg({super.key});
 
@@ -56,7 +58,7 @@ class BrokerMsg extends ConsumerWidget {
     if (brokermsg == null || brokermsg.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );
@@ -66,7 +68,7 @@ class BrokerMsg extends ConsumerWidget {
     if (brokermsg[0].dmsg == null || brokermsg[0].dmsg!.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );

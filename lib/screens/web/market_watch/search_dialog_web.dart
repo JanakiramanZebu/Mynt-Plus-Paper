@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import '../../../../provider/market_watch_provider.dart';
@@ -449,7 +450,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: NoDataFound(
+          child: NoDataFoundWeb(
             title: _searchValue.isNotEmpty
                 ? "No Results Found"
                 : "Start Searching",

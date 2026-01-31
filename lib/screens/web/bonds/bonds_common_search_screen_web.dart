@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../../sharedWidget/functions.dart';
@@ -154,7 +155,7 @@ class BondsCommonSearchWeb extends ConsumerWidget {
       physics: const ClampingScrollPhysics(),
       child: bonds.bondsCommonSearchList.isNotEmpty
           ? _buildSearchResults(bonds, theme)
-          : const Center(child: NoDataFound(
+          : const Center(child: NoDataFoundWeb(
             title: "No Results Found",
             subtitle: "Try searching with different keywords",
             primaryEnabled: false,

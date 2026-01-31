@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/models/ipo_model/ipo_performance_model.dart';
 import 'package:mynt_plus/provider/market_watch_provider.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
@@ -97,7 +98,7 @@ class _NoDataWidget extends StatelessWidget {
         CustomDragHandler(),
         Padding(
           padding: EdgeInsets.only(top: 260),
-          child: NoDataFound(),
+          child: NoDataFoundWeb(),
         ),
       ],
     );

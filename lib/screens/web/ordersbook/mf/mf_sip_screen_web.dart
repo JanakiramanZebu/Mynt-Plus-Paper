@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart' show InkWell, Icons, IconData, Icon, TextPainter, TextSpan, TextStyle, TextDirection, GestureDetector, HitTestBehavior, Row, SizedBox, Widget, BuildContext, Color, Colors, EdgeInsets, Alignment, MainAxisAlignment, MainAxisSize, TextOverflow, Axis, FontWeight, Container, MouseRegion, Expanded, Align, Text, ScrollController, SingleChildScrollView, Scrollbar, Column, LayoutBuilder, ValueKey, Padding, BoxDecoration, BorderRadius, Border, showDialog, ValueNotifier, ValueListenableBuilder, Stack, Positioned, Clip, Tooltip, MediaQuery, BoxShadow, Offset, Center;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../provider/mf_provider.dart';
@@ -554,7 +555,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFoundWeb(),
           ),
         ),
       );
@@ -846,7 +847,7 @@ class _MFSipdetScreenWebState extends ConsumerState<MFSipdetScreenWeb> {
           alignment: Alignment.center,
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: NoDataFound(),
+            child: NoDataFoundWeb(),
           ),
         ),
       );

@@ -7,6 +7,7 @@ import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 
 class LogMessage extends ConsumerWidget {
@@ -30,7 +31,7 @@ class LogMessage extends ConsumerWidget {
             fw: 1),
       ),
       body: logMessage.isEmpty
-          ? const Center(child: NoDataFound())
+          ? const Center(child: NoDataFoundWeb())
           : ListView.separated(
               separatorBuilder: (BuildContext context, int index) {
                 return const Divider(height: 0);

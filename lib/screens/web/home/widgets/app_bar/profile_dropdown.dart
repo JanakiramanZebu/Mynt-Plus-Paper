@@ -21,7 +21,7 @@ import 'package:mynt_plus/screens/web/profile/logged_user_list_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide Colors;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../customizable_split_home_screen.dart' show ScreenType;
+import '../../../customizable_split_home_screen.dart' show ScreenType, tickerVisibilityNotifier, toggleTickerVisibility;
 import '../../../market_watch/tv_chart/chart_iframe_guard.dart';
 
 // Profile dropdown widget using shadcn
@@ -430,6 +430,14 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               },
             ),
 
+          // Ticker Strip Toggle
+          _buildTickerToggleMenuItem(
+            context,
+            iconColor: iconColor,
+            textColor: textColor,
+            pref: pref,
+          ),
+
           // Theme Toggle
           if (widget.onThemeToggle != null)
             _buildSimpleMenuItem(
@@ -577,6 +585,71 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                 context,
                 fontWeight: MyntFonts.medium,
                 color: textColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  MenuButton _buildTickerToggleMenuItem(
+    BuildContext context, {
+    required Color iconColor,
+    required Color textColor,
+    required Preferences pref,
+  }) {
+    final isTickerVisible = tickerVisibilityNotifier.value;
+    return MenuButton(
+      onPressed: (ctx) async {
+        await toggleTickerVisibility();
+        setState(() {}); // Refresh the menu to show updated state
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Icon(
+              isTickerVisible ? Icons.visibility : Icons.visibility_off,
+              size: 22,
+              color: iconColor,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                'Portfolio Ticker',
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: textColor,
+                ),
+              ),
+            ),
+            Container(
+              width: 36,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: isTickerVisible
+                    ? MyntColors.primary
+                    : Colors.grey.withValues(alpha: 0.3),
+              ),
+              child: Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 200),
+                    left: isTickerVisible ? 18 : 2,
+                    top: 2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

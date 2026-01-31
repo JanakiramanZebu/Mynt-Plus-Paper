@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart' show WebDarkColors;
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:flutter/widgets.dart' as flutter;
 import '../../../../models/order_book_model/order_book_model.dart';
@@ -1123,23 +1124,26 @@ class _BasketListState extends ConsumerState<BasketList> {
           ),
         ),
         const SizedBox(height: 16),
-        Expanded(
-          child: basket.isBasketLoading
-              ? Center(child: MyntLoader.simple())
-              : LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: SizedBox(
-                        width: constraints.maxWidth,
-                        height: constraints.maxHeight,
-                        child: _buildBasketTable(
-                            theme, _getFilteredBaskets(basket.bsktList)),
-                      ),
-                    );
-                  },
-                ),
-        ),
+        basket.isBasketLoading
+            ? SizedBox(
+                height: 400, child: Center(child: MyntLoader.simple()))
+            : basket.bsktList.isEmpty
+                ? SizedBox(height: 400, child: NoDataFoundWeb(secondaryEnabled: false))
+                : Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            child: _buildBasketTable(
+                                theme, _getFilteredBaskets(basket.bsktList)),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
       ],
     );
   }
@@ -2051,7 +2055,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                   padding:
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                   child: basket.bsktScripList.isEmpty
-                      ? NoDataFound(secondaryEnabled: false)
+                      ? NoDataFoundWeb(secondaryEnabled: false)
                       : Builder(
                           builder: (context) {
                             // Process basket items to extract symbol info

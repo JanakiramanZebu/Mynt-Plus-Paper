@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 
 import '../../../../../provider/thems.dart';
-import '../../../../../res/global_state_text.dart';
+import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../res/res.dart';
-import '../../../../../sharedWidget/custom_drag_handler.dart';
 
 class MfPaymentRespAlert extends StatefulWidget {
   final Map<String, dynamic>? upiData;
@@ -28,44 +27,23 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
       },
-      child: SafeArea(
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
         child: Consumer(
-          builder: (context, ref, child) { 
+          builder: (context, ref, child) {
             final theme = ref.watch(themeProvider);
             final mfpro = ref.watch(mfProvider);
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              constraints: const BoxConstraints(maxWidth: 400),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                   color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-        
-                   border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),
-                  
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              child: widget.conditionval == 'timeout' ? 
-              
+              child: widget.conditionval == 'timeout' ?
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -74,56 +52,60 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        const CustomDragHandler(),
                         Icon(
-                          
+
                                Icons.cancel_rounded,
                           //
                           color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                         
-                          size: 70,
+
+                          size: 50,
                         ),
                         const SizedBox(
                           height: 16,
                         ),
-                        TextWidget.subText(
-                          text: "Request timeout",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 0,
+                        Text(
+                          "Request timeout",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 5,
                         ),
-                        TextWidget.paraText(
-                          text: widget.upiData?["status"] == "PAYMENT COMPLETED"
+                        Text(
+                          widget.upiData?["status"] == "PAYMENT COMPLETED"
                               ? "Transaction Success"
                               : "Transaction fail",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
                         ),
-                        TextWidget.custmText(
-                            text: "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
-                            theme: false,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                            fs: 40),
+                        Text(
+                          "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
+                          style: MyntWebTextStyles.title(
+                            context,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
-                        TextWidget.paraText(
-                          text: "${widget.upiData?["datetime"]}",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                        Text(
+                          "${widget.upiData?["datetime"]}",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                       ],
                     ),
@@ -134,7 +116,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                   data("Order ID", "${widget.upiData?["OrderId"]}", theme),
                   if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null' || widget.upiData?["OrderId"] == '')
                   data("TransNo", "${widget.upiData?["TransNo"]}", theme),
-        
+
                   data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
                       theme),
                   data("Status Description", "Request Timeout reinitiate from orderbook",
@@ -160,11 +142,13 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             Navigator.pop(context);
                             FocusScope.of(context).unfocus();
                           },
-                          child: TextWidget.subText(
-                              text: 'Done',
-                              theme: false,
+                          child: Text(
+                            'Done',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
                               color: colors.colorWhite,
-                              fw: 2)),
+                            ),
+                          )),
                     ),
                   ),
                   const SizedBox(
@@ -179,9 +163,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        const CustomDragHandler(),
                         Icon(
-                          
+
                                Icons.cancel_rounded,
                           //
                           color:   theme.isDarkMode ? colors.lossDark : colors.lossLight,
@@ -190,22 +173,24 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         const SizedBox(
                           height: 16,
                         ),
-                        TextWidget.subText(
-                          text: "Payment Not Initiated",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 0,
+                        Text(
+                          "Payment Not Initiated",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 8,
                         ),
-                        TextWidget.paraText(
-                          text:  "Payment initiate fail",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                        Text(
+                          "Payment initiate fail",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
@@ -234,8 +219,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                   // data("Order ID", "${widget.upiData?["OrderId"]}", theme),
                   // if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
                   // data("TransNo", "${widget.upiData?["TransNo"]}", theme),
-        
-                   
+
+
                   data("Status Description", "${widget.conditionval}",
                       theme),
                   const SizedBox(height: 16),
@@ -259,19 +244,21 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             Navigator.pop(context);
                             FocusScope.of(context).unfocus();
                           },
-                          child: TextWidget.subText(
-                              text: 'Done',
-                              theme: false,
+                          child: Text(
+                            'Done',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
                               color: colors.colorWhite,
-                              fw: 2)),
+                            ),
+                          )),
                     ),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
                 ],
-              ) 
-               :  widget.conditionval == 'reinitiateerror' ? 
+              )
+               :  widget.conditionval == 'reinitiateerror' ?
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -280,9 +267,8 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        const CustomDragHandler(),
                         Icon(
-                          
+
                                Icons.cancel_rounded,
                           //
                           color:   theme.isDarkMode ? colors.lossDark : colors.lossLight,
@@ -291,22 +277,24 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         const SizedBox(
                           height: 16,
                         ),
-                        TextWidget.subText(
-                          text: "Payment Not Initiated",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 0,
+                        Text(
+                          "Payment Not Initiated",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 8,
                         ),
-                        TextWidget.paraText(
-                          text:  "Payment initiate fail",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                        Text(
+                          "Payment initiate fail",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
@@ -335,7 +323,7 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                   // data("Order ID", "${widget.upiData?["OrderId"]}", theme),
                   // if(widget.upiData?["OrderId"] == null || widget.upiData?["OrderId"] == 'null')
                   // data("TransNo", "${widget.upiData?["TransNo"]}", theme),
-        
+
                   data("Payment type", "${widget.upiData?["type"]}",
                       theme),
                   data("Status Description", "${widget.upiData?['responsestring'] ?? widget.upiData?['emsg']}",
@@ -361,20 +349,22 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             Navigator.pop(context);
                             FocusScope.of(context).unfocus();
                           },
-                          child: TextWidget.subText(
-                              text: 'Done',
-                              theme: false,
+                          child: Text(
+                            'Done',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
                               color: colors.colorWhite,
-                              fw: 2)),
+                            ),
+                          )),
                     ),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
                 ],
-              ) 
-        
-        
+              )
+
+
               :
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,7 +374,6 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                     alignment: Alignment.center,
                     child: Column(
                       children: [
-                        const CustomDragHandler(),
                         Icon(
                           widget.upiData?["status"] == "PAYMENT COMPLETED" || widget.upiData?["status"] == "REGISTERED"
                               ? Icons.check_circle_rounded : widget.upiData?["status"] == "PAYMENT PROCESSING" ?
@@ -400,45 +389,50 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                         const SizedBox(
                           height: 16,
                         ),
-                        TextWidget.subText(
-                          text: "${widget.upiData?["status"]}",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.textPrimaryDark
-                              : colors.textPrimaryLight,
-                          fw: 0,
+                        Text(
+                          "${widget.upiData?["status"]}",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 5,
                         ),
                         if(mfpro.mfOrderTpye != 'SIP')
-                        TextWidget.paraText(
-                          text: widget.upiData?["status"] == "PAYMENT COMPLETED"
+                        Text(
+                          widget.upiData?["status"] == "PAYMENT COMPLETED"
                               ? "Transaction Success" :  widget.upiData?["status"] == "PAYMENT PROCESSING" ?  "Transaction pending"
                               : "Transaction fail",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
                         ),
-                        TextWidget.custmText(
-                            text: "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
-                            theme: false,
-                            color:  theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 0,
-                            fs: 40),
+                        Text(
+                          "₹${widget.upiData?["OrderVal"] ?? widget.upiData?["InstallmentAmount"]}",
+                          style: webText(
+                            context,
+                            size: 40,
+                            darkColor: colors.textPrimaryDark,
+                            lightColor: colors.textPrimaryLight,
+                          ),
+                        ),
                         const SizedBox(
                           height: 10,
                         ),
-                        TextWidget.paraText(
-                          text: "${widget.upiData?["datetime"]}",
-                          theme: false,
-                          color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                          fw: 0,
+                        Text(
+                          "${widget.upiData?["datetime"]}",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: colors.textSecondaryDark,
+                            lightColor: colors.textSecondaryLight,
+                          ),
                         ),
                       ],
                     ),
@@ -448,9 +442,9 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                   if(mfpro.mfOrderTpye != 'SIP')
                   data("Order ID", "${widget.upiData?["OrderId"]}", theme),
                   if(mfpro.mfOrderTpye == 'SIP')
-                 
+
                   data("TransNo", "${widget.upiData?["OrderId"] ?? widget.upiData?["TransNo"]}", theme),
-        
+
                   data("UPI Transaction ID", "${widget.upiData?["TransNo"]}",
                       theme),
                   data("Status Description", "${widget.upiData?['Remarks']}",
@@ -476,11 +470,13 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
                             Navigator.pop(context);
                             FocusScope.of(context).unfocus();
                           },
-                          child: TextWidget.subText(
-                              text: 'Done',
-                              theme: false,
+                          child: Text(
+                            'Done',
+                            style: MyntWebTextStyles.buttonMd(
+                              context,
                               color: colors.colorWhite,
-                              fw: 2)),
+                            ),
+                          )),
                     ),
                   ),
                   const SizedBox(
@@ -504,31 +500,32 @@ class _MfPaymentRespAlertState extends State<MfPaymentRespAlert> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.subText(
-              text: name,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
+            Text(
+              name,
+              style: MyntWebTextStyles.body(
+                context,
+                darkColor: colors.textSecondaryDark,
+                lightColor: colors.textPrimaryLight,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: TextWidget.subText(
-                text: value,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                align: TextAlign.right,
-                fw: 0,
+              child: Text(
+                value,
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: colors.textPrimaryDark,
+                  lightColor: colors.textPrimaryLight,
+                ),
+                textAlign: TextAlign.right,
               ),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Divider(
-          thickness: 0,
+          height: 0.5,
+          thickness: 0.5,
           color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
         )
       ],

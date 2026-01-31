@@ -69,6 +69,7 @@ import 'package:flutter/material.dart'
         Tooltip;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../res/mynt_web_color_styles.dart' as styles;
@@ -653,7 +654,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                         ? const Center(
                             child: Padding(
                               padding: EdgeInsets.all(16.0),
-                              child: NoDataFound(
+                              child: NoDataFoundWeb(
                                 title: "No Alerts",
                                 subtitle: "You don't have any alerts yet.",
                                 primaryEnabled: false,

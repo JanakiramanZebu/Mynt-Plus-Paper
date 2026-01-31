@@ -349,7 +349,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
         child: ValueListenableBuilder<int?>(
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
-            final isRowHovered = hoveredIndex == rowIndex;
+            // Also highlight when popover is open for this row
+            final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
             return GestureDetector(
               onTap: onTap,
               behavior: HitTestBehavior.opaque,
@@ -762,10 +763,12 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   }) {
     final amcCode = item.aMCCode ?? "default";
 
-    return Stack(
-      children: [
-        // Fund info content
-        Row(
+    return ValueListenableBuilder<int?>(
+      valueListenable: _hoveredRowIndex,
+      builder: (context, hoveredIndex, _) {
+        final isHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
+
+        return Row(
           children: [
             CircleAvatar(
               radius: 14,
@@ -795,32 +798,19 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 ],
               ),
             ),
-          ],
-        ),
-        // Positioned options button on hover
-        ValueListenableBuilder<int?>(
-          valueListenable: _hoveredRowIndex,
-          builder: (context, hoveredIndex, _) {
-            final isHovered = hoveredIndex == rowIndex;
-            if (!isHovered && _popoverRowIndex != rowIndex) {
-              return const SizedBox.shrink();
-            }
-            return Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: _buildOptionsMenuButton(
-                  item: item,
-                  rowIndex: rowIndex,
-                  mf: mf,
-                  onTap: onTap,
-                ),
+            // Options button on hover
+            if (isHovered) ...[
+              const SizedBox(width: 8),
+              _buildOptionsMenuButton(
+                item: item,
+                rowIndex: rowIndex,
+                mf: mf,
+                onTap: onTap,
               ),
-            );
-          },
-        ),
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -1021,8 +1011,9 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
 
         // Get screen dimensions
         final screenSize = MediaQuery.of(context).size;
-        final dialogWidth = screenSize.width * 0.25; // 25% width
-        final dialogHeight = screenSize.height * 0.60; // 60% height
+        // Use minimum width of 380 or 30% of screen width, whichever is larger
+        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+        final dialogHeight = screenSize.height * 0.65; // 65% height
 
         showDialog(
           context: context,

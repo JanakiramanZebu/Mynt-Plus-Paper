@@ -470,7 +470,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                                 child: ValueListenableBuilder<int?>(
                                   valueListenable: _hoveredRowIndex,
                                   builder: (context, hoveredIndex, child) {
-                                    final isHovered = hoveredIndex == index;
+                                    final isHovered = hoveredIndex == index || _popoverRowIndex == index;
                                     return Container(
                                       color: isHovered
                                           ? MyntColors.primary
@@ -523,64 +523,42 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                                                               mfData, item),
                                                       behavior: HitTestBehavior
                                                           .opaque,
-                                                      child: SizedBox(
-                                                        width: double.infinity,
-                                                        height: double.infinity,
-                                                        child: Stack(
-                                                          clipBehavior:
-                                                              Clip.hardEdge,
-                                                          children: [
-                                                            // Fund name - full width, can be partially covered by buttons
-                                                            Align(
-                                                              alignment: Alignment
-                                                                  .centerLeft,
-                                                              child: Tooltip(
-                                                                message: item
-                                                                        .name ??
-                                                                    'Unknown Fund',
-                                                                child: Padding(
-                                                                  padding:
-                                                                      EdgeInsets
-                                                                          .only(
-                                                                    right: isRowHovered
-                                                                        ? 8.0
-                                                                        : 0.0,
-                                                                  ),
-                                                                  child: Text(
-                                                                    item.name ??
-                                                                        "Unknown Fund",
-                                                                    overflow: isRowHovered
-                                                                        ? TextOverflow
-                                                                            .ellipsis
-                                                                        : TextOverflow
-                                                                            .visible,
-                                                                    maxLines: 1,
-                                                                    softWrap:
-                                                                        false,
-                                                                    style: _getTextStyle(
+                                                      child: Row(
+                                                        children: [
+                                                          // Fund name - uses Expanded to properly truncate
+                                                          Expanded(
+                                                            child: Tooltip(
+                                                              message: item.name ??
+                                                                  'Unknown Fund',
+                                                              child: Text(
+                                                                item.name ??
+                                                                    "Unknown Fund",
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                maxLines: 1,
+                                                                softWrap: false,
+                                                                style:
+                                                                    _getTextStyle(
                                                                         context),
-                                                                  ),
-                                                                ),
                                                               ),
                                                             ),
-                                                            // 3-dot dropdown menu - overlay on the right side
-                                                            if (isRowHovered || _popoverRowIndex == index)
-                                                              Positioned(
-                                                                right: 0,
-                                                                top: 0,
-                                                                bottom: 0,
-                                                                child: Align(
-                                                                  alignment: Alignment.centerRight,
-                                                                  child: _buildOptionsMenuButton(
-                                                                    item: item,
-                                                                    rowIndex: index,
-                                                                    mfData: mfData,
-                                                                    hasUnits: avgQty > 0,
-                                                                  ),
-                                                                ),
-                                                              ),
+                                                          ),
+                                                          // 3-dot dropdown menu - inline on the right
+                                                          if (isRowHovered ||
+                                                              _popoverRowIndex ==
+                                                                  index) ...[
+                                                            const SizedBox(
+                                                                width: 8),
+                                                            _buildOptionsMenuButton(
+                                                              item: item,
+                                                              rowIndex: index,
+                                                              mfData: mfData,
+                                                              hasUnits:
+                                                                  avgQty > 0,
+                                                            ),
                                                           ],
-                                                        ),
+                                                        ],
                                                       ),
                                                     );
                                                   },
@@ -825,7 +803,8 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
       child: ValueListenableBuilder<int?>(
         valueListenable: _hoveredRowIndex,
         builder: (context, hoveredIndex, _) {
-          final isRowHovered = hoveredIndex == rowIndex;
+          // Also highlight when popover is open for this row
+          final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
           return GestureDetector(
             onTap: onTap,
             behavior: HitTestBehavior.opaque,

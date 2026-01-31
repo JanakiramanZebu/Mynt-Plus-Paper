@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:readmore/readmore.dart';
 import 'package:mynt_plus/provider/notification_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
@@ -23,7 +24,7 @@ class ExchangeMessage extends ConsumerWidget {
     if (exchangemessage == null || exchangemessage.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );
@@ -33,7 +34,7 @@ class ExchangeMessage extends ConsumerWidget {
     if (exchangemessage[0].exchMsg == null || exchangemessage[0].exchMsg!.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 100),
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           secondaryEnabled: false,
         ),
       );

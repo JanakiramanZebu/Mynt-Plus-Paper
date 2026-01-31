@@ -1,45 +1,200 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'common_buttons_web.dart';
 
-import '../../provider/thems.dart';
 import '../../res/res.dart';
-import '../res/global_font_web.dart';
-import '../res/web_colors.dart';
 
+/// Reusable empty-state widget for Trading App.
+///
+/// - Modern, card-based design with dashed borders.
+/// - structured layout suitable for dashboards.
 class NoDataFoundWeb extends ConsumerWidget {
-  const NoDataFoundWeb({super.key});
+  final String title;
+  final String? subtitle;
+  final Widget? body;
+  final String primaryLabel;
+  final VoidCallback? onPrimary;
+  final bool primaryEnabled;
+  final String secondaryLabel;
+  final VoidCallback? onSecondary;
+  final bool secondaryEnabled;
+  final String? assetIcon;
+  final double iconSize;
+  final bool showTip;
+  final String tipText;
+
+  const NoDataFoundWeb({
+    super.key,
+    this.title = "No Data Found",
+    this.subtitle = "We couldn't find any data here.",
+    this.body,
+    this.primaryLabel = "Retry",
+    this.onPrimary,
+    this.primaryEnabled = false,
+    this.secondaryLabel = "Explore",
+    this.onSecondary,
+    this.secondaryEnabled = true,
+    this.assetIcon,
+    this.iconSize = 100,
+    this.showTip = false,
+    this.tipText = "",
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.read(themeProvider);
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SvgPicture.asset(assets.noDatafound,
-        color:   const Color(0xff777777)
-        ),
-        const SizedBox(height: 2),
-        Text(
-          "No Data Found",
-          style: WebTextStyles.para(
-          isDarkTheme: theme.isDarkMode,
-          color: theme.isDarkMode
-              ? WebDarkColors.textSecondary
-              : WebColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          
-        ),
-      ]
-    );
-  }
+    // Use a chart or document icon as default
+    final iconAsset = assetIcon ?? assets.documentIcon;
 
-  TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return GoogleFonts.inter(
-        textStyle:
-            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon with a soft glow background
+            Container(
+              width: 80,
+              height: 80,
+              padding: const EdgeInsets.all(0),
+              child: SvgPicture.asset(
+                iconAsset,
+                width: 100,
+                height: 100,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Title
+            Text(
+              title,
+              style: MyntWebTextStyles.head(
+                context,
+                fontWeight: MyntFonts.semiBold,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 8),
+
+            // Subtitle
+            if (body != null)
+              body!
+            else if (subtitle != null)
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * 0.7,
+                child: Text(
+                  subtitle!,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: FontWeight.w500,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+            const SizedBox(height: 16),
+
+            // Buttons (Full width style)
+            if (primaryEnabled || secondaryEnabled)
+              Column(
+                children: [
+                  if (primaryEnabled)
+                    MyntPrimaryButton(
+                      onPressed: onPrimary,
+                      label: primaryLabel,
+                    ),
+                  if (primaryEnabled && secondaryEnabled)
+                    const SizedBox(height: 12),
+                  if (secondaryEnabled)
+                    MyntSecondaryButton(
+                      onPressed: onSecondary ??
+                          () {
+                            ref.read(indexListProvider).bottomMenu(1, context);
+                          },
+                      label: secondaryLabel,
+                    ),
+                ],
+              ),
+
+            // Tip Section (Distinct Card)
+            if (showTip) ...[
+              const SizedBox(height: 24),
+              Container(
+                width: 110,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ).withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        Icons.lightbulb_outline_rounded,
+                        size: 16,
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        tipText,
+                        style: MyntWebTextStyles.para(
+                          context,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../provider/bonds_provider.dart';
 import '../../../provider/thems.dart';
@@ -79,7 +80,7 @@ class _BondsOrderBookScreenWebState extends ConsumerState<BondsOrderBookScreenWe
         alignment: Alignment.center,
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: NoDataFound(),
+          child: NoDataFoundWeb(),
         ),
       ),
     );

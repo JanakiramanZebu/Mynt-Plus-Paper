@@ -18,6 +18,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback onSwapPanels;
   final VoidCallback? onThemeToggle;
   final VoidCallback? onMutualFundTap;
+  final VoidCallback? onBondsTap;
   final VoidCallback? onOptionZTap;
 
   const NavigationDrawerWeb({
@@ -34,6 +35,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     required this.onSwapPanels,
     this.onThemeToggle,
     this.onMutualFundTap,
+    this.onBondsTap,
     this.onOptionZTap,
   });
 
@@ -109,6 +111,17 @@ class NavigationDrawerWeb extends StatelessWidget {
                       onIPOTap();
                     },
                   ),
+                  if (onBondsTap != null)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Bonds',
+                      icon: Icons.account_balance_outlined,
+                      screenName: 'bond',
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onBondsTap!();
+                      },
+                    ),
                   if (onOptionZTap != null)
                     _buildDrawerItem(
                       context: context,

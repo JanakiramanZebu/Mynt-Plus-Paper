@@ -51,6 +51,7 @@ import 'package:flutter/material.dart'
         RawScrollbar,
         Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../provider/portfolio_provider.dart';
@@ -660,7 +661,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     // Show NoDataFound if no results after filtering
     if (displayHoldings.isEmpty) {
       return shadcn.OutlinedContainer(
-        child: NoDataFound(
+        child: NoDataFoundWeb(
           title: searchQuery.isNotEmpty ? "No Stocks Found" : "No Stocks",
           subtitle: searchQuery.isNotEmpty
               ? "No stocks match your search \"$searchQuery\"."

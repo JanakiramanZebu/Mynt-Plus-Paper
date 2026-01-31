@@ -7,6 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_row_web.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/create_basket_web.dart';
 import '../../../../../provider/websocket_provider.dart';
@@ -2104,49 +2105,61 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
   Widget _buildCreateBasketView(
       ThemesProvider theme, OrderProvider orderProvider) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Column(
-            children: [
-              SvgPicture.asset(assets.noDatafound,
-                  color: const Color(0xff777777)),
-              const SizedBox(height: 2),
-              Text("No Data Found",
-                  style: TextStyle(
-                    fontFamily: 'Geist',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-                  )),
-              //       SizedBox(height: 16),
-              // TextWidget.subText(
-              //   text: "No baskets found",
-              //   theme: theme.isDarkMode,
-              //   color: colors.colorGrey,
-              // ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showCreateBasket(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: TextWidget.subText(
-                  text: "Create Basket",
-                  color: Colors.white,
-                  theme: false,
-                ),
-              ),
-            ],
-          ),
-        ],
+
+      child: 
+      NoDataFoundWeb(
+        title: "No Data Found",
+        subtitle: "Create Basket",
+        onPrimary: () {
+          _showCreateBasket(context);
+
+          
+        },
       ),
+      // Column(
+
+      //   mainAxisAlignment: MainAxisAlignment.center,
+      //   children: [
+      //     Column(
+      //       children: [
+      //         SvgPicture.asset(assets.noDatafound,
+      //             color: const Color(0xff777777)),
+      //         const SizedBox(height: 2),
+      //         Text("No Data Found",
+      //             style: TextStyle(
+      //               fontFamily: 'Geist',
+      //               fontSize: 13,
+      //               fontWeight: FontWeight.w500,
+      //               color: shadcn.Theme.of(context).colorScheme.mutedForeground,
+      //             )),
+      //         //       SizedBox(height: 16),
+      //         // TextWidget.subText(
+      //         //   text: "No baskets found",
+      //         //   theme: theme.isDarkMode,
+      //         //   color: colors.colorGrey,
+      //         // ),
+      //         const SizedBox(height: 16),
+      //         ElevatedButton(
+      //           onPressed: () => _showCreateBasket(context),
+      //           style: ElevatedButton.styleFrom(
+      //             backgroundColor: resolveThemeColor(
+      //               context,
+      //               dark: MyntColors.primaryDark,
+      //               light: MyntColors.primary,
+      //             ),
+      //             padding:
+      //                 const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      //           ),
+      //           child: TextWidget.subText(
+      //             text: "Create Basket",
+      //             color: Colors.white,
+      //             theme: false,
+      //           ),
+      //         ),
+      //       ],
+      //     ),
+      //   ],
+      // ),
     );
   }
 

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/provider/transcation_provider.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -120,13 +121,13 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
     if (ref.watch(stocksProvide).searchController.text.isNotEmpty &&
         ipos.ipoCommonSearchList.isEmpty) {
       return const Center(
-        child: NoDataFound(),
+        child: NoDataFoundWeb(),
       );
     }
 
     if (!hasAnyData) {
       return const Center(
-        child: NoDataFound(),
+        child: NoDataFoundWeb(),
       );
     }
 
@@ -268,7 +269,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
               ),
               Expanded(
                 child: ipos.isEmpty
-                    ? const Center(child: NoDataFound())
+                    ? const Center(child: NoDataFoundWeb())
                     : SingleChildScrollView(
                         child: shadcn.Table(
                           columnWidths: columnWidths,
@@ -346,7 +347,8 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
         ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) == "Pre-open";
     final status =
         ipostartdate(ipo.biddingStartDate, ipo.biddingEndDate) ?? "Closed";
-    final rowIsHovered = _hoveredRowId == uniqueId;
+    // Also highlight when popover is open for this row
+    final rowIsHovered = _hoveredRowId == uniqueId || _popoverRowId == uniqueId;
 
     return shadcn.TableRow(
       cells: [

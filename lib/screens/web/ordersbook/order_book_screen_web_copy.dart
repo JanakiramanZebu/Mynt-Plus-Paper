@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/screens/web/ordersbook/basket/basket_list_web.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
@@ -930,7 +931,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             alignment: Alignment.center,
             child: Padding(
               padding: EdgeInsets.all(16.0),
-              child: NoDataFound(),
+              child: NoDataFoundWeb(),
             ),
           ),
         );
@@ -1575,7 +1576,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             alignment: Alignment.center,
             child: Padding(
               padding: EdgeInsets.all(16.0),
-              child: NoDataFound(),
+              child: NoDataFoundWeb(),
             ),
           ),
         );
@@ -2439,7 +2440,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             alignment: Alignment.center,
             child: Padding(
               padding: EdgeInsets.all(16.0),
-              child: NoDataFound(),
+              child: NoDataFoundWeb(),
             ),
           ),
         );
