@@ -132,6 +132,23 @@ class WebSocketProvider extends ChangeNotifier {
   Timer? _throttleTimer; // Throttle timer for websocket data updates (330ms)
   bool _hasPendingUpdates = false; // Track if we have pending updates to notify
 
+  // Track if provider is disposed to prevent "Trying to render a disposed EngineFlutterView" errors
+  bool _isDisposed = false;
+
+  /// Safely notify listeners, checking if provider is disposed first.
+  /// Prevents "Trying to render a disposed EngineFlutterView" errors on web.
+  void _safeNotifyListeners() {
+    if (_isDisposed) {
+      log('WebSocket: Skipping notifyListeners - provider is disposed');
+      return;
+    }
+    try {
+      notifyListeners();
+    } catch (e) {
+      log('WebSocket: Error in notifyListeners (likely disposed): $e');
+    }
+  }
+
   // Buffer for pending socket data updates - key: token, value: pending update data
   final Map<String, Map<String, dynamic>> _pendingSocketUpdates = {};
 
@@ -139,7 +156,7 @@ class WebSocketProvider extends ChangeNotifier {
     _retryScreen = value;
     // Use post-frame callback to avoid modifying provider during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
   }
 
@@ -147,7 +164,7 @@ class WebSocketProvider extends ChangeNotifier {
     _connectionCount = 0;
     // Use post-frame callback to avoid modifying provider during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
   }
 
@@ -157,14 +174,14 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Use post-frame callback to avoid modifying provider during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
 
     // Reset reconnection success flag after a delay to allow UI to update
     Future.delayed(const Duration(seconds: 1), () {
       _reconnectionSuccess = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        _safeNotifyListeners();
       });
     });
   }
@@ -257,7 +274,7 @@ class WebSocketProvider extends ChangeNotifier {
     if (mounted) {
       // Use post-frame callback to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        _safeNotifyListeners();
       });
     }
   }
@@ -274,7 +291,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Use post-frame callback to avoid modifying provider during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
   }
 
@@ -589,7 +606,7 @@ class WebSocketProvider extends ChangeNotifier {
 
         // Use post-frame callback to avoid modifying provider during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
+          _safeNotifyListeners();
         });
       }
     });
@@ -629,7 +646,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     // CRITICAL: Notify Riverpod listeners after processing all buffered updates
     // This ensures ref.watch().select() triggers rebuilds for new tokens
-    notifyListeners();
+    _safeNotifyListeners();
 
     // Clear the buffer after applying
     _pendingSocketUpdates.clear();
@@ -672,7 +689,7 @@ class WebSocketProvider extends ChangeNotifier {
 
     // Notify listeners so WebSubscriptionManager can restore subscriptions
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      notifyListeners();
+      _safeNotifyListeners();
     });
   }
 
@@ -940,7 +957,7 @@ class WebSocketProvider extends ChangeNotifier {
 
       // CRITICAL: Notify Riverpod listeners so ref.watch().select() triggers rebuilds
       // Without this, the .select() pattern won't detect changes even with new Map reference
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data
@@ -1354,7 +1371,7 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Use post-frame callback to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners(); // Notify to update UI with new connection count
+        _safeNotifyListeners(); // Notify to update UI with new connection count
       });
     }
 
@@ -1427,7 +1444,7 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Use post-frame callback to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners(); // Notify to update UI with new connection count
+        _safeNotifyListeners(); // Notify to update UI with new connection count
       });
     }
 
@@ -1539,7 +1556,7 @@ class WebSocketProvider extends ChangeNotifier {
         _reconnecting = false;
         // Use post-frame callback to avoid modifying provider during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
+          _safeNotifyListeners();
         });
       }
     }
@@ -1581,10 +1598,19 @@ class WebSocketProvider extends ChangeNotifier {
 
       print('🔌 [WEBSOCKET] Establishing base connection...');
       log('🔌 WebSocket: Establishing base connection');
-      
+
       // First establish a base connection if needed
       // Only if not already connecting
       if (!_connecting && !_wsConnected) {
+        // CRITICAL FIX: Reset _reconnecting before calling establishConnection
+        // Otherwise establishConnection sees _reconnecting=true and defers, causing a deadlock:
+        //   1. reconnect() sets _reconnecting=true
+        //   2. _attemptReconnection() calls establishConnection()
+        //   3. establishConnection() sees _reconnecting=true and defers (returns without connecting)
+        //   4. _reconnecting never gets reset, socket never connects
+        // The _connecting flag already prevents duplicate connection attempts.
+        _reconnecting = false;
+
         establishConnection(
           channelInput: "",
           task: "c",
@@ -1651,7 +1677,7 @@ class WebSocketProvider extends ChangeNotifier {
 
         // Use post-frame callback to avoid modifying provider during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          notifyListeners();
+          _safeNotifyListeners();
         });
       });
     } else {
@@ -1661,13 +1687,16 @@ class WebSocketProvider extends ChangeNotifier {
       _reconnecting = false;
       // Use post-frame callback to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        notifyListeners();
+        _safeNotifyListeners();
       });
     }
   }
 
   @override
   void dispose() {
+    // Set disposed flag FIRST to prevent any pending callbacks from calling notifyListeners
+    _isDisposed = true;
+
     print('\n═══════════════════════════════════════════════════════════');
     print('🔴 [WEBSOCKET] DISPOSING PROVIDER');
     print('   Cleaning up all resources...');

@@ -170,7 +170,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
             color: Color(theme.isDarkMode ? 0xfffbbbb6 : 0xfffee8e7),
             style: _getActionStyle(colors.darkred),
             onTap: (handler) async {
-              await placeOrderInput(scripData, context, widget.option, false);
+              await placeOrderInput(scripData, context, widget.option, false, isBasketMode: widget.isBasketMode);
               handler(false);
             },
           ),
@@ -182,7 +182,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
             color: Color(theme.isDarkMode ? 0xffcaedc4 : 0xffedf9eb),
             style: _getActionStyle(colors.ltpgreen),
             onTap: (handler) async {
-              await placeOrderInput(scripData, context, widget.option, true);
+              await placeOrderInput(scripData, context, widget.option, true, isBasketMode: widget.isBasketMode);
               handler(false);
             },
           ),
@@ -351,7 +351,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                     color: Colors.white,
                     backgroundColor: theme.isDarkMode ? MyntColors.primary : MyntColors.primary,
                     onPressed: () async {
-                      await placeOrderInput(scripData, context, widget.option, true);
+                      await placeOrderInput(scripData, context, widget.option, true, isBasketMode: widget.isBasketMode);
                     },
                     theme: theme,
                   ),
@@ -361,7 +361,7 @@ class _OptionChainCallRowState extends ConsumerState<_OptionChainCallRow> {
                     color: Colors.white,
                     backgroundColor: theme.isDarkMode ? MyntColors.tertiary : MyntColors.tertiary,
                     onPressed: () async {
-                      await placeOrderInput(scripData, context, widget.option, false);
+                      await placeOrderInput(scripData, context, widget.option, false, isBasketMode: widget.isBasketMode);
                     },
                     theme: theme,
                   ),
@@ -683,10 +683,20 @@ Future<void> placeOrderInput(
   MarketWatchProvider scripInfo,
   BuildContext context,
   OptionValues depthData,
-  bool transType,
-) async {
+  bool transType, {
+  bool isBasketMode = false,
+}) async {
   // Obtain a WidgetRef from the context
   final container = ProviderScope.containerOf(context);
+
+  // In basket mode, check if a basket is selected
+  if (isBasketMode) {
+    final orderProv = container.read(orderProvider);
+    if (orderProv.selectedBsktName.isEmpty) {
+      showResponsiveErrorMessage(context, "Please select a basket first");
+      return;
+    }
+  }
 
   await container.read(marketWatchProvider).fetchScripInfo(
         depthData.token.toString(),
@@ -694,12 +704,12 @@ Future<void> placeOrderInput(
         context,
         true,
       );
-  
+
   // **FIX: Use lot size from scripInfoModel if option data doesn't have it**
-  final lotSize = depthData.ls?.isNotEmpty == true 
-      ? depthData.ls 
+  final lotSize = depthData.ls?.isNotEmpty == true
+      ? depthData.ls
       : container.read(marketWatchProvider).scripInfoModel?.ls.toString();
-  
+
   OrderScreenArgs orderArgs = OrderScreenArgs(
     exchange: depthData.exch.toString(),
     tSym: depthData.tsym.toString(),
@@ -719,7 +729,8 @@ Future<void> placeOrderInput(
     arguments: {
       "orderArg": orderArgs,
       "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": "",
+      // Pass "BasketMode" when in basket mode to show "Add to Basket" button
+      "isBskt": isBasketMode ? "BasketMode" : "",
     },
   );
 }

@@ -28,6 +28,7 @@ import '../../../../sharedWidget/list_divider.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import 'basket_sidebar_web.dart';
 
 class OptionChainSSWeb extends ConsumerStatefulWidget {
   final DepthInputArgs wlValue;
@@ -269,31 +270,28 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
         //   ),
         // ),
         body: SafeArea(
-          child: Stack(
+          child: Row(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // Column headers
-                  _ColumnHeaders(
-                    scrollToStrikePrice: _scrollToCurrentStrikePrice,
-                    showPriceView: showPriceView,
-                    onToggleView: () async {
-                      await Future.delayed(const Duration(milliseconds: 150));
-                      setState(() {
-                        showPriceView = !showPriceView;
-                      });
-                    },
-                  ),
+              // Main option chain content (expands to fill available space)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    // Column headers
+                    _ColumnHeaders(
+                      scrollToStrikePrice: _scrollToCurrentStrikePrice,
+                      showPriceView: showPriceView,
+                      onToggleView: () async {
+                        await Future.delayed(const Duration(milliseconds: 150));
+                        setState(() {
+                          showPriceView = !showPriceView;
+                        });
+                      },
+                    ),
 
-                  // Pre-defined watchlist info banner (conditional)
-                  // _PreDefinedWatchlistBanner(),
-
-                  // Option chain data - main content
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: isBasketMode ? 200 : 0),
+                    // Option chain data - main content
+                    Expanded(
                       child: _OptionChainContent(
                         strikePriceKey: _strikePriceKey,
                         mainScrollController: _mainScrollController,
@@ -302,23 +300,23 @@ class _OptionChainSSState extends ConsumerState<OptionChainSSWeb> {
                         isBasketMode: isBasketMode,
                       ),
                     ),
-                  ),
-
-                  // Buy/Sell buttons are hidden in option chain screen
-                ],
+                  ],
+                ),
               ),
 
-              if (isBasketMode)
-                const Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: _BasketBottomSheet(),
+              // Basket sidebar (animated slide-in from right)
+              ClipRect(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  width: isBasketMode ? BasketSidebarWeb.sidebarWidth : 0,
+                  child: isBasketMode
+                      ? BasketSidebarWeb(
+                          onClose: toggleBasketMode,
+                        )
+                      : const SizedBox.shrink(),
                 ),
-
-              // Backdrop is handled by showModalBottomSheet
-
-              // Basket bottom sheet is now shown via showModalBottomSheet in the callback
+              ),
             ],
           ),
         ),

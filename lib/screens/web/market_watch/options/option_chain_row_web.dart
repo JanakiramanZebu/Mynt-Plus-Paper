@@ -9,7 +9,7 @@ import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import '../../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
-// import '../../../../provider/order_provider.dart';
+import '../../../../provider/order_provider.dart';
 import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -558,6 +558,15 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
 
   Future<void> _placeOrder(OptionValues option, bool isBuy) async {
     final scripData = ref.read(marketWatchProvider);
+    final orderProv = ref.read(orderProvider);
+
+    // In basket mode, check if a basket is selected
+    if (widget.isBasketMode) {
+      if (orderProv.selectedBsktName.isEmpty) {
+        showResponsiveErrorMessage(context, "Please select a basket first");
+        return;
+      }
+    }
 
     await scripData.fetchScripInfo(
       option.token.toString(),
@@ -591,7 +600,8 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
       arguments: {
         "orderArg": orderArgs,
         "scripInfo": scripData.scripInfoModel!,
-        "isBskt": "",
+        // Pass "BasketMode" when in basket mode to show "Add to Basket" button
+        "isBskt": widget.isBasketMode ? "BasketMode" : "",
       },
     );
   }

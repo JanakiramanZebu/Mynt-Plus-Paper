@@ -165,7 +165,7 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                   light: MyntColors.profit,
                 )),
             onTap: (handler) async {
-              await placeOrderInput(context, widget.option, true);
+              await placeOrderInput(context, widget.option, true, isBasketMode: widget.isBasketMode);
               handler(false);
             },
           ),
@@ -183,7 +183,7 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                   light: MyntColors.loss,
                 )),
             onTap: (handler) async {
-              await placeOrderInput(context, widget.option, false);
+              await placeOrderInput(context, widget.option, false, isBasketMode: widget.isBasketMode);
               handler(false);
             },
           ),
@@ -357,7 +357,7 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                     light: MyntColors.tertiary,
                   ),
                   onPressed: () async {
-                    await placeOrderInput(context, widget.option, false);
+                    await placeOrderInput(context, widget.option, false, isBasketMode: widget.isBasketMode);
                   },
                   theme: theme,
                 ),
@@ -371,7 +371,7 @@ class _OptionChainPutRowState extends ConsumerState<_OptionChainPutRow> {
                     light: MyntColors.primary,
                   ),
                   onPressed: () async {
-                    await placeOrderInput(context, widget.option, true);
+                    await placeOrderInput(context, widget.option, true, isBasketMode: widget.isBasketMode);
                   },
                   theme: theme,
                 ),
@@ -859,10 +859,20 @@ Widget _buildOIData(ThemesProvider theme, String oiLack, String oiPerChng, doubl
 Future<void> placeOrderInput(
   BuildContext context,
   OptionValues depthData,
-  bool transType,
-) async {
+  bool transType, {
+  bool isBasketMode = false,
+}) async {
   // Obtain a WidgetRef from the context
   final container = ProviderScope.containerOf(context);
+
+  // In basket mode, check if a basket is selected
+  if (isBasketMode) {
+    final orderProv = container.read(orderProvider);
+    if (orderProv.selectedBsktName.isEmpty) {
+      showResponsiveErrorMessage(context, "Please select a basket first");
+      return;
+    }
+  }
 
   await container.read(marketWatchProvider).fetchScripInfo(
         depthData.token.toString(),
@@ -895,7 +905,8 @@ Future<void> placeOrderInput(
     arguments: {
       "orderArg": orderArgs,
       "scripInfo": container.read(marketWatchProvider).scripInfoModel!,
-      "isBskt": "",
+      // Pass "BasketMode" when in basket mode to show "Add to Basket" button
+      "isBskt": isBasketMode ? "BasketMode" : "",
     },
   );
 }
