@@ -184,7 +184,15 @@ class _MFOrderDetailScreenWebState
       label: "Re-Initiate Payment",
       onPressed: () async {
         ref.read(fundProvider).fetchFunds(context);
-        ref.read(transcationProvider).initialdata(context);
+        
+        final transProv = ref.read(transcationProvider);
+        if (transProv.bankdetails == null) {
+          await transProv.fetchfundbank(context);
+        }
+        if (transProv.decryptclientcheck == null) {
+          await transProv.fetchc(context);
+        }
+        transProv.initialdata(context);
         mfdata.fetchUpiDetail('', context);
 
         shadcn.closeSheet(context);
