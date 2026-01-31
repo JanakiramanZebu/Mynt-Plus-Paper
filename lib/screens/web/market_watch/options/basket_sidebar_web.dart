@@ -8,6 +8,7 @@ import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/order_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
@@ -73,6 +74,8 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final orderProv = ref.watch(orderProvider);
+    // Watch WebSocket data to get fresh LTP for basket items
+    final socketDatas = ref.watch(websocketProvider).socketDatas;
 
     // Sidebar content with static width
     return Container(
@@ -101,7 +104,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
           // Content
           orderProv.bsktList.isEmpty
               ? _buildCreateBasketView(theme, orderProv)
-              : _buildBasketContent(theme, orderProv),
+              : _buildBasketContent(theme, orderProv, socketDatas),
 
           // Multi-exchange warning
           if (orderProv.bsktScripList.isNotEmpty &&
@@ -388,7 +391,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
     );
   }
 
-  Widget _buildBasketContent(ThemesProvider theme, OrderProvider orderProvider) {
+  Widget _buildBasketContent(ThemesProvider theme, OrderProvider orderProvider, Map socketDatas) {
     // If no basket is selected, show basket selector
     if (orderProvider.selectedBsktName.isEmpty) {
       return Expanded(
@@ -510,14 +513,18 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
             script['option'] = "${spilitSymbol["option"]}";
           }
 
-          return _buildScriptCard(theme, script, index, orderProvider);
+          return _buildScriptCard(theme, script, index, orderProvider, socketDatas);
         },
       ),
     );
   }
 
   Widget _buildScriptCard(
-      ThemesProvider theme, Map script, int index, OrderProvider orderProv) {
+      ThemesProvider theme, Map script, int index, OrderProvider orderProv, Map socketDatas) {
+    // **FIX: Get fresh LTP from WebSocket data instead of stale script['lp']**
+    final token = script['token']?.toString();
+    final socketData = token != null ? socketDatas[token] : null;
+    final freshLtp = socketData?['lp']?.toString() ?? script['lp']?.toString() ?? '0.00';
     return InkWell(
       onTap: () => _handleBasketItemTap(index, script, orderProv),
       child: Container(
@@ -626,7 +633,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                   ),
                 ),
                 Text(
-                  "LTP ${script['lp']?.toString() ?? '0.00'}",
+                  "LTP $freshLtp",
                   style: TextStyle(
                     fontFamily: 'Geist',
                     fontSize: 11,
