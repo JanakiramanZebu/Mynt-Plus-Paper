@@ -56,6 +56,7 @@ import '../../../sharedWidget/internet_widget.dart';
 import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
+import '../../../utils/rupee_convert_format.dart';
 // import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
@@ -89,6 +90,23 @@ import 'market_watch/index/index_bottom_sheet_web.dart';
 import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
+
+/// Global ValueNotifier for ticker visibility - reactive updates across the app
+final tickerVisibilityNotifier = ValueNotifier<bool>(true);
+
+/// Initialize ticker visibility from preferences
+void initTickerVisibility() {
+  final Preferences pref = locator<Preferences>();
+  tickerVisibilityNotifier.value = pref.isTickerVisible;
+}
+
+/// Toggle ticker visibility and save to preferences
+Future<void> toggleTickerVisibility() async {
+  final Preferences pref = locator<Preferences>();
+  final newValue = !tickerVisibilityNotifier.value;
+  await pref.setTickerVisible(newValue);
+  tickerVisibilityNotifier.value = newValue;
+}
 
 /// Screen type parameter enum - used for URL routing
 /// Maps to internal ScreenType enum
@@ -223,6 +241,9 @@ class _CustomizableSplitHomeScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Initialize ticker visibility from preferences
+    initTickerVisibility();
 
     // Initialize with default panels
     _initializeDefaultPanels();
@@ -946,11 +967,12 @@ class _CustomizableSplitHomeScreenState
           // Divider
           Container(
               width: 1, color: shadcn.Theme.of(context).colorScheme.border),
-          // Right side: AppBar + Content
+          // Right side: AppBar + Ticker + Content
           Expanded(
             child: Column(
               children: [
                 _buildRightSideAppBar(theme.isDarkMode),
+                const PortfolioTickerStrip(),
                 Expanded(
                   child: _buildContentPanel(theme, panelIndex: 1),
                 ),
@@ -963,11 +985,12 @@ class _CustomizableSplitHomeScreenState
       // Watchlist on RIGHT, Content on LEFT
       return Row(
         children: [
-          // Left side: AppBar + Content
+          // Left side: AppBar + Ticker + Content
           Expanded(
             child: Column(
               children: [
                 _buildRightSideAppBar(theme.isDarkMode),
+                const PortfolioTickerStrip(),
                 Expanded(
                   child: _buildContentPanel(theme, panelIndex: 0),
                 ),
@@ -4790,5 +4813,266 @@ class _LazyFundScreenState extends ConsumerState<_LazyFundScreen> {
           light: MyntColors.backgroundColor),
       child: MyntLoader.branded(),
     );
+  }
+} 
+
+/// Portfolio Ticker Strip Widget - Shows scrolling portfolio summary
+/// Displays: Positions P&L, Holdings P&L, Available Fund
+class PortfolioTickerStrip extends ConsumerStatefulWidget {
+  const PortfolioTickerStrip({super.key});
+
+  @override
+  ConsumerState<PortfolioTickerStrip> createState() =>
+      _PortfolioTickerStripState();
+}
+
+class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
+    with SingleTickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late Timer _scrollTimer;
+  bool _isHovered = false;
+  static const double _scrollSpeed = 0.5;
+  static const Duration _scrollInterval = Duration(milliseconds: 16);
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _scrollTimer = Timer.periodic(_scrollInterval, (timer) {
+      if (!_isHovered && _scrollController.hasClients) {
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        final currentScroll = _scrollController.offset;
+        if (currentScroll >= maxScroll) {
+          _scrollController.jumpTo(0);
+        } else {
+          _scrollController.jumpTo(currentScroll + _scrollSpeed);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollTimer.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use ValueListenableBuilder for reactive ticker visibility
+    return ValueListenableBuilder<bool>(
+      valueListenable: tickerVisibilityNotifier,
+      builder: (context, isVisible, child) {
+        if (!isVisible) {
+          return const SizedBox.shrink();
+        }
+        return _buildTickerContent(context);
+      },
+    );
+  }
+
+  Widget _buildTickerContent(BuildContext context) {
+    final theme = ref.watch(themeProvider);
+    final portfolio = ref.watch(portfolioProvider);
+    final fund = ref.watch(fundProvider);
+    final isDarkMode = theme.isDarkMode;
+
+    // Get portfolio data
+    final positionsPnL = double.tryParse(portfolio.totPnL) ?? 0.0;
+    final holdingsPnL = portfolio.totalPnlHolding;
+    final mfPnL = portfolio.mfTotalPnl;
+    final availableFund =
+        double.tryParse(fund.fundDetailModel?.avlMrg ?? "0") ?? 0.0;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          color: resolveThemeColor(
+            context,
+            dark: const Color(0xFF1A1A2E),
+            light: const Color(0xFFF5F5F7),
+          ),
+          border: Border(
+            bottom: BorderSide(
+              color: shadcn.Theme.of(context).colorScheme.border,
+              width: 1,
+            ),
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Build ticker items
+            final tickerItems = _buildTickerItems(
+              positionsPnL: positionsPnL,
+              holdingsPnL: holdingsPnL,
+              mfPnL: mfPnL,
+              availableFund: availableFund,
+              isDarkMode: isDarkMode,
+            );
+
+            // Check if content fits in available width
+            // Approximate width per item: ~180px (label + value + divider)
+            const double approxItemWidth = 180.0;
+            final double contentWidth = approxItemWidth * 4; // 4 items
+            final bool needsScrolling = contentWidth > constraints.maxWidth;
+
+            if (!needsScrolling) {
+              // Content fits - show centered, no scrolling
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: tickerItems,
+              );
+            }
+
+            // Content overflows - show scrolling with duplicates
+            return SingleChildScrollView(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              physics: const ClampingScrollPhysics(),
+              child: Row(
+                children: [
+                  ...tickerItems,
+                  const SizedBox(width: 32),
+                  ...tickerItems, // Duplicate for seamless scrolling
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildTickerItems({
+    required double positionsPnL,
+    required double holdingsPnL,
+    required double mfPnL,
+    required double availableFund,
+    required bool isDarkMode,
+  }) {
+    return [
+      const SizedBox(width: 16),
+      _TickerItem(
+        label: "Positions P&L",
+        value: positionsPnL,
+        isDarkMode: isDarkMode,
+        showAsAmount: true,
+      ),
+      _tickerDivider(isDarkMode),
+      _TickerItem(
+        label: "Holdings P&L",
+        value: holdingsPnL,
+        isDarkMode: isDarkMode,
+        showAsAmount: true,
+      ),
+      _tickerDivider(isDarkMode),
+      _TickerItem(
+        label: "Mutual Fund P&L",
+        value: mfPnL,
+        isDarkMode: isDarkMode,
+        showAsAmount: true,
+      ),
+      _tickerDivider(isDarkMode),
+      _TickerItem(
+        label: "Available Fund",
+        value: availableFund,
+        isDarkMode: isDarkMode,
+        showAsAmount: true,
+        isNeutral: true,
+      ),
+      const SizedBox(width: 16),
+    ];
+  }
+
+  Widget _tickerDivider(bool isDarkMode) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      width: 1,
+      height: 16,
+      color: isDarkMode
+          ? Colors.white.withValues(alpha: 0.15)
+          : Colors.black.withValues(alpha: 0.1),
+    );
+  }
+}
+
+class _TickerItem extends StatelessWidget {
+  final String label;
+  final double value;
+  final bool isDarkMode;
+  final bool showAsAmount;
+  final bool isNeutral;
+
+  const _TickerItem({
+    required this.label,
+    required this.value,
+    required this.isDarkMode,
+    this.showAsAmount = false,
+    this.isNeutral = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = value >= 0;
+    final displayValue = showAsAmount
+        ? "₹${_formatAmount(value.abs())}"
+        : value.toStringAsFixed(2);
+
+    Color valueColor;
+    if (isNeutral) {
+      valueColor = isDarkMode
+          ? MyntColors.textPrimaryDark
+          : MyntColors.textPrimary;
+    } else {
+      valueColor = isPositive
+          ? (isDarkMode ? WebDarkColors.profit : WebColors.profit)
+          : (isDarkMode ? WebDarkColors.loss : WebColors.loss);
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: isDarkMode
+                ? MyntColors.textSecondaryDark
+                : MyntColors.textSecondary,
+          ),
+        ),
+        const SizedBox(width: 8),
+        if (!isNeutral && showAsAmount)
+          Icon(
+            isPositive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+            size: 16,
+            color: valueColor,
+          ),
+        Text(
+          !isNeutral && showAsAmount
+              ? (isPositive ? "+$displayValue" : "-$displayValue")
+              : displayValue,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatAmount(double amount) {
+    // Use Indian format with full value (no abbreviation)
+    return amount.toIndianFormat();
   }
 }

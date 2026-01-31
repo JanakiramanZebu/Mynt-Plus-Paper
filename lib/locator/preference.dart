@@ -425,6 +425,12 @@ class Preferences {
     await _prefInstance?.remove(_oplistCache);
     await _prefInstance?.remove(_oplistCacheTimestamp);
   }
+
+  // Ticker visibility
+  Future setTickerVisible(bool isVisible) async =>
+      await _prefInstance!.setBool(_isTickerVisible, isVisible);
+
+  bool get isTickerVisible => _prefInstance?.getBool(_isTickerVisible) ?? true;
 }
 
 const String _userTheme = 'userTheme';
@@ -523,3 +529,6 @@ const String _isSipScripName = "isSipScripName";
 const String _isSipPrice = "isSipPrice";
 const String _isSipPerchange = "isSipPerchange";
 const String _isSipDate = "isSipDate";
+
+////TICKER VISIBILITY
+const String _isTickerVisible = "isTickerVisible";
