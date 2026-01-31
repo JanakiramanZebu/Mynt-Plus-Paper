@@ -3,6 +3,7 @@ import 'package:flutter/material.dart'
     show
         InkWell,
         Icons,
+        IconData,
         VoidCallback,
         Icon,
         TextPainter,
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart'
         Colors,
         Widget,
         BuildContext,
+        Builder,
         Color,
         EdgeInsets,
         Alignment,
@@ -105,15 +107,89 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
 
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
+
   @override
   void initState() {
     super.initState();
     _verticalScrollController = ScrollController();
     _horizontalScrollController = ScrollController();
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowIndex.addListener(_onHoverChanged);
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowIndex.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == _popoverRowIndex) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowIndex.removeListener(_onHoverChanged);
     _hoveredRowIndex.dispose();
     _verticalScrollController.dispose();
     _horizontalScrollController.dispose();
@@ -158,40 +234,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
         ? (orderBook.gttOrderBookSearch ?? [])
         : (orderBook.gttOrderBookModel ?? []);
 
-    // Show loading or empty state
-    if (gttOrders.isEmpty) {
-      if (orderBook.loading) {
-        return SizedBox(
-          height: 400,
-          child: Center(
-            child: MyntLoader.centered(message: 'Loading GTT orders...'),
-          ),
-        );
-      } else {
-        return SizedBox(
-          // height: 400,
-          child: Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: NoDataFound(
-                title: searchQuery.isNotEmpty
-                    ? "No GTT Orders Found"
-                    : "No GTT Orders",
-                subtitle: searchQuery.isNotEmpty
-                    ? "No GTT orders match your search \"$searchQuery\"."
-                    : "You don't have any GTT orders yet.",
-                primaryEnabled: false,
-                secondaryEnabled: false,
-              ),
-            ),
-          ),
-        );
-      }
-    }
-
-    // Sort GTT orders
-    final sortedOrders = _getSortedGttOrders(gttOrders);
+    // Sort GTT orders - handle empty case for showing header always
+    final sortedOrders = gttOrders.isNotEmpty
+        ? _getSortedGttOrders(gttOrders)
+        : <GttOrderBookModel>[];
 
     return shadcn.OutlinedContainer(
       child: LayoutBuilder(
@@ -203,7 +249,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           final availableWidth = constraints.maxWidth;
 
           // Step 1: Start with minimum widths (content-based, no wasted space)
-          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
           final columnWidths = <int, double>{};
           for (int i = 0; i < 7; i++) {
             columnWidths[i] = minWidths[i] ?? 100.0;
@@ -214,7 +260,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               .fold<double>(0.0, (sum, width) => sum + width);
 
           // Step 3: If there's extra space, distribute it proportionally
-          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+          // 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
           if (totalMinWidth < availableWidth) {
             final extraSpace = availableWidth - totalMinWidth;
 
@@ -235,7 +281,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                 growthFactors[i] = textGrowthFactor;
                 totalGrowthFactor += textGrowthFactor;
               } else {
-                // Trigger, LTP, Quantity
+                // Trigger, LTP, Qty.
                 growthFactors[i] = numericGrowthFactor;
                 totalGrowthFactor += numericGrowthFactor;
               }
@@ -259,7 +305,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           Widget buildTableContent() {
             return Column(
               children: [
-                // Fixed Header - 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+                // Fixed Header - 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
                 shadcn.Table(
                   columnWidths: {
                     0: shadcn.FixedTableSize(columnWidths[0]!),
@@ -279,121 +325,141 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                         buildHeaderCell('Type', 2),
                         buildHeaderCell('Trigger', 3, true),
                         buildHeaderCell('LTP', 4, true),
-                        buildHeaderCell('Quantity', 5, true),
+                        buildHeaderCell('Qty.', 5, true),
                         buildHeaderCell('Status', 6,true),
                       ],
                     ),
                   ],
                 ),
-                // Scrollable Body - 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+                // Scrollable Body - 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
                 Expanded(
-                  child: RawScrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    trackColor: resolveThemeColor(context,
-                        dark: Colors.grey.withOpacity(0.1),
-                        light: Colors.grey.withOpacity(0.1)),
-                    thumbColor: resolveThemeColor(context,
-                        dark: Colors.grey.withOpacity(0.3),
-                        light: Colors.grey.withOpacity(0.3)),
-                    thickness: 6,
-                    radius: const Radius.circular(3),
-                    interactive: true,
-                    child: SingleChildScrollView(
-                      controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey(
-                            'table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: sortedOrders.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final gttOrder = entry.value;
+                  child: sortedOrders.isEmpty
+                      ? (orderBook.loading
+                          ? Center(child: MyntLoader.simple())
+                          : Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: NoDataFound(
+                                  title: searchQuery.isNotEmpty
+                                      ? "No GTT Orders Found"
+                                      : "No GTT Orders",
+                                  subtitle: searchQuery.isNotEmpty
+                                      ? "No GTT orders match your search \"$searchQuery\"."
+                                      : "You don't have any GTT orders yet.",
+                                  primaryEnabled: false,
+                                  secondaryEnabled: false,
+                                ),
+                              ),
+                            ))
+                      : RawScrollbar(
+                          controller: _verticalScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          trackColor: resolveThemeColor(context,
+                              dark: Colors.grey.withValues(alpha: 0.1),
+                              light: Colors.grey.withValues(alpha: 0.1)),
+                          thumbColor: resolveThemeColor(context,
+                              dark: Colors.grey.withValues(alpha: 0.3),
+                              light: Colors.grey.withValues(alpha: 0.3)),
+                          thickness: 6,
+                          radius: const Radius.circular(3),
+                          interactive: true,
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            child: shadcn.Table(
+                              key: ValueKey(
+                                  'table_${_sortColumnIndex}_$_sortAscending'),
+                              columnWidths: {
+                                0: shadcn.FixedTableSize(columnWidths[0]!),
+                                1: shadcn.FixedTableSize(columnWidths[1]!),
+                                2: shadcn.FixedTableSize(columnWidths[2]!),
+                                3: shadcn.FixedTableSize(columnWidths[3]!),
+                                4: shadcn.FixedTableSize(columnWidths[4]!),
+                                5: shadcn.FixedTableSize(columnWidths[5]!),
+                                6: shadcn.FixedTableSize(columnWidths[6]!),
+                              },
+                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                              rows: sortedOrders.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final gttOrder = entry.value;
 
-                          return shadcn.TableRow(
-                            cells: [
-                              // Created on (date)
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 0,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  _formatCreatedDate(gttOrder),
-                                  style: _getTextStyle(context),
-                                ),
-                              ),
-                              // Instrument
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 1,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: ValueListenableBuilder<int?>(
-                                  valueListenable: _hoveredRowIndex,
-                                  builder: (context, hoveredIndex, _) {
-                                    final isRowHovered = hoveredIndex == index;
-                                    return _buildInstrumentCell(
-                                        gttOrder, theme, isRowHovered);
-                                  },
-                                ),
-                              ),
-                              // Type (SINGLE/OCO + BUY/SELL badges)
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 2,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildTypeCell(gttOrder),
-                              ),
-                              // Trigger (with percentage)
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 3,
-                                alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildTriggerCell(gttOrder),
-                              ),
-                              // LTP
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 4,
-                                alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildLTPCell(gttOrder, theme),
-                              ),
-                              // Quantity
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 5,
-                                alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: Text(
-                                  (gttOrder.qty ?? 0).toString(),
-                                  style: _getTextStyle(context),
-                                ),
-                              ),
-                              // Status
-                              buildCellWithHover(
-                                rowIndex: index,
-                                columnIndex: 6,
-                                alignRight: true,
-                                onTap: () => _showGttOrderDetail(gttOrder),
-                                child: _buildStatusCell(gttOrder, theme),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
+                                return shadcn.TableRow(
+                                  cells: [
+                                    // Created on (date)
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 0,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: Text(
+                                        _formatCreatedDate(gttOrder),
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // Instrument
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 1,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: ValueListenableBuilder<int?>(
+                                        valueListenable: _hoveredRowIndex,
+                                        builder: (context, hoveredIndex, _) {
+                                          final isRowHovered = hoveredIndex == index ||
+                                              (_activePopoverController != null && _popoverRowIndex == index);
+                                          return _buildInstrumentCell(
+                                              gttOrder, theme, isRowHovered,
+                                              rowIndex: index);
+                                        },
+                                      ),
+                                    ),
+                                    // Type (SINGLE/OCO + BUY/SELL badges)
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 2,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: _buildTypeCell(gttOrder),
+                                    ),
+                                    // Trigger (with percentage)
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 3,
+                                      alignRight: true,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: _buildTriggerCell(gttOrder),
+                                    ),
+                                    // LTP
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 4,
+                                      alignRight: true,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: _buildLTPCell(gttOrder, theme),
+                                    ),
+                                    // Qty. (0 / totalQty - GTT orders are pending triggers)
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 5,
+                                      alignRight: true,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: Text(
+                                        '${gttOrder.qty ?? 0}',
+                                        style: _getTextStyle(context),
+                                      ),
+                                    ),
+                                    // Status
+                                    buildCellWithHover(
+                                      rowIndex: index,
+                                      columnIndex: 6,
+                                      alignRight: true,
+                                      onTap: () => _showGttOrderDetail(gttOrder),
+                                      child: _buildStatusCell(gttOrder, theme),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
                 ),
               ],
             );
@@ -405,11 +471,11 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
               thumbVisibility: true,
               trackVisibility: true,
               trackColor: resolveThemeColor(context,
-                  dark: Colors.grey.withOpacity(0.1),
-                  light: Colors.grey.withOpacity(0.1)),
+                  dark: Colors.grey.withValues(alpha: 0.1),
+                  light: Colors.grey.withValues(alpha: 0.1)),
               thumbColor: resolveThemeColor(context,
-                  dark: Colors.grey.withOpacity(0.3),
-                  light: Colors.grey.withOpacity(0.3)),
+                  dark: Colors.grey.withValues(alpha: 0.3),
+                  light: Colors.grey.withValues(alpha: 0.3)),
               thickness: 6,
               radius: const Radius.circular(3),
               interactive: true,
@@ -431,7 +497,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Builds a cell with hover detection
-  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
   shadcn.TableCell buildCellWithHover({
     required Widget child,
     required int rowIndex,
@@ -503,7 +569,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Builds a sortable header cell
-  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
   shadcn.TableCell buildHeaderCell(String label, int columnIndex,
       [bool alignRight = false]) {
     final isFirstColumn = columnIndex == 0; // Created on column
@@ -536,8 +602,17 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       child: InkWell(
         onTap: () => _onSort(columnIndex),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding: headerPadding,
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: Colors.white.withValues(alpha: 0.04),
+              light: Colors.black.withValues(alpha: 0.03),
+            ),
+          ),
           child: Row(
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -581,7 +656,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   // Calculate minimum column widths dynamically
-  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+  // 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
   Map<int, double> _calculateMinWidths(
       List<GttOrderBookModel> gttOrders, BuildContext context) {
     // Use fixed font size for measurement (table text is not responsive, only buttons are)
@@ -595,7 +670,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       'Type',
       'Trigger',
       'LTP',
-      'Quantity',
+      'Qty.',
       'Status',
     ];
     final minWidths = <int, double>{};
@@ -637,7 +712,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           case 4: // LTP
             cellText = CellFormatters.getValidLTPForGtt(order);
             break;
-          case 5: // Quantity
+          case 5: // Qty.
             cellText = (order.qty ?? 0).toString();
             break;
           case 6: // Status
@@ -674,7 +749,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     return textPainter.width;
   }
 
-  // Sort GTT orders based on 7 columns: Created on, Instrument, Type, Trigger, LTP, Quantity, Status
+  // Sort GTT orders based on 7 columns: Created on, Instrument, Type, Trigger, LTP, Qty., Status
   List<GttOrderBookModel> _getSortedGttOrders(List<GttOrderBookModel> orders) {
     if (_sortColumnIndex == null) return orders;
 
@@ -713,7 +788,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           final bLtp = double.tryParse(b.ltp ?? '0') ?? 0.0;
           comparison = aLtp.compareTo(bLtp);
           break;
-        case 5: // Quantity - numeric comparison
+        case 5: // Qty.
           comparison = (a.qty ?? 0).compareTo(b.qty ?? 0);
           break;
         case 6: // Status
@@ -729,143 +804,278 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   Widget _buildInstrumentCell(
-      GttOrderBookModel gttOrder, ThemesProvider theme, bool isRowHovered) {
+      GttOrderBookModel gttOrder, ThemesProvider theme, bool isRowHovered,
+      {int? rowIndex}) {
     final status = gttOrder.gttOrderCurrentStatus?.toUpperCase() ?? '';
     final isPending = status == 'PENDING' || status == 'TRIGGER_PENDING';
     final uniqueId = '${gttOrder.alId ?? ''}_${gttOrder.tsym ?? ''}';
-    final isProcessing = _processingOrderToken == uniqueId;
     // Format instrument: remove "-EQ" and show symbol + exchange separately
     final symbol = gttOrder.tsym ?? '';
     final displayText = symbol.replaceAll("-EQ", "").trim();
 
-    return Stack(
-      clipBehavior: Clip.hardEdge,
-      children: [
-        // Instrument name - full width, can be partially covered by buttons
-        // Only truncate when hovered (buttons visible), otherwise show full text
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Tooltip(
-              message:
-                  '$displayText${gttOrder.exch != null && gttOrder.exch!.isNotEmpty ? ' ${gttOrder.exch}' : ''}',
-              child: Padding(
-                padding: EdgeInsets.only(right: isRowHovered ? 140.0 : 0.0),
-                child: RichText(
-                  overflow: isRowHovered
-                      ? TextOverflow.ellipsis
-                      : TextOverflow.visible,
-                  maxLines: 1,
-                  softWrap: false,
-                  text: TextSpan(
-                    children: [
-                      // Symbol (14px, 500)
-                      TextSpan(
-                        text: displayText,
-                        style: _getTextStyle(context),
-                      ),
-                      // Exchange (10px, 500, muted color) - matching positions table style
-                      if (gttOrder.exch != null && gttOrder.exch!.isNotEmpty)
+    return GestureDetector(
+      onTap: () => _showGttOrderDetail(gttOrder),
+      behavior: HitTestBehavior.deferToChild,
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Instrument name - full width, can be partially covered by buttons
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message:
+                    '$displayText${gttOrder.exch != null && gttOrder.exch!.isNotEmpty ? ' ${gttOrder.exch}' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(right: isRowHovered ? 70.0 : 0.0),
+                  child: RichText(
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    text: TextSpan(
+                      children: [
+                        // Symbol (14px, 500)
                         TextSpan(
-                          text: ' ${gttOrder.exch}',
-                          style: MyntWebTextStyles.para(
-                            context,
-                            darkColor: MyntColors.textSecondaryDark,
-                            lightColor: MyntColors.textSecondary,
-                            fontWeight: MyntFonts.medium,
-                          ).copyWith(fontSize: 10),
+                          text: displayText,
+                          style: _getTextStyle(context),
                         ),
-                    ],
+                        // Exchange (10px, 500, muted color) - matching positions table style
+                        if (gttOrder.exch != null && gttOrder.exch!.isNotEmpty)
+                          TextSpan(
+                            text: ' ${gttOrder.exch}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ).copyWith(fontSize: 10),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+            // Cancel button + 3-dot menu button (appears on hover)
+            if (isRowHovered)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Cancel button (X icon) - only for pending orders
+                      if (isPending)
+                        _buildCancelButton(gttOrder, uniqueId),
+                      if (isPending)
+                        const SizedBox(width: 6),
+                      // 3-dot menu button
+                      _buildOptionsMenuButton(
+                        gttOrder,
+                        uniqueId,
+                        isPending,
+                        rowIndex: rowIndex,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         ),
-        // Action buttons - positioned at the right edge
-        if (isRowHovered && isPending)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: () {}, // Empty handler to stop propagation
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding: const EdgeInsets.only(left: 12),
-                alignment: Alignment.centerRight,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.0),
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.95),
-                    ],
-                  ),
-                ),
-                child: HoverActionsContainer(
-                  isVisible: isRowHovered && isPending,
-                  actions: [
-                    HoverActionButton(
-                      label: 'Modify',
-                      size: 54,
-                      borderRadius: 5,
-                      color: Colors.white,
-                      onPressed: (isProcessing && _isProcessingModify)
-                          ? null
-                          : () async {
-                              setState(() {
-                                _processingOrderToken = uniqueId;
-                                _isProcessingModify = true;
-                              });
-                              await _handleModifyGttOrder(gttOrder);
-                              if (mounted) {
-                                setState(() {
-                                  _isProcessingModify = false;
-                                  _processingOrderToken = null;
-                                });
-                              }
-                            },
-                      backgroundColor: resolveThemeColor(context,
-                          dark: MyntColors.primary, light: MyntColors.primary),
-                    ),
-                    HoverActionButton(
-                      label: 'Cancel',
-                      size: 54,
-                      borderRadius: 5,
-                      color: Colors.white,
-                      onPressed: (isProcessing && _isProcessingCancel)
-                          ? null
-                          : () async {
-                              setState(() {
-                                _processingOrderToken = uniqueId;
-                                _isProcessingCancel = true;
-                              });
-                              await _handleCancelGttOrder(gttOrder);
-                              if (mounted) {
-                                setState(() {
-                                  _isProcessingCancel = false;
-                                  _processingOrderToken = null;
-                                });
-                              }
-                            },
-                      backgroundColor: resolveThemeColor(context,
-                          dark: MyntColors.tertiary,
-                          light: MyntColors.tertiary),
-                    ),
-                  ],
-                ),
+      ),
+    );
+  }
+
+  // Build Cancel button with X icon (tertiary/loss color) - matches positions Exit button
+  Widget _buildCancelButton(
+    GttOrderBookModel gttOrder,
+    String uniqueId,
+  ) {
+    final isProcessing = _processingOrderToken == uniqueId && _isProcessingCancel;
+
+    return GestureDetector(
+      onTap: isProcessing
+          ? null
+          : () async {
+              setState(() {
+                _processingOrderToken = uniqueId;
+                _isProcessingCancel = true;
+              });
+              await _handleCancelGttOrder(gttOrder);
+              if (mounted) {
+                setState(() {
+                  _isProcessingCancel = false;
+                  _processingOrderToken = null;
+                });
+              }
+            },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Helper to build menu item matching positions dropdown style
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    GttOrderBookModel gttOrder,
+    String uniqueId,
+    bool isPending, {
+    int? rowIndex,
+  }) {
+    final iconColor = resolveThemeColor(context,
+        dark: MyntColors.iconDark, light: MyntColors.icon);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Build menu items dynamically based on order state
+            List<shadcn.MenuItem> menuItems = [];
+
+            // Modify option (only for pending orders)
+            if (isPending) {
+              final isProcessing =
+                  _processingOrderToken == uniqueId && _isProcessingModify;
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.edit_outlined,
+                  title: 'Modify',
+                  iconColor: iconColor,
+                  textColor: textColor,
+                  onPressed: isProcessing
+                      ? (_) {}
+                      : (ctx) async {
+                          _closePopover();
+                          setState(() {
+                            _processingOrderToken = uniqueId;
+                            _isProcessingModify = true;
+                          });
+                          await _handleModifyGttOrder(gttOrder);
+                          if (mounted) {
+                            setState(() {
+                              _isProcessingModify = false;
+                              _processingOrderToken = null;
+                            });
+                          }
+                        },
+                ),
+              );
+            }
+
+            // Add divider before info
+            if (isPending) {
+              menuItems.add(const shadcn.MenuDivider());
+            }
+
+            // Info option (always available)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _showGttOrderDetail(gttOrder);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close - gives time for mouse to move back to row
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
           ),
-      ],
+        );
+      },
     );
   }
 
@@ -908,7 +1118,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.12),
+        color: statusColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
@@ -918,7 +1128,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           color: statusColor,
           fontWeight: MyntFonts.medium,
         ),
-        overflow: TextOverflow.visible,
+        overflow: TextOverflow.ellipsis,
         softWrap: false,
       ),
     );
@@ -1063,7 +1273,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 5,
                 offset: const Offset(-2, 0),
               ),

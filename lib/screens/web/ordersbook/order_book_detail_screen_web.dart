@@ -658,7 +658,7 @@ class _OrderBookDetailScreenWebState
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary),
-              fontWeight: MyntFonts.regular,
+              fontWeight: MyntFonts.medium,
             ),
           ),
           const SizedBox(width: 16),

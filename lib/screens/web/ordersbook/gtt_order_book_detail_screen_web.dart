@@ -533,12 +533,12 @@ class _GttOrderBookDetailScreenWebState
                 children: [
                   Text(
                     "Remarks",
-                    style: MyntWebTextStyles.bodySmall(
+                    style: MyntWebTextStyles.body(
                       context,
                       color: resolveThemeColor(context,
                           dark: MyntColors.textPrimaryDark,
                           light: MyntColors.textPrimary),
-                      fontWeight: MyntFonts.regular,
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -546,7 +546,7 @@ class _GttOrderBookDetailScreenWebState
                     child: Text(
                       "${_gttOrder.remarks}",
                       textAlign: TextAlign.end,
-                      style: MyntWebTextStyles.bodySmall(
+                      style: MyntWebTextStyles.body(
                         context,
                         color: resolveThemeColor(context,
                             dark: MyntColors.textPrimaryDark,
@@ -598,12 +598,12 @@ class _GttOrderBookDetailScreenWebState
           Flexible(
             child: Text(
               title1,
-              style: MyntWebTextStyles.bodyMedium(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
                     light: MyntColors.textPrimary),
-                fontWeight: MyntFonts.regular,
+                fontWeight: MyntFonts.medium,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -613,7 +613,7 @@ class _GttOrderBookDetailScreenWebState
             child: Text(
               value1,
               textAlign: TextAlign.end,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
@@ -650,12 +650,12 @@ class _GttOrderBookDetailScreenWebState
           Flexible(
             child: Text(
               title,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
                     dark: MyntColors.textPrimaryDark,
                     light: MyntColors.textPrimary),
-                fontWeight: MyntFonts.regular,
+                fontWeight: MyntFonts.medium,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -671,7 +671,7 @@ class _GttOrderBookDetailScreenWebState
               child: Text(
                 value,
                 textAlign: TextAlign.end,
-                style: MyntWebTextStyles.bodySmall(
+                style: MyntWebTextStyles.body(
                   context,
                   color: valueColor,
                   fontWeight: MyntFonts.medium,

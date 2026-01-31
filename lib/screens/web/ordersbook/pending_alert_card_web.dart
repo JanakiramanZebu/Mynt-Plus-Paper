@@ -64,7 +64,9 @@ import 'package:flutter/material.dart'
         Stack,
         Positioned,
         Clip,
-        LinearGradient;
+        LinearGradient,
+        Builder,
+        Tooltip;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -80,7 +82,7 @@ import '../../../provider/order_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../sharedWidget/no_data_found.dart';
-import '../../../sharedWidget/hover_actions_web.dart';
+import '../../../sharedWidget/mynt_loader.dart';
 import '../../../utils/responsive_snackbar.dart';
 import 'pending_alert_detail_screen_web.dart';
 
@@ -110,12 +112,24 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
   // Processing state for actions
   bool _isProcessingCancel = false;
-  bool _isProcessingModify = false;
+  // bool _isProcessingModify = false;  // Commented out - Modify button hidden
   String? _processingAlertToken;
 
   // Scroll controllers
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+
+  // Track the popover controller to close it when row is unhovered
+  shadcn.PopoverController? _activePopoverController;
+
+  // Track which row the popover belongs to
+  int? _popoverRowIndex;
+
+  // Track if mouse is hovering over the dropdown menu
+  bool _isHoveringDropdown = false;
+
+  // Timer for delayed popover close (allows mouse to move from row to dropdown)
+  Timer? _popoverCloseTimer;
 
   // Track if data has been initialized
   bool _hasInitialized = false;
@@ -123,6 +137,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   @override
   void initState() {
     super.initState();
+    // Listen to hover changes to close popover when row is unhovered
+    _hoveredRowToken.addListener(_onHoverChanged);
     // Only fetch data once when widget is first created
     if (!_hasInitialized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -138,11 +154,71 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
   @override
   void dispose() {
+    _cancelPopoverCloseTimer();
+    _hoveredRowToken.removeListener(_onHoverChanged);
     _teardownSocketSubscription();
     _hoveredRowToken.dispose();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     super.dispose();
+  }
+
+  // Close popover when hover state changes
+  void _onHoverChanged() {
+    if (_activePopoverController != null) {
+      final currentHover = _hoveredRowToken.value;
+
+      // If still hovering the same row that has the popover, cancel any pending close
+      if (currentHover == '$_popoverRowIndex') {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // If hovering the dropdown menu, cancel any pending close
+      if (_isHoveringDropdown) {
+        _cancelPopoverCloseTimer();
+        return;
+      }
+
+      // Start delayed close - gives time for mouse to move from row to dropdown
+      _startPopoverCloseTimer();
+    }
+  }
+
+  // Start a delayed close timer
+  void _startPopoverCloseTimer() {
+    _cancelPopoverCloseTimer();
+    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
+      // Double-check conditions before closing
+      if (!_isHoveringDropdown && _hoveredRowToken.value != '$_popoverRowIndex') {
+        _closePopover();
+      }
+    });
+  }
+
+  // Cancel the close timer
+  void _cancelPopoverCloseTimer() {
+    _popoverCloseTimer?.cancel();
+    _popoverCloseTimer = null;
+  }
+
+  // Helper to close popover and reset state
+  void _closePopover() {
+    _cancelPopoverCloseTimer();
+    try {
+      _activePopoverController?.close();
+    } catch (_) {
+      // Overlay might already be closed, ignore
+    }
+    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
+    _activePopoverController = null;
+    _popoverRowIndex = null;
+    _isHoveringDropdown = false;
+
+    // Force rebuild to remove row highlight when popover closes
+    if (needsRebuild && mounted) {
+      setState(() {});
+    }
   }
 
   // Combined method to refresh all data
@@ -352,17 +428,23 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       int r = 0;
       switch (c) {
         case 0: // Instrument
+          Map<String, String>? aParsed = a is BrokerMessage ? _parseBrokerMessage(a) : null;
+          Map<String, String>? bParsed = b is BrokerMessage ? _parseBrokerMessage(b) : null;
+          
           String aInstrument = a is BrokerMessage
-              ? 'N/A'
+              ? (aParsed?['instrument'] ?? 'N/A')
               : (a.tsym?.replaceAll("-EQ", "") ?? 'N/A');
           String bInstrument = b is BrokerMessage
-              ? 'N/A'
+              ? (bParsed?['instrument'] ?? 'N/A')
               : (b.tsym?.replaceAll("-EQ", "") ?? 'N/A');
           r = cmp<String>(aInstrument, bInstrument);
           break;
         case 1: // Exchange
-          String aExchange = a is BrokerMessage ? 'N/A' : (a.exch ?? '');
-          String bExchange = b is BrokerMessage ? 'N/A' : (b.exch ?? '');
+          Map<String, String>? aParsed = a is BrokerMessage ? _parseBrokerMessage(a) : null;
+          Map<String, String>? bParsed = b is BrokerMessage ? _parseBrokerMessage(b) : null;
+          
+          String aExchange = a is BrokerMessage ? (aParsed?['exchange'] ?? 'N/A') : (a.exch ?? '');
+          String bExchange = b is BrokerMessage ? (bParsed?['exchange'] ?? 'N/A') : (b.exch ?? '');
           r = cmp<String>(aExchange, bExchange);
           break;
         case 2: // Alert Type
@@ -412,13 +494,16 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           break;
         case 3: // Target
           if (a is BrokerMessage || b is BrokerMessage) {
+            Map<String, String>? aParsed = a is BrokerMessage ? _parseBrokerMessage(a) : null;
+            Map<String, String>? bParsed = b is BrokerMessage ? _parseBrokerMessage(b) : null;
+            
             String aTarget = a is BrokerMessage
-                ? 'N/A'
+                ? (aParsed?['target'] ?? '0.00')
                 : (a.aiT == "CH_PER_A" || a.aiT == "CH_PER_B"
                     ? "%${a.d}"
                     : "${a.d}");
             String bTarget = b is BrokerMessage
-                ? 'N/A'
+                ? (bParsed?['target'] ?? '0.00')
                 : (b.aiT == "CH_PER_A" || b.aiT == "CH_PER_B"
                     ? "%${b.d}"
                     : "${b.d}");
@@ -431,10 +516,13 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           break;
         case 4: // LTP
           if (a is BrokerMessage || b is BrokerMessage) {
+            Map<String, String>? aParsed = a is BrokerMessage ? _parseBrokerMessage(a) : null;
+            Map<String, String>? bParsed = b is BrokerMessage ? _parseBrokerMessage(b) : null;
+            
             String aLtp =
-                a is BrokerMessage ? 'N/A' : "${a.ltp ?? a.close ?? 0.00}";
+                a is BrokerMessage ? (aParsed?['ltp'] ?? '0.00') : "${a.ltp ?? a.close ?? 0.00}";
             String bLtp =
-                b is BrokerMessage ? 'N/A' : "${b.ltp ?? b.close ?? 0.00}";
+                b is BrokerMessage ? (bParsed?['ltp'] ?? '0.00') : "${b.ltp ?? b.close ?? 0.00}";
             r = cmp<String>(aLtp, bLtp);
           } else {
             num aLtp = parseNum("${a.ltp ?? a.close ?? 0.00}");
@@ -465,20 +553,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   Widget _buildAlertTable(List<dynamic> alerts, ThemesProvider theme) {
-    if (alerts.isEmpty) {
-      return const SizedBox.expand(
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: NoDataFound(secondaryEnabled: false),
-          ),
-        ),
-      );
-    }
-
-    // Sort alerts
-    final sortedAlerts = _getSortedAlerts(alerts);
+    // Sort alerts - handle empty case for showing header always
+    final sortedAlerts = alerts.isNotEmpty
+        ? _getSortedAlerts(alerts)
+        : <dynamic>[];
 
     return SizedBox.expand(
       child: shadcn.OutlinedContainer(
@@ -569,18 +647,30 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                       ),
                     ],
                   ),
-                  // Scrollable Body
+                  // Scrollable Body - shows loader/no data/table rows
                   Expanded(
-                    child: RawScrollbar(
+                    child: sortedAlerts.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: NoDataFound(
+                                title: "No Alerts",
+                                subtitle: "You don't have any alerts yet.",
+                                primaryEnabled: false,
+                                secondaryEnabled: false,
+                              ),
+                            ),
+                          )
+                        : RawScrollbar(
                       controller: _verticalScrollController,
                       thumbVisibility: true,
                       trackVisibility: true,
                       trackColor: resolveThemeColor(context,
-                          dark: Colors.grey.withOpacity(0.1),
-                          light: Colors.grey.withOpacity(0.1)),
+                          dark: Colors.grey.withValues(alpha: 0.1),
+                          light: Colors.grey.withValues(alpha: 0.1)),
                       thumbColor: resolveThemeColor(context,
-                          dark: Colors.grey.withOpacity(0.3),
-                          light: Colors.grey.withOpacity(0.3)),
+                          dark: Colors.grey.withValues(alpha: 0.3),
+                          light: Colors.grey.withValues(alpha: 0.3)),
                       thickness: 6,
                       radius: const Radius.circular(3),
                       interactive: true,
@@ -615,10 +705,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                                   child: ValueListenableBuilder<String?>(
                                     valueListenable: _hoveredRowToken,
                                     builder: (context, hoveredToken, _) {
-                                      final isRowHovered =
-                                          hoveredToken == '$index';
+                                      final isRowHovered = hoveredToken == '$index' ||
+                                          (_activePopoverController != null && _popoverRowIndex == index);
                                       return _buildInstrumentCell(
-                                          alert, theme, isRowHovered, uniqueId);
+                                          alert, theme, isRowHovered, uniqueId,
+                                          rowIndex: index);
                                     },
                                   ),
                                 ),
@@ -672,11 +763,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                 thumbVisibility: true,
                 trackVisibility: true,
                 trackColor: resolveThemeColor(context,
-                    dark: Colors.grey.withOpacity(0.1),
-                    light: Colors.grey.withOpacity(0.1)),
+                    dark: Colors.grey.withValues(alpha: 0.1),
+                    light: Colors.grey.withValues(alpha: 0.1)),
                 thumbColor: resolveThemeColor(context,
-                    dark: Colors.grey.withOpacity(0.3),
-                    light: Colors.grey.withOpacity(0.3)),
+                    dark: Colors.grey.withValues(alpha: 0.3),
+                    light: Colors.grey.withValues(alpha: 0.3)),
                 thickness: 6,
                 radius: const Radius.circular(3),
                 interactive: true,
@@ -696,16 +787,6 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         ),
       ),
     );
-  }
-
-  // Helper method to ensure Geist font is always applied
-  TextStyle _geistTextStyle(
-      {Color? color, double? fontSize, FontWeight? fontWeight}) {
-    return MyntWebTextStyles.body(
-      context,
-      color: color,
-      fontWeight: fontWeight ?? MyntFonts.medium,
-    ).copyWith(fontSize: fontSize);
   }
 
   TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
@@ -755,7 +836,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                 height: double.infinity,
                 padding: EdgeInsets.symmetric(
                     horizontal: horizontalPadding, vertical: 8),
-                alignment: alignRight ? Alignment.topRight : null,
+                alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                 decoration: BoxDecoration(
                   color: hoveredToken == '$rowIndex'
                       ? resolveThemeColor(
@@ -795,9 +876,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       child: InkWell(
         onTap: () => _onSortAlertTable(columnIndex),
         child: Container(
+          width: double.infinity,
+          height: double.infinity,
           padding:
               EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
           alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: Colors.white.withValues(alpha: 0.04),
+              light: Colors.black.withValues(alpha: 0.03),
+            ),
+          ),
           child: Row(
             mainAxisAlignment:
                 alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -870,10 +960,14 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
       for (final alert in alerts.take(20)) {
         String cellText = '';
+        Map<String, String>? parsed = alert is BrokerMessage ? _parseBrokerMessage(alert) : null;
+        
         switch (col) {
           case 0: // Instrument
             if (alert is BrokerMessage) {
-              cellText = 'N/A';
+              cellText = parsed?['instrument'] ?? 'N/A';
+              final exchange = parsed?['exchange'] ?? '';
+              if (exchange.isNotEmpty) cellText += ' $exchange';
             } else {
               final symbol = (alert.tsym ?? '').replaceAll("-EQ", "").trim();
               final exchange = alert.exch ?? '';
@@ -881,7 +975,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             }
             break;
           case 1: // Exchange
-            cellText = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
+            cellText = alert is BrokerMessage ? (parsed?['exchange'] ?? 'N/A') : (alert.exch ?? 'N/A');
             break;
           case 2: // Alert Type
             if (alert is BrokerMessage) {
@@ -907,7 +1001,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             break;
           case 3: // Target
             if (alert is BrokerMessage) {
-              cellText = 'N/A';
+              cellText = parsed?['target'] ?? '0.00';
             } else {
               if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
                 cellText = "%${alert.d ?? '0.00'}";
@@ -918,7 +1012,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             break;
           case 4: // LTP
             cellText = alert is BrokerMessage
-                ? 'N/A'
+                ? (parsed?['ltp'] ?? '0.00')
                 : "${alert.ltp ?? alert.close ?? '0.00'}";
             break;
           case 5: // Status
@@ -966,7 +1060,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 5,
                   offset: const Offset(-2, 0),
                 ),
@@ -985,133 +1079,300 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     dynamic alert,
     ThemesProvider theme,
     bool isRowHovered,
-    String uniqueId,
-  ) {
-    final isProcessing = _processingAlertToken == uniqueId;
+    String uniqueId, {
+    int? rowIndex,
+  }) {
     final isPending = alert is! BrokerMessage;
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
 
     String symbol = '';
     String exchange = '';
     if (alert is BrokerMessage) {
-      symbol = 'N/A';
-      exchange = '';
+      // Use direct fields from API response
+      symbol = alert.tsym?.replaceAll("-EQ", "") ?? '';
+      exchange = alert.exch ?? '';
     } else {
       symbol = alert.tsym?.replaceAll("-EQ", "") ?? 'N/A';
       exchange = alert.exch ?? '';
     }
 
-    return Stack(
-      clipBehavior: Clip.hardEdge,
-      children: [
-        // Instrument name - full width, can be partially covered by buttons
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: EdgeInsets.only(
-                  right: isRowHovered && isPending ? 140.0 : 0.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      symbol,
-                      style: _geistTextStyle(
-                        color: colorScheme.foreground,
-                      ),
-                      maxLines: 1,
-                      overflow: isRowHovered
-                          ? TextOverflow.ellipsis
-                          : TextOverflow.visible,
+    return GestureDetector(
+      onTap: () => _showAlertDetail(alert),
+      behavior: HitTestBehavior.deferToChild,
+      child: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Instrument name - full width, can be partially covered by buttons
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message: '$symbol${exchange.isNotEmpty ? ' $exchange' : ''}',
+                child: Padding(
+                  padding: EdgeInsets.only(right: isRowHovered && isPending ? 70.0 : 0.0),
+                  child: RichText(
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    text: TextSpan(
+                      children: [
+                        // Symbol (14px, 500)
+                        TextSpan(
+                          text: symbol,
+                          style: MyntWebTextStyles.tableCell(
+                            context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary,
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                        // Exchange (10px, 500, muted color) - matching positions table style
+                        if (exchange.isNotEmpty)
+                          TextSpan(
+                            text: ' $exchange',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ).copyWith(fontSize: 10),
+                          ),
+                      ],
                     ),
                   ),
-                  if (exchange.isNotEmpty) ...[
-                    const SizedBox(width: 4),
-                    Text(
-                      exchange,
-                      style: _geistTextStyle(
-                        color: colorScheme.mutedForeground,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-        // Action buttons - positioned at the right edge
-        if (isRowHovered && isPending)
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: () {}, // Empty handler to stop propagation
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                padding: const EdgeInsets.only(left: 12),
-                alignment: Alignment.centerRight,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.0),
-                      shadcn.Theme.of(context)
-                          .colorScheme
-                          .background
-                          .withValues(alpha: 0.95),
+            // Cancel button + 3-dot menu button (appears on hover)
+            if (isRowHovered && isPending)
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Cancel button (X icon)
+                      _buildCancelButton(alert, uniqueId),
+                      const SizedBox(width: 6),
+                      // 3-dot menu button
+                      _buildOptionsMenuButton(
+                        alert,
+                        uniqueId,
+                        rowIndex: rowIndex,
+                      ),
                     ],
                   ),
                 ),
-                child: HoverActionsContainer(
-                  isVisible: isRowHovered && isPending,
-                  actions: [
-                    HoverActionButton(
-                      label: 'Modify',
-                      size: 54,
-                      borderRadius: 5,
-                      color: Colors.white,
-                      onPressed: isProcessing && _isProcessingModify
-                          ? null
-                          : () => _handleModifyAlert(alert),
-                      backgroundColor: resolveThemeColor(context,
-                          dark: MyntColors.primary, light: MyntColors.primary),
-                    ),
-                    HoverActionButton(
-                      label: 'Cancel',
-                      size: 54,
-                      borderRadius: 5,
-                      color: Colors.white,
-                      onPressed: isProcessing && _isProcessingCancel
-                          ? null
-                          : () => _handleCancelAlert(alert),
-                      backgroundColor: resolveThemeColor(context,
-                          dark: MyntColors.tertiary,
-                          light: MyntColors.tertiary),
-                    ),
-                  ],
-                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build Cancel button with X icon (tertiary/loss color) - matches positions Exit button
+  Widget _buildCancelButton(
+    dynamic alert,
+    String uniqueId,
+  ) {
+    final isProcessing = _processingAlertToken == uniqueId && _isProcessingCancel;
+
+    return GestureDetector(
+      onTap: isProcessing
+          ? null
+          : () async {
+              setState(() {
+                _processingAlertToken = uniqueId;
+                _isProcessingCancel = true;
+              });
+              await _handleCancelAlert(alert);
+              if (mounted) {
+                setState(() {
+                  _isProcessingCancel = false;
+                  _processingAlertToken = null;
+                });
+              }
+            },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.loss.withValues(alpha: 0.15),
+              light: MyntColors.loss.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Icon(
+          Icons.close,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Helper to build menu item matching positions dropdown style
+  shadcn.MenuButton _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required void Function(BuildContext) onPressed,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return shadcn.MenuButton(
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: textColor,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build the 3-dot options menu button with shadcn dropdown
+  Widget _buildOptionsMenuButton(
+    dynamic alert,
+    String uniqueId, {
+    int? rowIndex,
+  }) {
+    final iconColor = resolveThemeColor(context,
+        dark: MyntColors.iconDark, light: MyntColors.icon);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
+    return Builder(
+      builder: (buttonContext) {
+        return GestureDetector(
+          onTap: () {
+            // Build menu items dynamically
+            List<shadcn.MenuItem> menuItems = [];
+
+            // Modify option (commented out)
+            // final isProcessing =
+            //     _processingAlertToken == uniqueId && _isProcessingModify;
+            // menuItems.add(
+            //   _buildMenuButton(
+            //     icon: Icons.edit_outlined,
+            //     title: 'Modify',
+            //     iconColor: iconColor,
+            //     textColor: textColor,
+            //     onPressed: isProcessing
+            //         ? (_) {}
+            //         : (ctx) async {
+            //             _closePopover();
+            //             setState(() {
+            //               _processingAlertToken = uniqueId;
+            //               _isProcessingModify = true;
+            //             });
+            //             await _handleModifyAlert(alert);
+            //             if (mounted) {
+            //               setState(() {
+            //                 _isProcessingModify = false;
+            //                 _processingAlertToken = null;
+            //               });
+            //             }
+            //           },
+            //   ),
+            // );
+
+            // // Add divider before info
+            // menuItems.add(const shadcn.MenuDivider());
+
+            // Info option (always available for pending alerts)
+            menuItems.add(
+              _buildMenuButton(
+                icon: Icons.info_outline,
+                title: 'Info',
+                iconColor: iconColor,
+                textColor: textColor,
+                onPressed: (ctx) {
+                  _closePopover();
+                  _showAlertDetail(alert);
+                },
+              ),
+            );
+
+            // Create a controller for this popover
+            final controller = shadcn.PopoverController();
+            _activePopoverController = controller;
+            _popoverRowIndex = rowIndex;
+
+            // Show the shadcn popover menu anchored to this button
+            controller.show(
+              context: buttonContext,
+              alignment: Alignment.topRight,
+              offset: const Offset(0, 4),
+              builder: (ctx) {
+                return MouseRegion(
+                  onEnter: (_) {
+                    _isHoveringDropdown = true;
+                    _cancelPopoverCloseTimer();
+                  },
+                  onExit: (_) {
+                    _isHoveringDropdown = false;
+                    // Start delayed close - gives time for mouse to move back to row
+                    _startPopoverCloseTimer();
+                  },
+                  child: shadcn.DropdownMenu(
+                    children: menuItems,
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.primary.withValues(alpha: 0.1),
+                  light: MyntColors.primary.withValues(alpha: 0.1)),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(
+              Icons.more_vert,
+              size: 18,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary),
+            ),
           ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildExchangeCell(dynamic alert, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final exchange = alert is BrokerMessage ? 'N/A' : (alert.exch ?? 'N/A');
+    String exchange = '';
+    if (alert is BrokerMessage) {
+      // Use direct field from API response
+      exchange = alert.exch ?? '';
+    } else {
+      exchange = alert.exch ?? 'N/A';
+    }
 
     return Text(
       exchange,
-      style: _geistTextStyle(
-        color: colorScheme.foreground,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -1119,40 +1380,69 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   Widget _buildAlertTypeCell(dynamic alert, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     String alertType = '';
-    Color alertColor = colorScheme.mutedForeground;
+    Color alertColor;
 
     if (alert is BrokerMessage) {
       alertType = 'TRIGGERED';
-      alertColor = colorScheme.chart2; // Green for triggered
+      // Use global MyntColors with resolveThemeColor for TRIGGERED
+      alertColor = resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
     } else {
       switch (alert.aiT) {
         case 'LTP_A':
           alertType = 'LTP Above';
-          alertColor = MyntColors.profit; // Green
+          alertColor = resolveThemeColor(
+            context,
+            dark: MyntColors.profitDark,
+            light: MyntColors.profit,
+          );
           break;
         case 'LTP_B':
           alertType = 'LTP Below';
-          alertColor = MyntColors.loss; // Red
+          alertColor = resolveThemeColor(
+            context,
+            dark: MyntColors.lossDark,
+            light: MyntColors.loss,
+          );
           break;
         case 'CH_PER_A':
           alertType = 'Perc.Change Above';
-          alertColor = MyntColors.profit; // Green
+          alertColor = resolveThemeColor(
+            context,
+            dark: MyntColors.profitDark,
+            light: MyntColors.profit,
+          );
           break;
         case 'CH_PER_B':
           alertType = 'Perc.Change Below';
-          alertColor = MyntColors.loss; // Red
+          alertColor = resolveThemeColor(
+            context,
+            dark: MyntColors.lossDark,
+            light: MyntColors.loss,
+          );
           break;
         default:
           alertType = 'Unknown';
+          alertColor = resolveThemeColor(
+            context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary,
+          );
       }
     }
 
     return Text(
       alertType,
-      style: _geistTextStyle(
+      style: MyntWebTextStyles.tableCell(
+        context,
         color: alertColor,
+        darkColor: alertColor,
+        lightColor: alertColor,
+        fontWeight: MyntFonts.medium,
       ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -1160,11 +1450,11 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   }
 
   Widget _buildTargetCell(dynamic alert, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
     String target = '';
 
     if (alert is BrokerMessage) {
-      target = 'N/A';
+      final parsed = _parseBrokerMessage(alert);
+      target = parsed['target'] ?? '0.00';
     } else {
       if (alert.aiT == "CH_PER_A" || alert.aiT == "CH_PER_B") {
         target = "%${alert.d ?? '0.00'}";
@@ -1173,35 +1463,38 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
       }
     }
 
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Text(
-        target,
-        style: _geistTextStyle(
-          color: colorScheme.foreground,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+    return Text(
+      target,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _buildLTPCell(dynamic alert, ThemesProvider theme) {
-    final colorScheme = shadcn.Theme.of(context).colorScheme;
-    final ltp = alert is BrokerMessage
-        ? 'N/A'
-        : "${alert.ltp ?? alert.close ?? '0.00'}";
+    String ltp = '';
+    if (alert is BrokerMessage) {
+      final parsed = _parseBrokerMessage(alert);
+      ltp = parsed['ltp'] ?? '0.00';
+    } else {
+      ltp = "${alert.ltp ?? alert.close ?? '0.00'}";
+    }
 
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Text(
-        ltp,
-        style: _geistTextStyle(
-          color: colorScheme.foreground,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+    return Text(
+      ltp,
+      style: MyntWebTextStyles.tableCell(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textPrimary,
+        fontWeight: MyntFonts.medium,
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -1221,29 +1514,26 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     }
 
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusColor.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(4),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: MyntWebTextStyles.bodySmall(
+          context,
+          color: statusColor,
+          fontWeight: MyntFonts.medium,
         ),
-        child: Text(
-          status.toUpperCase(),
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: statusColor,
-            fontWeight: MyntFonts.medium,
-          ),
-          overflow: TextOverflow.visible,
-          softWrap: false,
-        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        softWrap: false,
       ),
     );
   }
 
-  // Helper function to parse BrokerMessage dmsg
   Map<String, String> _parseBrokerMessage(BrokerMessage alert) {
     final dmsg = alert.dmsg ?? '';
     final result = <String, String>{
@@ -1255,49 +1545,94 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
 
     if (dmsg.isEmpty) return result;
 
-    // Try to extract instrument and exchange (e.g., "RELIANCE NSE", "YESBANK NSE")
+    // 1. Identify Exchange
     final exchangeMatch =
-        RegExp(r'\b(NSE|BSE|MCX|NCDEX)\b', caseSensitive: false)
+        RegExp(r'\b(NSE|BSE|MCX|NCDEX|MCXSX|NFO|CDS)\b', caseSensitive: false)
             .firstMatch(dmsg);
-    if (exchangeMatch != null) {
-      result['exchange'] = exchangeMatch.group(1) ?? '';
 
-      // Extract instrument name before exchange
-      final exchangeIndex = dmsg.indexOf(exchangeMatch.group(0)!);
+    if (exchangeMatch != null) {
+      final exchangeToken = exchangeMatch.group(0)!;
+      result['exchange'] = exchangeToken.toUpperCase();
+      final exchangeIndex = dmsg.indexOf(exchangeToken);
+
+      // 2. Extract Instrument
+      String potentialInstrument = "";
+
+      // Helper to check if string contains at least one letter
+      bool hasLetter(String s) => RegExp(r'[a-zA-Z]').hasMatch(s);
+
+      // Try before exchange first
       if (exchangeIndex > 0) {
-        final beforeExchange = dmsg.substring(0, exchangeIndex).trim();
-        // Extract the last word/phrase before exchange (likely the instrument name)
-        final words = beforeExchange.split(RegExp(r'\s+'));
-        if (words.isNotEmpty) {
-          // Take the last meaningful word (skip common words like "for", "at", etc.)
-          for (int i = words.length - 1; i >= 0; i--) {
-            final word = words[i].trim();
-            if (word.isNotEmpty &&
-                !word.toLowerCase().contains('for') &&
-                !word.toLowerCase().contains('at') &&
-                !word.toLowerCase().contains('above') &&
-                !word.toLowerCase().contains('below')) {
-              result['instrument'] = word;
+        String before = dmsg.substring(0, exchangeIndex).trim();
+        // Remove common prefixes and punctuation at the end
+        before = before.replaceAll(RegExp(r'^(Alert|Price Alert|Your alert for|triggered|Info)[:\s-]*', caseSensitive: false), "").trim();
+        // Remove trailing punctuation like ( or - or :
+        before = before.replaceAll(RegExp(r'[\(\[\-:]$'), "").trim();
+        // Only use if it contains letters (not just numbers)
+        if (before.isNotEmpty && hasLetter(before)) {
+          potentialInstrument = before;
+        }
+      }
+
+      // If still empty or just too short/garbage, try after exchange
+      if (potentialInstrument.length < 2 || !hasLetter(potentialInstrument)) {
+        String after = dmsg.substring(exchangeIndex + exchangeToken.length).trim();
+        // Clean up leading punctuation
+        after = after.replaceAll(RegExp(r'^[\)\]\-\: ]+'), "").trim();
+
+        // Match until first keyword
+        final match = RegExp(r'^(.+?)(?=\s+(?:is|at|above|below|crossed|ltp|Ltp|LTP|has)\b)', caseSensitive: false).firstMatch(after);
+        if (match != null) {
+          final matched = match.group(1)?.trim() ?? "";
+          if (hasLetter(matched)) {
+            potentialInstrument = matched;
+          }
+        } else {
+          // Alternative: if there's no keyword, it might be "EXCHANGE SYMBOL LTP ..."
+          final words = after.split(RegExp(r'\s+'));
+          for (var word in words) {
+            if (word.isNotEmpty && hasLetter(word)) {
+              potentialInstrument = word;
               break;
             }
           }
         }
       }
+
+      result['instrument'] = potentialInstrument;
     }
 
-    // Try to extract target price (numbers after "above" or "below")
-    final priceMatch =
-        RegExp(r'(?:above|below)\s+([\d,]+\.?\d*)', caseSensitive: false)
-            .firstMatch(dmsg);
-    if (priceMatch != null) {
-      result['target'] = priceMatch.group(1)?.replaceAll(',', '') ?? '';
+    // 3. Extract Target and LTP
+    // Target price usually follows "above" or "below" or "at"
+    final targetMatch = RegExp(r'(?:above|below|at|crossed)\s+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+    if (targetMatch != null) {
+      result['target'] = targetMatch.group(1)?.replaceAll(',', '') ?? '';
     }
 
-    // Try to extract LTP if mentioned
-    final ltpMatch = RegExp(r'ltp[:\s]+([\d,]+\.?\d*)', caseSensitive: false)
-        .firstMatch(dmsg);
+    // LTP usually follows "LTP" or "Ltp" or "price is"
+    final ltpMatch = RegExp(r'(?:LTP|Ltp|price|is)\s*[:\s]+\s*([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
     if (ltpMatch != null) {
-      result['ltp'] = ltpMatch.group(1)?.replaceAll(',', '') ?? '';
+       result['ltp'] = ltpMatch.group(1)?.replaceAll(',', '') ?? '';
+    } else {
+      // Sometimes LTP is the first number after a comma or "Ltp:"
+      final altLtpMatch = RegExp(r'Ltp[:\s]+([\d,]+\.?\d*)', caseSensitive: false).firstMatch(dmsg);
+      if (altLtpMatch != null) {
+        result['ltp'] = altLtpMatch.group(1)?.replaceAll(',', '') ?? '';
+      }
+    }
+
+    // Fallback for instrument if still empty
+    if (result['instrument'] == "" || result['instrument'] == "N/A") {
+      // Try to find the first uppercase word or combined word
+      // Must contain at least one letter (not just numbers/punctuation)
+      final words = dmsg.split(RegExp(r'\s+'));
+      for (var word in words) {
+        final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(word);
+        if (word.length > 2 && hasLetter && word == word.toUpperCase() && !(result['exchange']?.contains(word) ?? false)) {
+          result['instrument'] = word;
+          break;
+        }
+      }
     }
 
     return result;
@@ -1425,17 +1760,18 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   Future<void> _handleCancelAlert(AlertPendingModel alert) async {
     // Show confirmation dialog first
     final bool? confirm = await _showCancelAlertDialog(alert);
-    if (confirm != true) return;
-
-    final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
-    if (_isProcessingCancel && _processingAlertToken == uniqueId) return;
+    if (confirm != true) {
+      // User cancelled the dialog, reset processing state
+      if (mounted) {
+        setState(() {
+          _isProcessingCancel = false;
+          _processingAlertToken = null;
+        });
+      }
+      return;
+    }
 
     try {
-      setState(() {
-        _isProcessingCancel = true;
-        _processingAlertToken = uniqueId;
-      });
-
       final String alertId = "${alert.alId}";
       await ref.read(marketWatchProvider).fetchCancelAlert(alertId, context);
       await ref.read(marketWatchProvider).fetchPendingAlert(context);
@@ -1457,56 +1793,57 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
     }
   }
 
-  Future<void> _handleModifyAlert(AlertPendingModel alert) async {
-    final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
-    if (_isProcessingModify && _processingAlertToken == uniqueId) return;
-
-    try {
-      setState(() {
-        _isProcessingModify = true;
-        _processingAlertToken = uniqueId;
-      });
-
-      // Open modify alert sheet
-      shadcn.openSheet(
-        context: context,
-        builder: (sheetContext) {
-          final screenWidth = MediaQuery.of(sheetContext).size.width;
-          final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
-          return Container(
-            width: sheetWidth,
-            decoration: BoxDecoration(
-              color: resolveThemeColor(
-                context,
-                dark: styles.MyntColors.backgroundColorDark,
-                light: styles.MyntColors.backgroundColor,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 5,
-                  offset: const Offset(-2, 0),
-                ),
-              ],
-            ),
-            child: PendingAlertDetailScreenWeb(alert: alert),
-          );
-        },
-        position: shadcn.OverlayPosition.end,
-        barrierColor: Colors.transparent,
-      );
-    } catch (e) {
-      if (mounted) {
-        ResponsiveSnackBar.showError(
-            context, 'Failed to open modify alert: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessingModify = false;
-          _processingAlertToken = null;
-        });
-      }
-    }
-  }
+  // _handleModifyAlert commented out - Modify button hidden
+  // Future<void> _handleModifyAlert(AlertPendingModel alert) async {
+  //   final uniqueId = alert.alId?.toString() ?? alert.token?.toString() ?? '';
+  //   if (_isProcessingModify && _processingAlertToken == uniqueId) return;
+  //
+  //   try {
+  //     setState(() {
+  //       _isProcessingModify = true;
+  //       _processingAlertToken = uniqueId;
+  //     });
+  //
+  //     // Open modify alert sheet
+  //     shadcn.openSheet(
+  //       context: context,
+  //       builder: (sheetContext) {
+  //         final screenWidth = MediaQuery.of(sheetContext).size.width;
+  //         final sheetWidth = screenWidth < 1300 ? screenWidth * 0.3 : 480.0;
+  //         return Container(
+  //           width: sheetWidth,
+  //           decoration: BoxDecoration(
+  //             color: resolveThemeColor(
+  //               context,
+  //               dark: styles.MyntColors.backgroundColorDark,
+  //               light: styles.MyntColors.backgroundColor,
+  //             ),
+  //             boxShadow: [
+  //               BoxShadow(
+  //                 color: Colors.black.withValues(alpha: 0.1),
+  //                 blurRadius: 5,
+  //                 offset: const Offset(-2, 0),
+  //               ),
+  //             ],
+  //           ),
+  //           child: PendingAlertDetailScreenWeb(alert: alert),
+  //         );
+  //       },
+  //       position: shadcn.OverlayPosition.end,
+  //       barrierColor: Colors.transparent,
+  //     );
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ResponsiveSnackBar.showError(
+  //           context, 'Failed to open modify alert: ${e.toString()}');
+  //     }
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isProcessingModify = false;
+  //         _processingAlertToken = null;
+  //       });
+  //     }
+  //   }
+  // }
 }

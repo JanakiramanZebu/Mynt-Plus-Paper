@@ -147,6 +147,7 @@ class OrderProvider extends DefaultChangeNotifier {
   final TextEditingController orderTradebookCtrl = TextEditingController();
 
   OrderProvider(this.ref) {
+    getBasketName();
     tabSize();
   }
 
@@ -2617,11 +2618,11 @@ class OrderProvider extends DefaultChangeNotifier {
     print("_bsktList.isEmpty: ${_bsktList.isEmpty}");
     print("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
     print("Calling notifyListeners()...");
-    log("basket scrips$_bsktScrips");
+    tabSize();
     notifyListeners();
     print("notifyListeners() completed");
     print("========================");
-  }
+  } 
 
   // removeBasket(int index) async {
 

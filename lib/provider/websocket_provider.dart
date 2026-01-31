@@ -852,12 +852,15 @@ class WebSocketProvider extends ChangeNotifier {
       case 'PENDING':
         // Skip PENDING notification to avoid duplicate with OPEN
         break;
+      case 'CANCELED':
+        // Skip CANCELED notification - cancel action already shows success snackbar
+        break;
       default:
-        // For other statuses like TRIGGER_PENDING, CANCELLED, etc.
+        // For other statuses like TRIGGER_PENDING, etc.
         if (status.isNotEmpty) {
           message = '$tranType order for $symbol ($exchange): $status';
           if (kIsWeb) {
-            ResponsiveSnackBar.showInfo(_context!, message);
+            // ResponsiveSnackBar.showInfo(_context!, message);
           } else {
             successMessage(_context!, message);
           }
