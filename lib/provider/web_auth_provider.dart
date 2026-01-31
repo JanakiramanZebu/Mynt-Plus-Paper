@@ -81,8 +81,24 @@ class WebAuthProvider extends ChangeNotifier {
   // Source for web
   static const String _source = 'WEB';
 
-  /// Initialize the provider
+  /// Initialize the provider - clears any stale state from previous sessions
   void init() {
+    // Clear any stale state from previous sessions
+    stopTotpTimer();
+    _mobileLogin = null;
+    _mobileOtp = null;
+    _totpData = null;
+    _currentTotp = '';
+    _totpTimer = 30;
+    _apiSession = null;
+    _showTotpSetup = false;
+    _topflow = false;
+    _loading = false;
+    _loginError = null;
+    _passwordError = null;
+    _otpError = null;
+
+    // Generate fresh device UUID for this session
     _deviceUuid = uuid.v4();
     _isTotp = true;
     notifyListeners();
@@ -197,11 +213,20 @@ class WebAuthProvider extends ChangeNotifier {
         return true;
       } else {
         debugPrint('Auto-login failed: Invalid session');
-        // Optional: specific error handling or clearing session
-        // await pref.clearClientSession(); // Maybe too aggressive? Let user decide.
+        // Clear invalid session to ensure fresh login state
+        await pref.clearClientSession();
+        pref.setLogout(true);
+        pref.setMobileLogin(false);
+        // Reset provider state for fresh login
+        reset();
       }
     } catch (e) {
       debugPrint('Auto-login error: $e');
+      // Clear session on error to prevent stale state
+      await pref.clearClientSession();
+      pref.setLogout(true);
+      pref.setMobileLogin(false);
+      reset();
     } finally {
       _setLoading(false);
     }

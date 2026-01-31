@@ -10,6 +10,7 @@ import '../locator/preference.dart';
 import '../provider/auth_provider.dart';
 import '../provider/network_state_provider.dart';
 import '../provider/thems.dart';
+import '../provider/web_auth_provider.dart';
 import '../routes/route_names.dart';
 import '../routes/web_router.dart';
 import '../sharedWidget/internet_widget.dart';
@@ -89,8 +90,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       } else {
         pref.setMobileLogin(true);
         if (kIsWeb) {
-          // For web, use GoRouter navigation
-          if (mounted) context.go(WebRoutes.login);
+          // For web, validate session first before deciding where to navigate
+          // checkAutoLogin will navigate to home if valid, or we show login if invalid
+          if (mounted) {
+            final webAuth = ref.read(webAuthProvider);
+            final isValid = await webAuth.checkAutoLogin(context);
+            // If session was invalid, navigate to login
+            if (!isValid && mounted) {
+              context.go(WebRoutes.login);
+            }
+            // If valid, checkAutoLogin already called initialLoadMethods which navigates to home
+          }
         } else {
           await ref.read(authProvider).fetchMobileLogin(
               context, "", pref.clientId!, "", pref.imei!, true);

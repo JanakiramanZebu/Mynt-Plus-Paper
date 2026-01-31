@@ -150,6 +150,18 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
     );
   }
 
+  // Format order qty - for MCX, divide by lot size
+  String _formatOrderQty(OrderBookModel order) {
+    final rawFilled = int.tryParse(order.fillshares ?? '0') ?? 0;
+    final rawQty = int.tryParse(order.qty ?? '0') ?? 0;
+    final lotSize = order.exch == 'MCX'
+        ? (int.tryParse(order.ls ?? '1') ?? 1)
+        : 1;
+    final filledQty = rawFilled ~/ lotSize;
+    final totalQty = rawQty ~/ lotSize;
+    return '$filledQty / $totalQty';
+  }
+
   // Builds a cell with hover detection (matches positions pattern)
   // 8 columns: Time, Type, Instrument, Product, Qty., LTP, Price, Status
   shadcn.TableCell buildCellWithHover({
@@ -636,14 +648,14 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                 softWrap: false,
               ),
             ),
-            // Column 4: Qty. (filledQty / totalQty)
+            // Column 4: Qty. (filledQty / totalQty) - MCX divided by lot size
             buildCellWithHover(
               rowIndex: i,
               columnIndex: 4,
               alignRight: true,
               onTap: () => actionHandler.openOrderDetail(order),
               child: Text(
-                '${order.fillshares ?? '0'} / ${order.qty ?? '0'}',
+                _formatOrderQty(order),
                 style: _getTextStyle(context),
               ),
             ),
@@ -1258,6 +1270,19 @@ class _OrderLTPCellState extends ConsumerState<_OrderLTPCell> {
     if (!_didSetupSubscription && widget.token.isNotEmpty) {
       _didSetupSubscription = true;
 
+      // Check existing socket data first (tokens may already be subscribed via watchlist)
+      final existingData = ref.read(websocketProvider).socketDatas;
+      if (existingData.containsKey(widget.token)) {
+        final existingLtp = existingData[widget.token]['lp']?.toString();
+        if (existingLtp != null &&
+            existingLtp != '0.00' &&
+            existingLtp != 'null' &&
+            existingLtp != '0') {
+          ltp = existingLtp;
+        }
+      }
+
+      // Subscribe for future updates
       Future.microtask(() {
         if (!mounted) return;
 

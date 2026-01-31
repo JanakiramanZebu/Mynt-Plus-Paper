@@ -62,6 +62,7 @@ import 'portfolio_provider.dart';
 // import 'stocks_provider.dart';
 import 'transcation_provider.dart';
 import 'user_profile_provider.dart';
+import 'web_auth_provider.dart';
 
 final authProvider = ChangeNotifierProvider((ref) => AuthProvider(ref));
 
@@ -1022,6 +1023,11 @@ class AuthProvider extends DefaultChangeNotifier {
 
         // Clear notification data on logout to prevent data leaking between users
         ref.read(notificationprovider).clearData();
+
+        // Reset web auth provider state to ensure clean login on web
+        if (kIsWeb) {
+          ref.read(webAuthProvider).reset();
+        }
 
         // Update UI state
         ref.read(indexListProvider).bottomMenu(0, context);
@@ -2353,6 +2359,11 @@ class AuthProvider extends DefaultChangeNotifier {
       // Close WebSocket early to stop needless data flow
       ref.read(websocketProvider).closeSocket(true);
       ref.read(websocketProvider).websockConn(false);
+
+      // Reset web auth provider state to prevent stale session data on re-login
+      if (kIsWeb) {
+        ref.read(webAuthProvider).reset();
+      }
 
       if (ConstantName.timer != null) {
         ConstantName.timer!.cancel();

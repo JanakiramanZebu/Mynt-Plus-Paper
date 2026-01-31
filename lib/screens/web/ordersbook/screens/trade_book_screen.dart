@@ -152,6 +152,18 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
     );
   }
 
+  // Format trade qty - for MCX, divide by lot size
+  String _formatTradeQty(dynamic trade) {
+    final rawFilled = int.tryParse(trade.fillshares?.toString() ?? trade.flqty?.toString() ?? '0') ?? 0;
+    final rawQty = int.tryParse(trade.qty?.toString() ?? '0') ?? 0;
+    final lotSize = trade.exch == 'MCX'
+        ? (int.tryParse(trade.ls?.toString() ?? '1') ?? 1)
+        : 1;
+    final filledQty = rawFilled ~/ lotSize;
+    final totalQty = rawQty ~/ lotSize;
+    return '$filledQty / $totalQty';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
@@ -352,14 +364,14 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                         softWrap: false,
                                       ),
                                     ),
-                                    // Column 5: Qty. (filledQty / totalQty)
+                                    // Column 5: Qty. (filledQty / totalQty) - MCX divided by lot size
                                     buildCellWithHover(
                                       rowIndex: index,
                                       columnIndex: 5,
                                       alignRight: true,
                                       onTap: () => _showTradeDetail(trade),
                                       child: Text(
-                                        '${trade.fillshares ?? trade.flqty ?? '0'} / ${trade.qty ?? '0'}',
+                                        _formatTradeQty(trade),
                                         style: _getTextStyle(context),
                                       ),
                                     ),

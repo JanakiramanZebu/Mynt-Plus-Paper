@@ -40,6 +40,7 @@ import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
+import 'position_holdings_card_web.dart';
 // import 'set_alert_web.dart';
 
 class ScripDepthInfoWeb extends ConsumerStatefulWidget {
@@ -1363,6 +1364,16 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                       */
                                           if (scripInfo.actDeptBtn ==
                                               "Overview") ...[
+                                            // Position/Holdings card at the top
+                                            if (widget.wlValue.instname !=
+                                                    "UNDIND" &&
+                                                widget.wlValue.instname !=
+                                                    "COM")
+                                              PositionHoldingsCardWeb(
+                                                token: widget.wlValue.token,
+                                                exchange: widget.wlValue.exch,
+                                                tsym: widget.wlValue.tsym,
+                                              ),
                                             Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.stretch,

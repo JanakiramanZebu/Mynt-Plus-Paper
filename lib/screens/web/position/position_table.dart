@@ -463,10 +463,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     return header != 'Select' && header != 'Product' && header != 'Instrument';
   }
 
-  // Format quantity
-  String _formatQty(String qty) {
-    final numQty = int.tryParse(qty) ?? 0;
-    return numQty > 0 ? '+$qty' : qty;
+  // Format position quantity - for MCX, divide by lot size
+  String _formatPositionQty(PositionBookModel position) {
+    // Use netqty as the source (raw quantity from API)
+    final rawQty = int.tryParse(position.netqty?.toString() ?? '0') ?? 0;
+    final lotSize = position.exch == 'MCX'
+        ? (int.tryParse(position.ls?.toString() ?? '1') ?? 1)
+        : 1;
+    final qty = rawQty ~/ lotSize;
+    return qty > 0 ? '+$qty' : '$qty';
   }
 
   // Check if position is closed
@@ -660,7 +665,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             // Skip normal cellWidth calculation for Instrument - already handled above
             continue;
           case 'Qty':
-            cellText = _formatQty(position.qty ?? '0');
+            cellText = _formatPositionQty(position);
             break;
           case 'Act Avg':
             cellText = position.avgPrc ?? '0.00';
@@ -1108,14 +1113,15 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             context, position, theme, isClosed, isRowHovered, positionBook,
             rowIndex: rowIndex);
       case 'Qty':
+        final formattedQty = _formatPositionQty(position);
         return Align(
           alignment: alignment,
           child: Text(
-            _formatQty(position.qty ?? '0'),
+            formattedQty,
             style: _getTextStyle(context,
                 color: isClosed
                     ? textColor
-                    : _getQtyColor(position.qty ?? '0', context)),
+                    : _getQtyColor(formattedQty, context)),
           ),
         );
       case 'Act Avg':

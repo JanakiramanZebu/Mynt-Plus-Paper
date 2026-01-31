@@ -1431,11 +1431,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         );
         break;
       case 'Qty':
+        final formattedQty = _formatPositionQty(position);
         cellContent = _buildPositionTextCell(
-          _formatQty(position.qty ?? '0'),
+          formattedQty,
           theme,
           alignment,
-          color: isClosed ? Colors.grey : _getQtyColor(position.qty ?? '0', theme),
+          color: isClosed ? Colors.grey : _getQtyColor(formattedQty, theme),
         );
         break;
       case 'Act Avg Price':
@@ -2011,6 +2012,17 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   String _formatQty(String qty) {
     final numQty = int.tryParse(qty) ?? 0;
     return numQty > 0 ? '+$qty' : qty;
+  }
+
+  // Format position quantity - for MCX, divide by lot size
+  String _formatPositionQty(PositionBookModel position) {
+    // Use netqty as the source (raw quantity from API)
+    final rawQty = int.tryParse(position.netqty?.toString() ?? '0') ?? 0;
+    final lotSize = position.exch == 'MCX'
+        ? (int.tryParse(position.ls?.toString() ?? '1') ?? 1)
+        : 1;
+    final qty = rawQty ~/ lotSize;
+    return qty > 0 ? '+$qty' : '$qty';
   }
 
   bool _isPositionClosed(PositionBookModel position) {

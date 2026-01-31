@@ -1056,10 +1056,15 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
     return 'N/A';
   }
 
-  // Format Qty as "filledQty / totalQty" like in image (0/1)
+  // Format Qty as "filledQty / totalQty" - for MCX, divide by lot size
   String _formatQty(OrderBookModel order) {
-    final filledQty = order.fillshares ?? '0';
-    final totalQty = order.qty ?? '0';
+    final rawFilled = int.tryParse(order.fillshares ?? '0') ?? 0;
+    final rawQty = int.tryParse(order.qty ?? '0') ?? 0;
+    final lotSize = order.exch == 'MCX'
+        ? (int.tryParse(order.ls ?? '1') ?? 1)
+        : 1;
+    final filledQty = rawFilled ~/ lotSize;
+    final totalQty = rawQty ~/ lotSize;
     return '$filledQty / $totalQty';
   }
 
@@ -1171,24 +1176,49 @@ class _OrderBookLTPCell extends ConsumerStatefulWidget {
 class _OrderBookLTPCellState extends ConsumerState<_OrderBookLTPCell> {
   late String ltp;
   StreamSubscription? _subscription;
+  bool _didSetupSubscription = false;
 
   @override
   void initState() {
     super.initState();
     ltp = widget.initialLtp;
+  }
 
-    if (widget.token.isNotEmpty) {
-      _subscription =
-          ref.read(websocketProvider).socketDataStream.listen((data) {
-        if (!mounted || !data.containsKey(widget.token)) return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-        final newLtp = data[widget.token]['lp']?.toString();
-        if (newLtp != null &&
-            newLtp != ltp &&
-            newLtp != '0.00' &&
-            newLtp != 'null') {
-          setState(() => ltp = newLtp);
+    if (!_didSetupSubscription && widget.token.isNotEmpty) {
+      _didSetupSubscription = true;
+
+      // Check existing socket data first (token might already be subscribed via watchlist)
+      final existingData = ref.read(websocketProvider).socketDatas;
+      if (existingData.containsKey(widget.token)) {
+        final existingLtp = existingData[widget.token]['lp']?.toString();
+        if (existingLtp != null &&
+            existingLtp != '0.00' &&
+            existingLtp != 'null' &&
+            existingLtp != '0') {
+          ltp = existingLtp;
         }
+      }
+
+      // Subscribe for future updates
+      Future.microtask(() {
+        if (!mounted) return;
+
+        _subscription =
+            ref.read(websocketProvider).socketDataStream.listen((data) {
+          if (!mounted || !data.containsKey(widget.token)) return;
+
+          final newLtp = data[widget.token]['lp']?.toString();
+          if (newLtp != null &&
+              newLtp != ltp &&
+              newLtp != '0.00' &&
+              newLtp != 'null') {
+            setState(() => ltp = newLtp);
+          }
+        });
       });
     }
   }

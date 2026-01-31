@@ -35,7 +35,7 @@ class WebSocketProvider extends ChangeNotifier {
   static const int _maxReconnectAttempts = 8; // Increased for poor networks
   static const int _subscriptionTimeout = 10; // Increased timeout for slow networks
   static const Duration _reconnectDelay = Duration(seconds: 2);
-  static const Duration _lowBandwidthPingInterval = Duration(seconds: 30); // Ping to keep connection alive
+  static const Duration _lowBandwidthPingInterval = Duration(seconds: 10); // Ping to keep connection alive
 
   // Network quality tracking
   Timer? _pingTimer;
@@ -309,6 +309,12 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _handleSubscriptionTimeout(String key, BuildContext context) {
+    // **FIX: Check if provider is disposed before handling timeout**
+    if (_isDisposed) {
+      log('WebSocket: Skipping _handleSubscriptionTimeout - provider is disposed');
+      return;
+    }
+
     // Only increment counter if we're not already reconnecting
     if (!_reconnecting) {
       _connectionCount++;
@@ -339,6 +345,11 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _sendPing() {
+    // **FIX: Check if provider is disposed before sending ping**
+    if (_isDisposed) {
+      return;
+    }
+
     try {
       if (_wsConnected && _channel != null) {
         // Send a lightweight ping message
@@ -350,7 +361,7 @@ class WebSocketProvider extends ChangeNotifier {
         // If we've failed too many pings, try to reconnect
         if (_failedPingCount >= _maxFailedPings && !_reconnecting) {
           _isLowBandwidth = true;
-          if (_context != null) {
+          if (_context != null && !_isDisposed) {
             reconnect(_context!);
           }
         }
@@ -411,7 +422,8 @@ class WebSocketProvider extends ChangeNotifier {
       } catch (e) {
         print('⚠️  [WEBSOCKET] Waiting for connection timed out: $e');
         log('⚠️  WebSocket: Waiting for connection timed out: $e');
-        if (_connectionCount < _maxReconnectAttempts && !_reconnecting) {
+        // **FIX: Check if provider is disposed before reconnecting from timeout**
+        if (_connectionCount < _maxReconnectAttempts && !_reconnecting && !_isDisposed) {
           reconnect(context);
         }
       }
@@ -753,6 +765,9 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _handleAlertMessage(Map<String, dynamic> res) {
+    // **FIX: Check if provider is disposed before handling alert message**
+    if (_isDisposed) return;
+
     // Show alert message in a SnackBar
     if (res['dmsg'] != null && _context != null) {
       // Display the alert message to the user
@@ -764,16 +779,24 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Navigate to the alerts tab (tab index 6) when alert is triggered
       // This will take the user to the alerts tab even if they're on another screen
-      ref.read(orderProvider).changeTabIndex(6, _context!);
+      try {
+        ref.read(orderProvider).changeTabIndex(6, _context!);
+      } catch (e) {
+        log('WebSocket: Error in changeTabIndex (likely disposed): $e');
+      }
     }
 
     // Update both pending alerts and triggered alerts
-    if (_context != null) {
-      // Fetch broker messages for triggered alerts
-      ref.read(notificationprovider).fetchbrokermsg(_context!);
+    if (_context != null && !_isDisposed) {
+      try {
+        // Fetch broker messages for triggered alerts
+        ref.read(notificationprovider).fetchbrokermsg(_context!);
 
-      // Fetch pending alerts to refresh the list
-      ref.read(marketWatchProvider).fetchPendingAlert(_context!);
+        // Fetch pending alerts to refresh the list
+        ref.read(marketWatchProvider).fetchPendingAlert(_context!);
+      } catch (e) {
+        log('WebSocket: Error in alert updates (likely disposed): $e');
+      }
     }
   }
 
@@ -887,13 +910,36 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _refreshData(BuildContext context) {
-    ref.read(portfolioProvider).fetchHoldings(context, "");
-    ref.read(orderProvider).fetchOrderBook(context, true);
-    ref.read(orderProvider).fetchTradeBook(context);
-    ref.read(orderProvider).fetchGTTOrderBook(context, "");
-    ref.read(fundProvider).fetchFunds(context);
+    // **FIX: Check if provider is disposed before using ref.read()**
+    // This prevents "provider[_addListener] is not a function" errors
+    // that occur when reconnection timer fires after provider disposal
+    if (_isDisposed) {
+      log('WebSocket: Skipping _refreshData - provider is disposed');
+      return;
+    }
 
-    Timer(const Duration(seconds: 1), () => ref.read(portfolioProvider).fetchPositionBook(context, false));
+    // Log session info for debugging session issues
+    final sessionForDebug = _pref.clientSession;
+    final clientIdForDebug = _pref.clientId;
+    print('🔄 [WEBSOCKET] _refreshData - Using session: ${sessionForDebug?.substring(0, sessionForDebug.length > 20 ? 20 : sessionForDebug.length)}... for client: $clientIdForDebug');
+    log('🔄 WebSocket: _refreshData - clientId: $clientIdForDebug, session: ${sessionForDebug != null && sessionForDebug.isNotEmpty ? sessionForDebug.substring(0, sessionForDebug.length > 10 ? 10 : sessionForDebug.length) : "EMPTY"}...');
+
+    try {
+      ref.read(portfolioProvider).fetchHoldings(context, "");
+      ref.read(orderProvider).fetchOrderBook(context, true);
+      ref.read(orderProvider).fetchTradeBook(context);
+      ref.read(orderProvider).fetchGTTOrderBook(context, "");
+      ref.read(fundProvider).fetchFunds(context);
+
+      Timer(const Duration(seconds: 1), () {
+        // Also check before delayed call
+        if (!_isDisposed) {
+          ref.read(portfolioProvider).fetchPositionBook(context, false);
+        }
+      });
+    } catch (e) {
+      log('WebSocket: Error in _refreshData (likely provider disposed): $e');
+    }
   }
 
   void _updateSocketData(String key, Map<String, dynamic> res) {
@@ -1394,6 +1440,12 @@ class WebSocketProvider extends ChangeNotifier {
       log('🔄 WebSocket: Scheduling reconnection in $delaySeconds seconds');
 
       Future.delayed(Duration(seconds: delaySeconds), () {
+        // **FIX: Check if provider is disposed before reconnecting from Future.delayed**
+        if (_isDisposed) {
+          log('WebSocket: Skipping reconnect from _handleConnectionClosed - provider is disposed');
+          return;
+        }
+
         if (!_wsConnected && !_reconnecting) {
           // Use passed context if mounted, otherwise fall back to stored _context
           // This handles page refresh scenario where original context is no longer valid
@@ -1497,13 +1549,19 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void reconnect(BuildContext context) {
+    // **FIX: Check if provider is disposed before reconnecting**
+    if (_isDisposed) {
+      log('WebSocket: Skipping reconnect - provider is disposed');
+      return;
+    }
+
     // Prevent multiple simultaneous reconnection attempts
     if (_reconnecting) {
       print('⏸️  [WEBSOCKET] Reconnection already in progress, skipping...');
       log('⏸️  WebSocket: Reconnection already in progress');
       return;
     }
-    
+
     // If already connected, don't reconnect
     if (_wsConnected && _channel != null) {
       print('✅ [WEBSOCKET] Already connected, skipping reconnection');
@@ -1542,12 +1600,24 @@ class WebSocketProvider extends ChangeNotifier {
       _attemptReconnection(context);
     } else {
       // Check if we're connected to a network before scheduling reconnection
-      final connectionStatus = ref.read(networkStateProvider).connectionStatus;
+      ConnectivityResult connectionStatus;
+      try {
+        connectionStatus = ref.read(networkStateProvider).connectionStatus;
+      } catch (e) {
+        log('WebSocket: Error reading networkStateProvider in reconnect: $e');
+        _reconnecting = false;
+        return;
+      }
 
       if (connectionStatus != ConnectivityResult.none) {
         print('⏱️  [WEBSOCKET] Scheduling reconnection in ${backoffDelay.inSeconds}s (backoff delay)');
         log('⏱️  WebSocket: Scheduling reconnection in ${backoffDelay.inSeconds}s');
         _reconnectBackoff = Timer(backoffDelay, () {
+          // **FIX: Check disposed before timer callback executes**
+          if (_isDisposed) {
+            log('WebSocket: Skipping reconnection timer callback - provider is disposed');
+            return;
+          }
           print('⏰ [WEBSOCKET] Backoff delay completed, attempting reconnection now');
           log('⏰ WebSocket: Backoff delay completed');
           _attemptReconnection(context);
@@ -1566,6 +1636,14 @@ class WebSocketProvider extends ChangeNotifier {
   }
 
   void _attemptReconnection(BuildContext context) {
+    // **FIX: Check if provider is disposed before attempting reconnection**
+    // This prevents "provider[_addListener] is not a function" errors
+    if (_isDisposed) {
+      log('WebSocket: Skipping _attemptReconnection - provider is disposed');
+      _reconnecting = false;
+      return;
+    }
+
     // Check if already connected before attempting
     if (_wsConnected && _channel != null) {
       print('✅ [WEBSOCKET] Already connected, canceling reconnection attempt');
@@ -1573,14 +1651,21 @@ class WebSocketProvider extends ChangeNotifier {
       _reconnecting = false;
       return;
     }
-    
+
     print('\n═══════════════════════════════════════════════════════════');
     print('🔄 [WEBSOCKET] ATTEMPTING RECONNECTION');
     print('   Attempt: ${_connectionCount + 1}/$_maxReconnectAttempts');
     print('═══════════════════════════════════════════════════════════\n');
     log('🔄 WebSocket: Attempting reconnection');
-    
-    final connectionStatus = ref.read(networkStateProvider).connectionStatus;
+
+    ConnectivityResult connectionStatus;
+    try {
+      connectionStatus = ref.read(networkStateProvider).connectionStatus;
+    } catch (e) {
+      log('WebSocket: Error reading networkStateProvider (likely disposed): $e');
+      _reconnecting = false;
+      return;
+    }
 
     if (connectionStatus != ConnectivityResult.none) {
       print('📶 [WEBSOCKET] Network available: ${connectionStatus.toString().split('.').last}');
