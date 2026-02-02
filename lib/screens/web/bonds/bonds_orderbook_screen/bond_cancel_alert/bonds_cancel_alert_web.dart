@@ -6,152 +6,109 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../../../provider/thems.dart';
-import '../../../../../res/global_state_text.dart';
 import '../../../../../res/res.dart';
 
 class BondCancelAlertWeb extends ConsumerWidget {
   final BondsOrderBookModel bondcancel;
-  const BondCancelAlertWeb({super.key, required this.bondcancel});
+  final bool closeSidebar;
+  const BondCancelAlertWeb({super.key, required this.bondcancel, this.closeSidebar = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
-    final bonds = ref.watch(bondsProvider);
-    
-    return AlertDialog(
-       backgroundColor: theme
-                                                                        .isDarkMode
-                                                                    ? const Color(
-                                                                        0xFF121212)
-                                                                    : const Color(
-                                                                        0xFFF1F3F8),
-       titlePadding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            8,
-                                                                        vertical:
-                                                                            8),
-                                                                shape: const RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.all(
-                                                                            Radius.circular(
-                                                                                8))),
-                                                                scrollable: true,
-                                                                contentPadding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                  horizontal: 12,
-                                                                  vertical: 12,
-                                                                ),
-                                                                actionsPadding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        bottom:
-                                                                            16,
-                                                                        right: 16,
-                                                                        left: 16,
-                                                                        top: 8),
-                                                                insetPadding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                        horizontal:
-                                                                            30,
-                                                                        vertical:
-                                                                            12),
-      title: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+    final isDark = theme.isDarkMode;
+
+    return Dialog(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Container(
+        width: 400,
+        padding: const EdgeInsets.all(0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with title and close button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () async {
-                        await Future.delayed(const Duration(milliseconds: 150));
-                        Navigator.pop(context);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 22,
-                           color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
-                        ),
+                  Text(
+                    "Cancel Bond Order",
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Icon(
+                        Icons.close,
+                        size: 20,
+                        color: isDark ? Colors.white70 : Colors.black54,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 10),
-                    TextWidget.subText(
-                      text:"Are you sure you want to cancel the (${bondcancel.symbol} order)",
-                      theme: theme.isDarkMode,
-                     color: theme.isDarkMode
-                                                                                ? colors.textSecondaryDark
-                                                                                : colors.textPrimaryLight,
-                      fw: 3,
-                      align: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
 
-            actions: [
-            // TextButton(
-            //   onPressed: () {
-            //     Navigator.of(dialogContext).pop();
-            //     // Go back to login or previous screen instead of recursive call
-            //     Navigator.of(context).pop();
-            //   },
-            //   child: Text("Cancel", style: textStyles.btnText),
-            // ),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => _handleCancelOrder(context, ref, bondcancel),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 45), // width, height
-                  side: BorderSide(
-                      color: colors.btnOutlinedBorder), // Outline border color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  backgroundColor: colors.primaryDark, // Transparent background
+            // Divider
+            Divider(
+              height: 1,
+              color: isDark ? Colors.white12 : Colors.grey[300],
+            ),
+
+            // Content
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Text(
+                'Are you sure you want to cancel "${bondcancel.symbol}"?',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: isDark ? Colors.white70 : Colors.black87,
                 ),
-                child: TextWidget.titleText(
-                    text: "Yes",
-                    theme: theme.isDarkMode,
-                    color: colors.colorWhite,
-                    fw: 2),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+            // Cancel Button (Red)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _handleCancelOrder(context, ref, bondcancel, closeSidebar),
+                  style: ElevatedButton.styleFrom(
+                     backgroundColor: MyntColors.tertiary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  child: Text(
+                    "Cancel",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
-     
-      // actions: [
-      //   _ActionButtons(
-      //     bondcancel: bondcancel,
-      //     bonds: bonds,
-      //     theme: theme,
-      //   ),
-      // ],
+        ),
+      ),
     );
   }
 }
@@ -215,7 +172,7 @@ class _YesButton extends ConsumerWidget {
           borderRadius: BorderRadius.circular(50),
         ),
       ),
-      onPressed: () => _handleCancelOrder(context, ref, bondcancel),
+      onPressed: () => _handleCancelOrder(context, ref, bondcancel, false),
       child: Text(
         "Yes",
         style: _textStyle(
@@ -241,7 +198,7 @@ TextStyle _textStyle(Color color, double fontSize, FontWeight fWeight) {
 }
 
 
-_handleCancelOrder(BuildContext context, WidgetRef ref, BondsOrderBookModel bondcancel) async {
+_handleCancelOrder(BuildContext context, WidgetRef ref, BondsOrderBookModel bondcancel, bool closeSidebar) async {
     Map<String, dynamic> bondOrderData = {};
     bondOrderData["clientApplicationNumber"] = bondcancel.clientApplicationNumber;
     bondOrderData["orderNumber"] = bondcancel.orderNumber;
@@ -249,8 +206,10 @@ _handleCancelOrder(BuildContext context, WidgetRef ref, BondsOrderBookModel bond
     bondOrderData["investmentValue"] = bondcancel.investmentValue;
     bondOrderData["price"] = bondcancel.bidDetail?.price ?? 0;
 
-    Navigator.pop(context);
-    Navigator.pop(context);
+    Navigator.pop(context); // Close dialog
+    if (closeSidebar) {
+      Navigator.pop(context); // Close sidebar only if opened from sidebar
+    }
 
     await ref.read(bondsProvider).cancelBondOrder(context, bondOrderData);
     print('cancel bond data :::::::; $bondOrderData');

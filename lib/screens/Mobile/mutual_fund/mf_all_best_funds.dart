@@ -12,7 +12,6 @@ import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 // import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../provider/transcation_provider.dart';
 
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -50,8 +49,14 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
   late TabController _tabController;
   late ScrollController _scrollController;
   late ScrollController _horizontalScrollController; // Added for Table
+  late ScrollController _tableScrollController; // For lazy loading
   int selectedTab = 0;
   // String selectedReturn = '3Y Returns'; // Removed as we show all columns
+
+  // Lazy loading state
+  static const int _itemsPerPage = 10;
+  int _displayedItemCount = 10;
+  bool _isLoadingMore = false;
 
   // Sorting state
   int? _sortColumnIndex;
@@ -93,6 +98,10 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
         length: tabTitles.length, vsync: this, initialIndex: initialIndex);
     _scrollController = ScrollController();
     _horizontalScrollController = ScrollController();
+    _tableScrollController = ScrollController();
+
+    // Add scroll listener for lazy loading
+    _tableScrollController.addListener(_onScroll);
 
     selectedTab = initialIndex;
 
@@ -101,6 +110,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
       if (selectedTab != newIndex) {
         setState(() {
           selectedTab = newIndex;
+          // Reset pagination when tab changes
+          _displayedItemCount = _itemsPerPage;
         });
         // Scroll to center the active tab
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -120,10 +131,33 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
     _tabController.dispose();
     _scrollController.dispose();
     _horizontalScrollController.dispose();
+    _tableScrollController.removeListener(_onScroll);
+    _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
     _popoverCloseTimer?.cancel();
 
     super.dispose();
+  }
+
+  // Scroll listener for lazy loading
+  void _onScroll() {
+    if (_isLoadingMore) return;
+
+    final maxScroll = _tableScrollController.position.maxScrollExtent;
+    final currentScroll = _tableScrollController.position.pixels;
+    final threshold = maxScroll * 0.8; // Load more when 80% scrolled
+
+    if (currentScroll >= threshold) {
+      _loadMoreItems();
+    }
+  }
+
+  void _loadMoreItems() {
+    setState(() {
+      _isLoadingMore = true;
+      _displayedItemCount += _itemsPerPage;
+      _isLoadingMore = false;
+    });
   }
 
   void _onHoverChanged(int rowIndex, bool isHovered) {
@@ -211,7 +245,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
               child: Stack(
                 children: [
                   MyntLoaderOverlay(
-                    isLoading: mf.bestmfloader ?? false,
+                    // Show loader when list is loading or when fund detail is loading
+                    isLoading: (mf.newbestmodel == null && (mf.bestmfloader ?? false)) || mf.fundDetailLoader,
                     child: buildFundList(
                         tabTitles.isNotEmpty ? tabTitles[selectedTab] : '',
                         mf,
@@ -275,6 +310,8 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
+                  // Reset pagination when search changes
+                  _displayedItemCount = _itemsPerPage;
                 });
               },
             ),
@@ -527,15 +564,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
       }
     }
 
-    if (sortedList == null || sortedList.isEmpty) {
-      return const Center(
-          child: NoDataFound(
-        secondaryEnabled: false,
-      ));
-    }
-
-    // Calculate widths - use equal spacing for data columns
-    // Calculate widths - use equal spacing for data columns
+    final bool hasData = sortedList != null && sortedList.isNotEmpty;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -556,7 +585,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                   constraints: BoxConstraints(minWidth: totalWidth),
                   child: Column(
                     children: [
-                      // Fixed Header
+                      // Fixed Header - always show
                       shadcn.Table(
                         defaultRowHeight: const shadcn.FixedTableSize(
                             50), // Reduced Header Height
@@ -582,31 +611,35 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                           ),
                         ],
                       ),
-                      // Scrollable Body
+                      // Scrollable Body with lazy loading or No Data
                       Expanded(
-                        child: SingleChildScrollView(
-                          child: shadcn.Table(
-                            defaultRowHeight: const shadcn.FixedTableSize(
-                                70), // Data Row Height
-                            columnWidths: {
-                              0: shadcn.FixedTableSize(fundNameWidth),
-                              1: shadcn.FixedTableSize(otherColumnWidth), // AUM
-                              2: shadcn.FixedTableSize(
-                                  otherColumnWidth), // 1yr CAGR
-                              3: shadcn.FixedTableSize(
-                                  otherColumnWidth), // 3yr CAGR
-                              4: shadcn.FixedTableSize(
-                                  otherColumnWidth), // Min. Invest
-                            },
-                            rows: [
-                              ...sortedList.asMap().entries.map((entry) {
+                        child: hasData
+                            ? SingleChildScrollView(
+                                controller: _tableScrollController,
+                                child: Column(
+                                  children: [
+                                    shadcn.Table(
+                                      defaultRowHeight: const shadcn.FixedTableSize(
+                                          70), // Data Row Height
+                                      columnWidths: {
+                                        0: shadcn.FixedTableSize(fundNameWidth),
+                                        1: shadcn.FixedTableSize(otherColumnWidth), // AUM
+                                        2: shadcn.FixedTableSize(
+                                            otherColumnWidth), // 1yr CAGR
+                                        3: shadcn.FixedTableSize(
+                                            otherColumnWidth), // 3yr CAGR
+                                        4: shadcn.FixedTableSize(
+                                            otherColumnWidth), // Min. Invest
+                                      },
+                                      rows: [
+                                        // Only display items up to _displayedItemCount for lazy loading
+                                        ...sortedList!.take(_displayedItemCount).toList().asMap().entries.map((entry) {
                                 final index = entry.key;
                                 final item = entry.value;
 
                                 void onTap() async {
                                   try {
                                     if (item.iSIN != null) {
-                                      mf.loaderfun();
                                       await mf.fetchFactSheet(item.iSIN);
                                       mf.fetchmatchisan(item.iSIN);
 
@@ -717,11 +750,33 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                                       ),
                                     ),
                                   ],
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
+                                  );
+                                }),
+                                      ],
+                                    ),
+                                    // Loading indicator when more items available
+                                    if (_displayedItemCount < sortedList!.length)
+                                      Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Theme.of(context).primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              )
+                            : const Center(
+                                child: NoDataFound(
+                                  secondaryEnabled: false,
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -965,81 +1020,50 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
 
   Future<void> _handleOrder(
       dynamic item, String orderType, MFProvider mf) async {
-    // Show loader while fetching dependencies
+    // Pre-fill amount based on order type (synchronous - no delay)
+    if (orderType == "One-time") {
+      String amt = item.minimumPurchaseAmount ?? "0";
+      mf.invAmt.text = amt.split('.').first;
+    } else {
+      String amt = item.minimumPurchaseAmount ?? "0";
+      mf.installmentAmt.text = amt.split('.').first;
+    }
+
+    // Convert item to MutualFundList
+    Map<String, dynamic> jsonData = item.toJson();
+    // Ensure fSchemeName is set from name if not present
+    if (jsonData['f_scheme_name'] == null && jsonData['name'] != null) {
+      jsonData['f_scheme_name'] = jsonData['name'];
+    }
+    MutualFundList mfItem = MutualFundList.fromJson(jsonData);
+
+    // Set order type immediately
+    mf.chngOrderType(orderType);
+    mf.orderchangetitle(orderType);
+
+    // Get screen dimensions
+    final screenSize = MediaQuery.of(context).size;
+    // Use minimum width of 380 or 30% of screen width, whichever is larger
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+    final dialogHeight = screenSize.height * 0.65; // 65% height
+
+    // Show dialog immediately - data will load inside MFOrderScreen's initState
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) =>
-          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
-    );
-
-    try {
-      // Fetch bank details
-      await ref.read(transcationProvider).fetchfundbank(context);
-
-      if (!context.mounted) return;
-      Navigator.pop(context); // Dismiss loader
-
-      final isin = item.iSIN;
-      final schemeCode = item.schemeCode;
-
-      // Set up SIP if applicable
-      if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-        mf.invertfun(isin, schemeCode, context);
-      }
-
-      // Pre-fill amount based on order type
-      if (orderType == "One-time") {
-        String amt = item.minimumPurchaseAmount ?? "0";
-        mf.invAmt.text = amt.split('.').first;
-      } else {
-        String amt = item.minimumPurchaseAmount ?? "0";
-        mf.installmentAmt.text = amt.split('.').first;
-      }
-
-      // Convert item to MutualFundList
-      Map<String, dynamic> jsonData = item.toJson();
-      // Ensure fSchemeName is set from name if not present
-      if (jsonData['f_scheme_name'] == null && jsonData['name'] != null) {
-        jsonData['f_scheme_name'] = jsonData['name'];
-      }
-      MutualFundList mfItem = MutualFundList.fromJson(jsonData);
-
-      if (context.mounted) {
-        mf.chngOrderType(orderType);
-        mf.orderchangetitle(orderType);
-
-        // Get screen dimensions
-        final screenSize = MediaQuery.of(context).size;
-        // Use minimum width of 380 or 30% of screen width, whichever is larger
-        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-        final dialogHeight = screenSize.height * 0.65; // 65% height
-
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: SizedBox(
-              width: dialogWidth,
-              height: dialogHeight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: MFOrderScreen(mfData: mfItem),
-              ),
-            ),
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: MFOrderScreen(mfData: mfItem),
           ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context); // Dismiss loader if still showing
-        ResponsiveSnackBar.show(
-            context: context,
-            message: "Error: ${e.toString()}",
-            type: SnackBarType.error);
-      }
-    }
+        ),
+      ),
+    );
+    // Note: SIP data and mandate details are loaded in MFOrderScreen's initState
   }
 
   Color _getReturnColor(BuildContext context, String? returns) {

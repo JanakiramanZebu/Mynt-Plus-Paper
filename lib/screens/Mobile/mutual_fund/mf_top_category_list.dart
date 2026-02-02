@@ -10,7 +10,6 @@ import '../../../utils/responsive_snackbar.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../provider/transcation_provider.dart';
 
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
@@ -231,7 +230,8 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
             _buildCustomHeader(context, theme),
             Expanded(
               child: MyntLoaderOverlay(
-                isLoading: mfData.bestmfloader ?? false,
+                // Show loader when tab data is loading or when fund detail is loading
+                isLoading: (tabTitles.isEmpty && (mfData.bestmfloader ?? false)) || mfData.fundDetailLoader,
                 child: tabTitles.isEmpty
                     ? const Center(
                         child: NoDataFound(
@@ -838,7 +838,6 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
                                 // Define onTap function
                                 void onTap() async {
                                   try {
-                                    mfData.loaderfun();
                                     if (item.iSIN != null) {
                                       await mfData.fetchFactSheet(item.iSIN);
 
@@ -959,81 +958,50 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreen>
 
   Future<void> _handleOrder(
       dynamic item, String orderType, dynamic mfData) async {
-    // Show loader while fetching dependencies
+    // Pre-fill amount based on order type (synchronous - no delay)
+    if (orderType == "One-time") {
+      String amt = item.minimumPurchaseAmount ?? "0";
+      mfData.invAmt.text = amt.split('.').first;
+    } else {
+      String amt = item.minimumPurchaseAmount ?? "0";
+      mfData.installmentAmt.text = amt.split('.').first;
+    }
+
+    // Convert item to MutualFundList
+    Map<String, dynamic> jsonData = item.toJson();
+    // Ensure fSchemeName is set from name if not present
+    if (jsonData['f_scheme_name'] == null && jsonData['name'] != null) {
+      jsonData['f_scheme_name'] = jsonData['name'];
+    }
+    MutualFundList mfItem = MutualFundList.fromJson(jsonData);
+
+    // Set order type immediately
+    mfData.chngOrderType(orderType);
+    mfData.orderchangetitle(orderType);
+
+    // Get screen dimensions
+    final screenSize = MediaQuery.of(context).size;
+    // Use minimum width of 380 or 30% of screen width, whichever is larger
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+    final dialogHeight = screenSize.height * 0.65; // 65% height
+
+    // Show dialog immediately - data will load inside MFOrderScreen's initState
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) =>
-          const Center(child: MyntLoader(size: MyntLoaderSize.large)),
-    );
-
-    try {
-      // Fetch bank details
-      await ref.read(transcationProvider).fetchfundbank(context);
-
-      if (!context.mounted) return;
-      Navigator.pop(context); // Dismiss loader
-
-      final isin = item.iSIN;
-      final schemeCode = item.schemeCode;
-
-      // Set up SIP if applicable
-      if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-        mfData.invertfun(isin, schemeCode, context);
-      }
-
-      // Pre-fill amount based on order type
-      if (orderType == "One-time") {
-        String amt = item.minimumPurchaseAmount ?? "0";
-        mfData.invAmt.text = amt.split('.').first;
-      } else {
-        String amt = item.minimumPurchaseAmount ?? "0";
-        mfData.installmentAmt.text = amt.split('.').first;
-      }
-
-      // Convert item to MutualFundList
-      Map<String, dynamic> jsonData = item.toJson();
-      // Ensure fSchemeName is set from name if not present
-      if (jsonData['f_scheme_name'] == null && jsonData['name'] != null) {
-        jsonData['f_scheme_name'] = jsonData['name'];
-      }
-      MutualFundList mfItem = MutualFundList.fromJson(jsonData);
-
-      if (context.mounted) {
-        mfData.chngOrderType(orderType);
-        mfData.orderchangetitle(orderType);
-
-        // Get screen dimensions
-        final screenSize = MediaQuery.of(context).size;
-        // Use minimum width of 380 or 30% of screen width, whichever is larger
-        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-        final dialogHeight = screenSize.height * 0.65; // 65% height
-
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: SizedBox(
-              width: dialogWidth,
-              height: dialogHeight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: MFOrderScreen(mfData: mfItem),
-              ),
-            ),
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: MFOrderScreen(mfData: mfItem),
           ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context); // Dismiss loader if still showing
-        ResponsiveSnackBar.show(
-            context: context,
-            message: "Error: ${e.toString()}",
-            type: SnackBarType.error);
-      }
-    }
+        ),
+      ),
+    );
+    // Note: SIP data and mandate details are loaded in MFOrderScreen's initState
   }
 
   String _formatReturns(String? returns) {

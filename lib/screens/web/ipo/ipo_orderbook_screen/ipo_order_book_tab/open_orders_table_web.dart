@@ -686,6 +686,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
     final orderToken = order.applicationNumber?.toString() ?? '';
     final uniqueId = '$orderToken$index';
     final isHovered = _hoveredRowToken == uniqueId;
+    final isRowActive = isHovered || _popoverRowId == uniqueId;
     final canCancel = _canCancelOrder(order);
     final companyName = order.companyName?.toString() ?? '';
 
@@ -694,7 +695,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         // Date
         _buildShadcnCell(
           uniqueId: uniqueId,
-          rowIsHovered: isHovered,
+          rowIsHovered: isRowActive,
           theme: theme,
           onTap: () => _showOrderDetailsDialog(order),
           padding: const EdgeInsets.only(left: 16.0, right: 8.0, top: 8.0, bottom: 8.0),
@@ -718,7 +719,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         _buildNameCellWithActions(
           order: order,
           uniqueId: uniqueId,
-          rowIsHovered: isHovered || _popoverRowId == uniqueId,
+          rowIsHovered: isRowActive,
           theme: theme,
           companyName: companyName,
           canCancel: canCancel,
@@ -726,7 +727,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         // Amount
         _buildShadcnCell(
           uniqueId: uniqueId,
-          rowIsHovered: isHovered,
+          rowIsHovered: isRowActive,
           theme: theme,
           centered: true,
           onTap: () => _showOrderDetailsDialog(order),
@@ -746,7 +747,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
         // Status
         _buildShadcnCell(
           uniqueId: uniqueId,
-          rowIsHovered: isHovered,
+          rowIsHovered: isRowActive,
           theme: theme,
           centered: true,
           onTap: () => _showOrderDetailsDialog(order),

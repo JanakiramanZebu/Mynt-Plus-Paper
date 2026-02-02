@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_cancel_alert.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_order_bottomsheet.dart';
 import '../../../../models/mf_model/mf_order_det_model.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../provider/fund_provider.dart';
-import '../../../../provider/transcation_provider.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
@@ -102,8 +99,7 @@ class _MFOrderDetailScreenWebState
                   _buildActionButtons(theme),
                   // Order Details Section
                   _buildOrderDetailsSection(theme,
-                      hasButtons:
-                          _shouldShowReinitiate() || _shouldShowCancel()),
+                      hasButtons: _shouldShowCancel()),
                   // Reason/Remarks Section
                   if (_shouldShowReason()) ...[
                     _buildReasonSection(theme),
@@ -155,19 +151,6 @@ class _MFOrderDetailScreenWebState
     return status ?? 'Unknown';
   }
 
-  bool _shouldShowReinitiate() {
-    final status = widget.mfOrderData.status;
-    return status == 'PAYMENT NOT INITIATED' ||
-        status == 'MODIFIED' ||
-        status == 'PAYMENT INITATED' ||
-        status == 'PAYMENT INIT' ||
-        status == 'PAYMENT COMPLETED' ||
-        status == 'CANCEL ERROR' ||
-        status == 'WAIT FOR ALLOTMENT' ||
-        status == 'MODIFY REJECTED' ||
-        status == 'PAYMENT REJECTED';
-  }
-
   bool _shouldShowCancel() {
     final status = widget.mfOrderData.status;
     return widget.mfOrderData.orderType == "NRM" &&
@@ -177,35 +160,6 @@ class _MFOrderDetailScreenWebState
 
   bool _shouldShowReason() {
     return widget.mfOrderData.status != "PLACED";
-  }
-
-  Widget _buildReinitiateButton(ThemesProvider theme, MFProvider mfdata) {
-    return MyntOutlinedButton(
-      label: "Re-Initiate Payment",
-      onPressed: () async {
-        ref.read(fundProvider).fetchFunds(context);
-        
-        final transProv = ref.read(transcationProvider);
-        if (transProv.bankdetails == null) {
-          await transProv.fetchfundbank(context);
-        }
-        if (transProv.decryptclientcheck == null) {
-          await transProv.fetchc(context);
-        }
-        transProv.initialdata(context);
-        mfdata.fetchUpiDetail('', context);
-
-        shadcn.closeSheet(context);
-
-        _showBottomSheet(
-          context,
-          MfOrderBottomsheet(
-            data: widget.mfOrderData,
-            condval: 'reinitiatefromportfolio',
-          ),
-        );
-      },
-    );
   }
 
   Widget _buildCancelOrderButton(ThemesProvider theme, MFProvider mfdata) {
@@ -279,7 +233,7 @@ class _MFOrderDetailScreenWebState
 
   Widget _buildActionButtons(ThemesProvider theme) {
     // Check if any buttons should be shown
-    if (!_shouldShowReinitiate() && !_shouldShowCancel()) {
+    if (!_shouldShowCancel()) {
       return const SizedBox.shrink();
     }
 
@@ -289,10 +243,6 @@ class _MFOrderDetailScreenWebState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (_shouldShowReinitiate()) ...[
-            _buildReinitiateButton(theme, mfdata),
-            const SizedBox(height: 12),
-          ],
           _buildCancelOrderButton(theme, mfdata),
         ],
       ),
@@ -456,26 +406,6 @@ class _MFOrderDetailScreenWebState
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showBottomSheet(BuildContext context, Widget bottomSheet) {
-    showModalBottomSheet(
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      useSafeArea: true,
-      isDismissible: true,
-      backgroundColor: resolveThemeColor(context,
-          dark: const Color(0xFF0F172A), light: Colors.white),
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: bottomSheet,
       ),
     );
   }

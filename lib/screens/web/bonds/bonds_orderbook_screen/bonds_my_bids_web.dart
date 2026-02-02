@@ -15,6 +15,7 @@ import '../../../../sharedWidget/no_data_found.dart';
 
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import 'bonds_details_sidebar_web.dart';
+import 'bond_cancel_alert/bonds_cancel_alert_web.dart';
 import '../../../../res/res.dart';
 import '../../../../provider/thems.dart';
 
@@ -737,6 +738,29 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
             final textColor = resolveThemeColor(context,
                 dark: WebColors.textPrimaryDark,
                 light: WebColors.textPrimary);
+
+            // Cancel option (only for open orders)
+            if (_selectedSubTab == 0) {
+              menuItems.add(
+                _buildMenuButton(
+                  icon: Icons.cancel_outlined,
+                  title: 'Cancel',
+                  iconColor: MyntColors.tertiary,
+                  textColor: textColor,
+                  onPressed: (ctx) {
+                    _closePopover();
+                    showDialog(
+                      context: context,
+                      barrierColor: Colors.black54,
+                      builder: (BuildContext context) {
+                        return BondCancelAlertWeb(bondcancel: order);
+                      },
+                    );
+                  },
+                ),
+              );
+              menuItems.add(const shadcn.MenuDivider());
+            }
 
             // Info option
             menuItems.add(

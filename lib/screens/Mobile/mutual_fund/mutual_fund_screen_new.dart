@@ -270,7 +270,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   theme: theme,
                                   context: context,
                                   onTap: () {
-                                    mfData.changetitle(item['title']);
+                                    // Navigate immediately - title is passed as argument
+                                    // No need to call changetitle() which triggers unnecessary rebuild
                                     if (widget.onCollectionTap != null) {
                                       widget.onCollectionTap!(
                                         item['title'] ?? '',
@@ -683,8 +684,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             }
 
                             return InkWell(
-                              onTap: () async {
-                                mfData.changetitle(bestMFList[index]['title']);
+                              onTap: () {
+                                // Navigate immediately - title is passed as argument
                                 Navigator.pushNamed(
                                   context,
                                   Routes.bestMfScreen,
@@ -996,11 +997,10 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                         }
 
                         return InkWell(
-                          onTap: () async {
+                          onTap: () {
                             final title =
                                 mfData.bestMFListStaticnew[index]['title'];
-                            mfData.changetitle(title);
-
+                            // Navigate immediately - title is passed as argument
                             if (widget.onCollectionTap != null) {
                               widget.onCollectionTap!(
                                 title,

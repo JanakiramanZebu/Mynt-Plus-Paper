@@ -91,8 +91,12 @@ class Data {
   String? weekLowDate;
   String? ytm;
   bool?isAdd;
-  String? AUM; 
-  String? amccode; 
+  String? AUM;
+  String? amccode;
+  String? largeCap;
+  String? midCap;
+  String? smallCap;
+  String? currentNavWeekhighPercentageDiff; 
 
 
   Data(
@@ -167,6 +171,10 @@ class Data {
       this.overview2,this.isAdd
       ,this.AUM
       ,this.amccode
+      ,this.largeCap
+      ,this.midCap
+      ,this.smallCap
+      ,this.currentNavWeekhighPercentageDiff
       });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -268,7 +276,11 @@ class Data {
     weekLow = json['weekLow'].toString();
     weekLowDate = json['weekLowDate'].toString();
     ytm = json['ytm'].toString();
-     isAdd=json['isAdd']??false;
+    isAdd=json['isAdd']??false;
+    largeCap = json['largeCap'].toString();
+    midCap = json['midCap'].toString();
+    smallCap = json['smallCap'].toString();
+    currentNavWeekhighPercentageDiff = json['currentNavWeekhighPercentageDiff'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -360,7 +372,11 @@ class Data {
     data['weekLow'] = weekLow;
     data['weekLowDate'] = weekLowDate;
     data['ytm'] = ytm;
-        data['isAdd']=isAdd;
+    data['isAdd']=isAdd;
+    data['largeCap'] = largeCap;
+    data['midCap'] = midCap;
+    data['smallCap'] = smallCap;
+    data['currentNavWeekhighPercentageDiff'] = currentNavWeekhighPercentageDiff;
     return data;
   }
 }

@@ -51,11 +51,16 @@ class MFCategoryListScreen extends ConsumerWidget {
         ),
       ),
       body: MyntLoaderOverlay(
-        isLoading: mfData.bestmfloader ?? false,
+        isLoading: (mfData.bestmfloader ?? false) ||
+            mfData.categoryDataLoader ||
+            mfData.mfallcatnewlist == null ||
+            mfData.fundDetailLoader,
         child: mfData.catnewlist?.isEmpty ?? true
-            ? const Center(child: NoDataFound(
-              secondaryEnabled: false,
-            ))
+            ? ((mfData.categoryDataLoader || mfData.mfallcatnewlist == null)
+                ? const SizedBox.shrink()
+                : const Center(child: NoDataFound(
+                    secondaryEnabled: false,
+                  )))
             : Column(
                 children: [
                   _buildCategoryChips(context, ref, theme, title, mfData),
@@ -135,7 +140,6 @@ class MFCategoryListScreen extends ConsumerWidget {
         },
         onTap: () async {
           try {
-            mfData.loaderfun();
             if (item.iSIN != null) {
               await mfData.fetchFactSheet(item.iSIN);
       

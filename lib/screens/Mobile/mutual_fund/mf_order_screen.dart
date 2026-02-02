@@ -4,10 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import '../../../models/mf_model/mf_lumpsum_order.dart';
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
-import '../../../provider/thems.dart';
 import '../../../provider/transcation_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
@@ -55,16 +54,25 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
       if (mfProv.invAmt.text.isEmpty) {
         mfProv.invAmt.text = widget.mfData.minimumPurchaseAmount ?? '500';
       }
-      ref.read(fundProvider).fetchFunds(context);
-      
-      final transProv = ref.read(transcationProvider);
-      if (transProv.bankdetails == null) {
-        await transProv.fetchfundbank(context);
+
+      // Fetch SIP data, mandate details, and bank details
+      final isin = widget.mfData.iSIN;
+      final schemeCode = widget.mfData.schemeCode;
+      if (isin != null && schemeCode != null) {
+        await mfProv.fetchMFSipData(isin, schemeCode);
+        await mfProv.fetchMFMandateDetail();
       }
-      if (transProv.decryptclientcheck == null) {
-        await transProv.fetchc(context);
+      // Fetch UPI details for payment UI
+      await mfProv.fetchUpiDetail('', context);
+      // Fetch bank_check API and set default bank
+      final fundProv = ref.read(transcationProvider);
+      await fundProv.fetchfundbank(context);
+      // Set default bank if data is available
+      if (fundProv.bankdetails?.dATA != null && fundProv.bankdetails!.dATA!.isNotEmpty) {
+        fundProv.bankselection(0);
       }
-      transProv.initialdata(context);
+      // Clear any validation errors after data is loaded
+      mfProv.resetmfordervalidation();
     });
   }
 
@@ -401,24 +409,24 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
 
     return Column(
       children: [
-        // Selected mandate display - using MyntTextField style
+        // Selected mandate display
         InkWell(
           onTap: () {
             setState(() => _isMandateDropdownOpen = !_isMandateDropdownOpen);
           },
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            height: 45,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: isDark
                   ? const Color(0xffB5C0CF).withOpacity(.15)
-                  : const Color(0xffF1F3F8),
-              borderRadius: BorderRadius.circular(5),
+                  : const Color(0xffF5F7FA),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isDark
                     ? MyntColors.outlinedBorderDark
-                    : MyntColors.outlinedBorder,
+                    : const Color(0xFFE0E0E0),
                 width: 1,
               ),
             ),
@@ -427,7 +435,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               children: [
                 Text(
                   selectedMandate?.mandateId ?? "Select mandate",
-                  style: MyntWebTextStyles.bodySmall(
+                  style: MyntWebTextStyles.bodyMedium(
                     context,
                     fontWeight: MyntFonts.medium,
                     darkColor: MyntColors.textPrimaryDark,
@@ -437,7 +445,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                 Icon(
                   _isMandateDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                   color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                  size: 20,
+                  size: 24,
                 ),
               ],
             ),
@@ -447,129 +455,135 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
         // Dropdown list
         if (_isMandateDropdownOpen) ...[
           Container(
-            margin: const EdgeInsets.only(top: 4),
-            constraints: const BoxConstraints(maxHeight: 250),
+            margin: const EdgeInsets.only(top: 8),
+            constraints: const BoxConstraints(maxHeight: 350),
             decoration: BoxDecoration(
               color: isDark ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(5),
-              border: Border.all(
-                color: isDark
-                    ? MyntColors.outlinedBorderDark
-                    : MyntColors.outlinedBorder,
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: ListView.separated(
-              shrinkWrap: true,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemCount: mfOrder.mandateData!.length,
-              separatorBuilder: (_, __) => Divider(
-                height: 1,
-                color: isDark
-                    ? MyntColors.outlinedBorderDark
-                    : MyntColors.outlinedBorder,
-              ),
-              itemBuilder: (context, index) {
-                final mandate = mfOrder.mandateData![index];
-                final isSelected = mandate.mandateId == mfOrder.mandateId;
-                final status = mandate.status?.toUpperCase() ?? '';
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: mfOrder.mandateData!.length,
+                itemBuilder: (context, index) {
+                  final mandate = mfOrder.mandateData![index];
+                  final isSelected = mandate.mandateId == mfOrder.mandateId;
+                  final status = mandate.status?.toUpperCase() ?? '';
 
-                return InkWell(
-                  onTap: () {
-                    mfOrder.chngMandate(mandate.mandateId ?? '');
-                    setState(() => _isMandateDropdownOpen = false);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    color: isSelected
-                        ? (isDark ? MyntColors.primary.withOpacity(0.1) : MyntColors.primary.withOpacity(0.05))
-                        : Colors.transparent,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    "Mandate Id : ${mandate.mandateId}",
-                                    style: MyntWebTextStyles.bodySmall(
-                                      context,
-                                      fontWeight: MyntFonts.medium,
-                                      darkColor: MyntColors.textPrimaryDark,
-                                      lightColor: MyntColors.textPrimary,
+                  return InkWell(
+                    onTap: () {
+                      mfOrder.chngMandate(mandate.mandateId ?? '');
+                      setState(() => _isMandateDropdownOpen = false);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? (isDark ? MyntColors.primary.withOpacity(0.08) : const Color(0xFFF0F7FF))
+                            : (isDark ? colors.darkGrey.withOpacity(0.3) : const Color(0xFFF5F7FA)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? MyntColors.primary
+                              : Colors.transparent,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Mandate ID row with status icon and amount
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            "Mandate Id : ${mandate.mandateId}",
+                                            style: MyntWebTextStyles.bodySmall(
+                                              context,
+                                              fontWeight: MyntFonts.semiBold,
+                                              darkColor: MyntColors.textPrimaryDark,
+                                              lightColor: MyntColors.textPrimary,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          _getMandateStatusIcon(status),
+                                        ],
+                                      ),
                                     ),
+                                    Text(
+                                      double.parse(mandate.amount ?? '0').toStringAsFixed(2),
+                                      style: MyntWebTextStyles.bodySmall(
+                                        context,
+                                        fontWeight: MyntFonts.semiBold,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                // Bank name
+                                Text(
+                                  mandate.bankName ?? "Unknown Bank",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    fontWeight: MyntFonts.medium,
+                                    color: MyntColors.primary,
                                   ),
-                                  const SizedBox(width: 6),
-                                  _getMandateStatusIcon(status),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                mandate.bankName ?? "Unknown Bank",
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  darkColor: MyntColors.textSecondaryDark,
-                                  lightColor: MyntColors.textSecondary,
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                status,
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  darkColor: MyntColors.textSecondaryDark,
-                                  lightColor: MyntColors.textSecondary,
+                                const SizedBox(height: 2),
+                                // Status
+                                Text(
+                                  status,
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    darkColor: MyntColors.textSecondaryDark,
+                                    lightColor: MyntColors.textSecondary,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _formatDate(mandate.regnDate ?? ''),
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  darkColor: MyntColors.textSecondaryDark,
-                                  lightColor: MyntColors.textSecondary,
+                                const SizedBox(height: 2),
+                                // Date
+                                Text(
+                                  _formatDate(mandate.regnDate ?? ''),
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    darkColor: MyntColors.textSecondaryDark,
+                                    lightColor: MyntColors.textSecondary,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              double.parse(mandate.amount ?? '0').toStringAsFixed(2),
-                              style: MyntWebTextStyles.bodySmall(
-                                context,
-                                fontWeight: MyntFonts.semiBold,
-                                darkColor: MyntColors.textPrimaryDark,
-                                lightColor: MyntColors.textPrimary,
-                              ),
+                              ],
                             ),
-                            if (isSelected) ...[
-                              const SizedBox(height: 8),
-                              Icon(
-                                Icons.check_circle,
-                                color: MyntColors.primary,
-                                size: 20,
-                              ),
-                            ],
+                          ),
+                          if (isSelected) ...[
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.check_circle,
+                              color: MyntColors.primary,
+                              size: 24,
+                            ),
                           ],
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -699,11 +713,11 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             children: [
               Text(
                 "Monthly on ${mfOrder.dates}${getDateSuffix(int.tryParse(mfOrder.dates) ?? 1)}",
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  fontWeight: MyntFonts.medium,
-                  color: MyntColors.primary,
-                ),
+                  style: MyntWebTextStyles.bodyMedium(
+                context,
+                fontWeight: MyntFonts.medium,
+                color: MyntColors.primary,
+              ),
               ),
               const SizedBox(width: 4),
               Icon(
@@ -788,14 +802,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
     );
   }
 
-  void _switchOrderType(String orderType, MFProvider mfOrder) async {
-    final isin = widget.mfData.iSIN;
-    final schemeCode = widget.mfData.schemeCode;
-
-    if (widget.mfData.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-      await mfOrder.invertfun(isin, schemeCode, context);
-    }
-
+  void _switchOrderType(String orderType, MFProvider mfOrder) {
+    // Pre-fill amount based on order type
     if (orderType == "One-time") {
       String amt = widget.mfData.minimumPurchaseAmount ?? "0";
       mfOrder.invAmt.text = amt.split('.').first;
@@ -804,9 +812,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
       mfOrder.installmentAmt.text = amt.split('.').first;
     }
 
-    ref.read(fundProvider).fetchFunds(context);
-    ref.read(transcationProvider).initialdata(context);
-
+    // Just switch the order type - data was already loaded in initState
     mfOrder.chngOrderType(orderType);
     mfOrder.orderchangetitle(orderType);
 

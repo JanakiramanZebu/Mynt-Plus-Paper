@@ -391,19 +391,24 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
         // Minimum distance for edge swipe
         const minDistance = 50.0;
 
-        // Right swipe from first tab (Explore) -> notify parent to go to previous tab (Stocks)
-        if (deltaX > minDistance && currentPage == 0) {
-          if (widget.onBoundaryReached != null) {
-            widget.onBoundaryReached!(true); // true = previous tab (Stocks)
-          }
-        }
+        // Use addPostFrameCallback to prevent state changes during mouse device updates
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
 
-        // Left swipe from last tab (SIP) -> notify parent to go to next tab (IPO)
-        if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
-          if (widget.onBoundaryReached != null) {
-            widget.onBoundaryReached!(false); // false = next tab (IPO)
+          // Right swipe from first tab (Explore) -> notify parent to go to previous tab (Stocks)
+          if (deltaX > minDistance && currentPage == 0) {
+            if (widget.onBoundaryReached != null) {
+              widget.onBoundaryReached!(true); // true = previous tab (Stocks)
+            }
           }
-        }
+
+          // Left swipe from last tab (SIP) -> notify parent to go to next tab (IPO)
+          if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
+            if (widget.onBoundaryReached != null) {
+              widget.onBoundaryReached!(false); // false = next tab (IPO)
+            }
+          }
+        });
       },
       onPointerCancel: (PointerCancelEvent event) {
         _isTracking = false;

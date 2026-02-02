@@ -277,6 +277,22 @@ class MFProvider extends DefaultChangeNotifier {
   bool? _bestmfloader = false;
   bool? get bestmfloader => _bestmfloader;
 
+  bool _fundDetailLoader = false;
+  bool get fundDetailLoader => _fundDetailLoader;
+
+  void setFundDetailLoader(bool value) {
+    _fundDetailLoader = value;
+    notifyListeners();
+  }
+
+  bool _categoryDataLoader = false;
+  bool get categoryDataLoader => _categoryDataLoader;
+
+  void setCategoryDataLoader(bool value) {
+    _categoryDataLoader = value;
+    notifyListeners();
+  }
+
   bool? _watchbatchval = false;
   bool? get watchbatchval => _watchbatchval;
 
@@ -1631,13 +1647,14 @@ class MFProvider extends DefaultChangeNotifier {
 
   Future fetchFactSheet(String isin) async {
     try {
-      _bestmfloader = true;
+      _fundDetailLoader = true;
+      notifyListeners();
       Map trailingReturns = {};
       _mfReturnsGridview = [];
       _comYear = "10 Years";
       var stopwatch = Stopwatch()..start();
       _factSheetDataModel = await api.getMFFactSheetData(isin);
-      _bestmfloader = false;
+      _fundDetailLoader = false;
       stopwatch.stop(); // Stop timer
 
       log('Time taken 1: ${stopwatch.elapsedMilliseconds} ms');
@@ -1750,10 +1767,9 @@ class MFProvider extends DefaultChangeNotifier {
       debugPrint("$e");
     } finally {
       toggleLoadingOn(false);
-      _bestmfloader = false;
+      _fundDetailLoader = false;
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   Future fetchSchemePeer(String isin, String comYear) async {
@@ -2291,6 +2307,8 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   Future<void> fetchmfallcatnew() async {
+    _categoryDataLoader = true;
+    notifyListeners();
     try {
       // Fetch data from API
       _mfallcatnewlist = await api.mfallcatnewapi();
@@ -2329,9 +2347,14 @@ class MFProvider extends DefaultChangeNotifier {
             .add(_mfallcatnewlist!.data![5].values![i].name);
       }
 
+      _categoryDataLoader = false;
       // print("Transformed Data: ");
     } catch (e) {
       log("Failed to fetch data: ${e.toString()}");
+      _categoryDataLoader = false;
+      notifyListeners();
+    } finally {
+      _categoryDataLoader = false;
       notifyListeners();
     }
   }
@@ -3414,6 +3437,8 @@ class MFProvider extends DefaultChangeNotifier {
       } else {
         upiError = "";
       }
+      notifyListeners();
+      return upiError?.isEmpty ?? true;
     } else {
       if (mfOrderTpye == "One-time") {
         if (invAmt.text.isEmpty) {

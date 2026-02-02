@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/web_colors.dart';
-import 'bond_cancel_alert/bonds_cancel_alert_web.dart';
 
 class BondsDetailsSidebarWeb extends ConsumerWidget {
   final BondsOrderBookModel order;
@@ -75,34 +74,6 @@ class BondsDetailsSidebarWeb extends ConsumerWidget {
                     style: MyntWebTextStyles.body(context, fontWeight: FontWeight.normal).copyWith(fontSize: 14),
                   ),
                   const SizedBox(height: 16),
-
-                  // Cancel Button
-                  if ((order.orderStatus?.toLowerCase() == 'pending' || order.orderStatus?.toLowerCase() == 'open'))
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 24),
-                      child: TextButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => BondCancelAlertWeb(bondcancel: order),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFFE8EEF9),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            side: const BorderSide(color: Color(0xFF2E529E)),
-                          ),
-                        ),
-                        child: Text(
-                          "Cancel Order",
-                          style: MyntWebTextStyles.body(context, 
-                              color: const Color(0xFF2E529E), fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
 
                   // Details List
                   _buildRow(context, "Order Id", order.applicationNumber ?? "-", isDark),
