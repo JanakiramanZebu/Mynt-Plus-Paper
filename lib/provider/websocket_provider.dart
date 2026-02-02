@@ -266,7 +266,14 @@ class WebSocketProvider extends ChangeNotifier {
     _sentSubscriptions.clear();
     _pendingSubscriptions['t'] = [];
     _pendingSubscriptions['d'] = [];
-    log('Cleared all WebSocket subscriptions tracking');
+
+    // Clear socket data to ensure fresh state on next login
+    // This fixes the issue where old token data prevents updateHoldingValues()
+    // from being called on re-login (tokens already exist, so _updateSocketData()
+    // is called instead of the new token path that calls updateHoldingValues())
+    _socketDatas.clear();
+    _ltpCache.clear();
+    log('Cleared all WebSocket subscriptions tracking and socket data');
 
     print('✅ [WEBSOCKET] Connection closed successfully\n');
     log('✅ WebSocket: Connection closed successfully');
