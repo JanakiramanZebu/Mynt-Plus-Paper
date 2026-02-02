@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
+import '../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
@@ -215,13 +215,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 ),
                                         ),
                                         const SizedBox(height: 16),
-                                        TextWidget.subText(
-                                          text: mfOrder.loadingMessage ?? "",
-                                          theme: theme.isDarkMode,
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          fw: 0,
+                                        Text(
+                                          mfOrder.loadingMessage ?? "",
+                                          style: MyntWebTextStyles.bodySmall(
+                                            context,
+                                            color: theme.isDarkMode
+                                                ? colors.textPrimaryDark
+                                                : colors.textPrimaryLight,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -234,13 +235,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (mfOrder.mfOrderTpye == "SIP") ...[
-                                  TextWidget.titleText(
-                                    text: "Auto Pay (Mandate)",
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                  Text(
+                                    "Auto Pay (Mandate)",
+                                    style: MyntWebTextStyles.title(
+                                      context,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   // Show mandate selection if mandates exist, otherwise show create mandate button
@@ -297,15 +299,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 children: [
                                                   Row(
                                                     children: [
-                                                      TextWidget.subText(
-                                                        text:
-                                                            _getSelectedMandateAmount(mfOrder),
-                                                        theme: theme.isDarkMode,
-                                                        color: theme.isDarkMode
-                                                            ? colors.textPrimaryDark
-                                                            : colors
-                                                                .textPrimaryLight,
-                                                        fw: 0,
+                                                      Text(
+                                                        _getSelectedMandateAmount(mfOrder),
+                                                        style: MyntWebTextStyles.bodySmall(
+                                                          context,
+                                                          color: theme.isDarkMode
+                                                              ? colors.textPrimaryDark
+                                                              : colors.textPrimaryLight,
+                                                        ),
                                                       ),
                                                       const SizedBox(
                                                         width: 4,
@@ -319,14 +320,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     height: 4,
                                                   ),
               
-                                                  TextWidget.subText(
-                                                    text:
-                                                        _getSelectedMandateBankName(mfOrder),
-                                                    theme: theme.isDarkMode,
-                                                    color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                                                    fw: 0,
+                                                  Text(
+                                                    _getSelectedMandateBankName(mfOrder),
+                                                    style: MyntWebTextStyles.bodySmall(
+                                                      context,
+                                                      color: theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors.textPrimaryLight,
+                                                    ),
                                                   ),
                                                   // const SizedBox(height: 4),
                                                   // TextWidget.paraText(
@@ -359,12 +360,12 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         child: Row(
                                           children: [
                                             Expanded(
-                                              child: TextWidget.captionText(
-                                                text: _getMandateErrorMessage(
-                                                    mfOrder),
-                                                theme: theme.isDarkMode,
-                                                 color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                                fw: 0,
+                                              child: Text(
+                                                _getMandateErrorMessage(mfOrder),
+                                                style: MyntWebTextStyles.caption(
+                                                  context,
+                                                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -404,13 +405,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12),
                                         ),
-                                        child: TextWidget.subText(
-                                          text: "Create New Mandate",
-                                          theme: !theme.isDarkMode,
-                                          color: !theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack,
-                                          fw: 0,
+                                        child: Text(
+                                          "Create New Mandate",
+                                          style: MyntWebTextStyles.bodySmall(
+                                            context,
+                                            color: !theme.isDarkMode
+                                                ? colors.colorWhite
+                                                : colors.colorBlack,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -443,13 +445,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                 if (mfOrder.mfOrderTpye != "SIP") ...[
                                   const SizedBox(height: 14),
               
-                                  TextWidget.titleText(
-                                    text: "Pay With",
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                  Text(
+                                    "Pay With",
+                                    style: MyntWebTextStyles.title(
+                                      context,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                    ),
                                   ),
                                   Padding(
                                     padding:
@@ -474,26 +477,27 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 title: Padding(
                                                   padding: const EdgeInsets.only(
                                                       bottom: 4),
-                                                  child: TextWidget.subText(
-                                                    text: fund.bankname,
-                                                    theme: theme.isDarkMode,
-                                                   color: theme.isDarkMode
-                                                        ? colors.textPrimaryDark
-                                                        : colors.textPrimaryLight,
-                                                    fw: 0,
+                                                  child: Text(
+                                                    fund.bankname,
+                                                    style: MyntWebTextStyles.bodySmall(
+                                                      context,
+                                                      color: theme.isDarkMode
+                                                          ? colors.textPrimaryDark
+                                                          : colors.textPrimaryLight,
+                                                    ),
                                                   ),
                                                 ),
                                                 subtitle: Padding(
                                                   padding:
                                                       const EdgeInsets.only(top: 4),
-                                                  child: TextWidget.paraText(
-                                                    text: hideAccountNumber(
-                                                        fund.accno),
-                                                    theme: theme.isDarkMode,
-                                                     color: theme.isDarkMode
-                                                        ? colors.textSecondaryDark
-                                                        : colors.textSecondaryLight,
-                                                    fw: 0,
+                                                  child: Text(
+                                                    hideAccountNumber(fund.accno),
+                                                    style: MyntWebTextStyles.para(
+                                                      context,
+                                                      color: theme.isDarkMode
+                                                          ? colors.textSecondaryDark
+                                                          : colors.textSecondaryLight,
+                                                    ),
                                                   ),
                                                 ),
                                                 trailing: Material(
@@ -540,13 +544,15 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     ),
                                   ),
               
-                                  TextWidget.subText(
-                                    text: "Payment method",
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 1,
+                                  Text(
+                                    "Payment method",
+                                    style: MyntWebTextStyles.bodyMedium(
+                                      context,
+                                      color: theme.isDarkMode
+                                          ? colors.textPrimaryDark
+                                          : colors.textPrimaryLight,
+                                      fontWeight: MyntFonts.medium,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   const ListDivider(),
@@ -594,16 +600,16 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        TextWidget.subText(
-                                                          text: paymentMethodName ==
-                                                                  "UPI"
+                                                        Text(
+                                                          paymentMethodName == "UPI"
                                                               ? "UPI ID"
                                                               : "Net Banking",
-                                                          theme: theme.isDarkMode,
-                                                          color: theme.isDarkMode
-                                                              ? colors.textPrimaryDark
-                                                              : colors.textPrimaryLight,
-                                                          fw: 0,
+                                                          style: MyntWebTextStyles.bodySmall(
+                                                            context,
+                                                            color: theme.isDarkMode
+                                                                ? colors.textPrimaryDark
+                                                                : colors.textPrimaryLight,
+                                                          ),
                                                         ),
                                                         if (isSelected)
                                                           Icon(
@@ -645,20 +651,18 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                       fillColor: theme.isDarkMode ? colors.darkGrey : colors.btnBg,
                                                       hintText: 'Enter UPI ID',
                                                       
-                                                     hintStyle: TextWidget.textStyle(
-                                        fontSize: 14,
-                                        theme: theme.isDarkMode,
-                                       color:(theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                                          fw: 0,
+                                                     hintStyle: webText(
+                                        context,
+                                        size: 14,
+                                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
                                       ),
-                                                      style: TextWidget.textStyle(
-                                      fontSize: 16,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 0,
-                                    ),
+                                                      style: webText(
+                                        context,
+                                        size: 16,
+                                        color: theme.isDarkMode
+                                            ? colors.textPrimaryDark
+                                            : colors.textPrimaryLight,
+                                      ),
                                                       textCtrl: mfOrder.upiId,
                                                       onChanged: (value) {
                                                         mfOrder.isValidUpiId(
@@ -667,17 +671,19 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                       },
                                                     ),
                                                   ),
-                                                  // if (mfOrder.upiError != null)
+                                                  // Only show error when there's actually an error
+                                                  if (mfOrder.upiError != null && mfOrder.upiError!.isNotEmpty)
                                                   Padding(
                                                     padding: const EdgeInsets.only(
                                                         top: 10),
-                                                    child: TextWidget.captionText(
-                                                      text: "${mfOrder.upiError}",
-                                                      theme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? colors.lossDark
-                                                          : colors.lossLight,
-                                                      fw: 0,
+                                                    child: Text(
+                                                      "${mfOrder.upiError}",
+                                                      style: MyntWebTextStyles.caption(
+                                                        context,
+                                                        color: theme.isDarkMode
+                                                            ? colors.lossDark
+                                                            : colors.lossLight,
+                                                      ),
                                                     ),
                                                   ),
                                                 ],
@@ -982,13 +988,15 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     255, 255, 255, 255),
                                               ),
                                             )
-                                          : TextWidget.subText(
-                                              text: mfOrder.mfOrderTpye == "SIP"
+                                          : Text(
+                                              mfOrder.mfOrderTpye == "SIP"
                                                   ? "Setup - SIP"
                                                   : "Pay - One Time",
-                                              fw: 2,
-                                              theme: theme.isDarkMode,
-                                              color: colors.colorWhite,
+                                              style: MyntWebTextStyles.bodySmall(
+                                                context,
+                                                color: colors.colorWhite,
+                                                fontWeight: MyntFonts.semiBold,
+                                              ),
                                             ),
                                     ),
                                   ),
@@ -1029,11 +1037,12 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 16, bottom: 10),
-                  child: TextWidget.titleText(
-                    text: 'Choose an bank:',
-                    theme: false,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    fw: 1,
+                  child: Text(
+                    'Choose an bank:',
+                    style: MyntWebTextStyles.title(
+                      context,
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    ),
                   ),
                 ),
                 ListView.builder(
@@ -1057,10 +1066,14 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                         color: bankName == fund.bankname
                             ? const Color(0xff999999).withOpacity(0.2)
                             : Colors.transparent,
-                        child: TextWidget.subText(
-                          text: '$bankName-${hideAccountNumber(accountNo)}',
-                          theme: theme.isDarkMode,
-                          fw: 0,
+                        child: Text(
+                          '$bankName-${hideAccountNumber(accountNo)}',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: theme.isDarkMode
+                                ? colors.textPrimaryDark
+                                : colors.textPrimaryLight,
+                          ),
                         ),
                       ),
                     );

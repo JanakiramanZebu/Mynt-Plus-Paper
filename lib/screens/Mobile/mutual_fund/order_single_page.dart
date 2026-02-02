@@ -4,15 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
-import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../provider/transcation_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import 'mf_cancel_alert.dart';
-import 'mf_order_bottomsheet.dart';
 
 class mforderdetscreen extends StatefulWidget {
   const mforderdetscreen({super.key});
@@ -121,51 +118,6 @@ class _mforderdetscreen extends State<mforderdetscreen>
                   ),
                   const SizedBox(height: 16),
                   _buildOrderHeader(theme, mfdata),
-                  const SizedBox(height: 18),
-                  if (mfdata.mforderdet?.data![0].status ==
-                          'PAYMENT NOT INITIATED' ||
-                      mfdata.mforderdet?.data![0].status == 'MODIFIED' ||
-                      mfdata.mforderdet?.data![0].status ==
-                          'CANCEL ERROR' ||
-                      mfdata.mforderdet?.data![0].status ==
-                          'MODIFY REJECTED' ||
-                      mfdata.mforderdet?.data![0].status ==
-                          'PAYMENT REJECTED')
-                    ElevatedButton(
-                      onPressed: () async {
-                        ref.read(fundProvider).fetchFunds(context);
-                        ref.read(transcationProvider).initialdata(context);
-                        mfdata.fetchUpiDetail('', context);
-
-                        // final isUpi = mfdata.paymentName == 'UPI';
-                        // final isNetBanking =
-                        //     mfdata.paymentName == 'NET BANKING';
-                        // final isUpiValid =
-                        //     isUpi ? mfdata.upiError == '' : true;
-
-                        Navigator.pop(context);
-                        _showBottomSheet(
-                            context,
-                            MfOrderBottomsheet(
-                              data: mfdata.mforderdet?.data![0],
-                              condval: 'reinitiatefromportfolio',
-                            ));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: MyntColors.primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(
-                            double.infinity, 45), // height: 48
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      ),
-                      child: Text(
-                          "Re-Initiate Payment",
-                          style: MyntWebTextStyles.buttonXl(context, color: Colors.white),
-                        ),
-                    ),
                   const SizedBox(height: 18),
                   _buildCancelButton(theme, mfdata, context),
                   const SizedBox(height: 24),
@@ -463,26 +415,4 @@ class _mforderdetscreen extends State<mforderdetscreen>
       ),
     );
   }
-}
-
-_showBottomSheet(BuildContext context, Widget bottomSheet) {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (context) => Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        width: MediaQuery.of(context).size.width >= 1100
-            ? MediaQuery.of(context).size.width * 0.25
-            : MediaQuery.of(context).size.width * 0.90,
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: bottomSheet,
-      ),
-    ),
-  );
 }

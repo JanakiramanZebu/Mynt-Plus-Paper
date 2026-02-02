@@ -6,12 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 // import '../../../../provider/fund_provider.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 // import '../../../../routes/route_names.dart';
-import '../../../provider/transcation_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/mynt_loader.dart';
@@ -199,62 +197,43 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
   Future<void> _handleOrder(dynamic nfoItem, String type) async {
     final mf = ref.read(mfProvider);
 
-    try {
-      mf.setInvestLoader(true);
-      // Fetch bank details to prevent null error in MFOrderScreen
-      await ref.read(transcationProvider).fetchfundbank(context);
-
-      mf.setInvestLoader(false);
-
-      if (!context.mounted) return;
-
-      final isin = nfoItem.iSIN;
-      final schemeCode = nfoItem.schemeCode;
-
-      if ((nfoItem.sIPFLAG == "Y" && isin != null && schemeCode != null)) {
-        mf.invertfun(isin, schemeCode, context);
-      }
-
-      // Pre-fill amount
-      if (type == "One-time") {
-        String amt = nfoItem.minimumPurchaseAmount ?? "0";
-        mf.invAmt.text = amt.split('.').first;
-      } else {
-        String amt = nfoItem.minimumPurchaseAmount ?? "0";
-        mf.installmentAmt.text = amt.split('.').first;
-      }
-
-      if (context.mounted) {
-        final screenSize = MediaQuery.of(context).size;
-        // Use minimum width of 380 or 30% of screen width, whichever is larger
-        final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
-        final dialogHeight = screenSize.height * 0.65; // 65% height
-
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: SizedBox(
-              width: dialogWidth,
-              height: dialogHeight,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: MFOrderScreen(mfData: nfoItem),
-              ),
-            ),
-          ),
-        );
-        mf.chngOrderType(type);
-        mf.orderchangetitle(type);
-        mf.orderpagetite("NFO");
-      }
-    } catch (e) {
-      mf.setInvestLoader(false);
-      if (context.mounted) {
-        showResponsiveErrorMessage(context, "Error: ${e.toString()}");
-      }
+    // Pre-fill amount (synchronous - no delay)
+    if (type == "One-time") {
+      String amt = nfoItem.minimumPurchaseAmount ?? "0";
+      mf.invAmt.text = amt.split('.').first;
+    } else {
+      String amt = nfoItem.minimumPurchaseAmount ?? "0";
+      mf.installmentAmt.text = amt.split('.').first;
     }
+
+    // Set order type immediately
+    mf.chngOrderType(type);
+    mf.orderchangetitle(type);
+    mf.orderpagetite("NFO");
+
+    // Get screen dimensions
+    final screenSize = MediaQuery.of(context).size;
+    // Use minimum width of 380 or 30% of screen width, whichever is larger
+    final dialogWidth = (screenSize.width * 0.30).clamp(380.0, 500.0);
+    final dialogHeight = screenSize.height * 0.65; // 65% height
+
+    // Show dialog immediately - data will load inside MFOrderScreen's initState
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: SizedBox(
+          width: dialogWidth,
+          height: dialogHeight,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: MFOrderScreen(mfData: nfoItem),
+          ),
+        ),
+      ),
+    );
+    // Note: SIP data and mandate details are loaded in MFOrderScreen's initState
   }
 
   String _formatDate(String? date) {

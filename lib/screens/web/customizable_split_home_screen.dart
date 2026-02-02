@@ -3806,7 +3806,8 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
 
-    _saveLayout();
+    // Defer layout save to allow UI to update first
+    Future.microtask(() => _saveLayout());
   }
 
   // Go back to previous screen in the right panel
@@ -3845,7 +3846,8 @@ class _CustomizableSplitHomeScreenState
         _panels[targetPanelIndex].screens = [previousScreen];
         _panels[targetPanelIndex].activeScreenIndex = 0;
       });
-      _saveLayout();
+      // Defer layout save to allow UI to update first
+      Future.microtask(() => _saveLayout());
     }
   }
 
@@ -3909,7 +3911,8 @@ class _CustomizableSplitHomeScreenState
       _panels[targetPanelIndex].activeScreenIndex = 0;
     });
 
-    _saveLayout();
+    // Defer layout save to allow UI to update first
+    Future.microtask(() => _saveLayout());
   }
 
   // Check if screen option should be shown (hide duplicates only)

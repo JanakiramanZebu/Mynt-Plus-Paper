@@ -317,17 +317,7 @@ class MfCommonSearch extends ConsumerWidget {
     return InkWell(
         onTap: () async {
           mfData.chngMandate("Lumpsum");
-          await mfData.fetchUpiDetail();
-          // await mfData.fetchBankDetail();
-
-          final isin = item.iSIN;
-          final schemeCode = item.schemeCode;
-
-          if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
-            await mfData.fetchMFSipData(isin, schemeCode);
-            await mfData.fetchMFMandateDetail();
-          }
-
+          // Note: SIP data and mandate details are loaded in MFOrderScreen's initState
           Navigator.pushNamed(context, Routes.mforderScreen, arguments: item);
         },
         child: Container(

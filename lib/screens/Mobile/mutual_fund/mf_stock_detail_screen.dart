@@ -224,8 +224,9 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
         bottom: false,
         child: Row(
           children: [
-            // Back arrow button
-            InkWell(
+            // Back arrow button - using GestureDetector for instant response
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () {
                 if (widget.onBack != null) {
                   widget.onBack!();
@@ -233,9 +234,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   Navigator.pop(context);
                 }
               },
-              borderRadius: BorderRadius.circular(20),
               child: Padding(
-                padding: const EdgeInsets.all(4.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Icon(
                   Icons.arrow_back_ios_new,
                   size: 18,
@@ -365,18 +365,12 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   }
 
   void _handleOneTimeTap(MFProvider mfData) async {
-    final isin = widget.mfStockData.iSIN;
-    final schemeCode = widget.mfStockData.schemeCode;
-
     setState(() => _isOneTimeLoading = true);
 
-    if (widget.mfStockData.sIPFLAG == "Y" &&
-        isin != null &&
-        schemeCode != null) {
-      await mfData.invertfun(isin, schemeCode, context);
-      String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
-      mfData.invAmt.text = amt.split('.').first;
-    }
+    // Set investment amount
+    String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
+    mfData.invAmt.text = amt.split('.').first;
+
     mfData.orderchangetitle("One-time");
     mfData.orderpagetite("SDS");
     mfData.chngOrderType("One-time");
@@ -407,18 +401,12 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
   }
 
   void _handleSIPTap(MFProvider mfData) async {
-    final isin = widget.mfStockData.iSIN;
-    final schemeCode = widget.mfStockData.schemeCode;
-
     setState(() => _isSIPLoading = true);
 
-    if (widget.mfStockData.sIPFLAG == "Y" &&
-        isin != null &&
-        schemeCode != null) {
-      await mfData.invertfun(isin, schemeCode, context);
-      String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
-      mfData.installmentAmt.text = amt.split('.').first;
-    }
+    // Set installment amount
+    String amt = widget.mfStockData.minimumPurchaseAmount ?? "0";
+    mfData.installmentAmt.text = amt.split('.').first;
+
     mfData.orderchangetitle("SIP");
     mfData.chngOrderType("SIP");
     mfData.orderpagetite("SDS");
