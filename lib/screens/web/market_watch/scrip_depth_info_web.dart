@@ -29,6 +29,8 @@ import '../../../models/marketwatch_model/market_watch_scrip_model.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/portfolio_provider.dart';
+import '../../../provider/order_provider.dart';
 
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -42,6 +44,7 @@ import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import '../../Mobile/market_watch/over_view/funtamental_data_widget.dart';
 import 'position_holdings_card_web.dart';
+import 'resizable_panel_splitter.dart';
 // import 'set_alert_web.dart';
 
 class ScripDepthInfoWeb extends ConsumerStatefulWidget {
@@ -70,6 +73,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
   String regtoken = "";
   bool _isDisposed = false;
   final ScrollController _scrollController = ScrollController();
+  bool _isBottomSheetExpanded = false;
 
   @override
   bool get wantKeepAlive => true; // Keep the state alive when navigating
@@ -490,6 +494,265 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     ]);
   }
 
+  /// Check if user has any position, holding, or open order for this token
+  bool _hasPositionOrOrders(String token) {
+    final portfolio = ref.read(portfolioProvider);
+    final orderProv = ref.read(orderProvider);
+
+    // Check positions
+    final positions = portfolio.postionBookModel ?? [];
+    final hasPosition = positions.any((pos) => pos.token == token);
+
+    // Check holdings
+    final holdings = portfolio.holdingsModel ?? [];
+    final hasHolding = holdings.any((hold) {
+      if (hold.exchTsym != null && hold.exchTsym!.isNotEmpty) {
+        return hold.exchTsym!.any((exch) => exch.token == token);
+      }
+      return false;
+    });
+
+    // Check open orders
+    final openOrders = orderProv.openOrder ?? [];
+    final hasOrders = openOrders.any((order) => order.token == token);
+
+    return hasPosition || hasHolding || hasOrders;
+  }
+
+  /// Build the fixed OHLC section (non-scrollable top section)
+  Widget _buildFixedOHLCSection({
+    required GetQuotes depthData,
+    required ThemesProvider theme,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 20, top: 10, bottom: 10),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isSmallScreen = constraints.maxWidth < 300;
+          if (isSmallScreen) {
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _buildInfoItem(theme, "Open", "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}")),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildInfoItem(theme, "High", "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}")),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _buildInfoItem(theme, "Low", "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}")),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildInfoItem(theme, "P.Close", "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}")),
+                  ],
+                ),
+              ],
+            );
+          } else {
+            return _buildInfoRow1(
+              "Open", "${depthData.o != "null" ? depthData.o ?? 0.00 : '0.00'}",
+              "High", "${depthData.h != "null" ? depthData.h ?? 0.00 : '0.00'}",
+              "Low", "${depthData.l != "null" ? depthData.l ?? 0.00 : '0.00'}",
+              "P.Close", "${depthData.c != "null" ? depthData.c ?? 0.00 : '0.00'}",
+              theme,
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  /// Build the scrollable market content (Bid/Ask, Avg Price, Volume, LTQ, etc.)
+  /// Position/Holdings/Orders will be appended at the bottom in the main layout
+  Widget _buildScrollableMarketContent({
+    required MarketWatchProvider scripInfo,
+    required GetQuotes depthData,
+    required ThemesProvider theme,
+  }) {
+    final isIndexOrCommodity = widget.wlValue.instname == "UNDIND" ||
+                               widget.wlValue.instname == "COM";
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 20, top: 0, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Market Depth (Bid/Ask) section
+          if (!isIndexOrCommodity) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Quantity", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                          Text("Bid", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary))),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildBidDepthPercentage("${depthData.bq1 ?? 0}", "${depthData.bp1 ?? 0.00}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildBidDepthPercentage("${depthData.bq2 ?? 0}", "${depthData.bp2 ?? 0.00}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildBidDepthPercentage("${depthData.bq3 ?? 0}", "${depthData.bp3 ?? 0.00}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildBidDepthPercentage("${depthData.bq4 ?? 0}", "${depthData.bp4 ?? 0.00}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildBidDepthPercentage("${depthData.bq5 ?? 0}", "${depthData.bp5 ?? 0.00}", scripInfo, theme),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Ask", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: MyntColors.tertiary)),
+                          Text("Quantity", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildAskDepthPercentage("${depthData.sp1 ?? 0.00}", "${depthData.sq1 ?? 0}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildAskDepthPercentage("${depthData.sp2 ?? 0.00}", "${depthData.sq2 ?? 0}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildAskDepthPercentage("${depthData.sp3 ?? 0.00}", "${depthData.sq3 ?? 0}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildAskDepthPercentage("${depthData.sp4 ?? 0.00}", "${depthData.sq4 ?? 0}", scripInfo, theme),
+                      const SizedBox(height: 6),
+                      _buildAskDepthPercentage("${depthData.sp5 ?? 0.00}", "${depthData.sq5 ?? 0}", scripInfo, theme),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Text("${depthData.tbq != "null" ? depthData.tbq ?? 0 : '0'}", style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                    const SizedBox(width: 4),
+                    Text("(${scripInfo.totBuyQtyPer.toStringAsFixed(2)}%)", style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Text("(${scripInfo.totSellQtyPer.toStringAsFixed(2)}%)", style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                    const SizedBox(width: 4),
+                    Text("${depthData.tsq != "null" ? depthData.tsq ?? 0 : '0'}", style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
+                  ],
+                ),
+              ],
+            ),
+            if (scripInfo.totBuyQtyPer.toStringAsFixed(2) != "0.00" || scripInfo.totSellQtyPer.toStringAsFixed(2) != "0.00") ...[
+              const SizedBox(height: 10),
+              LinearPercentIndicator(
+                lineHeight: 5.0,
+                barRadius: const Radius.circular(4.0),
+                backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
+                    ? resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)
+                    : resolveThemeColor(context, dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                percent: scripInfo.totBuyQtyPerChng,
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                progressColor: MyntColors.primary,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ],
+          const SizedBox(height: 4),
+          // Trading Info Section (Avg Price, Volume, LTQ, etc.)
+          if (!isIndexOrCommodity) ...[
+            const SizedBox(height: 12),
+            Column(
+              children: [
+                data("Avg Price", "${depthData.ap ?? 0.00}", theme),
+                data("Volume", "${depthData.v != "null" ? depthData.v ?? 0.00 : '0'}", theme),
+                data("LTQ", "${depthData.ltq != "null" ? depthData.ltq ?? 0.00 : '0'}", theme),
+                data("LTT", depthData.ltt != "null" ? (depthData.ltt ?? "--") : "--", theme),
+                data("52 Weeks High-Low", "${(depthData.wk52H != "null" && depthData.wk52H != null) ? depthData.wk52H : 0.00} - ${(depthData.wk52L != "null" && depthData.wk52L != null) ? depthData.wk52L : 0.00}", theme),
+                data("DPR", "${depthData.uc != "null" ? depthData.uc ?? 0.00 : '0.00'} - ${depthData.lc != "null" ? depthData.lc ?? 0.00 : '0.00'}", theme),
+                if (depthData.seg != "EQT") ...[
+                  data("Open Interest - OI", "${depthData.oi != "null" ? depthData.oi ?? 0.00 : '0'}", theme),
+                  data("Change in OI", "${depthData.poi != "null" ? depthData.poi ?? 0.00 : '0'}", theme),
+                ],
+              ],
+            ),
+            // Returns grid
+            if (scripInfo.returnsGridview.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const itemWidth = 120.0;
+                  const spacing = 12.0;
+                  final availableWidth = constraints.maxWidth;
+                  final itemsPerRow = ((availableWidth + spacing) / (itemWidth + spacing)).floor();
+                  final calculatedWidth = itemsPerRow > 0 ? (availableWidth - (spacing * (itemsPerRow - 1))) / itemsPerRow : itemWidth;
+                  return Wrap(
+                    spacing: spacing,
+                    runSpacing: 10,
+                    children: List.generate(scripInfo.returnsGridview.length, (index) {
+                      return SizedBox(
+                        width: calculatedWidth.clamp(100.0, 150.0),
+                        child: shadcn.Card(
+                          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${scripInfo.returnsGridview[index]['percent']}%",
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  color: (scripInfo.returnsGridview[index]['percent'].toString().startsWith('-'))
+                                      ? resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)
+                                      : (scripInfo.returnsGridview[index]['percent'].toString() != '0' && scripInfo.returnsGridview[index]['percent'].toString() != '0.00')
+                                          ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                                          : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Center(
+                                child: Text(
+                                  "${scripInfo.returnsGridview[index]['duration']}",
+                                  textAlign: TextAlign.center,
+                                  style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ],
+          // Expandable Futures Section
+          Column(
+            children: [
+              const ListDivider(),
+              if (scripInfo.getOptionawait(widget.wlValue.exch, widget.wlValue.token))
+                _buildExpandableFuturesSection(scripInfo, theme, depthData),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -676,28 +939,66 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                             //     ),
                             //   ),
                             Expanded(
-                              child: ScrollConfiguration(
-                                behavior: const MaterialScrollBehavior()
-                                    .copyWith(scrollbars: false),
-                                child: RawScrollbar(
-                                  controller: _scrollController,
-                                  thumbVisibility: true,
-                                  thickness: 6,
-                                  radius: const Radius.circular(0),
-                                  thumbColor: resolveThemeColor(context,
-                                          dark: MyntColors.textSecondaryDark
-                                              .withOpacity(0.5),
-                                          light: MyntColors.textSecondary)
-                                      .withOpacity(0.5),
-                                  child: SingleChildScrollView(
-                                    controller: _scrollController,
-                                    padding: EdgeInsets.zero,
-                                    child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
+                              child: scripInfo.actDeptBtn == "Overview"
+                                  // Resizable split view with grab handle for Market Info and Positions/Orders
+                                  ? ResizablePanelSplitter(
+                                      topSectionLabel: "Market Info",
+                                      // Top panel: Market Info (OHLC + Bid/Ask + trading info)
+                                      topChild: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
+                                          // OHLC section
+                                          _buildFixedOHLCSection(depthData: depthData, theme: theme),
+                                          // Scrollable market data content
+                                          _buildScrollableMarketContent(
+                                            scripInfo: scripInfo,
+                                            depthData: depthData,
+                                            theme: theme,
+                                          ),
+                                        ],
+                                      ),
+                                      // Bottom panel: Positions & Orders
+                                      bottomChild: PositionHoldingsCardWeb(
+                                        token: widget.wlValue.token,
+                                        exchange: widget.wlValue.exch,
+                                        tsym: widget.wlValue.tsym,
+                                      ),
+                                      bottomSectionLabel: "Positions & Orders",
+                                      initialBottomHeight: 280.0,
+                                      minTopHeight: 100.0,
+                                      minBottomHeight: 60.0,
+                                      maxBottomHeight: 600.0,
+                                      // Only show bottom panel if user has positions/holdings/orders and not an index/commodity
+                                      showBottomPanel: widget.wlValue.instname != "UNDIND" &&
+                                          widget.wlValue.instname != "COM" &&
+                                          _hasPositionOrOrders(widget.wlValue.token),
+                                      onExpansionChanged: (isExpanded) {
+                                        setState(() => _isBottomSheetExpanded = isExpanded);
+                                      },
+                                    )
+                                  // Existing layout for other states (Fundamental, Chart, Future, Set Alert)
+                                  : ScrollConfiguration(
+                                      behavior: const MaterialScrollBehavior()
+                                          .copyWith(scrollbars: false),
+                                      child: RawScrollbar(
+                                        controller: _scrollController,
+                                        thumbVisibility: true,
+                                        thickness: 6,
+                                        radius: const Radius.circular(0),
+                                        thumbColor: resolveThemeColor(context,
+                                                dark: MyntColors.textSecondaryDark
+                                                    .withOpacity(0.5),
+                                                light: MyntColors.textSecondary)
+                                            .withOpacity(0.5),
+                                        child: SingleChildScrollView(
+                                          controller: _scrollController,
+                                          padding: EdgeInsets.zero,
+                                          child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
                                           /*
                                       Symbol and price section (temporarily commented)
                                       Container(
@@ -2749,16 +3050,28 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 ],
               ),
             ),
-            // Futures list
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: scripInfo.fut!.length,
-              separatorBuilder: (BuildContext context, int index) {
-                return const ListDivider();
-              },
-              itemBuilder: (BuildContext context, int index) {
-                var displayData = scripInfo.fut![index];
+            // Futures list - sorted by expiry date ascending
+            Builder(
+              builder: (context) {
+                // Sort futures by expiry date (ascending - nearest expiry first)
+                final sortedFutures = List.from(scripInfo.fut!)..sort((a, b) {
+                  final aDate = _parseExpiryDate(a.exd);
+                  final bDate = _parseExpiryDate(b.exd);
+                  if (aDate == null && bDate == null) return 0;
+                  if (aDate == null) return 1;
+                  if (bDate == null) return -1;
+                  return aDate.compareTo(bDate);
+                });
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: sortedFutures.length,
+                  separatorBuilder: (BuildContext context, int index) {
+                    return const ListDivider();
+                  },
+                  itemBuilder: (BuildContext context, int index) {
+                    var displayData = sortedFutures[index];
 
                 // Update with socket data if available
                 final tokenKey = displayData.token?.toString();
@@ -2778,8 +3091,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   }
                 }
 
-                return _buildFutureListItem(
-                    displayData, scripInfo, theme, index);
+                    return _buildFutureListItem(
+                        displayData, scripInfo, theme, index);
+                  },
+                );
               },
             ),
             const ListDivider(),
@@ -2787,6 +3102,29 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
         );
       },
     );
+  }
+
+  /// Parse expiry date string (format: "DD-MMM-YY" like "28-APR-26") to DateTime
+  DateTime? _parseExpiryDate(String? exd) {
+    if (exd == null || exd.isEmpty) return null;
+    try {
+      final months = {
+        'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+        'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12
+      };
+      final parts = exd.toUpperCase().split('-');
+      if (parts.length >= 3) {
+        final day = int.tryParse(parts[0]) ?? 1;
+        final month = months[parts[1]] ?? 1;
+        var year = int.tryParse(parts[2]) ?? 26;
+        // Convert 2-digit year to 4-digit (assume 20xx)
+        if (year < 100) year += 2000;
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      debugPrint('Error parsing expiry date: $exd - $e');
+    }
+    return null;
   }
 
   // Individual future list item - mobile style

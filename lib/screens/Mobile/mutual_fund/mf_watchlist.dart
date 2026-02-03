@@ -538,14 +538,24 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: resolveThemeColor(context,
-                        dark: MyntColors.loss.withValues(alpha: 0.1),
-                        light: MyntColors.loss.withValues(alpha: 0.1)),
+                        dark: MyntColors.textWhite,
+                        light: MyntColors.textWhite),
                     borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: resolveThemeColor(context,
+                            dark: Colors.grey, light: Colors.grey),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
                   ),
                   child: Icon(
                     Icons.close,
-                    size: 16,
-                    color: MyntColors.loss,
+                    size: 18,
+                    fontWeight: FontWeight.bold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.lossDark, light: MyntColors.loss),
                   ),
                 ),
               ),
@@ -666,9 +676,17 @@ class _MFWatchlistScreenState extends ConsumerState<MFWatchlistScreen> {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.1),
-                  light: MyntColors.primary.withValues(alpha: 0.1)),
+                  dark: MyntColors.textWhite,
+                  light: MyntColors.textWhite),
               borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: resolveThemeColor(context,
+                      dark: Colors.grey, light: Colors.grey),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
             child: Icon(
               Icons.more_vert,

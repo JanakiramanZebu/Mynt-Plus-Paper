@@ -1113,15 +1113,22 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? MyntColors.primary.withValues(alpha: 0.15)
-                    : MyntColors.primary.withValues(alpha: 0.1),
+                color: MyntColors.textWhite,
                 borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    blurRadius: 2,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.more_vert,
                 size: 18,
-                color: MyntColors.primary,
+                color: theme.isDarkMode
+                    ? MyntColors.textPrimaryDark
+                    : MyntColors.textPrimary,
               ),
             ),
           ),

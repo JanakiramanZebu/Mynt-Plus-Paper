@@ -54,7 +54,6 @@ import '../../../res/mynt_web_color_styles.dart' hide WebColors;
 import '../../../res/web_colors.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
-import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../utils/responsive_snackbar.dart';
 import '../../../utils/rupee_convert_format.dart';
@@ -1329,17 +1328,21 @@ class _CustomizableSplitHomeScreenState
                     onTap: () => _handleFundsTap(),
                     child: Row(
                       children: [
-                        TextWidget.captionText(
-                          text: "Balance: ",
-                          theme: isDarkMode,
-                          color: isDarkMode ? Colors.grey : Colors.grey[600],
-                          fw: 0,
+                        Text(
+                          "Balance: ",
+                          style: MyntWebTextStyles.caption(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: isDarkMode ? Colors.grey : Colors.grey[600],
+                          ),
                         ),
-                        TextWidget.subText(
-                          text: "₹${getFormatter(value: double.parse(balance), v4d: false, noDecimal: false)}",
-                          theme: isDarkMode,
-                          color: isDarkMode ? Colors.white : Colors.black,
-                          fw: 1,
+                        Text(
+                          "₹${getFormatter(value: double.parse(balance), v4d: false, noDecimal: false)}",
+                          style: MyntWebTextStyles.body(
+                            context,
+                            fontWeight: MyntFonts.semiBold,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                         ),
                       ],
                     ),
@@ -4976,14 +4979,14 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
           color: resolveThemeColor(
             context,
             dark: const Color(0xFF1A1A2E),
-            light: const Color(0xFFF5F5F7),
+            light: const Color(0xFFFAFAFA),
           ),
-          border: Border(
-            bottom: BorderSide(
-              color: shadcn.Theme.of(context).colorScheme.border,
-              width: 1,
-            ),
-          ),
+          // border: Border(
+          //   bottom: BorderSide(
+          //     color: shadcn.Theme.of(context).colorScheme.border,
+          //     width: 1,
+          //   ),
+          // ),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -5043,6 +5046,11 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
         value: positionsPnL,
         isDarkMode: isDarkMode,
         showAsAmount: true,
+        onTap: () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo(Routes.positionscreen);
+          }
+        },
       ),
       _tickerDivider(isDarkMode),
       _TickerItem(
@@ -5050,6 +5058,11 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
         value: holdingsPnL,
         isDarkMode: isDarkMode,
         showAsAmount: true,
+        onTap: () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo(Routes.holdingscreen);
+          }
+        },
       ),
       _tickerDivider(isDarkMode),
       _TickerItem(
@@ -5057,6 +5070,11 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
         value: mfPnL,
         isDarkMode: isDarkMode,
         showAsAmount: true,
+        onTap: () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo(Routes.mfmainscreen);
+          }
+        },
       ),
       _tickerDivider(isDarkMode),
       _TickerItem(
@@ -5064,7 +5082,11 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
         value: availableFund,
         isDarkMode: isDarkMode,
         showAsAmount: true,
-        isNeutral: true,
+        onTap: () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo(Routes.fundscreen);
+          }
+        },
       ),
       const SizedBox(width: 16),
     ];
@@ -5082,12 +5104,13 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
   }
 }
 
-class _TickerItem extends StatelessWidget {
+class _TickerItem extends StatefulWidget {
   final String label;
   final double value;
   final bool isDarkMode;
   final bool showAsAmount;
   final bool isNeutral;
+  final VoidCallback? onTap;
 
   const _TickerItem({
     required this.label,
@@ -5095,62 +5118,82 @@ class _TickerItem extends StatelessWidget {
     required this.isDarkMode,
     this.showAsAmount = false,
     this.isNeutral = false,
+    this.onTap,
   });
 
   @override
+  State<_TickerItem> createState() => _TickerItemState();
+}
+
+class _TickerItemState extends State<_TickerItem> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    final isPositive = value >= 0;
-    final displayValue = showAsAmount
-        ? "₹${_formatAmount(value.abs())}"
-        : value.toStringAsFixed(2);
+    final isPositive = widget.value >= 0;
+    final displayValue = widget.showAsAmount
+        ? "₹${_formatAmount(widget.value.abs())}"
+        : widget.value.toStringAsFixed(2);
 
     Color valueColor;
-    if (isNeutral) {
-      valueColor = isDarkMode
+    if (widget.isNeutral || widget.value == 0) {
+      valueColor = widget.isDarkMode
           ? MyntColors.textPrimaryDark
           : MyntColors.textPrimary;
     } else {
       valueColor = isPositive
-          ? (isDarkMode ? WebDarkColors.profit : WebColors.profit)
-          : (isDarkMode ? WebDarkColors.loss : WebColors.loss);
+          ? (widget.isDarkMode ? WebDarkColors.profit : WebColors.profit)
+          : (widget.isDarkMode ? WebDarkColors.loss : WebColors.loss);
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: isDarkMode
-                ? MyntColors.textSecondaryDark
-                : MyntColors.textSecondary,
+    return MouseRegion(
+      cursor: widget.onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: _isHovered && widget.onTap != null
+                ? (widget.isDarkMode
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.label,
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: widget.isDarkMode
+                      ? MyntColors.textPrimaryDark
+                      : MyntColors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                widget.showAsAmount
+                    ? (isPositive ? displayValue : "-$displayValue")
+                    : displayValue,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: valueColor,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
-        if (!isNeutral && showAsAmount)
-          Icon(
-            isPositive ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-            size: 16,
-            color: valueColor,
-          ),
-        Text(
-          !isNeutral && showAsAmount
-              ? (isPositive ? "+$displayValue" : "-$displayValue")
-              : displayValue,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: valueColor,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   String _formatAmount(double amount) {
-    // Use Indian format with full value (no abbreviation)
     return amount.toIndianFormat();
   }
 }

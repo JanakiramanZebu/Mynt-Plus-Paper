@@ -38,6 +38,7 @@ class LoginScreenWeb extends ConsumerStatefulWidget {
 
 class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   bool _isProcessing = false;
+  bool _isInitializing = true; // True until auto-login check completes
   late FocusNode focusNode;
   late FocusNode focusNode1;
   bool _showForgotPassword = false;
@@ -95,7 +96,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     focusNode1.addListener(_onFocusChange);
 
     // Defer context-dependent operations to avoid holding context reference
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
         ref.read(versionProvider).checkVersion(context);
         ref.read(authProvider).setChangetotp(true);
@@ -105,7 +106,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         _setupQrLoginListener();
 
         // Auto-login check
-        ref.read(webAuthProvider).checkAutoLogin(context);
+        await ref.read(webAuthProvider).checkAutoLogin(context);
+
+        // Mark initialization complete (show login form if no auto-login)
+        if (mounted) {
+          setState(() => _isInitializing = false);
+        }
       }
     });
   }
@@ -310,18 +316,24 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     auth.otpCtrl.clear();
     auth.optError = ''; // Clear old auth error
 
-    webAuth.toggleTotpMode(); // This also clears webAuth.otpError
-    
-    // If switching to OTP mode, send OTP
-    if (!webAuth.isTotp) {
-      final success = await webAuth.sendOtp(context);
-      if (success && mounted) {
-        setState(() {
-          _start = 89;
-          resendTime = "01.29";
-        });
-        startTimer();
+    // Set processing to prevent full-screen loader during toggle
+    setState(() => _isProcessing = true);
+    try {
+      webAuth.toggleTotpMode(); // This also clears webAuth.otpError
+
+      // If switching to OTP mode, send OTP
+      if (!webAuth.isTotp) {
+        final success = await webAuth.sendOtp(context);
+        if (success && mounted) {
+          setState(() {
+            _start = 89;
+            resendTime = "01.29";
+          });
+          startTimer();
+        }
       }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -334,14 +346,19 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     if (webAuth.loginController.text.isEmpty) {
       webAuth.loginController.text = auth.loginMethCtrl.text.trim().toUpperCase();
     }
-    
-    final success = await webAuth.sendOtp(context);
-    if (success && mounted) {
-      setState(() {
-        _start = 89;
-        resendTime = "01.29";
-      });
-      startTimer();
+
+    setState(() => _isProcessing = true);
+    try {
+      final success = await webAuth.sendOtp(context);
+      if (success && mounted) {
+        setState(() {
+          _start = 89;
+          resendTime = "01.29";
+        });
+        startTimer();
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -394,13 +411,18 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     webAuth.enableGenerateTotpFlow();
     
     // Send OTP for verification
-    final success = await webAuth.sendOtp(context);
-    if (success && mounted) {
-      setState(() {
-        _start = 89;
-        resendTime = "01.29";
-      });
-      startTimer();
+    setState(() => _isProcessing = true);
+    try {
+      final success = await webAuth.sendOtp(context);
+      if (success && mounted) {
+        setState(() {
+          _start = 89;
+          resendTime = "01.29";
+        });
+        startTimer();
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -487,9 +509,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
       final userProfile = ref.watch(userProfileProvider);
 
       final webAuth = ref.watch(webAuthProvider);
-      
-      // Show loader during initial load OR during auto-login session check
-      if (auth.initLoad || webAuth.loading) {
+
+      // Show full-screen loader during:
+      // 1. Initial page load (_isInitializing) - prevents login form flash on refresh
+      // 2. Auth initial load (auth.initLoad)
+      // 3. Auto-login session check (webAuth.loading) - but NOT during manual login (_isProcessing)
+      if (_isInitializing || auth.initLoad || (webAuth.loading && !_isProcessing)) {
         return Scaffold(
           backgroundColor:
               theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,

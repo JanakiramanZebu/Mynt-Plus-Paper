@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart'
     show
         InkWell,
@@ -53,6 +54,8 @@ import 'package:flutter/material.dart'
         RawScrollbar,
         Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
@@ -677,6 +680,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     }
 
     return shadcn.OutlinedContainer(
+      clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate minimum widths dynamically based on actual content
@@ -1486,17 +1490,31 @@ class _TableExample1State extends ConsumerState<TableExample1> {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
-              dark: MyntColors.loss.withValues(alpha: 0.15),
-              light: MyntColors.loss.withValues(alpha: 0.1)),
+              // dark: MyntColors.loss.withValues(alpha: 0.15),
+              // light: MyntColors.loss.withValues(alpha: 0.1)),
+               dark: MyntColors.textWhite,
+              light: MyntColors.textWhite),
           borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: resolveThemeColor(context,
+                  dark: Colors.grey,
+                  light: Colors.grey),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
-        child: Icon(
-          Icons.close,
-          size: 18,
-          color: resolveThemeColor(context,
+        child: SvgPicture.asset(
+          assets.exitPositionIcon,
+          height: 18,
+          width: 18,
+        
+            color: resolveThemeColor(context,
               dark: MyntColors.lossDark,
-              light: MyntColors.loss),
-        ),
+              light: MyntColors.tertiary)
+      
+      ),  
       ),
     );
   }
@@ -1619,15 +1637,26 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.1),
-                  light: MyntColors.primary.withValues(alpha: 0.1)),
+                  // dark: MyntColors.primary.withValues(alpha: 0.1),
+                  // light: MyntColors.primary.withValues(alpha: 0.1)),
+                  dark: MyntColors.textWhite,
+                  light: MyntColors.textWhite),
               borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: resolveThemeColor(context,
+                      dark: Colors.grey,
+                      light: Colors.grey),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
             child: Icon(
               Icons.more_vert,
               size: 18,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+             color: resolveThemeColor(context,
+                  dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
             ),
           ),

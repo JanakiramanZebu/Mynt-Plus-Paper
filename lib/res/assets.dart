@@ -15,6 +15,7 @@ class Assets {
   final String filterIcon = "assets/icon/filterIcon.svg";
   final String netbankingIcon = "assets/icon/netbanking_icon.svg";
   final String upiIcon1 = "assets/icon/upi-payment-icon.svg";
+  final String exitPositionIcon = "assets/icon/exitPosition.svg";
 
   final String optionZIcon = "assets/icon/optionz_icon.svg";
 
