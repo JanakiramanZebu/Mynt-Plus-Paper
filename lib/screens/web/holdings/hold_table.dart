@@ -1478,45 +1478,52 @@ class _TableExample1State extends ConsumerState<TableExample1> {
     );
   }
 
-  // Build Exit button (X icon with red/tertiary color)
+  // Build Exit button (output icon with red/tertiary color) with tooltip
   Widget _buildExitButton(dynamic holding, dynamic exchTsym) {
-    return GestureDetector(
-      onTap: () {
-        // Clear hover state before navigating to prevent stuck hover
-        _hoveredRowIndex.value = null;
-        _handleExitHolding(holding, exchTsym);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: resolveThemeColor(context,
-              // dark: MyntColors.loss.withValues(alpha: 0.15),
-              // light: MyntColors.loss.withValues(alpha: 0.1)),
-               dark: MyntColors.textWhite,
-              light: MyntColors.textWhite),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: resolveThemeColor(context,
-                  dark: Colors.grey,
-                  light: Colors.grey),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: SvgPicture.asset(
-          assets.exitPositionIcon,
-          height: 18,
-          width: 18,
-        
+    return Tooltip(
+      message: 'Exit',
+      child: GestureDetector(
+        onTap: () {
+          // Clear hover state before navigating to prevent stuck hover
+          _hoveredRowIndex.value = null;
+          _handleExitHolding(holding, exchTsym);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
             color: resolveThemeColor(context,
-              dark: MyntColors.lossDark,
-              light: MyntColors.tertiary)
-      
-      ),  
+                dark: MyntColors.textWhite,
+                light: MyntColors.textWhite),
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: resolveThemeColor(context,
+                    dark: Colors.grey,
+                    light: Colors.grey),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.output,
+            size: 18,
+            color: resolveThemeColor(context,
+                dark: MyntColors.lossDark,
+                light: MyntColors.tertiary),
+          ),
+        ),
       ),
     );
+    // OLD UI - SVG exit icon
+    // child: SvgPicture.asset(
+    //   assets.exitPositionIcon,
+    //   height: 18,
+    //   width: 18,
+    //   color: resolveThemeColor(context,
+    //       dark: MyntColors.lossDark,
+    //       light: MyntColors.tertiary),
+    // ),
   }
 
   // Build the 3-dot options menu button with shadcn dropdown

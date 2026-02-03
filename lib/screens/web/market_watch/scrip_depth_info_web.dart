@@ -519,6 +519,13 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     return hasPosition || hasHolding || hasOrders;
   }
 
+  /// Get dynamic label for bottom panel - simple check
+  String _getBottomPanelLabel(String token) {
+    final positions = ref.read(portfolioProvider).postionBookModel ?? [];
+    final hasPosition = positions.any((pos) => pos.token == token);
+    return hasPosition ? "Positions & Orders" : "Holdings & Orders";
+  }
+
   /// Build the fixed OHLC section (non-scrollable top section)
   Widget _buildFixedOHLCSection({
     required GetQuotes depthData,
@@ -966,7 +973,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                         exchange: widget.wlValue.exch,
                                         tsym: widget.wlValue.tsym,
                                       ),
-                                      bottomSectionLabel: "Positions & Orders",
+                                      bottomSectionLabel: _getBottomPanelLabel(widget.wlValue.token),
                                       initialBottomHeight: 280.0,
                                       minTopHeight: 100.0,
                                       minBottomHeight: 60.0,

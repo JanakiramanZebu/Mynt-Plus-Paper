@@ -1482,45 +1482,43 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     );
   }
 
-  // Build Exit button with X icon (tertiary color)
+  // Build Exit button with Icons.output icon (tertiary color) and tooltip
   Widget _buildExitButton(BuildContext context, PositionBookModel position) {
-    return GestureDetector(
-      onTap: () {
-        debugPrint('Exit button pressed');
-        // Clear hover state before navigating to prevent stuck hover
-        _hoveredRowIndex.value = null;
-        _handleExitPosition(position);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: resolveThemeColor(context,
-              // dark: MyntColors.loss.withValues(alpha: 0.15),
-              // light: MyntColors.loss.withValues(alpha: 0.1)),
-               dark: MyntColors.textWhite,
-              light: MyntColors.textWhite),
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: resolveThemeColor(context,
-                  dark: Colors.grey,
-                  light: Colors.grey),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: SvgPicture.asset(
-          assets.exitPositionIcon,
-          height: 18,
-          width: 18,
-        
+    return Tooltip(
+      message: 'Exit',
+      child: GestureDetector(
+        onTap: () {
+          debugPrint('Exit button pressed');
+          // Clear hover state before navigating to prevent stuck hover
+          _hoveredRowIndex.value = null;
+          _handleExitPosition(position);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
             color: resolveThemeColor(context,
-              dark: MyntColors.lossDark,
-              light: MyntColors.loss)
-      
-      ),  
-      ),  
+                dark: MyntColors.textWhite,
+                light: MyntColors.textWhite),
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: resolveThemeColor(context,
+                    dark: Colors.grey,
+                    light: Colors.grey),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.output,
+            size: 18,
+            color: resolveThemeColor(context,
+                dark: MyntColors.lossDark,
+                light: MyntColors.tertiary),
+          ),
+        ),
+      ),
     );
   }
 

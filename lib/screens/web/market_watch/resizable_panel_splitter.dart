@@ -194,7 +194,7 @@ class _ResizablePanelSplitterState extends State<ResizablePanelSplitter> {
                   dark: MyntColors.dividerDark,
                   light: MyntColors.divider,
                 ),
-                width: 1,
+                width: 4,
               ),
             ),
           ),
