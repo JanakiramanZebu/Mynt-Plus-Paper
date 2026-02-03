@@ -288,6 +288,25 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               WebNavigationHelper.navigateTo(Routes.holdingscreen);
             }
           },
+            trailing: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+               onTap: () {
+              if (WebNavigationHelper.isAvailable) {
+                WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+              }
+            },
+              child: Text(
+                'Portfolio Insights >>>',
+                style: MyntWebTextStyles.symbol(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary),
+                ),
+              ),
+            ),
+          ),
         );
 
         Widget mutualFundCard = _buildPortfolioSection(

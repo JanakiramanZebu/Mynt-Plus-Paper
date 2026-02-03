@@ -60,6 +60,7 @@ dependencies:
   dropdown_button2: ^2.3.9
   percent_indicator: ^4.2.3
   syncfusion_flutter_charts: ^27.1.48
+  syncfusion_flutter_treemap: ^27.1.48
   flutter_inappwebview: ^6.0.0
   readmore: ^3.0.0
   flutter_expanded_tile: ^0.4.0

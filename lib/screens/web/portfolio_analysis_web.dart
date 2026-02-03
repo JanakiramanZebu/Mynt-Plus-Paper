@@ -19,6 +19,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:cross_file/cross_file.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
+import 'package:syncfusion_flutter_treemap/treemap.dart';
 import '../../../../models/explore_model/portfolioanalisys_models.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../sharedWidget/no_data_found.dart';
@@ -35,16 +36,12 @@ class PortfolioDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _PortfolioDashboardScreenState
-    extends ConsumerState<PortfolioDashboardScreen> with TickerProviderStateMixin {
+    extends ConsumerState<PortfolioDashboardScreen> {
   FlSpot? touchedSpot;
   bool showTooltip = false;
-  // Heatmap interaction state
-  final GlobalKey _heatmapKey = GlobalKey();
-  List<Rect> _heatmapRects = [];
-  List<TopStocks> _heatmapHoldingsShown = [];
-  OverlayEntry? _heatmapOverlay;
-  int? _selectedHeatmapIndex;
-  late TabController tabCtrl;
+
+  // Pie chart hover state
+  int _touchedPieIndex = -1;
 
   // Scroll controller
   final ScrollController _scrollController = ScrollController();
@@ -71,13 +68,11 @@ class _PortfolioDashboardScreenState
   @override
   void initState() {
     super.initState();
-    tabCtrl = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(dashboardProvider).getPortfolioAnalysis();
         // Add listener to detect when search text is cleared (e.g., by shadcn clear button)
         ref.read(dashboardProvider).portfolioSearchController.addListener(_onSearchTextChanged);
     });
-
   }
 
   // Listener to handle search text changes (including clear button)
@@ -102,7 +97,6 @@ class _PortfolioDashboardScreenState
     _scrollController.dispose();
     _tableScrollController.dispose();
     _tableHoveredRowIndex.dispose();
-    tabCtrl.dispose();
     super.dispose();
   }
 
@@ -123,9 +117,8 @@ class _PortfolioDashboardScreenState
               builder: (context, ref, child) {
                 if (portfolio.isPortfolioLoading == true) {
                   return Center(
-                    child: MyntLoader.centered(
-                      showLogo: true,
-                      size: MyntLoaderSize.large,
+                    child: MyntLoader.branded(
+                      size: MyntLoaderSize.xl,
                     ),
                   );
                 }
@@ -336,88 +329,114 @@ class _PortfolioDashboardScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Portfolio Summary Section
-                  if (data.chartData != null)
-                    RepaintBoundary(
-                      key: _portfolioSummaryKey,
-                      child: Container(
-                        color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                        child: _buildInvestmentChart(data.chartData!, data),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Market Cap/Sector/Asset Allocation Section
+                  // Portfolio Summary & Heatmap Section - Side by Side (Responsive)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final availableWidth = constraints.maxWidth;
+                      const double kSpacing = 16.0;
+
+                      // If width is less than 900, stack vertically
+                      if (availableWidth < 900) {
+                        return Column(
+                          children: [
+                            // Portfolio Summary Section
+                            if (data.chartData != null)
+                              RepaintBoundary(
+                                key: _portfolioSummaryKey,
+                                child: Container(
+                                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                  child: _buildInvestmentChart(data.chartData!, data),
+                                ),
+                              ),
+                            const SizedBox(height: 24),
+                            // Heatmap Section
+                            RepaintBoundary(
+                              key: _heatmapSectionKey,
+                              child: Container(
+                                color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                child: _buildHeatMap(data.topStocks),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      // Side by side layout for larger screens
+                      final cardWidth = (availableWidth - kSpacing) / 2;
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Portfolio Summary Section (50%)
+                          if (data.chartData != null)
+                            SizedBox(
+                              width: cardWidth,
+                              child: RepaintBoundary(
+                                key: _portfolioSummaryKey,
+                                child: Container(
+                                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                  child: _buildInvestmentChart(data.chartData!, data),
+                                ),
+                              ),
+                            ),
+                          const SizedBox(width: kSpacing),
+                          // Heatmap Section (50%)
+                          SizedBox(
+                            width: cardWidth,
+                            child: RepaintBoundary(
+                              key: _heatmapSectionKey,
+                              child: Container(
+                                color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                child: _buildHeatMap(data.topStocks),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                    // Market Cap/Sector/Asset Allocation Section - Responsive Layout
                     RepaintBoundary(
                       key: _marketCapSectionKey,
                       child: Container(
                         color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                        child: Column(
-                          children: [
-                          SizedBox(
-                            height: 30,
-                            child: TabBar(
-                            controller: tabCtrl,
-                            tabAlignment: TabAlignment.start,
-                            isScrollable: true,
-                            indicatorSize: TabBarIndicatorSize.tab,
-                            indicatorColor: colors.colorWhite,
-                            indicator: BoxDecoration(
-                              color: theme.isDarkMode
-                                  ? colors.searchBgDark
-                                  : const Color(0xffF1F3F8),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            unselectedLabelColor: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                            labelStyle: MyntWebTextStyles.body(
-                                context,
-                                fontWeight: FontWeight.w600,
-                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
-                            unselectedLabelStyle: MyntWebTextStyles.body(
-                                context,
-                                fontWeight: FontWeight.w700,
-                                color: colors.textSecondaryLight),
-                            // labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-                            tabs: const [
-                              Tab(text: "Market Cap"),
-                              Tab(text: "Sector"),
-                              Tab(text: "Asset Allocation"),
-                            ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 250,
-                            child: TabBarView(
-                              controller: tabCtrl,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final availableWidth = constraints.maxWidth;
+
+                            // Dimensions
+                            const double kCardHeight = 280;
+                            const double kSpacing = 12.0;
+                            const double kMinCardWidth = 280;
+
+                            // Calculate how many cards fit in one row
+                            final int cardsPerRow = ((availableWidth + kSpacing) / (kMinCardWidth + kSpacing)).floor().clamp(1, 3);
+                            final double cardWidth = (availableWidth - (kSpacing * (cardsPerRow - 1))) / cardsPerRow;
+
+                            // Build card with calculated dimensions
+                            Widget buildCard(String title, Widget child) {
+                              return SizedBox(
+                                width: cardWidth,
+                                height: kCardHeight,
+                                child: _buildAllocationCard(title: title, child: child),
+                              );
+                            }
+
+                            return Wrap(
+                              spacing: kSpacing,
+                              runSpacing: kSpacing,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: _buildChartsSection(data),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: _buildSectorAllocationTable(data.sectorAllocation),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
-                                ),
+                                buildCard('Market Cap', _buildChartsSection(data)),
+                                buildCard('Sector', _buildSectorAllocationTable(data.sectorAllocation)),
+                                buildCard('Asset Allocation', _buildAccountAllocation(data.accountAllocation, theme.isDarkMode)),
                               ],
-                            ),
-                          ),
-                        ],
-                      ),
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  // Heatmap Section
-                  RepaintBoundary(
-                    key: _heatmapSectionKey,
-                    child: Container(
-                      color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                      child: _buildHeatMap(data.topStocks),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   
                   // SizedBox(height: 16),
                   // _buildAccountAllocation(data.accountAllocation , theme.isDarkMode),
@@ -1047,6 +1066,51 @@ class _PortfolioDashboardScreenState
     );
   }
 
+  // Allocation card wrapper for Market Cap, Sector, Asset Allocation grid
+  Widget _buildAllocationCard({
+    required String title,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(
+          context,
+          dark: MyntColors.listItemBgDark,
+          light: MyntColors.backgroundColor,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.dividerDark,
+            light: MyntColors.divider,
+          ),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInvestmentChart(ChartData chartData, PortfolioResponse data) {
     final theme = ref.watch(themeProvider);
     final portfolio = ref.watch(dashboardProvider);
@@ -1257,47 +1321,98 @@ class _PortfolioDashboardScreenState
                   minY: 0,
                   lineTouchData: LineTouchData(
                     enabled: true,
+                    handleBuiltInTouches: true,
                     touchTooltipData: LineTouchTooltipData(
-                      // CRITICAL FIX: Return null items for each touched spot
+                      fitInsideHorizontally: true,
+                      fitInsideVertically: true,
+                      tooltipBorder: BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider,
+                        ),
+                        width: 1,
+                      ),
+                      tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      getTooltipColor: (touchedSpot) => resolveThemeColor(
+                        context,
+                        dark: MyntColors.listItemBgDark,
+                        light: MyntColors.backgroundColor,
+                      ),
                       getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                        // Return null for each touched spot to hide default tooltips
-                        // but maintain the same count to avoid the error
-                        return touchedBarSpots.map((spot) => null).toList();
+                        return touchedBarSpots.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final spot = entry.value;
+                          final dataIndex = spot.x.toInt().clamp(0, chartData.dates.length - 1);
+
+                          // Format date
+                          String dateLabel = '';
+                          try {
+                            final date = DateTime.parse(chartData.dates[dataIndex]);
+                            dateLabel = '${date.day}/${date.month}/${date.year}';
+                          } catch (e) {
+                            dateLabel = chartData.dates[dataIndex];
+                          }
+
+                          final isInvested = index == 0;
+                          final label = isInvested ? 'Invested' : 'Current';
+                          final color = isInvested ? const Color(0xFF3B82F6) : const Color(0xFF8B5CF6);
+
+                          // Get actual values from chartData (not the scaled spot.y)
+                          final actualValue = isInvested
+                              ? chartData.totalInvestedValue[dataIndex]
+                              : chartData.totalCurrentValue[dataIndex];
+
+                          return LineTooltipItem(
+                            index == 0 ? '$dateLabel\n' : '',
+                            MyntWebTextStyles.caption(
+                              context,
+                              color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                              fontWeight: FontWeight.w400,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: '$label: ',
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '₹${actualValue.toStringAsFixed(2)}',
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: color,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList();
                       },
                     ),
-                    handleBuiltInTouches: true,
-                    touchCallback:
-                        (FlTouchEvent event, LineTouchResponse? touchResponse) {
-                      // Handle different touch events
-                      if (event is FlTapUpEvent ||
-                          event is FlPanUpdateEvent ||
-                          event is FlPanStartEvent ||
-                          event is FlTapDownEvent) {
-                        if (touchResponse != null &&
-                            touchResponse.lineBarSpots != null) {
-                          final spot = touchResponse.lineBarSpots!.first;
-                          final index = spot.x.toInt();
-
-                          if (index >= 0 && index < chartData.dates.length) {
-                            setState(() {
-                              touchedSpot = FlSpot(index.toDouble(), 0);
-                              showTooltip = true;
-                            });
-
-                            // Auto-hide tooltip after 2 seconds
-                            _hideTooltipTimer?.cancel();
-                            _hideTooltipTimer =
-                                Timer(const Duration(seconds: 2), () {
-                              if (mounted) {
-                                setState(() {
-                                  showTooltip = false;
-                                  touchedSpot = null;
-                                });
-                              }
-                            });
-                          }
-                        }
-                      }
+                    getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
+                      return spotIndexes.map((spotIndex) {
+                        return TouchedSpotIndicatorData(
+                          const FlLine(
+                            color: Color(0xFF9CA3AF),
+                            strokeWidth: 1,
+                            dashArray: [4, 4],
+                          ),
+                          FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) {
+                              return FlDotCirclePainter(
+                                radius: 5,
+                                color: barData.color ?? Colors.blue,
+                                strokeWidth: 2,
+                                strokeColor: Colors.white,
+                              );
+                            },
+                          ),
+                        );
+                      }).toList();
                     },
                   ),
                   lineBarsData: [
@@ -1305,14 +1420,14 @@ class _PortfolioDashboardScreenState
                       spots: investedSpots,
                       isCurved: true,
                       color: const Color(0xFF3B82F6),
-                      barWidth: 2,
+                      barWidth: 1.5,
                       dotData: FlDotData(show: false),
                     ),
                     LineChartBarData(
                       spots: currentSpots,
                       isCurved: true,
                       color: const Color(0xFF8B5CF6),
-                      barWidth: 2,
+                      barWidth: 1.5,
                       dotData: FlDotData(show: false),
                     ),
                   ],
@@ -1408,7 +1523,7 @@ class _PortfolioDashboardScreenState
       String accountType, double percentage, Color color, IconData icon) {
     final theme = ref.watch(themeProvider);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       decoration: BoxDecoration(
          color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
         // borderRadius: BorderRadius.circular(8),
@@ -1435,10 +1550,10 @@ class _PortfolioDashboardScreenState
               children: [
                 Text(
                   accountType,
-                  style: MyntWebTextStyles.bodySmall(
+                  style: MyntWebTextStyles.body(
                     context,
                     color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 // const SizedBox(height: 8),
@@ -1456,10 +1571,10 @@ class _PortfolioDashboardScreenState
           // Percentage Display
           Text(
             '${percentage.toStringAsFixed(1)}%',
-            style: MyntWebTextStyles.bodySmall(
+            style: MyntWebTextStyles.body(
               context,
-              color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textPrimary),
-              fontWeight: FontWeight.w400,
+              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -1524,13 +1639,218 @@ class _PortfolioDashboardScreenState
   }
 
   Widget _buildHeatmapGrid(List<TopStocks> holdings, double maxAbs, ThemesProvider theme) {
+    if (holdings.isEmpty) return const SizedBox.shrink();
+
+    // Sort holdings by absolute invested amount (descending) for better treemap layout
+    final sortedHoldings = List<TopStocks>.from(holdings)
+      ..sort((a, b) => (b.inverstedAmount ?? 0).abs().compareTo((a.inverstedAmount ?? 0).abs()));
+
+    // Calculate height based on number of items
+    final int count = sortedHoldings.length;
+    const double baseHeight = 280.0;
+    final int extraRows = (count / 50).ceil();
+    final double availableHeight = (baseHeight + (extraRows * 40)).clamp(280.0, 450.0);
+
+    return SizedBox(
+      width: double.infinity,
+      height: availableHeight,
+      child: SfTreemap(
+        dataCount: sortedHoldings.length,
+        weightValueMapper: (int index) {
+          // Use invested amount as weight for tile size
+          return (sortedHoldings[index].inverstedAmount ?? 1).abs().toDouble().clamp(1.0, double.infinity);
+        },
+        levels: [
+          TreemapLevel(
+            groupMapper: (int index) => sortedHoldings[index].tsym?.replaceAll('-EQ', '') ?? 'N/A',
+            colorValueMapper: (TreemapTile tile) {
+              final holding = sortedHoldings[tile.indices[0]];
+              return holding.pnlPercent ?? 0.0;
+            },
+            labelBuilder: (BuildContext context, TreemapTile tile) {
+              final holding = sortedHoldings[tile.indices[0]];
+              final pnlPercent = holding.pnlPercent ?? 0.0;
+              final symbol = holding.tsym?.replaceAll('-EQ', '') ?? 'N/A';
+
+              // Determine text color based on background intensity
+              final intensity = maxAbs > 0 ? (pnlPercent.abs() / maxAbs).clamp(0.0, 1.0) : 0.0;
+              final textColor = intensity > 0.4 ? Colors.white : (pnlPercent >= 0 ? const Color(0xFF155724) : const Color(0xFF721C24));
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isSmall = constraints.maxWidth < 60 || constraints.maxHeight < 45;
+                  final isVerySmall = constraints.maxWidth < 40 || constraints.maxHeight < 30;
+
+                  return ClipRect(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(isSmall ? 2.0 : 4.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              symbol,
+                              style: TextStyle(
+                                fontSize: isVerySmall ? 7 : (isSmall ? 9 : 12),
+                                fontWeight: FontWeight.w600,
+                                color: textColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                            ),
+                            if (!isVerySmall) ...[
+                              SizedBox(height: isSmall ? 1 : 2),
+                              Text(
+                                '${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: isVerySmall ? 6 : (isSmall ? 8 : 10),
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            tooltipBuilder: (BuildContext context, TreemapTile tile) {
+              final holding = sortedHoldings[tile.indices[0]];
+              final pnlPercent = holding.pnlPercent ?? 0.0;
+              final pnl = holding.pnl ?? 0.0;
+
+              final tooltipBg = resolveThemeColor(
+                context,
+                dark: MyntColors.listItemBgDark,
+                light: MyntColors.backgroundColor,
+              );
+
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: tooltipBg,
+                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: MyntShadows.dropdown,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      (holding.tsym ?? holding.name ?? 'N/A').replaceAll('-EQ', ''),
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Invested: ₹${(holding.inverstedAmount ?? 0).toStringAsFixed(0)}',
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'P&L: ',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '₹${pnl.toStringAsFixed(0)}  (${pnlPercent.toStringAsFixed(2)}%)',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: pnlPercent > 0
+                                  ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                                  : pnlPercent == 0
+                                      ? resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)
+                                      : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+        colorMappers: [
+          // Loss colors (red gradient)
+          TreemapColorMapper.range(
+            from: -100,
+            to: -20,
+            color: const Color(0xFFDC3545), // Deep red
+          ),
+          TreemapColorMapper.range(
+            from: -20,
+            to: -5,
+            color: const Color(0xFFE57373), // Medium red
+          ),
+          TreemapColorMapper.range(
+            from: -5,
+            to: 0,
+            color: const Color(0xFFFFCDD2), // Light red
+          ),
+          // Neutral
+          TreemapColorMapper.range(
+            from: 0,
+            to: 0.01,
+            color: const Color(0xFFF5F5F5), // Neutral gray
+          ),
+          // Profit colors (green gradient)
+          TreemapColorMapper.range(
+            from: 0.01,
+            to: 5,
+            color: const Color(0xFFC8E6C9), // Light green
+          ),
+          TreemapColorMapper.range(
+            from: 5,
+            to: 20,
+            color: const Color(0xFF81C784), // Medium green
+          ),
+          TreemapColorMapper.range(
+            from: 20,
+            to: 100,
+            color: const Color(0xFF28A745), // Deep green
+          ),
+        ],
+        tooltipSettings: const TreemapTooltipSettings(
+          hideDelay: 0.1, // seconds
+        ),
+      ),
+    );
+  }
+
+  // ============ OLD CUSTOM HEATMAP (COMMENTED OUT) ============
+  /*
+  Widget _buildHeatmapGridOld(List<TopStocks> holdings, double maxAbs, ThemesProvider theme) {
     // Calculate sizing values using absolute invested amount
     final pnlValues = holdings
         .map((holding) => (holding.inverstedAmount ?? 0).abs())
         .toList();
-    
+
     if (pnlValues.isEmpty) return const SizedBox.shrink();
-    
+
     double totalPnlValue = pnlValues.fold(0.0, (sum, value) => sum + value);
     // Fallback: if all values are zero, assign equal weight to avoid zero area
     if (totalPnlValue == 0 && pnlValues.isNotEmpty) {
@@ -1539,43 +1859,67 @@ class _PortfolioDashboardScreenState
         pnlValues[i] = 1.0;
       }
     }
-    
+
     // Sort holdings by absolute invested amount (descending) for better treemap layout
     final sortedHoldings = List<TopStocks>.from(holdings)
       ..sort((a, b) => (b.inverstedAmount ?? 0).abs().compareTo((a.inverstedAmount ?? 0).abs()));
-    
+
     return Container(
       padding: const EdgeInsets.all(8),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final availableWidth = constraints.maxWidth - 0; // Account for padding
-          // Adapt height when there are many tiles
+          final availableWidth = constraints.maxWidth - 0;
           final int count = sortedHoldings.length;
           const double baseHeight = 280.0;
           final int extraRows = (count / 50).ceil();
           final double availableHeight = (baseHeight + (extraRows * 40)).clamp(280.0, 450.0);
-          
-          _heatmapHoldingsShown = sortedHoldings; // keep mapping order
-          
-          return GestureDetector(
-            onTapDown: (details) => _onHeatmapTap(details.localPosition),
-            child: SizedBox(
-              key: _heatmapKey,
-              width: availableWidth,
-              height: availableHeight,
-              child: CustomPaint(
-                size: Size(availableWidth, availableHeight),
-                painter: TreemapPainter(
-                  holdings: sortedHoldings,
-                  totalPnlValue: totalPnlValue,
-                  maxAbs: maxAbs,
-                  theme: theme,
-                  containerWidth: availableWidth,
-                  containerHeight: availableHeight,
-                  selectedIndex: _selectedHeatmapIndex,
-                  onLayout: (rects) {
-                    _heatmapRects = rects;
-                  },
+
+          _heatmapHoldingsShown = sortedHoldings;
+
+          final heatmapSymbolStyle = MyntWebTextStyles.para(
+            context,
+            fontWeight: FontWeight.w600,
+          );
+          final heatmapSymbolStyleSmall = MyntWebTextStyles.caption(
+            context,
+            fontWeight: FontWeight.w600,
+          ).copyWith(fontSize: MyntFonts.overline);
+          final heatmapPercentageStyle = MyntWebTextStyles.caption(
+            context,
+            fontWeight: FontWeight.w600,
+          );
+          final heatmapPercentageStyleSmall = MyntWebTextStyles.caption(
+            context,
+            fontWeight: FontWeight.w600,
+          ).copyWith(fontSize: MyntFonts.overline);
+
+          return MouseRegion(
+            onHover: (event) => _onHeatmapHover(event.localPosition),
+            onExit: (_) => _hideHeatmapTooltip(),
+            child: GestureDetector(
+              onTapDown: (details) => _onHeatmapTap(details.localPosition),
+              child: SizedBox(
+                key: _heatmapKey,
+                width: availableWidth,
+                height: availableHeight,
+                child: CustomPaint(
+                  size: Size(availableWidth, availableHeight),
+                  painter: TreemapPainter(
+                    holdings: sortedHoldings,
+                    totalPnlValue: totalPnlValue,
+                    maxAbs: maxAbs,
+                    theme: theme,
+                    containerWidth: availableWidth,
+                    containerHeight: availableHeight,
+                    symbolStyle: heatmapSymbolStyle,
+                    symbolStyleSmall: heatmapSymbolStyleSmall,
+                    percentageStyle: heatmapPercentageStyle,
+                    percentageStyleSmall: heatmapPercentageStyleSmall,
+                    selectedIndex: _selectedHeatmapIndex,
+                    onLayout: (rects) {
+                      _heatmapRects = rects;
+                    },
+                  ),
                 ),
               ),
             ),
@@ -1584,120 +1928,7 @@ class _PortfolioDashboardScreenState
       ),
     );
   }
-
-  void _onHeatmapTap(Offset localPosition) {
-    if (_heatmapRects.isEmpty || _heatmapHoldingsShown.isEmpty) return;
-    for (int i = 0; i < _heatmapRects.length && i < _heatmapHoldingsShown.length; i++) {
-      // Slightly deflate to avoid edge ambiguity and improve hit-testing at borders
-      final rect = _heatmapRects[i].deflate(0.5);
-      if (rect.contains(localPosition)) {
-        setState(() {
-          _selectedHeatmapIndex = i;
-        });
-        _showHeatmapTooltipForRect(rect, _heatmapHoldingsShown[i]);
-        // Clear highlight after a short delay
-        Future.delayed(const Duration(milliseconds: 700), () {
-          if (mounted && _selectedHeatmapIndex == i) {
-            setState(() {
-              _selectedHeatmapIndex = null;
-            });
-          }
-        });
-        break;
-      }
-    }
-  }
-
-  void _showHeatmapTooltipForRect(Rect tileRect, TopStocks holding) {
-    final theme = ref.watch(themeProvider);
-    _heatmapOverlay?.remove();
-    _heatmapOverlay = null;
-
-    final renderBox = _heatmapKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
-
-    // Prefer positioning near the tile's center to avoid clipping at edges
-    final tileCenterGlobal = renderBox.localToGlobal(tileRect.center);
-    Offset overlayOffset = overlayBox.globalToLocal(tileCenterGlobal);
-
-    final Color bg = Colors.white;
-
-    // Compute clamped position so tooltip stays on screen
-    const double tipMaxWidth = 220;
-    const double tipApproxHeight = 88; // rough height; layout will be close
-    final double minX = 8;
-    final double minY = 8;
-    final double maxX = overlayBox.size.width - tipMaxWidth - 8;
-    final double maxY = overlayBox.size.height - tipApproxHeight - 8;
-    final double left = overlayOffset.dx.clamp(minX, maxX);
-    final double top = (overlayOffset.dy - 40).clamp(minY, maxY); // offset a bit upward
-
-    _heatmapOverlay = OverlayEntry(
-      builder: (ctx) => Positioned(
-        left: left,
-        top: top,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            constraints: const BoxConstraints(maxWidth: 220),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  (holding.tsym ?? holding.name ?? 'N/A').replaceAll('-EQ', ''),
-                  style: MyntWebTextStyles.bodySmall(
-                    context,
-                    color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Invested: ₹${(holding.inverstedAmount ?? 0).toStringAsFixed(0)}',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                // Text(
-                //   'Current: ₹${(holding.currentPrice ?? 0).toStringAsFixed(2)}',
-                //   style: const TextStyle(fontSize: 12, color: Colors.black87),
-                // ),
-                Text(
-                  'P&L: ₹${(holding.pnl ?? 0).toStringAsFixed(0)}  (${(holding.pnlPercent ?? 0).toStringAsFixed(2)}%)',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    color: (holding.pnlPercent ?? 0) > 0
-                        ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
-                        : (holding.pnlPercent ?? 0) == 0
-                            ? resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)
-                            : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(_heatmapOverlay!);
-
-    Future.delayed(const Duration(seconds: 2), () {
-      _heatmapOverlay?.remove();
-      _heatmapOverlay = null;
-    });
-  }
+  */
 
   // Widget _buildHeatmapItem(TopStocks holding, double maxAbs, ThemesProvider theme, {double tileSize = 60.0}) {
   //   final pnlPercent = holding.pnlPercent ?? 0.0;
@@ -1847,9 +2078,9 @@ class _PortfolioDashboardScreenState
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.isDarkMode 
-            ? colors.textSecondaryDark.withOpacity(0.05)
-            : colors.textSecondaryLight.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
+            ? colors.textSecondaryDark.withOpacity(0.02)
+            : colors.textSecondaryLight.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1969,22 +2200,39 @@ class _PortfolioDashboardScreenState
                   height: 160,
                   child: PieChart(
                     PieChartData(
-                      sections: displayAllocation.entries.map((entry) {
+                      sections: displayAllocation.entries.toList().asMap().entries.map((mapEntry) {
+                        final index = mapEntry.key;
+                        final entry = mapEntry.value;
+                        final isTouched = index == _touchedPieIndex;
                         return PieChartSectionData(
                           value: entry.value,
                           title: '${entry.value.toStringAsFixed(1)}%',
-                          color:
-                              portfolio.getMarketCapAllocationColor(entry.key),
-                          radius: 50,
+                          color: portfolio.getMarketCapAllocationColor(entry.key),
+                          radius: isTouched ? 70 : 60,
                           titleStyle: MyntWebTextStyles.para(
                             context,
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
+                          ).copyWith(
+                            fontSize: isTouched ? 14 : 12,
                           ),
                         );
                       }).toList(),
-                      centerSpaceRadius: 35,
+                      centerSpaceRadius: 30,
                       sectionsSpace: 1,
+                      pieTouchData: PieTouchData(
+                        touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                          setState(() {
+                            if (!event.isInterestedForInteractions ||
+                                pieTouchResponse == null ||
+                                pieTouchResponse.touchedSection == null) {
+                              _touchedPieIndex = -1;
+                              return;
+                            }
+                            _touchedPieIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                          });
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -2060,34 +2308,36 @@ class _PortfolioDashboardScreenState
       String marketCapType, double percentage, Color color) {
     final theme = ref.watch(themeProvider);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Container(
-            width: 12,
-            height: 12,
+            width: 10,
+            height: 10,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               marketCapType,
-              style: MyntWebTextStyles.para(
+              style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
+          const SizedBox(width: 8),
           Text(
             '${percentage.toStringAsFixed(2)}%',
-            style: MyntWebTextStyles.para(
+            style: MyntWebTextStyles.body(
               context,
               color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-              fontWeight: FontWeight.w400,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -2098,22 +2348,21 @@ class _PortfolioDashboardScreenState
   // Horizontal stacked bar chart for sector allocation
   Widget _buildHorizontalStackedBar(List<MapEntry<String, double>> entries) {
     final portfolio = ref.watch(dashboardProvider);
-    return Row(
-      children: entries.map((entry) {
-        return Expanded(
-          flex: (entry.value * 100).round(),
-          child: Container(
-            height: 20,
-            decoration: BoxDecoration(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(5),
+      child: Row(
+        children: entries.map((entry) {
+          // Ensure flex is at least 1 to avoid zero-width segments
+          final flex = (entry.value * 100).round().clamp(1, 10000);
+          return Expanded(
+            flex: flex,
+            child: Container(
+              height: 20,
               color: portfolio.getSectorAllocationColor(entry.key),
-              borderRadius: BorderRadius.horizontal(
-                left: entry == entries.first ? Radius.circular(5) : Radius.zero,
-                right: entry == entries.last ? Radius.circular(5) : Radius.zero,
-              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -2155,7 +2404,7 @@ class _PortfolioDashboardScreenState
   Widget _buildLegendItem(String sector, double percentage, Color color) {
     final theme = ref.watch(themeProvider);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Container(
@@ -2170,19 +2419,19 @@ class _PortfolioDashboardScreenState
           Expanded(
             child: Text(
               sector,
-              style: MyntWebTextStyles.para(
+              style: MyntWebTextStyles.body(
                 context,
-                color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                fontWeight: FontWeight.w400,
+                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
           Text(
             '${percentage.toStringAsFixed(2)}%',
-            style: MyntWebTextStyles.para(
+            style: MyntWebTextStyles.body(
               context,
-              color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-              fontWeight: FontWeight.w400,
+              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -2620,6 +2869,12 @@ class TreemapPainter extends CustomPainter {
   final void Function(List<Rect>)? onLayout;
   final int? selectedIndex;
 
+  // Text styles passed from widget (uses MyntWebTextStyles)
+  final TextStyle symbolStyle;
+  final TextStyle symbolStyleSmall;
+  final TextStyle percentageStyle;
+  final TextStyle percentageStyleSmall;
+
   TreemapPainter({
     required this.holdings,
     required this.totalPnlValue,
@@ -2627,6 +2882,10 @@ class TreemapPainter extends CustomPainter {
     required this.theme,
     required this.containerWidth,
     required this.containerHeight,
+    required this.symbolStyle,
+    required this.symbolStyleSmall,
+    required this.percentageStyle,
+    required this.percentageStyleSmall,
     this.onLayout,
     this.selectedIndex,
   });
@@ -2765,12 +3024,12 @@ class TreemapPainter extends CustomPainter {
     final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(2));
     canvas.drawRRect(rrect, paint);
 
-    // Selection highlight (brief tap animation via thicker border)
+    // Selection highlight on hover/tap - subtle border
     if (isSelected) {
       final borderPaint = Paint()
-        ..color = colors.kColorAccentBlack
+        ..color = MyntColors.textPrimary
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5;
+        ..strokeWidth = 1.5;
       canvas.drawRRect(rrect, borderPaint);
     }
     
@@ -2784,52 +3043,49 @@ class TreemapPainter extends CustomPainter {
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
     );
-    
-    // Stock symbol - fixed font size 12 (or 10 for very small tiles),
-    // single line with ellipsis. For very small tiles show only a single word.
+
+    final bool isSmallTile = rect.width < 50 || rect.height < 28;
+
+    // Stock symbol - use passed styles from MyntWebTextStyles
     String symbol = (holding.tsym?.replaceAll('-EQ', '') ?? 'N/A');
-    if (rect.width < 50 || rect.height < 28) {
+    if (isSmallTile) {
       symbol = _singleWord(symbol);
     }
-    final symbolStyle = TextStyle(
-      fontSize: rect.width < 50 || rect.height < 28 ? 8 : 12,
-      fontWeight: FontWeight.w500,
-      color: textColor,
-    );
-    
+
+    // Apply textColor to the base style
+    final effectiveSymbolStyle = (isSmallTile ? symbolStyleSmall : symbolStyle).copyWith(color: textColor);
+
     final symbolPainter = TextPainter(
-      text: TextSpan(text: symbol, style: symbolStyle),
+      text: TextSpan(text: symbol, style: effectiveSymbolStyle),
       textDirection: TextDirection.ltr,
       maxLines: 1,
       ellipsis: '…',
     );
-    symbolPainter.layout(maxWidth: rect.width - 4); // Leave 2px margin on each side
+    symbolPainter.layout(maxWidth: rect.width - 4);
     final symbolOffset = Offset(
       rect.left + (rect.width - symbolPainter.width) / 2,
       rect.top + (rect.height - symbolPainter.height) / 2 - 8,
     );
     symbolPainter.paint(canvas, symbolOffset);
-    
+
     // P&L percentage - only if there's enough space
     if (rect.height > 20 && rect.width > 24) {
       final pnlPercent = holding.pnlPercent ?? 0.0;
       final percentageText = '${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(1)}%';
-      final percentageStyle = TextStyle(
-        fontSize: rect.width < 50 || rect.height < 28 ? 8 : 10,
-        fontWeight: FontWeight.w500,
-        color: textColor,
-      );
-      
-      textPainter.text = TextSpan(text: percentageText, style: percentageStyle);
+
+      // Apply textColor to the base style
+      final effectivePercentageStyle = (isSmallTile ? percentageStyleSmall : percentageStyle).copyWith(color: textColor);
+
+      textPainter.text = TextSpan(text: percentageText, style: effectivePercentageStyle);
       textPainter.layout(maxWidth: rect.width - 4);
-      
+
       // Only draw if percentage text fits
       if (textPainter.width <= rect.width - 4) {
         final percentageOffset = Offset(
           rect.left + (rect.width - textPainter.width) / 2,
           rect.top + (rect.height - textPainter.height) / 2 + 8,
         );
-        
+
         textPainter.paint(canvas, percentageOffset);
       }
     }
