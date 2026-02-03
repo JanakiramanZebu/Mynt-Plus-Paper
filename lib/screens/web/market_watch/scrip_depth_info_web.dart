@@ -801,7 +801,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
               return StreamBuilder<Map>(
                   stream: ref.read(websocketProvider).socketDataStream,
                   builder: (context, snapshot) {
-                    final socketDatas = snapshot.data ?? {};
+                    // CRITICAL FIX: Fall back to existing socket data if stream hasn't emitted yet
+                    // Broadcast streams don't replay past events, so if data was emitted
+                    // before this widget subscribed, snapshot.data would be null
+                    final socketDatas = snapshot.data ?? ref.read(websocketProvider).socketDatas;
 
                     // Update depth data with WebSocket data if available
                     if (socketDatas.containsKey(regtoken)) {
@@ -3005,7 +3008,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     return StreamBuilder<Map>(
       stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
-        final socketDatas = snapshot.data ?? {};
+        // CRITICAL FIX: Fall back to existing socket data if stream hasn't emitted yet
+        final socketDatas = snapshot.data ?? ref.read(websocketProvider).socketDatas;
 
         return Column(
           mainAxisSize: MainAxisSize.min,

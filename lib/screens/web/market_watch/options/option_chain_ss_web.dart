@@ -1302,19 +1302,20 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
     // Step 3: Determine ATM strike based on LIVE LTP (closest strike to current price)
     // Get live LTP from websocket for the UNDERLYING token (following mobile pattern)
     // Mobile uses: depthData.undTk ?? depthData.token for the underlying token
+    // IMPORTANT: WebSocket stores data with just token number (e.g., "26000"), NOT "NSE|26000"
     final underlyingToken = depthData.undTk ?? depthData.token ?? '';
-    final underlyingExch = depthData.undExch ?? depthData.exch ?? '';
-    // Build full socket key in EXCH|TOKEN format (e.g., "NSE|26000" for NIFTY)
-    final underlyingSocketKey = '$underlyingExch|$underlyingToken';
-    final socketDatas = ref.read(websocketProvider).socketDatas;
 
-    // Get underlying's LTP from socket, fallback to optionStrPrc (which is set by fetchStikePrc)
-    // IMPORTANT: Do NOT use depthData.lp as fallback - that's the option's LTP, not underlying's
-    // scripInfo.optionStrPrc is set by fetchStikePrc() which fetches the underlying's LTP for options
-    final underlyingData = socketDatas[underlyingSocketKey];
+    // CRITICAL FIX: Watch ONLY the underlying token's LTP STRING to trigger rebuilds
+    // Using .select() with a primitive String (not Map) ensures Riverpod detects changes
+    // because Strings are compared by value, while Maps are compared by reference
+    // This makes the LTP line POSITION update in real-time as the market moves
     final optionStrPrc = scripInfo.optionStrPrc;
-    final liveLtp = double.tryParse(
-        underlyingData?['lp']?.toString() ?? optionStrPrc) ?? 0;
+    final underlyingLtpStr = ref.watch(websocketProvider.select(
+        (p) => p.socketDatas[underlyingToken]?['lp']?.toString() ?? optionStrPrc));
+
+    // Parse the LTP value for calculations
+    // Fallback to optionStrPrc which is set by fetchStikePrc() (underlying's initial LTP)
+    final liveLtp = double.tryParse(underlyingLtpStr) ?? 0;
 
     // Find the closest strike to live LTP (this is the true ATM)
     String atmStrike = '';
@@ -1423,7 +1424,7 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
                     return _LtpCenterLine(
                       key: const ValueKey('ltp-center-line'),
                       fallbackLtp: liveLtp,
-                      underlyingSocketKey: underlyingSocketKey,
+                      underlyingToken: underlyingToken,
                     );
                   }
 
@@ -1462,13 +1463,13 @@ class _OptionChainContentState extends ConsumerState<_OptionChainContent> {
 /// This line appears between strike rows and updates in real-time via StreamBuilder
 class _LtpCenterLine extends ConsumerWidget {
   final double fallbackLtp;
-  /// Socket key in EXCH|TOKEN format (e.g., "NSE|26000" for NIFTY underlying)
-  final String underlyingSocketKey;
+  /// Token number for the underlying (e.g., "26000" for NIFTY)
+  final String underlyingToken;
 
   const _LtpCenterLine({
     super.key,
     required this.fallbackLtp,
-    required this.underlyingSocketKey,
+    required this.underlyingToken,
   });
 
   @override
@@ -1477,12 +1478,13 @@ class _LtpCenterLine extends ConsumerWidget {
     return StreamBuilder<Map>(
       stream: ref.read(websocketProvider).socketDataStream,
       builder: (context, snapshot) {
-        final socketDatas = snapshot.data ?? {};
+        // CRITICAL FIX: Fall back to existing socket data if stream hasn't emitted yet
+        final socketDatas = snapshot.data ?? ref.read(websocketProvider).socketDatas;
 
-        // Get live LTP from websocket using EXCH|TOKEN key, fallback to passed value
+        // Get live LTP from websocket using token number, fallback to passed value
         double liveLtp = fallbackLtp;
-        if (socketDatas.containsKey(underlyingSocketKey)) {
-          final socketData = socketDatas[underlyingSocketKey];
+        if (socketDatas.containsKey(underlyingToken)) {
+          final socketData = socketDatas[underlyingToken];
           final wsLtp = socketData['lp']?.toString();
           if (wsLtp != null && wsLtp != "null" && wsLtp != "0") {
             liveLtp = double.tryParse(wsLtp) ?? fallbackLtp;

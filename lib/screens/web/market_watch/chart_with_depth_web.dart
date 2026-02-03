@@ -699,7 +699,8 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                       .read(websocketProvider)
                                       .socketDataStream,
                                   builder: (context, snapshot) {
-                                    final socketDatas = snapshot.data ?? {};
+                                    // CRITICAL FIX: Fall back to existing socket data
+                                    final socketDatas = snapshot.data ?? ref.read(websocketProvider).socketDatas;
                                     final currentToken =
                                         depthData?.token?.toString() ??
                                             widget.wlValue.token;

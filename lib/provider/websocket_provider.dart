@@ -623,6 +623,12 @@ class WebSocketProvider extends ChangeNotifier {
         // Apply all buffered updates to the main socket data
         _applyBufferedUpdates();
 
+        // CRITICAL FIX: Always notify StreamBuilder listeners after applying updates
+        // Previously, _socketDataController.add() was only called inside _updateSocketData
+        // when hasUpdates=true. If no individual token had changes, StreamBuilders
+        // would never get notified, causing UI to show stale data.
+        _socketDataController.add(_socketDatas);
+
         // Use post-frame callback to avoid modifying provider during build
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _safeNotifyListeners();
