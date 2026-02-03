@@ -44,6 +44,8 @@ class PositionHoldingsCardWeb extends ConsumerStatefulWidget {
 
 class _PositionHoldingsCardWebState
     extends ConsumerState<PositionHoldingsCardWeb> {
+  int _selectedTabIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     final portfolio = ref.watch(portfolioProviderRef);
@@ -63,19 +65,173 @@ class _PositionHoldingsCardWebState
       return const SizedBox.shrink();
     }
 
+    // Build tab data - always 3 tabs
+    final List<_TabItem> allTabs = [
+      _TabItem(
+        label: "Positions",
+        count: position != null ? 1 : 0,
+        hasData: position != null,
+        content: position != null
+            ? _buildPositionCard(position, socketDatas, theme)
+            : _buildNoDataMessage("No positions"),
+      ),
+      _TabItem(
+        label: "Holdings",
+        count: holding != null ? 1 : 0,
+        hasData: holding != null,
+        content: holding != null
+            ? _buildHoldingsCard(holding, socketDatas, theme)
+            : _buildNoDataMessage("No holdings"),
+      ),
+      _TabItem(
+        label: "Open Orders",
+        count: openOrders.length,
+        hasData: openOrders.isNotEmpty,
+        content: openOrders.isNotEmpty
+            ? _buildOpenOrdersSection(openOrders, socketDatas, theme)
+            : _buildNoDataMessage("No open orders"),
+      ),
+    ];
+
+    // Auto-select first tab with data if current selection has no data
+    if (!allTabs[_selectedTabIndex].hasData) {
+      for (int i = 0; i < allTabs.length; i++) {
+        if (allTabs[i].hasData) {
+          _selectedTabIndex = i;
+          break;
+        }
+      }
+    }
+
     return Column(
       children: [
-        // Position card (if exists)
-        if (position != null)
-          _buildPositionCard(position, socketDatas, theme),
-
-        // Holdings card (if exists)
-        if (holding != null) _buildHoldingsCard(holding, socketDatas, theme),
-
-        // Open orders section (if any)
-        if (openOrders.isNotEmpty)
-          _buildOpenOrdersSection(openOrders, socketDatas, theme),
+        // Tab bar - always shows all 3 tabs
+        _buildTabBar(allTabs),
+        // Tab content
+        allTabs[_selectedTabIndex].content,
       ],
+    );
+  }
+
+  /// Build "No data" message for empty tabs
+  Widget _buildNoDataMessage(String message) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Text(
+          message,
+          style: MyntWebTextStyles.para(
+            context,
+            color: resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build the tab bar with all category tabs (matching Overview/Chart/Options style)
+  Widget _buildTabBar(List<_TabItem> tabs) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: const Color(0xFF1E1E1E), light: const Color(0xFFF5F5F5)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: tabs.asMap().entries.map((entry) {
+          final index = entry.key;
+          final tab = entry.value;
+          final isSelected = _selectedTabIndex == index;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTabIndex = index),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.backgroundColorDark,
+                          light: MyntColors.backgroundColor)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      tab.label,
+                      style: MyntWebTextStyles.para(
+                        context,
+                        fontWeight:
+                            isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                        color: isSelected
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary)
+                            : tab.hasData
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary).withValues(alpha: 0.5),
+                      ),
+                    ),
+                    if (tab.count > 0) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary)
+                                  .withValues(alpha: 0.1)
+                              : resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary)
+                                  .withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          "${tab.count}",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: isSelected
+                                ? resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary)
+                                : resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -162,159 +318,158 @@ class _PositionHoldingsCardWebState
     // Calculate P&L percentage based on price movement
     final pnlPercent = _calculatePnlPercent(ltp, avgPrice, isLong, pnl);
 
+    // Get symbol name
+    final symbolName = position.tsym?.replaceAll("-EQ", "") ?? '';
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.card,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isProfit
-              ? resolveThemeColor(context,
-                      dark: MyntColors.profitDark, light: MyntColors.profit)
-                  .withValues(alpha: 0.3)
-              : resolveThemeColor(context,
-                      dark: MyntColors.lossDark, light: MyntColors.loss)
-                  .withValues(alpha: 0.3),
+          color: resolveThemeColor(context,
+              dark: MyntColors.dividerDark, light: MyntColors.divider),
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row: Position label + Product type
+          // Row 1: Symbol name | LONG/SHORT badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isLong
-                          ? resolveThemeColor(context,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary)
-                              .withValues(alpha: 0.15)
-                          : resolveThemeColor(context,
-                                  dark: MyntColors.tertiary,
-                                  light: MyntColors.tertiary)
-                              .withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      positionType,
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.semiBold,
-                        color: isLong
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.primaryDark,
-                                light: MyntColors.primary)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.tertiary,
-                                light: MyntColors.tertiary),
-                      ),
-                    ),
+              // Symbol name
+              Expanded(
+                child: Text(
+                  symbolName,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
                   ),
-                ],
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              // Product type badge
+              const SizedBox(width: 8),
+              // LONG/SHORT badge
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: resolveThemeColor(context,
-                          dark: MyntColors.searchBgDark,
-                          light: MyntColors.searchBg)
-                      .withValues(alpha: 0.5),
+                  color: isLong
+                      ? resolveThemeColor(context,
+                              dark: MyntColors.profitDark,
+                              light: MyntColors.profit)
+                          .withValues(alpha: 0.12)
+                      : resolveThemeColor(context,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss)
+                          .withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  position.sPrdtAli ?? position.prd ?? '',
+                  positionType,
                   style: MyntWebTextStyles.para(
                     context,
-                    fontWeight: MyntFonts.medium,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary),
+                    fontWeight: MyntFonts.semiBold,
+                    color: isLong
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.profitDark,
+                            light: MyntColors.profit)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
 
-          // Main content row: Qty + Avg + LTP | P&L
+          // Row 2: Exchange - Product - Avg | LTP value
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Left side: Qty, Avg, LTP
-              Expanded(
-                flex: 2,
-                child: Row(
-                  children: [
-                    _buildInfoColumn("Qty", "$absQty"),
-                    const SizedBox(width: 16),
-                    _buildInfoColumn("Avg", avgPrice.toStringAsFixed(2)),
-                    const SizedBox(width: 16),
-                    _buildInfoColumn("LTP", ltp.toStringAsFixed(2)),
-                  ],
+              // Exchange - Product - Avg info
+              Text(
+                "${position.exch ?? ''} - ${position.sPrdtAli ?? position.prd ?? ''} - Avg ${avgPrice.toStringAsFixed(2)}",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
               ),
-              // Right side: P&L
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "${isProfit ? '+' : ''}${pnl.toStringAsFixed(2)}",
-                      style: MyntWebTextStyles.price(
-                        context,
-                        fontWeight: MyntFonts.semiBold,
-                        color: isProfit
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.profitDark,
-                                light: MyntColors.profit)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss),
-                      ),
-                    ),
-                    Text(
-                      "(${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toStringAsFixed(2)}%)",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: isProfit
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.profitDark,
-                                light: MyntColors.profit)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss),
-                      ),
-                    ),
-                  ],
+              // LTP value
+              Text(
+                "LTP ${ltp.toStringAsFixed(2)}",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
 
-          // Exit button
+          // Row 3: Position type with Qty | P&L value
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Position type with quantity
+              Text(
+                "${isLong ? 'BUY' : 'SELL'}  $absQty",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: isLong
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.lossDark,
+                          light: MyntColors.loss),
+                ),
+              ),
+              // P&L value with percentage inline
+              Text(
+                "${pnl.toStringAsFixed(2)} (${pnlPercent.toStringAsFixed(2)}%)",
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: isProfit
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.lossDark,
+                          light: MyntColors.loss),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Exit button - full width
           SizedBox(
             width: double.infinity,
-            height: 36,
+            height: 32,
             child: MyntButton(
               label: "Exit Position",
               size: MyntButtonSize.small,
-              backgroundColor: isLong
-                  ? resolveThemeColor(context,
-                      dark: MyntColors.tertiary, light: MyntColors.tertiary)
-                  : resolveThemeColor(context,
-                      dark: MyntColors.primary, light: MyntColors.primary),
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.tertiary, light: MyntColors.tertiary),
               textColor: Colors.white,
               onPressed: () => _exitPosition(position, ltp),
             ),
@@ -352,31 +507,49 @@ class _PositionHoldingsCardWebState
     final pnlPercent = double.tryParse(matchingExch.pNlChng ?? '0') ?? 0;
     final isProfit = pnl >= 0;
 
+    // Get symbol name
+    final symbolName = matchingExch.tsym?.replaceAll("-EQ", "") ?? '';
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.card,
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isProfit
-              ? resolveThemeColor(context,
-                      dark: MyntColors.profitDark, light: MyntColors.profit)
-                  .withValues(alpha: 0.3)
-              : resolveThemeColor(context,
-                      dark: MyntColors.lossDark, light: MyntColors.loss)
-                  .withValues(alpha: 0.3),
+          color: resolveThemeColor(context,
+              dark: MyntColors.dividerDark, light: MyntColors.divider),
           width: 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row: Holdings label + Product type
+          // Row 1: Symbol name | HOLDING badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Symbol name
+              Expanded(
+                child: Text(
+                  symbolName,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // HOLDING & CNC badges
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding:
@@ -385,7 +558,7 @@ class _PositionHoldingsCardWebState
                       color: resolveThemeColor(context,
                               dark: MyntColors.primaryDark,
                               light: MyntColors.primary)
-                          .withValues(alpha: 0.15),
+                          .withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -401,100 +574,86 @@ class _PositionHoldingsCardWebState
                   ),
                 ],
               ),
-              // CNC badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: resolveThemeColor(context,
-                          dark: MyntColors.searchBgDark,
-                          light: MyntColors.searchBg)
-                      .withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  holding.sPrdtAli ?? "CNC",
-                  style: MyntWebTextStyles.para(
-                    context,
-                    fontWeight: MyntFonts.medium,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary),
-                  ),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
 
-          // Main content row: Qty + Avg + LTP | P&L
+          // Row 2: Exchange - CNC - Avg | LTP value
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Left side: Qty, Avg, LTP
-              Expanded(
-                flex: 2,
-                child: Row(
-                  children: [
-                    _buildInfoColumn("Qty", "$currentQty"),
-                    const SizedBox(width: 16),
-                    _buildInfoColumn("Avg", avgPrice.toStringAsFixed(2)),
-                    const SizedBox(width: 16),
-                    _buildInfoColumn("LTP", ltp.toStringAsFixed(2)),
-                  ],
+              // Exchange - CNC - Avg info
+              Text(
+                "${matchingExch.exch ?? ''} - ${holding.sPrdtAli ?? "CNC"} - Avg ${avgPrice.toStringAsFixed(2)}",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
               ),
-              // Right side: P&L
-              Expanded(
-                flex: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "${isProfit ? '+' : ''}${pnl.toStringAsFixed(2)}",
-                      style: MyntWebTextStyles.price(
-                        context,
-                        fontWeight: MyntFonts.semiBold,
-                        color: isProfit
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.profitDark,
-                                light: MyntColors.profit)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss),
-                      ),
-                    ),
-                    Text(
-                      "(${isProfit ? '+' : ''}${pnlPercent.toStringAsFixed(2)}%)",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: isProfit
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.profitDark,
-                                light: MyntColors.profit)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss),
-                      ),
-                    ),
-                  ],
+              // LTP value
+              Text(
+                "LTP ${ltp.toStringAsFixed(2)}",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
 
-          // Sell button
+          // Row 3: BUY Qty | P&L value
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // BUY orientation with quantity
+              Text(
+                "BUY $currentQty",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.profitDark, light: MyntColors.profit),
+                ),
+              ),
+              // P&L value with percentage inline
+              Text(
+                "${isProfit ? '+' : ''}${pnl.toStringAsFixed(2)} (${isProfit ? '+' : ''}${pnlPercent.toStringAsFixed(2)}%)",
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  color: isProfit
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.profitDark,
+                          light: MyntColors.profit)
+                      : resolveThemeColor(context,
+                          dark: MyntColors.lossDark,
+                          light: MyntColors.loss),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Sell button - full width
           SizedBox(
             width: double.infinity,
-            height: 36,
+            height: 32,
             child: MyntButton(
               label: "Sell Holdings",
               size: MyntButtonSize.small,
               backgroundColor: resolveThemeColor(context,
                   dark: MyntColors.tertiary, light: MyntColors.tertiary),
               textColor: Colors.white,
-              onPressed: () => _exitHolding(holding, matchingExch!, ltp, saleableQty),
+              onPressed: () =>
+                  _exitHolding(holding, matchingExch!, ltp, saleableQty),
             ),
           ),
         ],
@@ -581,161 +740,178 @@ class _PositionHoldingsCardWebState
     final triggerPrice = order.trgprc ?? "";
     final priceType = order.prctyp ?? "";
     final product = order.sPrdtAli ?? order.prd ?? "";
+    final ltp = _getFreshLtp(socketDatas, order.token, order.ltp);
+
+    // Get symbol name
+    final symbolName = order.tsym?.replaceAll("-EQ", "") ?? '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: resolveThemeColor(context,
-                dark: MyntColors.backgroundColorDark,
-                light: MyntColors.backgroundColor)
-            .withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(6),
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isBuy
-              ? resolveThemeColor(context,
-                      dark: MyntColors.primaryDark, light: MyntColors.primary)
-                  .withValues(alpha: 0.2)
-              : resolveThemeColor(context,
-                      dark: MyntColors.tertiary, light: MyntColors.tertiary)
-                  .withValues(alpha: 0.2),
+          color: resolveThemeColor(context,
+              dark: MyntColors.dividerDark, light: MyntColors.divider),
           width: 1,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Buy/Sell indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: isBuy
-                  ? resolveThemeColor(context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary)
-                      .withValues(alpha: 0.15)
-                  : resolveThemeColor(context,
-                          dark: MyntColors.tertiary, light: MyntColors.tertiary)
-                      .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              isBuy ? "BUY" : "SELL",
-              style: MyntWebTextStyles.para(
-                context,
-                fontWeight: MyntFonts.semiBold,
-                color: isBuy
-                    ? resolveThemeColor(context,
-                        dark: MyntColors.primaryDark, light: MyntColors.primary)
-                    : resolveThemeColor(context,
-                        dark: MyntColors.tertiary, light: MyntColors.tertiary),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-
-          // Order details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      "Qty: $qty",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      "@ $price",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                      ),
-                    ),
-                    if (triggerPrice.isNotEmpty && triggerPrice != "0.00") ...[
-                      const SizedBox(width: 12),
-                      Text(
-                        "Trg: $triggerPrice",
-                        style: MyntWebTextStyles.para(
-                          context,
-                          fontWeight: MyntFonts.medium,
-                          color: resolveThemeColor(context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      priceType,
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.regular,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      product,
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.regular,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Action buttons
+          // Row 1: Symbol name | BUY/SELL badge
           Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Edit button
-              IconButton(
-                onPressed: () => _modifyOrder(order),
-                icon: Icon(
-                  Icons.edit_outlined,
-                  size: 18,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.primaryDark, light: MyntColors.primary),
+              // Symbol name
+              Expanded(
+                child: Text(
+                  symbolName,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                tooltip: "Modify Order",
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
-              const SizedBox(width: 4),
-              // Cancel button
-              IconButton(
-                onPressed: () => _cancelOrder(order),
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: 18,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.lossDark, light: MyntColors.loss),
+              const SizedBox(width: 8),
+              // Direction badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isBuy
+                      ? resolveThemeColor(context,
+                              dark: MyntColors.profitDark,
+                              light: MyntColors.profit)
+                          .withValues(alpha: 0.12)
+                      : resolveThemeColor(context,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss)
+                          .withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                tooltip: "Cancel Order",
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                child: Text(
+                  isBuy ? "BUY" : "SELL",
+                  style: MyntWebTextStyles.para(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    color: isBuy
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.profitDark,
+                            light: MyntColors.profit)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+
+          // Row 2: Exchange - Product - PriceType | LTP value
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Exchange - Product - PriceType info
+              Text(
+                "${order.exch ?? ''} - $product - $priceType",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              ),
+              // LTP value
+              Text(
+                "LTP ${ltp.toStringAsFixed(2)}",
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+
+          // Row 3: Qty @ Price | Action buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Qty and Trigger info
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Qty: $qty @ $price",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary),
+                    ),
+                  ),
+                  if (triggerPrice.isNotEmpty && triggerPrice != "0.00")
+                    Text(
+                      "Trg: $triggerPrice",
+                      style: MyntWebTextStyles.para(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                      ),
+                    ),
+                ],
+              ),
+
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Edit button
+                  IconButton(
+                    onPressed: () => _modifyOrder(order),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary),
+                    ),
+                    tooltip: "Modify Order",
+                    padding: const EdgeInsets.all(4),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                  ),
+                  const SizedBox(width: 4),
+                  // Cancel button
+                  IconButton(
+                    onPressed: () => _cancelOrder(order),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.lossDark, light: MyntColors.loss),
+                    ),
+                    tooltip: "Cancel Order",
+                    padding: const EdgeInsets.all(4),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                  ),
+                ],
               ),
             ],
           ),
@@ -744,34 +920,6 @@ class _PositionHoldingsCardWebState
     );
   }
 
-  Widget _buildInfoColumn(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: MyntWebTextStyles.para(
-            context,
-            fontWeight: MyntFonts.medium,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark,
-                light: MyntColors.textSecondary),
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: MyntWebTextStyles.body(
-            context,
-            fontWeight: MyntFonts.medium,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-          ),
-        ),
-      ],
-    );
-  }
 
   Future<void> _exitPosition(PositionBookModel position, double ltp) async {
     final netQty = int.tryParse(position.netqty ?? '0') ?? 0;
@@ -1105,3 +1253,18 @@ class _PositionHoldingsCardWebState
 
 /// Provider ref alias for cleaner code
 final portfolioProviderRef = portfolioProvider;
+
+/// Helper class for tab items
+class _TabItem {
+  final String label;
+  final int count;
+  final bool hasData;
+  final Widget content;
+
+  _TabItem({
+    required this.label,
+    required this.count,
+    required this.hasData,
+    required this.content,
+  });
+}

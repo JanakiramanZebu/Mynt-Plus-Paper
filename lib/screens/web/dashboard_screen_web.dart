@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/mynt_loader.dart';
@@ -1204,16 +1206,35 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               ),
             )
           else if (isLoaded)
-            // Show "No data" when data has been loaded but is empty
+            // Show "No data" with bull image when data has been loaded but is empty
             Expanded(
               child: Center(
-                child: Text(
-                  'No data',
-                  style: MyntWebTextStyles.body(
-                    context,
-                    darkColor: MyntColors.textSecondaryDark,
-                    lightColor: MyntColors.textSecondary,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // SvgPicture.asset(
+                    //   assets.documentIcon,
+                    //   width: 48,
+                    //   height: 48,
+                    //   colorFilter: ColorFilter.mode(
+                    //     resolveThemeColor(
+                    //       context,
+                    //       dark: MyntColors.textSecondaryDark,
+                    //       light: MyntColors.textSecondary,
+                    //     ),
+                    //     BlendMode.srcIn,
+                    //   ),
+                    // ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No data available',
+                      style: MyntWebTextStyles.body(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )

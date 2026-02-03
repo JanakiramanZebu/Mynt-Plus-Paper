@@ -23,7 +23,7 @@ import '../../../../res/mynt_web_color_styles.dart' as styles;
 import '../../../../utils/responsive_snackbar.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
-import '../../../../sharedWidget/hover_actions_web.dart';
+// import '../../../../sharedWidget/hover_actions_web.dart'; // Not used - using custom action buttons
 import '../../../../sharedWidget/mynt_loader.dart';
 import 'create_basket_web.dart';
 // import '../../../web/market_watch/search_dialog_web.dart'; // Commented out - search bar integrated
@@ -514,13 +514,25 @@ class _BasketListState extends ConsumerState<BasketList> {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: resolveThemeColor(context,
-              dark: MyntColors.loss.withValues(alpha: 0.15),
-              light: MyntColors.loss.withValues(alpha: 0.1)),
+              // dark: MyntColors.loss.withValues(alpha: 0.15),
+              // light: MyntColors.loss.withValues(alpha: 0.1)),
+              dark: MyntColors.textWhite,
+              light: MyntColors.textWhite),
           borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: resolveThemeColor(context,
+                  dark: Colors.grey,
+                  light: Colors.grey),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Icon(
           Icons.close,
           size: 18,
+          fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
         ),
@@ -621,15 +633,26 @@ class _BasketListState extends ConsumerState<BasketList> {
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.1),
-                  light: MyntColors.primary.withValues(alpha: 0.1)),
+                  // dark: MyntColors.primary.withValues(alpha: 0.1),
+                  // light: MyntColors.primary.withValues(alpha: 0.1)),
+                  dark: MyntColors.textWhite,
+                  light: MyntColors.textWhite),
               borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: resolveThemeColor(context,
+                      dark: Colors.grey,
+                      light: Colors.grey),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
+              ],
             ),
             child: Icon(
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: styles.MyntColors.textPrimaryDark,
+                  dark: styles.MyntColors.textPrimary,
                   light: styles.MyntColors.textPrimary),
             ),
           ),
@@ -1371,8 +1394,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         header == 'Price' ||
         header == 'LTP' ||
         header == 'Status' ||
-        header == 'Actions' ||
-        header == 'Type/Product') return true;
+        header == 'Product') return true;
     return false;
   }
 
@@ -2103,241 +2125,194 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                 final headers = [
                                   'Instrument ($count / $maxCount)',
                                   'Type',
-                                  'Type/Product',
+                                  'Product',
                                   'Qty.',
                                   'LTP',
                                   'Price',
                                   'Status',
-                                  'Actions'
                                 ];
 
-                                // Define fixed minimum widths for columns
-                                final minWidths = <int, double>{
-                                  0: 140.0, // Instrument
-                                  1: 70.0, // Type
-                                  2: 120.0, // Type/Product
-                                  3: 100.0, // Qty.
-                                  4: 140.0, // LTP
-                                  5: 100.0, // Price
-                                  6: 100.0, // Status
-                                  7: 140.0, // Actions
-                                };
+                                // Instrument column gets 2x width, others share remaining space equally
+                                // Total units: 2 (instrument) + 6 (other columns) = 8 units
+                                final unitWidth = screenWidth / 8;
+                                final instrumentWidth = unitWidth * 2; // 2 units for Instrument
+                                final otherColumnWidth = unitWidth; // 1 unit each for other columns
 
-                                final totalMinWidth =
-                                    minWidths.values.reduce((a, b) => a + b);
-                                final needsHorizontalScroll =
-                                    screenWidth < totalMinWidth;
+                                // Build column widths map
+                                final columnWidths = <int, shadcn.FixedTableSize>{};
+                                for (int i = 0; i < headers.length; i++) {
+                                  columnWidths[i] = shadcn.FixedTableSize(
+                                    i == 0 ? instrumentWidth : otherColumnWidth
+                                  );
+                                }
 
-                                // Build the shadcn Table
-                                Widget buildTable() {
-                                  final sortedItems =
-                                      _getSortedBasketScripts(processedItems);
+                                final sortedItems =
+                                    _getSortedBasketScripts(processedItems);
 
-                                  return Column(
-                                    children: [
-                                      // Header
-                                      shadcn.Table(
-                                        columnWidths: minWidths.map((index, width) {
-                                          if (index == 0) {
-                                            final otherWidths = minWidths.entries
-                                                .where((e) => e.key != 0)
-                                                .map((e) => e.value)
-                                                .fold(0.0, (a, b) => a + b);
-                                            final calculatedWidth = screenWidth > totalMinWidth
-                                                ? screenWidth - otherWidths
-                                                : width;
-                                            return MapEntry(
-                                                0, shadcn.FixedTableSize(calculatedWidth));
-                                          }
-                                          return MapEntry(
-                                              index, shadcn.FixedTableSize(width));
-                                        }),
-                                        defaultRowHeight:
-                                            const shadcn.FixedTableSize(48),
-                                        rows: [
-                                          shadcn.TableHeader(
-                                            cells: headers
+                                // Build the shadcn Table (no horizontal scroll needed with equal widths)
+                                return Column(
+                                  children: [
+                                    // Header
+                                    shadcn.Table(
+                                      columnWidths: columnWidths,
+                                      defaultRowHeight:
+                                          const shadcn.FixedTableSize(48),
+                                      rows: [
+                                        shadcn.TableHeader(
+                                          cells: headers
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                            final index = entry.key;
+                                            final label = entry.value;
+                                            final isNumeric =
+                                                _isNumericColumnBasketItems(
+                                                    label);
+                                            return buildHeaderCell(label,
+                                                index, theme, headers.length, isNumeric);
+                                          }).toList(),
+                                        ),
+                                      ],
+                                    ),
+                                    // Body
+                                    Expanded(
+                                      child: RawScrollbar(
+                                        controller: _verticalScrollController,
+                                        thumbVisibility: true,
+                                        thickness: 6,
+                                        radius: const Radius.circular(3),
+                                        child: SingleChildScrollView(
+                                          controller: _verticalScrollController,
+                                          child: shadcn.Table(
+                                            columnWidths: columnWidths,
+                                            defaultRowHeight:
+                                                const shadcn.FixedTableSize(56),
+                                            rows: sortedItems
                                                 .asMap()
                                                 .entries
-                                                .map((entry) {
-                                              final index = entry.key;
-                                              final label = entry.value;
-                                              final isNumeric =
-                                                  _isNumericColumnBasketItems(
-                                                      label);
-                                              return buildHeaderCell(label,
-                                                  index, theme, headers.length, isNumeric);
-                                            }).toList(),
-                                          ),
-                                        ],
-                                      ),
-                                      // Body
-                                      Expanded(
-                                        child: RawScrollbar(
-                                          controller: _verticalScrollController,
-                                          thumbVisibility: true,
-                                          thickness: 6,
-                                          radius: const Radius.circular(3),
-                                          child: SingleChildScrollView(
-                                            controller: _verticalScrollController,
-                                            child: shadcn.Table(
-                                              columnWidths:
-                                                  minWidths.map((index, width) {
-                                                if (index == 0) {
-                                                  final otherWidths = minWidths.entries
-                                                      .where((e) => e.key != 0)
-                                                      .map((e) => e.value)
-                                                      .fold(0.0, (a, b) => a + b);
-                                                  final calculatedWidth = screenWidth > totalMinWidth
-                                                      ? screenWidth - otherWidths
-                                                      : width;
-                                                  return MapEntry(
-                                                      0, shadcn.FixedTableSize(calculatedWidth));
-                                                }
-                                                return MapEntry(index,
-                                                    shadcn.FixedTableSize(width));
-                                              }),
-                                              defaultRowHeight:
-                                                  const shadcn.FixedTableSize(56),
-                                              rows: sortedItems
-                                                  .asMap()
-                                                  .entries
-                                                  .map((rowEntry) {
-                                                final rowIndex = rowEntry.key;
-                                                final item = rowEntry.value;
-                                                final originalIndex =
-                                                    item['_originalIndex']
-                                                        as int;
-                                                final uniqueId =
-                                                    'basket_$originalIndex';
+                                                .map((rowEntry) {
+                                              final rowIndex = rowEntry.key;
+                                              final item = rowEntry.value;
+                                              final originalIndex =
+                                                  item['_originalIndex']
+                                                      as int;
+                                              final uniqueId =
+                                                  'basket_$originalIndex';
 
-                                                return shadcn.TableRow(
-                                                  cells: headers
-                                                      .asMap()
-                                                      .entries
-                                                      .map((colEntry) {
-                                                    final colIndex =
-                                                        colEntry.key;
-                                                    final headerLabel =
-                                                        colEntry.value;
-                                                    final isNumeric =
-                                                        _isNumericColumnBasketItems(
-                                                            headerLabel);
+                                              return shadcn.TableRow(
+                                                cells: headers
+                                                    .asMap()
+                                                    .entries
+                                                    .map((colEntry) {
+                                                  final colIndex =
+                                                      colEntry.key;
+                                                  final headerLabel =
+                                                      colEntry.value;
+                                                  final isNumeric =
+                                                      _isNumericColumnBasketItems(
+                                                          headerLabel);
 
-                                                    return buildCellWithHover(
-                                                      rowIndex: rowIndex,
-                                                      columnIndex: colIndex,
-                                                      totalColumns: headers.length,
-                                                      alignRight: isNumeric,
-                                                      child: GestureDetector(
-                                                        behavior:
-                                                            HitTestBehavior.opaque,
-                                                        onTap: () async {
-                                                          // Handle row tap logic
-                                                          await ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .fetchScripInfo(
-                                                                  "${item['token']}",
-                                                                  '${item['exch']}',
-                                                                  context,
-                                                                  true);
-                                                          if (!context.mounted)
-                                                            return;
+                                                  return buildCellWithHover(
+                                                    rowIndex: rowIndex,
+                                                    columnIndex: colIndex,
+                                                    totalColumns: headers.length,
+                                                    alignRight: isNumeric,
+                                                    child: GestureDetector(
+                                                      behavior:
+                                                          HitTestBehavior.opaque,
+                                                      onTap: () async {
+                                                        // Handle row tap logic
+                                                        await ref
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .fetchScripInfo(
+                                                                "${item['token']}",
+                                                                '${item['exch']}',
+                                                                context,
+                                                                true);
+                                                        if (!context.mounted)
+                                                          return;
 
-                                                          final basket = ref
-                                                              .read(orderProvider);
-                                                          basket.bsktScripList[
-                                                                  originalIndex]
-                                                              ['index'] = originalIndex;
-                                                          basket.bsktScripList[
-                                                                  originalIndex]
-                                                              ['prctyp'] = basket
-                                                                  .bsktScripList[
-                                                              originalIndex]['prctype'];
+                                                        final basket = ref
+                                                            .read(orderProvider);
+                                                        basket.bsktScripList[
+                                                                originalIndex]
+                                                            ['index'] = originalIndex;
+                                                        basket.bsktScripList[
+                                                                originalIndex]
+                                                            ['prctyp'] = basket
+                                                                .bsktScripList[
+                                                            originalIndex]['prctype'];
 
-                                                          final ltp = item['lp']
-                                                                  ?.toString() ??
-                                                              "0.00";
-                                                          final perChange = item['pc']
-                                                                  ?.toString() ??
-                                                              "0.00";
+                                                        final ltp = item['lp']
+                                                                ?.toString() ??
+                                                            "0.00";
+                                                        final perChange = item['pc']
+                                                                ?.toString() ??
+                                                            "0.00";
 
-                                                          OrderScreenArgs orderArgs =
-                                                              OrderScreenArgs(
-                                                                  exchange:
-                                                                      '${item['exch']}',
-                                                                  tSym:
-                                                                      '${item['tsym']}',
-                                                                  isExit: false,
-                                                                  token:
-                                                                      "${item['token']}",
-                                                                  transType: item[
-                                                                          'trantype'] ==
-                                                                      'B',
-                                                                  lotSize: ref
-                                                                      .read(
-                                                                          marketWatchProvider)
-                                                                      .scripInfoModel
-                                                                      ?.ls
-                                                                      .toString(),
-                                                                  ltp: ltp,
-                                                                  perChange:
-                                                                      perChange,
-                                                                  orderTpye: '',
-                                                                  holdQty: '',
-                                                                  isModify: true,
-                                                                  prd: item['prd']
-                                                                      ?.toString(),
-                                                                  raw: item);
+                                                        OrderScreenArgs orderArgs =
+                                                            OrderScreenArgs(
+                                                                exchange:
+                                                                    '${item['exch']}',
+                                                                tSym:
+                                                                    '${item['tsym']}',
+                                                                isExit: false,
+                                                                token:
+                                                                    "${item['token']}",
+                                                                transType: item[
+                                                                        'trantype'] ==
+                                                                    'B',
+                                                                lotSize: ref
+                                                                    .read(
+                                                                        marketWatchProvider)
+                                                                    .scripInfoModel
+                                                                    ?.ls
+                                                                    .toString(),
+                                                                ltp: ltp,
+                                                                perChange:
+                                                                    perChange,
+                                                                orderTpye: '',
+                                                                holdQty: '',
+                                                                isModify: true,
+                                                                prd: item['prd']
+                                                                    ?.toString(),
+                                                                raw: item);
 
-                                                          final scripInfo = ref
-                                                              .read(
-                                                                  marketWatchProvider)
-                                                              .scripInfoModel;
-                                                          if (scripInfo != null) {
-                                                            PlaceOrderScreenWeb
-                                                                .showDraggable(
-                                                              context: context,
-                                                              orderArg: orderArgs,
-                                                              scripInfo: scripInfo,
-                                                              isBasket:
-                                                                  'BasketEdit',
-                                                            );
-                                                          }
-                                                        },
-                                                        child:
-                                                            _buildBasketCellWidget(
-                                                          headerLabel,
-                                                          item,
-                                                          originalIndex,
-                                                          theme,
-                                                          uniqueId,
-                                                        ),
+                                                        final scripInfo = ref
+                                                            .read(
+                                                                marketWatchProvider)
+                                                            .scripInfoModel;
+                                                        if (scripInfo != null) {
+                                                          PlaceOrderScreenWeb
+                                                              .showDraggable(
+                                                            context: context,
+                                                            orderArg: orderArgs,
+                                                            scripInfo: scripInfo,
+                                                            isBasket:
+                                                                'BasketEdit',
+                                                          );
+                                                        }
+                                                      },
+                                                      child:
+                                                          _buildBasketCellWidget(
+                                                        headerLabel,
+                                                        item,
+                                                        originalIndex,
+                                                        theme,
+                                                        uniqueId,
                                                       ),
-                                                    );
-                                                  }).toList(),
-                                                );
-                                              }).toList(),
-                                            ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              );
+                                            }).toList(),
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  );
-                                }
-
-                                if (needsHorizontalScroll) {
-                                  return SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    controller: _horizontalScrollController,
-                                    child: SizedBox(
-                                      width: totalMinWidth,
-                                      child: buildTable(),
                                     ),
-                                  );
-                                }
-                                return buildTable();
+                                  ],
+                                );
                               },
                             );
                           },
@@ -2576,6 +2551,10 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
         hoveredRowIndex: _hoveredRowIndex,
         onDelete: (item, index, theme) =>
             _handleDeleteBasketScript(item, index, theme),
+        onCopy: (item, index, theme) =>
+            _handleCopyBasketScript(item, index, theme),
+        onEdit: (item, index, theme) =>
+            _handleEditBasketScript(item, index, theme),
       );
     }
 
@@ -2601,8 +2580,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             ),
           ),
         );
-      case 'Type/Product':
-        final prctype = item["prctype"]?.toString() ?? "LMT";
+      case 'Product':
         String product = "CNC";
         switch (item["prd"]) {
           case "I":
@@ -2619,7 +2597,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           child: Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '$prctype / $product',
+              product,
               style: MyntWebTextStyles.tableCell(
                 context,
                 fontWeight: MyntFonts.medium,
@@ -2630,13 +2608,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
         );
       case 'Qty.':
-        final filledQty = item["fillshares"]?.toString() ?? '0';
         final totalQty = item["qty"]?.toString() ?? '0';
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
             child: Text(
-              '$filledQty / $totalQty',
+              totalQty,
               style: MyntWebTextStyles.tableCell(
                 context,
                 fontWeight: MyntFonts.medium,
@@ -2710,133 +2687,133 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             ),
           ),
         );
-      case 'Actions':
-        return SizedBox.expand(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Copy
-                _buildBasketHoverButton(
-                icon: Icons.copy_outlined,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary,
-                ),
-                onPressed: () async {
-                  await ref.read(marketWatchProvider).fetchScripInfo(
-                      "${item['token']}", '${item['exch']}', context, true);
+      // case 'Actions':
+      //   return SizedBox.expand(
+      //     child: Align(
+      //       alignment: Alignment.centerRight,
+      //       child: Row(
+      //         mainAxisSize: MainAxisSize.min,
+      //         mainAxisAlignment: MainAxisAlignment.end,
+      //         children: [
+      //           // Copy
+      //           _buildBasketHoverButton(
+      //           icon: Icons.copy_outlined,
+      //           color: resolveThemeColor(
+      //             context,
+      //             dark: MyntColors.textSecondaryDark,
+      //             light: MyntColors.textSecondary,
+      //           ),
+      //           onPressed: () async {
+      //             await ref.read(marketWatchProvider).fetchScripInfo(
+      //                 "${item['token']}", '${item['exch']}', context, true);
 
-                  if (!context.mounted) return;
+      //             if (!context.mounted) return;
 
-                  final ltp = item['lp']?.toString() ?? "0.00";
-                  final perChange = item['pc']?.toString() ?? "0.00";
+      //             final ltp = item['lp']?.toString() ?? "0.00";
+      //             final perChange = item['pc']?.toString() ?? "0.00";
 
-                  OrderScreenArgs orderArgs = OrderScreenArgs(
-                      exchange: '${item['exch']}',
-                      tSym: '${item['tsym']}',
-                      isExit: false,
-                      token: "${item['token']}",
-                      transType: item['trantype'] == 'B',
-                      lotSize: ref
-                          .read(marketWatchProvider)
-                          .scripInfoModel
-                          ?.ls
-                          .toString(),
-                      ltp: ltp,
-                      perChange: perChange,
-                      orderTpye: '',
-                      holdQty: '',
-                      isModify: false, // Copy as new order
-                      prd: item['prd']?.toString(),
-                      raw: item);
+      //             OrderScreenArgs orderArgs = OrderScreenArgs(
+      //                 exchange: '${item['exch']}',
+      //                 tSym: '${item['tsym']}',
+      //                 isExit: false,
+      //                 token: "${item['token']}",
+      //                 transType: item['trantype'] == 'B',
+      //                 lotSize: ref
+      //                     .read(marketWatchProvider)
+      //                     .scripInfoModel
+      //                     ?.ls
+      //                     .toString(),
+      //                 ltp: ltp,
+      //                 perChange: perChange,
+      //                 orderTpye: '',
+      //                 holdQty: '',
+      //                 isModify: false, // Copy as new order
+      //                 prd: item['prd']?.toString(),
+      //                 raw: item);
 
-                  final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
-                  if (scripInfo == null) {
-                    ResponsiveSnackBar.showError(
-                        context, 'Unable to fetch scrip information');
-                    return;
-                  }
+      //             final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      //             if (scripInfo == null) {
+      //               ResponsiveSnackBar.showError(
+      //                   context, 'Unable to fetch scrip information');
+      //               return;
+      //             }
 
-                  PlaceOrderScreenWeb.showDraggable(
-                    context: context,
-                    orderArg: orderArgs,
-                    scripInfo: scripInfo,
-                    isBasket: 'Basket', // Add to basket
-                  );
-                },
-                theme: theme,
-              ),
-              const SizedBox(width: 4),
-              // Edit
-              _buildBasketHoverButton(
-                icon: Icons.edit_outlined,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary,
-                ),
-                onPressed: () async {
-                  // Trigger edit mode
-                  await ref.read(marketWatchProvider).fetchScripInfo(
-                      "${item['token']}", '${item['exch']}', context, true);
+      //             PlaceOrderScreenWeb.showDraggable(
+      //               context: context,
+      //               orderArg: orderArgs,
+      //               scripInfo: scripInfo,
+      //               isBasket: 'Basket', // Add to basket
+      //             );
+      //           },
+      //           theme: theme,
+      //         ),
+      //         const SizedBox(width: 4),
+      //         // Edit
+      //         _buildBasketHoverButton(
+      //           icon: Icons.edit_outlined,
+      //           color: resolveThemeColor(
+      //             context,
+      //             dark: MyntColors.textSecondaryDark,
+      //             light: MyntColors.textSecondary,
+      //           ),
+      //           onPressed: () async {
+      //             // Trigger edit mode
+      //             await ref.read(marketWatchProvider).fetchScripInfo(
+      //                 "${item['token']}", '${item['exch']}', context, true);
 
-                  if (!context.mounted) return;
+      //             if (!context.mounted) return;
 
-                  final ltp = item['lp']?.toString() ?? "0.00";
-                  final perChange = item['pc']?.toString() ?? "0.00";
+      //             final ltp = item['lp']?.toString() ?? "0.00";
+      //             final perChange = item['pc']?.toString() ?? "0.00";
 
-                  OrderScreenArgs orderArgs = OrderScreenArgs(
-                      exchange: '${item['exch']}',
-                      tSym: '${item['tsym']}',
-                      isExit: false,
-                      token: "${item['token']}",
-                      transType: item['trantype'] == 'B' ? true : false,
-                      lotSize: ref
-                          .read(marketWatchProvider)
-                          .scripInfoModel
-                          ?.ls
-                          .toString(),
-                      ltp: ltp,
-                      perChange: perChange,
-                      orderTpye: '',
-                      holdQty: '',
-                      isModify: true,
-                      prd: item['prd']?.toString(),
-                      raw: item);
+      //             OrderScreenArgs orderArgs = OrderScreenArgs(
+      //                 exchange: '${item['exch']}',
+      //                 tSym: '${item['tsym']}',
+      //                 isExit: false,
+      //                 token: "${item['token']}",
+      //                 transType: item['trantype'] == 'B' ? true : false,
+      //                 lotSize: ref
+      //                     .read(marketWatchProvider)
+      //                     .scripInfoModel
+      //                     ?.ls
+      //                     .toString(),
+      //                 ltp: ltp,
+      //                 perChange: perChange,
+      //                 orderTpye: '',
+      //                 holdQty: '',
+      //                 isModify: true,
+      //                 prd: item['prd']?.toString(),
+      //                 raw: item);
 
-                  final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
-                  if (scripInfo == null) {
-                    ResponsiveSnackBar.showError(
-                        context, 'Unable to fetch scrip information');
-                    return;
-                  }
+      //             final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+      //             if (scripInfo == null) {
+      //               ResponsiveSnackBar.showError(
+      //                   context, 'Unable to fetch scrip information');
+      //               return;
+      //             }
 
-                  PlaceOrderScreenWeb.showDraggable(
-                    context: context,
-                    orderArg: orderArgs,
-                    scripInfo: scripInfo,
-                    isBasket: 'BasketEdit',
-                  );
-                },
-                theme: theme,
-              ),
-              const SizedBox(width: 4),
-              // Delete
-              _buildBasketHoverButton(
-                icon: Icons.delete_outline,
-                color: styles.MyntColors.loss,
-                onPressed: () =>
-                    _handleDeleteBasketScript(item, originalIndex, theme),
-                theme: theme,
-              ),
-              ],
-            ),
-          ),
-        );
+      //             PlaceOrderScreenWeb.showDraggable(
+      //               context: context,
+      //               orderArg: orderArgs,
+      //               scripInfo: scripInfo,
+      //               isBasket: 'BasketEdit',
+      //             );
+      //           },
+      //           theme: theme,
+      //         ),
+      //         const SizedBox(width: 4),
+      //         // Delete
+      //         _buildBasketHoverButton(
+      //           icon: Icons.delete_outline,
+      //           color: styles.MyntColors.loss,
+      //           onPressed: () =>
+      //               _handleDeleteBasketScript(item, originalIndex, theme),
+      //           theme: theme,
+      //         ),
+      //         ],
+      //       ),
+      //     ),
+      //   );
       default:
         return const SizedBox.shrink();
     }
@@ -2896,6 +2873,94 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _handleCopyBasketScript(
+      Map<String, dynamic> item, int index, ThemesProvider theme) async {
+    await ref.read(marketWatchProvider).fetchScripInfo(
+        "${item['token']}", '${item['exch']}', context, true);
+
+    if (!context.mounted) return;
+
+    final ltp = item['lp']?.toString() ?? "0.00";
+    final perChange = item['pc']?.toString() ?? "0.00";
+
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: '${item['exch']}',
+        tSym: '${item['tsym']}',
+        isExit: false,
+        token: "${item['token']}",
+        transType: item['trantype'] == 'B',
+        lotSize: ref
+            .read(marketWatchProvider)
+            .scripInfoModel
+            ?.ls
+            .toString(),
+        ltp: ltp,
+        perChange: perChange,
+        orderTpye: '',
+        holdQty: '',
+        isModify: false, // Copy as new order
+        prd: item['prd']?.toString(),
+        raw: item);
+
+    final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+    if (scripInfo == null) {
+      ResponsiveSnackBar.showError(
+          context, 'Unable to fetch scrip information');
+      return;
+    }
+
+    PlaceOrderScreenWeb.showDraggable(
+      context: context,
+      orderArg: orderArgs,
+      scripInfo: scripInfo,
+      isBasket: 'Basket', // Add to basket
+    );
+  }
+
+  Future<void> _handleEditBasketScript(
+      Map<String, dynamic> item, int index, ThemesProvider theme) async {
+    await ref.read(marketWatchProvider).fetchScripInfo(
+        "${item['token']}", '${item['exch']}', context, true);
+
+    if (!context.mounted) return;
+
+    final ltp = item['lp']?.toString() ?? "0.00";
+    final perChange = item['pc']?.toString() ?? "0.00";
+
+    OrderScreenArgs orderArgs = OrderScreenArgs(
+        exchange: '${item['exch']}',
+        tSym: '${item['tsym']}',
+        isExit: false,
+        token: "${item['token']}",
+        transType: item['trantype'] == 'B' ? true : false,
+        lotSize: ref
+            .read(marketWatchProvider)
+            .scripInfoModel
+            ?.ls
+            .toString(),
+        ltp: ltp,
+        perChange: perChange,
+        orderTpye: '',
+        holdQty: '',
+        isModify: true,
+        prd: item['prd']?.toString(),
+        raw: item);
+
+    final scripInfo = ref.read(marketWatchProvider).scripInfoModel;
+    if (scripInfo == null) {
+      ResponsiveSnackBar.showError(
+          context, 'Unable to fetch scrip information');
+      return;
+    }
+
+    PlaceOrderScreenWeb.showDraggable(
+      context: context,
+      orderArg: orderArgs,
+      scripInfo: scripInfo,
+      isBasket: 'BasketEdit',
     );
   }
 
@@ -3176,7 +3241,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   }
 }
 
-// Isolated widget for Basket Instrument Cell with real-time LTP
+// Isolated widget for Basket Instrument Cell with real-time LTP and hover actions
 class _BasketInstrumentCell extends ConsumerStatefulWidget {
   final Map<String, dynamic> item;
   final int originalIndex;
@@ -3184,6 +3249,8 @@ class _BasketInstrumentCell extends ConsumerStatefulWidget {
   final String uniqueId;
   final ValueNotifier<String?> hoveredRowIndex;
   final Function(Map<String, dynamic>, int, ThemesProvider) onDelete;
+  final Function(Map<String, dynamic>, int, ThemesProvider)? onCopy;
+  final Function(Map<String, dynamic>, int, ThemesProvider)? onEdit;
 
   const _BasketInstrumentCell({
     required this.item,
@@ -3192,6 +3259,8 @@ class _BasketInstrumentCell extends ConsumerStatefulWidget {
     required this.uniqueId,
     required this.hoveredRowIndex,
     required this.onDelete,
+    this.onCopy,
+    this.onEdit,
   });
 
   @override
@@ -3258,6 +3327,37 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
     super.dispose();
   }
 
+  // Build action button with open orders table style (white bg, shadow)
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback? onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: resolveThemeColor(context,
+                  dark: Colors.grey, light: Colors.grey),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: iconColor,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final symbol =
@@ -3265,33 +3365,95 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
     final exch = widget.item['exch']?.toString() ?? '';
 
     return SizedBox.expand(
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                symbol,
-                style: MyntWebTextStyles.symbol(
-                  context,
-                  fontWeight: MyntFonts.semiBold,
+      child: ValueListenableBuilder<String?>(
+        valueListenable: widget.hoveredRowIndex,
+        builder: (context, hoveredId, _) {
+          final isRowHovered = hoveredId == widget.uniqueId;
+
+          return Stack(
+            children: [
+              // Instrument name and exchange
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(right: isRowHovered ? 100.0 : 0.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          symbol,
+                          style: MyntWebTextStyles.symbol(
+                            context,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        exch,
+                        style: MyntWebTextStyles.exch(
+                          context,
+                          darkColor: styles.MyntColors.textSecondaryDark,
+                          lightColor: styles.MyntColors.textSecondary,
+                        ).copyWith(fontSize: 10),
+                      ),
+                    ],
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
               ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              exch,
-              style: MyntWebTextStyles.exch(
-                context,
-                darkColor: styles.MyntColors.textSecondaryDark,
-                lightColor: styles.MyntColors.textSecondary,
-              ).copyWith(fontSize: 10),
-            ),
-          ],
-        ),
+              // Hover actions - open orders table style
+              if (isRowHovered)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Copy button
+                        _buildActionButton(
+                          icon: Icons.copy_outlined,
+                          iconColor: resolveThemeColor(
+                            context,
+                            dark: styles.MyntColors.textSecondaryDark,
+                            light: styles.MyntColors.textSecondary,
+                          ),
+                          onPressed: widget.onCopy != null
+                              ? () => widget.onCopy!(widget.item, widget.originalIndex, widget.theme)
+                              : null,
+                        ),
+                        const SizedBox(width: 6),
+                        // Edit button
+                        _buildActionButton(
+                          icon: Icons.edit_outlined,
+                          iconColor: resolveThemeColor(
+                            context,
+                            dark: styles.MyntColors.textSecondaryDark,
+                            light: styles.MyntColors.textSecondary,
+                          ),
+                          onPressed: widget.onEdit != null
+                              ? () => widget.onEdit!(widget.item, widget.originalIndex, widget.theme)
+                              : null,
+                        ),
+                        const SizedBox(width: 6),
+                        // Delete button
+                        _buildActionButton(
+                          icon: Icons.delete_outline,
+                          iconColor: styles.MyntColors.loss,
+                          onPressed: () => widget.onDelete(widget.item, widget.originalIndex, widget.theme),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
