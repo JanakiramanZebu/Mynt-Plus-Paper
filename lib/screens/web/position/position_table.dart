@@ -6,6 +6,10 @@ import 'package:flutter/material.dart'
         Icons,
         IconData,
         BorderRadius,
+        Border,
+        BorderSide,
+        BlendMode,
+        ColorFilter,
         Icon,
         BoxDecoration,
         TextPainter,
@@ -49,9 +53,11 @@ import 'package:flutter/material.dart'
         Builder;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../models/portfolio_model/position_book_model.dart';
+import '../../../res/res.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
@@ -871,6 +877,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
           // Only enable horizontal scroll if columns are at absolute minimum and still don't fit
           final needsHorizontalScroll = totalRequiredWidth > availableWidth;
 
+          // Calculate total P&L once (runs when filteredPositions changes, not on scroll)
+          final totalPnl = filteredPositions.fold<double>(
+            0.0,
+            (sum, position) => sum + (double.tryParse(position.profitNloss ?? '0') ?? 0.0),
+          );
+
           // Build table content
           Widget buildTableContent() {
             return Column(
@@ -924,78 +936,83 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                           return MapEntry(index, shadcn.FixedTableSize(width));
                         }),
                         defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: filteredPositions.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final position = entry.value;
-                          final isClosed = _isPositionClosed(position);
+                        rows: [
+                          // Data rows
+                          ...filteredPositions.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final position = entry.value;
+                            final isClosed = _isPositionClosed(position);
 
-                          return shadcn.TableRow(
-                            cells: headers.map((header) {
-                              final columnIndex =
-                                  _getColumnIndexForHeader(header);
-                              final isNumeric = _isNumericColumn(header);
+                            return shadcn.TableRow(
+                              cells: headers.map((header) {
+                                final columnIndex =
+                                    _getColumnIndexForHeader(header);
+                                final isNumeric = _isNumericColumn(header);
 
-                              // Make cells clickable except Select (checkbox) and Instrument (has buttons)
-                              final isClickable =
-                                  header != 'Select' && header != 'Instrument';
+                                // Make cells clickable except Select (checkbox) and Instrument (has buttons)
+                                final isClickable =
+                                    header != 'Select' && header != 'Instrument';
 
-                              // PERFORMANCE FIX: Only Instrument column needs hover state for showing buttons
-                              // Other columns (MTM, P&L, LTP, etc.) should NOT rebuild on hover
-                              if (header == 'Instrument') {
-                                // Instrument column: needs hover state to show/hide action buttons
-                                return buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: columnIndex,
-                                  alignRight: isNumeric,
-                                  isClosed: isClosed,
-                                  position: position,
-                                  child: ValueListenableBuilder<int?>(
-                                    valueListenable: _hoveredRowIndex,
-                                    builder: (context, hoveredIndex, _) {
-                                      // Row is hovered if mouse is over it OR if its dropdown menu is open
-                                      final isRowHovered = hoveredIndex == index ||
-                                          (_activePopoverController != null && _popoverRowIndex == index);
-                                      return _buildCellContent(
-                                        context,
-                                        header,
-                                        position,
-                                        theme,
-                                        isClosed,
-                                        isRowHovered,
-                                        positionBook,
-                                        rowIndex: index,
-                                      );
-                                    },
-                                  ),
-                                );
-                              } else {
-                                // All other columns: do NOT listen to hover state
-                                // This prevents MTM, P&L, LTP cells from rebuilding on hover
-                                return buildCellWithHover(
-                                  rowIndex: index,
-                                  columnIndex: columnIndex,
-                                  alignRight: isNumeric,
-                                  isClosed: isClosed,
-                                  // Pass position for clickable cells (not Select column)
-                                  position: isClickable ? position : null,
-                                  child: _buildCellContent(
-                                    context,
-                                    header,
-                                    position,
-                                    theme,
-                                    isClosed,
-                                    false, // Not hover-dependent
-                                    positionBook,
-                                  ),
-                                );
-                              }
-                            }).toList(),
-                          );
-                        }).toList(),
+                                // PERFORMANCE FIX: Only Instrument column needs hover state for showing buttons
+                                // Other columns (MTM, P&L, LTP, etc.) should NOT rebuild on hover
+                                if (header == 'Instrument') {
+                                  // Instrument column: needs hover state to show/hide action buttons
+                                  return buildCellWithHover(
+                                    rowIndex: index,
+                                    columnIndex: columnIndex,
+                                    alignRight: isNumeric,
+                                    isClosed: isClosed,
+                                    position: position,
+                                    child: ValueListenableBuilder<int?>(
+                                      valueListenable: _hoveredRowIndex,
+                                      builder: (context, hoveredIndex, _) {
+                                        // Row is hovered if mouse is over it OR if its dropdown menu is open
+                                        final isRowHovered = hoveredIndex == index ||
+                                            (_activePopoverController != null && _popoverRowIndex == index);
+                                        return _buildCellContent(
+                                          context,
+                                          header,
+                                          position,
+                                          theme,
+                                          isClosed,
+                                          isRowHovered,
+                                          positionBook,
+                                          rowIndex: index,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                } else {
+                                  // All other columns: do NOT listen to hover state
+                                  // This prevents MTM, P&L, LTP cells from rebuilding on hover
+                                  return buildCellWithHover(
+                                    rowIndex: index,
+                                    columnIndex: columnIndex,
+                                    alignRight: isNumeric,
+                                    isClosed: isClosed,
+                                    // Pass position for clickable cells (not Select column)
+                                    position: isClickable ? position : null,
+                                    child: _buildCellContent(
+                                      context,
+                                      header,
+                                      position,
+                                      theme,
+                                      isClosed,
+                                      false, // Not hover-dependent
+                                      positionBook,
+                                    ),
+                                  );
+                                }
+                              }).toList(),
+                            );
+                          }),
+                        ],
                       ),
                     ),
                   ),
                 ),
+                // Fixed Total Row (outside scrollable area)
+                _buildFixedTotalFooter(context, headers, columnWidths, totalPnl),
               ],
             );
           }
@@ -1210,6 +1227,100 @@ class _PositionTableState extends ConsumerState<PositionTable> {
     }
   }
 
+  // Build fixed total P&L footer (outside scrollable area)
+  Widget _buildFixedTotalFooter(
+    BuildContext context,
+    List<String> headers,
+    Map<int, double> columnWidths,
+    double totalPnl,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark,
+                light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
+      child: shadcn.Table(
+        columnWidths: columnWidths.map((index, width) {
+          return MapEntry(index, shadcn.FixedTableSize(width));
+        }),
+        defaultRowHeight: const shadcn.FixedTableSize(50),
+        rows: [
+          shadcn.TableRow(
+            cells: headers.map((header) {
+              final columnIndex = _getColumnIndexForHeader(header);
+              final isLastColumn = columnIndex == 6; // P&L column
+              final isLTPColumn = columnIndex == 5; // LTP column - show "Total" label here
+
+              // Cell padding matching other cells
+              EdgeInsets cellPadding;
+              if (columnIndex == 0) {
+                cellPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+              } else if (columnIndex == 2) {
+                cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
+              } else if (isLastColumn) {
+                cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+              } else {
+                cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+              }
+
+              Widget cellContent;
+              if (isLTPColumn) {
+                // Show "Total" label in LTP column (right-aligned)
+                cellContent = Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    'Total',
+                    style: _getHeaderStyle(context).copyWith(
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                  ),
+                );
+              } else if (isLastColumn) {
+                // Show total P&L value
+                cellContent = Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    totalPnl.toStringAsFixed(2),
+                    style: _getTextStyle(context,
+                        color: _getCellColor(totalPnl, context)).copyWith(
+                      fontWeight: MyntFonts.semiBold,
+                    ),
+                  ),
+                );
+              } else {
+                // Empty cell for other columns
+                cellContent = const SizedBox.shrink();
+              }
+
+              return shadcn.TableCell(
+                theme: const shadcn.TableCellTheme(
+                  border: shadcn.WidgetStatePropertyAll(
+                    shadcn.Border(
+                      top: shadcn.BorderSide.none,
+                      bottom: shadcn.BorderSide.none,
+                      left: shadcn.BorderSide.none,
+                      right: shadcn.BorderSide.none,
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: cellPadding,
+                  child: cellContent,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Build checkbox cell
   Widget _buildCheckboxCell(
     PositionBookModel position,
@@ -1398,7 +1509,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Helper to build menu item matching profile dropdown style
   shadcn.MenuButton _buildMenuButton({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String title,
     required void Function(BuildContext) onPressed,
     required Color iconColor,
@@ -1410,7 +1522,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: iconColor),
+            if (iconWidget != null)
+              iconWidget
+            else if (icon != null)
+              Icon(icon, size: 18, color: iconColor),
             const SizedBox(width: 10),
             Text(
               title,
@@ -1506,7 +1621,12 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             // Chart option (always available)
             menuItems.add(
               _buildMenuButton(
-                icon: Icons.bar_chart,
+                iconWidget: SvgPicture.asset(
+                  assets.chartnew,
+                  width: 18,
+                  height: 18,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
                 title: 'Chart',
                 iconColor: iconColor,
                 textColor: textColor,

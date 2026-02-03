@@ -34,6 +34,7 @@ class WebRoutes {
   static const String mutualFunds = '/mutual-funds';
   static const String reports = '/reports';
   static const String profile = '/profile';
+  static const String portfolioAnalysis = '/portfolio-analysis';
 }
 
 /// Global GoRouter instance for web
@@ -134,6 +135,14 @@ void initializeWebRouter() {
         path: WebRoutes.reports,
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.reports,
+        ),
+      ),
+
+      // Portfolio Analysis screen
+      GoRoute(
+        path: WebRoutes.portfolioAnalysis,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.portfolioAnalysis,
         ),
       ),
     ],

@@ -45,6 +45,7 @@ import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
 import 'dashboard_screen_web.dart';
 import 'trade_action_screen_web.dart';
+import 'portfolio_analysis_web.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 import '../Mobile/mutual_fund/mf_main_screen.dart';
@@ -439,6 +440,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const SizedBox.shrink();
       case ScreenType.notification:
         return const SizedBox.shrink(); // Not implemented in window mode
+      case ScreenType.portfolioAnalysis:
+        return const PortfolioDashboardScreen();
     }
   }
 
@@ -490,6 +493,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Fund Details';
       case ScreenType.notification:
         return 'Notification';
+      case ScreenType.portfolioAnalysis:
+        return 'Portfolio Analysis';
     }
   }
 

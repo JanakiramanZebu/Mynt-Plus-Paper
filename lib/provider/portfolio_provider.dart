@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/global_state_text.dart';
 
 import '../api/core/api_export.dart';
 import '../locator/constant.dart';
@@ -100,6 +101,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
   int get exitPositionQty => _exitPositionQty;
   bool _isExitAllPosition = false;
   bool get isExitAllPosition => _isExitAllPosition;
+  Set<String> _exitSelectedPositions = {};
+  Set<String> get exitSelectedPositions => _exitSelectedPositions;
 
   int _exitHoldingsQty = 0;
   int get exitHoldingsQty => _exitHoldingsQty;
@@ -170,8 +173,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
   bool _posloader = false;
   bool get posloader => _posloader;
 
+  bool _isRefreshing = false;
+  bool get isRefreshing => _isRefreshing;
+
   bool _holdloader = false;
   bool get holdloader => _holdloader;
+
+  bool _isRefreshingHoldings = false;
+  bool get isRefreshingHoldings => _isRefreshingHoldings;
 
   bool _mfhloader = false;
   bool get mfhloader => _mfhloader;
@@ -256,18 +265,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
   int _selectedHoldingsTab = 0;
   int get selectedHoldingsTab => _selectedHoldingsTab;
 
-  changeHoldingsTabIndex(int index) {
-    _selectedHoldingsTab = index;
-
-    // Animate the TabController to the new index
-    try {
-      holdingsTabController.animateTo(index);
-    } catch (e) {
-      print("TabController animation error: $e");
-    }
-
-    notifyListeners();
+changeHoldingsTabIndex(int index) {
+  _selectedHoldingsTab = index;
+  
+  // Animate the TabController to the new index
+  try {
+    holdingsTabController.animateTo(index);
+  } catch (e) {
+    print("TabController animation error: $e");
   }
+  
+  notifyListeners();
+}
 
   chngPosSelection(String val) {
     _posSelection = val;
@@ -299,7 +308,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             if (kIsWeb) {
               ResponsiveSnackBar.showWarning(context, "Unable to fetch data");
             } else {
-              warningMessage(context, "Unable to fetch data");
+            warningMessage(context, "Unable to fetch data");
             }
           });
         }
@@ -414,6 +423,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // }
 
 // Holding search enable & hide
+
+  void disposePortfolioSearch() {
+    showHoldSearch(false);
+    showPositionSearch(false);
+    showHoldMFSearch(false);
+    clearHoldSearch();
+    clearHoldMFSearch();
+    clearPositionSearch();
+  }
 
   showHoldSearch(bool value) {
     _showSearchHold = value;
@@ -586,10 +604,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
     // print("qwqwqw prov alert btm $mode , ${result['stat']}");
   }
 
-  Future fetchHoldings(context, String initail) async {
+  Future fetchHoldings(context, String initail, {bool isRefresh = false}) async {
     final theme = ref.read(themeProvider);
     double invest = 0.0;
     try {
+      // Use separate loader states: full-screen loader for initial load, refresh loader for updates
+      if (isRefresh) {
+        _isRefreshingHoldings = true;
+      } else if (_holdingsModel == null || _holdingsModel!.isEmpty) {
+        _holdloader = true;
+      }
+      notifyListeners();
+
       await setPortfolioupdate('H',context);
       // if (_holdingsModel!.isNotEmpty) {
       //   if (_tholdingsModel!.isNotEmpty) {
@@ -656,7 +682,6 @@ class PortfolioProvider extends DefaultChangeNotifier {
                     // int.parse("${element.npoadt1qty ?? 0}") +
                     max(int.parse("${element.dpQty ?? 0}"),
                             int.parse("${element.npoadqty ?? 0}")) +
-                        int.parse("${element.npoadt1qty ?? 0}") +
                         int.parse("${element.holdqty ?? 0}") +
                         int.parse("${element.btstqty ?? 0}")) -
                 int.parse("${element.trdqty ?? 0}");
@@ -664,7 +689,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             // FIX: Update holdQty without wiping existing socket data
             // Previously this replaced all socket data (lp, pc, chng, etc.) with just {'holdQty': ""}
             // causing watchlist symbols with holdings to show 0
-            final wsProvider = ref.read(websocketProvider);
+           final wsProvider = ref.read(websocketProvider);
             final holdingToken = "${element.exchTsym![0].token}";
             if (!wsProvider.socketDatas.containsKey(holdingToken)) {
               wsProvider.socketDatas[holdingToken] = <String, dynamic>{};
@@ -676,7 +701,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
                 "${element.upldprc == "0.00" ? element.exchTsym![0].close ?? 0.0 : element.upldprc ?? 0.00}");
 
             element.avgPrc = "$avgCost";
-            element.invested = (qty * avgCost).toStringAsFixed(2);
+            element.invested = ((qty + int.parse(element.npoadt1qty ?? "0")) * avgCost).toStringAsFixed(2);
 
             invest += double.parse("${element.invested}");
             if (element.npoadqty.toString() != "null" ||
@@ -735,11 +760,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
       print(e);
     } finally {
       _holdloader = false;
+      _isRefreshingHoldings = false;
+      notifyListeners();
     }
   }
 
-  Future fetchPositionBook(BuildContext context, bool isDay) async {
+  Future fetchPositionBook(BuildContext context, bool isDay, {bool isRefresh = false}) async {
     try {
+      // Use separate loader states: full-screen loader for initial load, refresh loader for updates
+      if (isRefresh) {
+        _isRefreshing = true;
+      } else if (_postionBookModel == null || _postionBookModel!.isEmpty) {
+        _posloader = true;
+      }
+      notifyListeners();
+
       await setPortfolioupdate('P',context);
       if (_postionBookModel!.isNotEmpty) {
         if (_tpostionBookModel!.isNotEmpty) {
@@ -817,6 +852,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       notifyListeners();
     } finally {
       _posloader = false;
+      _isRefreshing = false;
+      notifyListeners();
     }
   }
 
@@ -1584,11 +1621,15 @@ class PortfolioProvider extends DefaultChangeNotifier {
               _placeOrderModel = await api.getPlaceOrder(
                   placeOrderInput, ref.read(orderProvider).ip);
 
+                  if (_placeOrderModel!.stat! == "Ok") {
+                    successMessage(context, "Position exited successfully.");
+                  }
+
               if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
                 break;
               }
             }
-            if (!element.isExitSelection!) {
+            if (!isPositionSelected(element)) {
             } else {
               PlaceOrderInput placeOrderInput = PlaceOrderInput(
                   amo: "",
@@ -1619,6 +1660,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         }
       }
     } finally {
+      _exitPositionQty = 0;
       // Reset loading state when done (whether successful or not)
       // if (exitAll) {
       //   _isExitingAll = false;
@@ -1661,7 +1703,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Holding search by Trade symbol
   holdingSearch(String value, BuildContext context) {
-    if (value.isNotEmpty) {
+    if (value.length > 0) {
       _holdingSearchItem = [];
       _holdingSearchItem = _holdingsModel!
           .where((element) => element.exchTsym![0].tsym!
@@ -1676,7 +1718,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // MF Holding search by Trade symbol
   mfHoldingSearch(String value, BuildContext context) {
-    if (value.isNotEmpty) {
+    if (value.length > 0) {
       _mfHoldingSearchItem = [];
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       _mfHoldingSearchItem = _mfHoldingsModel!
@@ -1688,7 +1730,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         if (kIsWeb) {
           ResponsiveSnackBar.showWarning(context, 'No Data Found');
         } else {
-          warningMessage(context, 'No Data Found');
+        warningMessage(context, 'No Data Found');
         }
       } else {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -1701,7 +1743,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   positionSearch(String value, BuildContext context) {
-    if (value.isNotEmpty) {
+    if (value.length > 0) {
       // _showSearchPosition = true;
       _positionSearchItem = [];
       _positionSearchItem = _allPostionList
@@ -1720,49 +1762,93 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchPosGroupSymbol(String name, bool isCreateGrp) async {
     try {
+      debugPrint('>>> fetchPosGroupSymbol START');
+      debugPrint('Group Name: $name');
+      debugPrint('isCreateGrp: $isCreateGrp');
+
       _getPositionGroupSymbol = await api.getGroupPosition();
-      _totPnL = "0.00";
-      _totMtm = "0.00";
+      debugPrint('API getGroupPosition completed');
+
+      // NOTE: Don't reset totals to 0.00 here - they will be recalculated by _updateTotalGroupValues()
+      // _totPnL = "0.00";
+      // _totMtm = "0.00";
       _exitAll = false;
-      _totBookedPnL = "0.00";
-      _totUnRealMtm = '0.00';
+      // _totBookedPnL = "0.00";
+      // _totUnRealMtm = '0.00';
 
       if (isCreateGrp) {
         _posSelection = "Group by symbol";
+        debugPrint('Set posSelection to "Group by symbol"');
       }
-      getPositionGroupNames();
 
+      debugPrint('Calling getPositionGroupNames...');
+      getPositionGroupNames();
+      debugPrint('Groups found: ${_groupPositionSym.length}');
+      debugPrint('Group symbols: $_groupPositionSym');
+
+      // Recalculate P&L for all groups after grouping
+      debugPrint('Recalculating P&L for ${_groupPositionSym.length} groups...');
+      for (var symbol in _groupPositionSym) {
+        if (_groupedBySymbol.containsKey(symbol)) {
+          final groupData = _groupedBySymbol[symbol]['groupList'];
+          final isCustomGrp = _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
+          if (groupData != null && groupData.isNotEmpty) {
+            debugPrint('Calculating P&L for group: $symbol (${groupData.length} positions)');
+            positionGroupCal(_isDay, groupData, symbol, isCustomGrp);
+          } else {
+            debugPrint('Skipping empty group: $symbol');
+          }
+        }
+      }
+      debugPrint('>>> fetchPosGroupSymbol SUCCESS');
+    } catch (e, stackTrace) {
+      debugPrint('>>> fetchPosGroupSymbol EXCEPTION');
+      debugPrint('Error: $e');
+      debugPrint('Stack: $stackTrace');
+    } finally {
+      // Always notify listeners even if error occurs to ensure UI updates
+      debugPrint('Calling notifyListeners');
       notifyListeners();
-    } catch (e) {
-      print(e);
     }
   }
 
 // Fetching data from the api and stored in a variable
   Future fetchGroupName(String name, BuildContext c, bool isCreateGrp) async {
     try {
-      _posloader = true;
+      debugPrint('>>> fetchGroupName START');
+      debugPrint('Group Name: $name');
+      debugPrint('isCreateGrp: $isCreateGrp');
+
+      // _posloader = true;
       _groupName = await api.createGroupName(name);
 
+      debugPrint('API Response Status: ${_groupName!.status}');
+
       if (_groupName!.status == "Data inserted") {
+        debugPrint('>>> Group created, fetching position group symbol...');
         //  ref.read(indexListProvider).bottomMenu(1);
         await fetchPosGroupSymbol(name, isCreateGrp);
-
-        Navigator.pop(c);
+        debugPrint('>>> fetchPosGroupSymbol completed');
+        successMessage(c, "Group '$name' created successfully");
+        // Navigator.pop is already called in create_group_web.dart before this method
+        debugPrint('>>> fetchGroupName SUCCESS');
       } else {
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
+        // Handle error cases
+        final status = _groupName!.status ?? "Unknown error";
+        debugPrint('>>> fetchGroupName FAILED: $status');
+        if (status.toLowerCase().contains("already exists") ||
+            status.toLowerCase().contains("duplicate")) {
+          warningMessage(c, "Group name '$name' already exists");
         } else {
-          Fluttertoast.showToast(
-              msg: "${_groupName!.status}",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
+          error(c, status);
         }
       }
+    } catch (e, stackTrace) {
+      debugPrint('>>> fetchGroupName EXCEPTION');
+      debugPrint('Error: $e');
+      debugPrint('Stack: $stackTrace');
     } finally {
-      _posloader = false;
+      // _posloader = false;
     }
   }
 
@@ -1773,28 +1859,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       if (_groupName!.status == "symbol added") {
         await fetchPosGroupSymbol(name, true);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(c, "Scrip was added to $name");
-        } else {
-          Fluttertoast.showToast(
-              msg: "Scrip was added to $name",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
-        }
-        Navigator.pop(c);
+        successMessage(c, "Symbol added to group '$name' successfully");
+        // Navigator.pop(c);
       } else {
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(c, "${_groupName!.status} to $name");
-        } else {
-          Fluttertoast.showToast(
-              msg: "${_groupName!.status} to $name",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
-        }
+        final status = _groupName!.status ?? "Unknown error";
+        error(c, "$status to group '$name'");
       }
     } catch (e) {}
   }
@@ -1802,27 +1871,19 @@ class PortfolioProvider extends DefaultChangeNotifier {
 // Fetching data from the api and stored in a variable
   Future fetchDeleteGroupName(String name, BuildContext c) async {
     try {
-      _posloader = true;
+      // _posloader = true;
       _groupName = await api.deletePositionGrpName(name);
 
       if (_groupName!.status == "Data deleted") {
         await fetchPosGroupSymbol(name, true);
-
+        successMessage(c, "Group '$name' deleted successfully");
         // Navigator.pop(c);
       } else {
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
-        } else {
-          Fluttertoast.showToast(
-              msg: "${_groupName!.status}",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
-        }
+        final status = _groupName!.status ?? "Unknown error";
+        error(c, status);
       }
     } finally {
-      _posloader = false;
+      // _posloader = false;
     }
   }
 
@@ -1834,29 +1895,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       if (_groupName!.status == "symbol removed") {
         await fetchPosGroupSymbol(name, false);
-
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(c, "Group symbol $tsym was deleted");
-        } else {
-          Fluttertoast.showToast(
-              msg: "Group symbol $tsym was deleted",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
-        }
-        Navigator.pop(c);
+        successMessage(c, "Symbol '$tsym' removed from group '$name'");
+        // Navigator.pop(c);
       } else {
-        if (kIsWeb) {
-          ResponsiveSnackBar.showWarning(c, "${_groupName!.status}");
-        } else {
-          Fluttertoast.showToast(
-              msg: "${_groupName!.status}",
-              timeInSecForIosWeb: 2,
-              backgroundColor: colors.colorBlack,
-              textColor: colors.colorWhite,
-              fontSize: 14.0);
-        }
+        final status = _groupName!.status ?? "Unknown error";
+        error(c, status);
       }
     } catch (e) {}
   }
@@ -1864,7 +1907,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
   // Optimized for fast updates from websocket
   void updateHoldingValues(String token, Map<String, dynamic> socketData) {
     // Early return if no token or data
-    if (_holdingsModel == null) return;
+    if (token == null || socketData == null || _holdingsModel == null) return;
 
     // Use indexWhere with efficient stopping
     var index = -1;
@@ -1932,7 +1975,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
     if (lpDouble <= 0) return; // Can't calculate with invalid price
 
     // Update current value
-    holding.currentValue = (qty * lpDouble).toStringAsFixed(2);
+    holding.currentValue = ((qty + int.parse(holding.npoadt1qty ?? "0"))  * lpDouble).toStringAsFixed(2);
 
     // Get average cost with fallback to closing price
     final closeVal =
@@ -1946,7 +1989,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
     if (avgCost <= 0) return; // Can't calculate with invalid cost
 
-    holding.invested = (qty * avgCost).toStringAsFixed(2);
+    holding.invested = ((qty + int.parse(holding.npoadt1qty ?? "0")) * avgCost).toStringAsFixed(2);
     final investedValue = double.tryParse(holding.invested ?? '0.00') ?? 0.00;
 
     // Calculate profit/loss
@@ -1959,23 +2002,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
     if (investedValue > 0.0 || double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
       final profitValue =
           double.tryParse(holding.exchTsym![0].profitNloss ?? "0.00") ?? 0.0;
-      if (double.tryParse(holding.sellAmt ?? '0.0')! > 0) {
-        holding.exchTsym![0].pNlChng = ((profitValue /
-                    (investedValue +
-                        (double.tryParse(holding.sellAmt ?? '0.0')!) -
-                        profitValue)) *
-                100)
-            .toStringAsFixed(2);
-      } else {
-        holding.exchTsym![0].pNlChng =
-            ((profitValue / investedValue) * 100).toStringAsFixed(2);
-      }
+      holding.exchTsym![0].pNlChng = ((profitValue /
+                  (investedValue +
+                      (double.tryParse(holding.sellAmt ?? '0.0')!)
+                      )) *
+              100)
+          .toStringAsFixed(2);
     }
 
     // Calculate one day change if close value is valid
     if (closeVal > 0) {
       holding.exchTsym![0].oneDayChg =
-          ((lpDouble - closeVal) * qty).toStringAsFixed(2);
+          ((lpDouble - closeVal) * (qty+ int.parse(holding.npoadt1qty ?? "0"))).toStringAsFixed(2);
     }
 
     // Update totals
@@ -2121,6 +2159,17 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       await positionCal(isDay);
       getPositionGroupNames();
+
+      // Recalculate P&L for all groups after grouping
+      for (var symbol in _groupPositionSym) {
+        if (_groupedBySymbol.containsKey(symbol)) {
+          final groupData = _groupedBySymbol[symbol]['groupList'];
+          final isCustomGrp = _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
+          if (groupData != null && groupData.isNotEmpty) {
+            positionGroupCal(isDay, groupData, symbol, isCustomGrp);
+          }
+        }
+      }
       // tabSize(theme);
 
       notifyListeners();
@@ -2147,16 +2196,43 @@ class PortfolioProvider extends DefaultChangeNotifier {
       }
 
       for (var element in _getPositionGroupSymbol) {
+        // Skip if posname is null or empty
+        if (element.posname == null || element.posname!.isEmpty) {
+          continue;
+        }
+
+        // Handle posdata - ensure it's always a List
+        // Show ALL positions in custom groups (no filtering for now)
+        List<dynamic> groupListData = [];
+        // Debug: existing count before merging
+        final existingCount =
+            _groupedBySymbol[element.posname]?['groupList']?.length ?? 0;
+        debugPrint(
+            "DEBUG GROUP LOAD start -> ${element.posname} existing:$existingCount");
+
+        if (element.posdata != null && element.posdata!.isNotEmpty) {
+          // Convert each PositionBookModel to a Map
+          for (var pos in element.posdata!) {
+            debugPrint(
+                "DEBUG GROUP ITEM -> ${element.posname} tsym:${pos.tsym} exch:${pos.exch} qty:${pos.qty} netqty:${pos.netqty} exp:${pos.expDate}");
+            groupListData.add(jsonDecode(jsonEncode(pos)));
+          }
+        }
+
         if (_groupedBySymbol.containsKey(element.posname)) {
-          _groupedBySymbol['${element.posname}']["groupList"]
-              .add(jsonDecode(jsonEncode(element.posdata)));
+          // Add all items from groupListData to existing groupList
+          final existingGroupList = _groupedBySymbol['${element.posname}']["groupList"] as List;
+          existingGroupList.addAll(groupListData);
         } else {
+          // Create new group entry
           _groupedBySymbol.addAll({
             "${element.posname}": {
               "isCustomGrp": true,
               "totMtm": "0.00",
               "totPnl": "0.00",
-              "groupList": jsonDecode(jsonEncode(element.posdata))
+              "totUnRealMtm": "0.00",
+              "totBookedPnL": "0.00",
+              "groupList": groupListData  // Always a List, even if empty
             }
           });
         }
@@ -2209,6 +2285,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
         ConstantName.sessCheck = true;
         if (isPosition) {
           await fetchPositionBook(context, _isDay);
+          successMessage(context, "Position exited successfully.");
         } else {
           await fetchHoldings(context, "Refresh");
         }
@@ -2221,12 +2298,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
             _placeOrderModel!.stat == "Not_Ok") {
           ref.read(authProvider).ifSessionExpired(context);
         } else {
-          if (kIsWeb) {
-            ResponsiveSnackBar.showSuccess(
-                context, "${_placeOrderModel!.emsg}");
-          } else {
-            successMessage(context, "${_placeOrderModel!.emsg}");
-          }
+          successMessage(context, "${_placeOrderModel!.emsg}");
         }
       }
 
@@ -2282,15 +2354,40 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
+  // Helper method to generate unique key for position
+  String _getPositionKey(PositionBookModel position) {
+    return "${position.token}_${position.tsym}_${position.exch}_${position.actid}";
+  }
+
+  // Helper method to check if position is selected for exit
+  bool isPositionSelected(PositionBookModel position) {
+    return _exitSelectedPositions.contains(_getPositionKey(position));
+  }
+
+  // Helper method to check if position is in a group
+  // Checks token AND prd (product type) to differentiate NRML vs MIS positions
+  bool isPositionInGroup(PositionBookModel position, String groupName) {
+    for (var group in _getPositionGroupSymbol) {
+      if (group.posname == groupName && group.posdata != null) {
+        for (var pos in group.posdata!) {
+          if (pos.token == position.token && pos.prd == position.prd) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
   // Methods for exit positions selection
   void selectExitAllPosition(bool value) {
     _isExitAllPosition = value;
 
     // Update selection status for all positions
     if (_openPosition != null) {
-      for (var position in _openPosition!) {
+        for (var position in _openPosition!) {
         position.isExitSelection = value;
-      }
+          }
 
       // Update exit quantity count
       _exitPositionQty =
@@ -2312,11 +2409,11 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       for (var position in _openPosition!) {
         if (position.isExitSelection! && position.qty != "0") {
-          _exitPositionQty++;
+            _exitPositionQty++;
         }
 
         if (!position.isExitSelection! && position.qty != "0") {
-          allSelected = false;
+            allSelected = false;
         }
       }
 
@@ -2328,7 +2425,16 @@ class PortfolioProvider extends DefaultChangeNotifier {
     }
   }
 
-  // Helper to get product display name from code
+  // Reset exit position selection state
+  void resetExitPositionSelection() {
+    _exitPositionQty = 0;
+    _isExitAllPosition = false;
+    _exitSelectedPositions.clear();
+
+    notifyListeners();
+  }
+  
+   // Helper to get product display name from code
   String _getProductDisplayName(String? code) {
     switch (code) {
       case 'I':
@@ -2372,14 +2478,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
         debugPrint('Context still mounted before pop: ${context.mounted}');
 
         if (context.mounted) {
-          Navigator.pop(context);
+        Navigator.pop(context);
           debugPrint('Dialog popped successfully');
 
           // Show success message with from/to product details
           final successMsg = "Position converted from $fromProduct to $toProduct";
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, successMsg);
-          } else {
+      } else {
             successMessage(context, successMsg);
           }
         } else {
@@ -2390,14 +2496,14 @@ class PortfolioProvider extends DefaultChangeNotifier {
         debugPrint('Error message: ${_positionConvertionModel!.emsg}');
 
         if (context.mounted) {
-          Navigator.pop(context);
+        Navigator.pop(context);
           // Show error message from API
           final errorMsg = _positionConvertionModel!.emsg ?? "Conversion failed";
           if (kIsWeb) {
             ResponsiveSnackBar.showWarning(context, errorMsg);
           } else {
             warningMessage(context, errorMsg);
-          }
+      }
         } else {
           debugPrint('ERROR: Context not mounted, cannot show warning');
         }
@@ -2417,7 +2523,7 @@ class PortfolioProvider extends DefaultChangeNotifier {
           ResponsiveSnackBar.showWarning(
               context, "Failed to convert position: $e");
         } else {
-          warningMessage(context, "Failed to convert position: $e");
+      warningMessage(context, "Failed to convert position: $e");
         }
       }
     } finally {
@@ -2432,6 +2538,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
     double totalProfitNloss = 0.0;
     double totalMtm = 0.0;
+    double totalUnRealMtm = 0.0;
+    double totalBookedPnL = 0.0;
     bool hasExitPositions = false;
 
     for (var position in groupData) {
@@ -2439,8 +2547,8 @@ class PortfolioProvider extends DefaultChangeNotifier {
       final lastPrice = double.tryParse(position["lp"] ?? "0.00") ?? 0.0;
       final prcFtr = double.tryParse(position["prcftr"] ?? "1.0") ?? 1.0;
       final mult = double.tryParse(position["mult"] ?? "1.0") ?? 1.0;
+      final lotSize = double.tryParse(position["ls"] ?? "1.0") ?? 1.0;
       final netQty = int.tryParse(position["netqty"] ?? "0") ?? 0;
-      final netQtyWeighted = netQty * prcFtr;
 
       // Parse buy/sell quantities
       final dayBuyQty = int.tryParse(position["daybuyqty"] ?? "0") ?? 0;
@@ -2454,120 +2562,170 @@ class PortfolioProvider extends DefaultChangeNotifier {
 
       // Parse prices and amounts
       final netAvgPrc = double.tryParse(position["netavgprc"] ?? "0.00") ?? 0.0;
+      final netUpldPrc = double.tryParse(position["netupldprc"] ?? "0.00") ?? 0.0;
       final upldPrc = double.tryParse(position["upldprc"] ?? "0.00") ?? 0.0;
       final dayBuyAmt = double.tryParse(position["daybuyamt"] ?? "0.00") ?? 0.0;
       final daySellAmt =
           double.tryParse(position["daysellamt"] ?? "0.00") ?? 0.0;
       final rpnl = double.tryParse(position["rpnl"] ?? "0.00") ?? 0.0;
+      final exch = position["exch"]?.toString() ?? "";
 
       if (isDay) {
-        // DAY POSITION GROUP CALCULATION
-        position["avgPrc"] = netQty == 0 ? "0.00" : position["dayavgprc"];
+        // DAY POSITION GROUP CALCULATION (matching positionCal logic)
+        // qty logic for day (with MCX special handling)
+        int qty = 0;
+        if (exch == "MCX") {
+          qty = ((dayBuyQty - daySellQty) / lotSize).toInt();
+        } else {
+          qty = dayBuyQty - daySellQty;
+        }
+        position["qty"] = qty.toString();
 
-        // Calculate quantity
-        final qty = dayBuyQty - daySellQty;
-        position["qty"] = "$qty";
+        // avgPrc logic for day
+        position["avgPrc"] = (netQty == 0 ? "0.00" : position["dayavgprc"] ?? "0.00");
+        final avgPrc = double.tryParse(position["avgPrc"] ?? "0.00") ?? 0.0;
+
+        // Calculate ActualBuyAvgPrice (for BookedPNL calculation)
+        double actualBuyAvgPrice = 0.0;
+        if (netBuyQty != 0) {
+          actualBuyAvgPrice =
+              ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+        }
+
+        // Calculate ActualSellAvgPrice (for BookedPNL calculation)
+        double actualSellAvgPrice = 0.0;
+        if (netSellQty != 0) {
+          actualSellAvgPrice =
+              ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+        }
+
+        // Calculate ActualBookedPNL
+        double actualBookedPnl = 0.0;
+        if (netQty > 0) {
+          actualBookedPnl =
+              (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+        } else {
+          actualBookedPnl =
+              (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+        }
+
+        // For MTM, avgprc = netavgprc
+        double actualUnrealizedMtm = netQty * prcFtr * mult * (lastPrice - netAvgPrc);
+
+        // For PnL, avgprc = netupldprc if not 0 else netavgprc
+        double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+        double actualUnrealizedPnl =
+            netQty * prcFtr * mult * (lastPrice - avgPrcForUnrealized);
+
+        // MTM = rpnl + ActualUnrealizedMtoM
+        double mtm = rpnl + actualUnrealizedMtm;
+
+        // PnL = ActualBookedPNL + ActualUnrealizedMtoM
+        double pnl = actualBookedPnl + actualUnrealizedPnl;
+
+        // Assign back to position
+        position["mTm"] = mtm.toStringAsFixed(2);
+        position["profitNloss"] = pnl.toStringAsFixed(2);
+
+        // Totals
+        totalMtm += mtm;
+        totalProfitNloss += pnl;
+        totalUnRealMtm += actualUnrealizedPnl;
+        totalBookedPnL += actualBookedPnl;
 
         if (qty != 0) {
           hasExitPositions = true;
-
-          // Calculate ActualUnrealizedMtoM
-          final dayAvgPrc =
-              double.tryParse(position["dayavgprc"] ?? "0.00") ?? 0.0;
-          double unrealizedMtm =
-              netQtyWeighted * mult * (lastPrice - dayAvgPrc);
-
-          position["profitNloss"] = unrealizedMtm.toStringAsFixed(2);
-          totalProfitNloss += unrealizedMtm;
-        } else {
-          // For closed positions
-          position["profitNloss"] = position["rpnl"] ?? "0.00";
-          totalProfitNloss += rpnl;
         }
       } else {
-        // NET POSITION GROUP CALCULATION
-        position["qty"] = position["netqty"] ?? "0";
+        // NET POSITION GROUP CALCULATION (matching positionCal logic)
+        // qty logic for net
+        final qty = netQty;
+        position["qty"] = qty.toString();
 
-        // Determine avgPrc for MTM and PnL according to rules
-        double mtmAvgPrc = netAvgPrc;
-        double pnlAvgPrc = upldPrc == 0.0 ? netAvgPrc : upldPrc;
-
-        if (netQty == 0) {
+        // avgPrc logic for net (matching positionCal exactly)
+        if (qty == 0) {
           position["avgPrc"] = "0.00";
-        } else if (_isNetPnl) {
-          position["avgPrc"] =
-              upldPrc == 0.0 ? position["netavgprc"] : position["upldprc"];
         } else {
-          position["avgPrc"] = position["netavgprc"];
+          // If netupldprc != 0, use that, else netavgprc
+          position["avgPrc"] = (netUpldPrc != 0.0)
+              ? netUpldPrc.toStringAsFixed(2)
+              : netAvgPrc.toStringAsFixed(2);
         }
+        final avgPrc = double.tryParse(position["avgPrc"] ?? "0.00") ?? 0.0;
 
-        if (netQty != 0) {
-          hasExitPositions = true;
-        }
+        double actualBuyAvgPrice = 0.0;
+      if (netBuyQty != 0) {
+        actualBuyAvgPrice =
+            ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+      }
 
-        if (netQty == 0) {
-          // For closed positions
-          position["mTm"] = position["rpnl"] ?? "0.00";
-          position["profitNloss"] = position["rpnl"] ?? "0.00";
-          totalMtm += rpnl;
-          totalProfitNloss += rpnl;
-        } else {
-          // Calculate ActualUnrealizedMtoM for MTM
-          double unrealizedMtmForMtm =
-              netQtyWeighted * mult * (lastPrice - mtmAvgPrc);
-          position["mTm"] = (rpnl + unrealizedMtmForMtm).toStringAsFixed(2);
-          totalMtm += rpnl + unrealizedMtmForMtm;
+      // Calculate ActualSellAvgPrice (for BookedPNL calculation)
+      double actualSellAvgPrice = 0.0;
+      if (netSellQty != 0) {
+        actualSellAvgPrice =
+            ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+      }
 
-          // Calculate ActualUnrealizedMtoM for PnL
-          double unrealizedMtmForPnl =
-              netQtyWeighted * mult * (lastPrice - pnlAvgPrc);
+      // Calculate ActualBookedPNL
+      double actualBookedPnl = 0.0;
+      if (netQty > 0) {
+        actualBookedPnl =
+            (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+      } else {
+        actualBookedPnl =
+            (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+      }
 
-          // Calculate ActualBookedPNL
-          double actualSellAvgPrice = 0.0;
-          double actualBuyAvgPrice = 0.0;
+      // For MTM, avgprc = netavgprc
+      double actualUnrealizedMtm = netQty * prcFtr * mult * (lastPrice - netAvgPrc);
 
-          if (netSellQty > 0) {
-            actualSellAvgPrice =
-                ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) /
-                    netSellQty;
-          }
+      // For PnL, avgprc = netupldprc if not 0 else netavgprc
+      double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+      double actualUnrealizedPnl =
+          netQty * prcFtr * mult * (lastPrice - avgPrcForUnrealized);
 
-          if (netBuyQty > 0) {
-            actualBuyAvgPrice =
-                ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) /
-                    netBuyQty;
-          }
+      // MTM = rpnl + ActualUnrealizedMtoM
+      double mtm = rpnl + actualUnrealizedMtm;
 
-          double actualBookedPnl = 0.0;
-          if (netQty > 0) {
-            actualBookedPnl =
-                (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
-          } else if (netQty < 0) {
-            actualBookedPnl =
-                (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
-          }
+      // PnL = ActualBookedPNL + ActualUnrealizedPnL
+      double pnl = actualBookedPnl + actualUnrealizedPnl;
 
-          // Final PnL = ActualBookedPNL + ActualUnrealizedMtoM
-          position["profitNloss"] =
-              (actualBookedPnl + unrealizedMtmForPnl).toStringAsFixed(2);
-          totalProfitNloss += actualBookedPnl + unrealizedMtmForPnl;
-        }
+      // Assign back to position
+      position["mTm"] = mtm.toStringAsFixed(2);
+      position["profitNloss"] = pnl.toStringAsFixed(2);
+
+      // Totals
+      totalMtm += mtm;
+      totalProfitNloss += pnl;
+      totalUnRealMtm += actualUnrealizedPnl;
+      totalBookedPnL += actualBookedPnl;
+
+      if (netQty != 0) {
+        hasExitPositions = true;
       }
     }
+  }
 
     // Update group summary
     _groupedBySymbol[groupName]['totPnl'] = totalProfitNloss.toStringAsFixed(2);
     _groupedBySymbol[groupName]['totMtm'] = totalMtm.toStringAsFixed(2);
+    _groupedBySymbol[groupName]['totUnRealMtm'] = totalUnRealMtm.toStringAsFixed(2);
+    _groupedBySymbol[groupName]['totBookedPnL'] = totalBookedPnL.toStringAsFixed(2);
     _groupedBySymbol[groupName]['isexit'] = "$hasExitPositions";
 
-    // Update total P&L and MTM
-    _updateTotalGroupValues();
+    // Update total P&L and MTM only when in "Group by symbol" mode
+    // This recalculates totals after creating/modifying groups
+    if (_posSelection == "Group by symbol") {
+      _updateTotalGroupValues();
+    }
   }
 
   // Helper method to update total group values
   void _updateTotalGroupValues() {
     double totalPnl = 0.0;
     double totalMtm = 0.0;
+    double totalUnRealMtm = 0.0;
+    double totalBookedPnL = 0.0;
 
     for (var symbol in _groupPositionSym) {
       if (_groupedBySymbol[symbol]["isCustomGrp"] == false) {
@@ -2577,12 +2735,21 @@ class PortfolioProvider extends DefaultChangeNotifier {
         totalMtm +=
             double.tryParse(_groupedBySymbol[symbol]['totMtm'] ?? "0.00") ??
                 0.0;
+        totalUnRealMtm +=
+            double.tryParse(_groupedBySymbol[symbol]['totUnRealMtm'] ?? "0.00") ??
+                0.0;
+        totalBookedPnL +=
+            double.tryParse(_groupedBySymbol[symbol]['totBookedPnL'] ?? "0.00") ??
+                0.0;
       }
     }
 
     _totMtm = totalMtm.toStringAsFixed(2);
     _totPnL = totalPnl.toStringAsFixed(2);
+    _totUnRealMtm = totalUnRealMtm.toStringAsFixed(2);
+    _totBookedPnL = totalBookedPnL.toStringAsFixed(2);
 
+    debugPrint("DEBUG _updateTotalGroupValues -> totMtm:$_totMtm, totPnL:$_totPnL, totUnRealMtm:$_totUnRealMtm, totBookedPnL:$_totBookedPnL");
     notifyListeners();
   }
 

@@ -194,6 +194,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               const SizedBox(height: 32),
               // Today's trade action section
               _buildTodaysTradeActionSection(context),
+              // const SizedBox(height: 32),
+              // Portfolio Analysis section
+              // _buildPortfolioAnalysisSection(context),
             ],
           ),
         ),
@@ -1242,6 +1245,108 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         );
       }
     }
+  }
+
+  Widget _buildPortfolioAnalysisSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Text(
+          "Portfolio Analysis",
+          style: MyntWebTextStyles.head(
+            context,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
+            fontWeight: MyntFonts.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Portfolio Analysis Card
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              debugPrint('Portfolio Analysis card tapped');
+              if (WebNavigationHelper.isAvailable) {
+                debugPrint('Navigating to portfolio analysis');
+                WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+              } else {
+                debugPrint('WebNavigationHelper not available');
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: shadcn.Theme.of(context).colorScheme.card,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: resolveThemeColor(context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary)
+                          .withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.pie_chart,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'View Portfolio Analysis',
+                          style: MyntWebTextStyles.body(
+                            context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary,
+                            fontWeight: MyntFonts.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Analyze your portfolio performance, allocation, and returns',
+                          style: MyntWebTextStyles.para(
+                            context,
+                            darkColor: MyntColors.textSecondaryDark,
+                            lightColor: MyntColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _showAllIndicesBottomSheet(

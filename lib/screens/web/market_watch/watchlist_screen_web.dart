@@ -905,7 +905,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
         child: ReorderableListView.builder(
           key: ValueKey('${scrips.length}_$sortBy'),
           itemCount: scrips.length,
-          buildDefaultDragHandles: false, // No default drag handles - use long press instead
+          buildDefaultDragHandles: false, // Custom drag - click and move to reorder
           padding: const EdgeInsets.only(
               right: 12.0,
               bottom: 8.0),
@@ -913,7 +913,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
             return AnimatedBuilder(
               animation: animation,
               builder: (context, child) {
-                final double elevation = Tween<double>(begin: 0, end: 6)
+                final double elevation = Tween<double>(begin: 0, end: 12)
                     .animate(CurvedAnimation(
                       parent: animation,
                       curve: Curves.easeInOut,
@@ -955,12 +955,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               ],
             );
 
-            // Wrap with long-press drag listener for non-predefined watchlists
+            // Wrap with drag listener for non-predefined watchlists (click+move to drag)
             if (isPreDef) {
               return child;
             }
 
-            return ReorderableDelayedDragStartListener(
+            return ReorderableDragStartListener(
               key: ValueKey('drag_${scrips[i]['token']}_$i'),
               index: i,
               child: child,

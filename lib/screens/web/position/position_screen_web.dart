@@ -7,6 +7,8 @@ import 'package:mynt_plus/screens/web/position/exit_all_positions_dialog_web.dar
 import 'package:mynt_plus/screens/web/position/position_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/position/convert_position_dialogue_web.dart';
 import 'package:mynt_plus/screens/web/position/position_table.dart';
+import 'package:mynt_plus/screens/web/position/group/position_group_screen_web.dart';
+import 'package:mynt_plus/screens/web/position/group/create_group_web.dart';
 
 import '../../../../models/portfolio_model/position_book_model.dart';
 import '../../../../provider/portfolio_provider.dart';
@@ -19,12 +21,12 @@ import '../../../../res/responsive_extensions.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
-import '../../../../sharedWidget/mynt_loader.dart';
 
 class PositionScreenWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
@@ -35,7 +37,8 @@ class PositionScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
-  int _selectedTabIndex = 0; // 0 for Positions
+  int _selectedTabIndex = 0;
+  bool _showGroupsView = false; // Toggle between positions and groups view
   // ✅ Use ValueNotifier for search query to avoid rebuilding entire widget
   final ValueNotifier<String> _searchQuery = ValueNotifier<String>('');
   // TextEditingController to control the TextField value
@@ -51,10 +54,6 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
   final ScrollController _verticalScrollController = ScrollController();
   // WebSocket subscription for live updates (like mobile)
   StreamSubscription? _socketSubscription;
-
-  // RefreshTrigger key for shadcn refresh animation
-  final GlobalKey<shadcn.RefreshTriggerState> _refreshTriggerKey =
-      GlobalKey<shadcn.RefreshTriggerState>();
 
   @override
   void initState() {
@@ -114,23 +113,27 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     _hoveredColumnIndex.dispose();
     _searchQuery.dispose(); // ✅ Dispose search query ValueNotifier
     _searchController.dispose(); // Dispose TextEditingController
+    _selectedFilter.dispose();
 
     super.dispose();
   }
 
+  // Manual refresh method for button click
+  Future<void> _handleManualRefresh() async {
+    final positionBook = ref.read(portfolioProvider);
+    await positionBook.fetchPositionBook(context, positionBook.isDay, isRefresh: true);
+  }
+
   @override
   Widget build(BuildContext context) {
-    // ✅ CRITICAL FIX: Only watch posloader to prevent unnecessary rebuilds
-    // Using select() ensures we only rebuild when loading state changes
-    final isLoading = ref.watch(portfolioProvider.select((p) => p.posloader));
+    // Watch posloader to rebuild when loading state changes
+    final positionBook = ref.watch(portfolioProvider);
     final theme = ref.read(themeProvider);
 
-    if (isLoading) {
+    // Show full screen loader only on initial load (when no positions exist yet)
+    if (positionBook.posloader ) {
       return Center(child: MyntLoader.simple());
     }
-
-    // ✅ Access positionBook without watching to avoid rebuilds
-    final positionBook = ref.read(portfolioProvider);
 
     // DrawerOverlay is now at app level in main.dart
     return SizedBox.expand(
@@ -146,35 +149,28 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: shadcn.RefreshTrigger(
-            key: _refreshTriggerKey,
-            onRefresh: () async {
-              await positionBook.fetchPositionBook(context, false);
-            },
-            child: Padding(
-              padding: EdgeInsets.all(context.responsive(
-                mobile: 8.0,
-                tablet: 12.0,
-                desktop: 16.0,
-              )),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Summary Cards Section (includes Trade Positions)
-                  _buildSummaryCards(theme, positionBook),
-                  SizedBox(height: context.responsive(
-                    mobile: 12.0,
-                    tablet: 16.0,
-                    desktop: 20.0,
-                  )),
+          child: Padding(
+            padding: EdgeInsets.all(context.responsive(
+              mobile: 8.0,
+              tablet: 12.0,
+              desktop: 16.0,
+            )),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary Cards Section (includes Trade Positions)
+                _buildSummaryCards(theme, positionBook),
+                SizedBox(height: context.responsive(
+                  mobile: 12.0,
+                  tablet: 16.0,
+                  desktop: 20.0,
+                )),
 
-                  // Main Content Area - Expanded to take remaining space
-                  Expanded(
-                    child: _buildMainContent(theme, positionBook),
-                  ),
-                ],
-              ),
+                // Main Content Area - use Expanded to fill remaining space
+                Expanded(
+                  child: _buildMainContent(theme, positionBook),
+                ),
+              ],
             ),
           ),
         ),
@@ -346,7 +342,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         _buildTabsAndActionBar(theme, positionBook),
         const SizedBox(height: 16),
         Expanded(
-          child: _buildPositionsTable(theme, positionBook),
+          child: positionBook.posloader || positionBook.isRefreshing
+              ? Center(child: MyntLoader.simple())
+              : _showGroupsView
+                  ? const PositionGroupScreen()
+                  : _buildPositionsTable(theme, positionBook),
         ),
       ],
     );
@@ -384,26 +384,26 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                   child: Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
+            decoration: BoxDecoration(
                       color: _selectedTabIndex == 0
                           ? (theme.isDarkMode
                               ? Colors.white.withOpacity(0.1)
                               : Colors.black.withOpacity(0.05))
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(6),
                       border: null, // ✅ no border
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Positions',
-                          style: MyntWebTextStyles.body(
-                            context,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Positions',
+                  style: MyntWebTextStyles.body(
+                    context,
                             fontWeight: _selectedTabIndex == 0
                                 ? MyntFonts.semiBold
                                 : MyntFonts.medium,
-                          ).copyWith(
+                  ).copyWith(
                             color: _selectedTabIndex == 0
                                 ? shadcn.Theme.of(context)
                                     .colorScheme
@@ -411,25 +411,25 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                                 : shadcn.Theme.of(context)
                                     .colorScheme
                                     .mutedForeground,
-                          ),
-                        ),
-                        if (openPositionsCount > 0) ...[
-                          const SizedBox(width: 4),
-                          Transform.translate(
-                            offset: const Offset(0, -6),
-                            child: Text(
-                              '$openPositionsCount',
-                              style: MyntWebTextStyles.bodySmall(
-                                context,
+                  ),
+                ),
+                if (openPositionsCount > 0) ...[
+                  const SizedBox(width: 4),
+                  Transform.translate(
+                    offset: const Offset(0, -6),
+                    child: Text(
+                      '$openPositionsCount',
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
                                 fontWeight: _selectedTabIndex == 0
                                     ? MyntFonts.semiBold
                                     : MyntFonts.medium,
-                              ).copyWith(
-                                fontSize: context.responsive<double>(
-                                  mobile: 10,
-                                  tablet: 11,
-                                  desktop: 12,
-                                ),
+                      ).copyWith(
+                        fontSize: context.responsive<double>(
+                          mobile: 10,
+                          tablet: 11,
+                          desktop: 12,
+                        ),
                                 color: _selectedTabIndex == 0
                                     ? shadcn.Theme.of(context)
                                         .colorScheme
@@ -437,12 +437,12 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                                     : shadcn.Theme.of(context)
                                         .colorScheme
                                         .mutedForeground,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
+                  ),
+                ],
+              ],
+            ),
                   ),
                 ),
               ),
@@ -450,108 +450,171 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
           // Spacer to push action items to the right
           const Spacer(),
-          // Search Bar - Use shadcn.TextField to match Holdings exactly
-          SizedBox(
-            width: context.responsiveValue<double>(
-              mobile: 140,
-              smallTablet: 180,
-              tablet: 220,
-              desktop: 300,
-              largeDesktop: 350,
-              widescreen: 400,
+          // Only show search, filter, exit all, refresh when Positions view is shown
+          if (!_showGroupsView) ...[
+            // Search Bar - Use shadcn.TextField to match Holdings exactly
+            SizedBox(
+              width: context.responsiveValue<double>(
+                mobile: 140,
+                smallTablet: 180,
+                tablet: 220,
+                desktop: 300,
+                largeDesktop: 350,
+                widescreen: 400,
+              ),
+              child: MyntSearchTextField.withSmartClear(
+                controller: _searchController,
+                placeholder: context.isMobile ? 'Search' : 'Search positions',
+                leadingIcon: assets.searchIcon,
+                onClear: () => _searchController.clear(),
+              ),
             ),
-            child: MyntSearchTextField.withSmartClear(
-              controller: _searchController,
-              placeholder: context.isMobile ? 'Search' : 'Search positions',
-              leadingIcon: assets.searchIcon,
-              onClear: () => _searchController.clear(),
+
+            // Filter dropdown button
+            SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+            _buildFilterButton(theme),
+
+            // Exit All Button - only show if there are open positions
+            // Use Consumer to watch exitPositionQty which changes when selections change
+            Consumer(
+              builder: (context, ref, _) {
+                // Watch exitPositionQty - this primitive value changes when selections change
+                // (watching openPosition list doesn't work because list reference stays same)
+                final selectedCount =
+                    ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
+                final openPositions =
+                    ref.read(portfolioProvider).openPosition ?? [];
+                final nonZeroPositions =
+                    openPositions.where((p) => p.qty != "0").toList();
+
+                // Hide button if no open positions
+                if (nonZeroPositions.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                final buttonHeight = context.responsive<double>(
+                  mobile: 30,
+                  tablet: 32,
+                  desktop: 35,
+                );
+                final buttonPadding = context.responsive<double>(
+                  mobile: 12,
+                  tablet: 16,
+                  desktop: 20,
+                );
+
+                return SizedBox(
+                  height: buttonHeight,
+                  child: ElevatedButton(
+                    onPressed: () => _exitAllPositions(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: resolveThemeColor(
+                        context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      selectedCount == 0
+                          ? (context.isMobile ? 'Exit' : 'Exit All')
+                          : 'Exit ($selectedCount)',
+                      style: context.isMobile
+                          ? MyntWebTextStyles.para(
+                              context,
+                              color: Colors.white,
+                              fontWeight: MyntFonts.semiBold,
+                            )
+                          : MyntWebTextStyles.body(
+                              context,
+                              color: Colors.white,
+                              fontWeight: MyntFonts.semiBold,
+                            ),
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
 
-          // Filter dropdown button
-          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-          _buildFilterButton(theme),
-
-          // Exit All Button - only show if there are open positions
-          // Use Consumer to watch exitPositionQty which changes when selections change
-          Consumer(
-            builder: (context, ref, _) {
-              // Watch exitPositionQty - this primitive value changes when selections change
-              // (watching openPosition list doesn't work because list reference stays same)
-              final selectedCount =
-                  ref.watch(portfolioProvider.select((p) => p.exitPositionQty));
-              final openPositions =
-                  ref.read(portfolioProvider).openPosition ?? [];
-              final nonZeroPositions =
-                  openPositions.where((p) => p.qty != "0").toList();
-
-              // Hide button if no open positions
-              if (nonZeroPositions.isEmpty) {
-                return const SizedBox.shrink();
-              }
-
-              final buttonHeight = context.responsive<double>(
-                mobile: 30,
-                tablet: 32,
-                desktop: 35,
-              );
-              final buttonPadding = context.responsive<double>(
-                mobile: 12,
-                tablet: 16,
-                desktop: 20,
-              );
-
-              return SizedBox(
-                height: buttonHeight,
-                child: ElevatedButton(
-                  onPressed: () => _exitAllPositions(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: resolveThemeColor(
-                      context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    selectedCount == 0
-                        ? (context.isMobile ? 'Exit' : 'Exit All')
-                        : 'Exit ($selectedCount)',
-                    style: context.isMobile
-                        ? MyntWebTextStyles.para(
-                            context,
-                            color: Colors.white,
-                            fontWeight: MyntFonts.semiBold,
-                          )
-                        : MyntWebTextStyles.body(
-                            context,
-                            color: Colors.white,
-                            fontWeight: MyntFonts.semiBold,
-                          ),
-                  ),
-                ),
-              );
-            },
-          ),
-
-          SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
-          // Refresh Button - triggers shadcn RefreshTrigger animation
-          _buildIconButton(
-            icon: Icons.refresh,
-            onPressed: () {
-              _refreshTriggerKey.currentState?.refresh();
-            },
-            theme: theme,
-          ),
-          SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
+            SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+            // Refresh Button - triggers manual refresh
+            _buildIconButton(
+              icon: Icons.refresh,
+              onPressed: () {
+                _handleManualRefresh();
+              },
+              theme: theme,
+            ),
+            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
+            // Groups toggle icon - show posgrp icon to navigate to groups
+            _buildGroupsToggleIcon(theme),
+          ],
+          // Show Create Group button and close icon when Position Groups view is shown
+          if (_showGroupsView) ...[
+            MyntIconTextButton(
+              label: 'New Group',
+              // iconAsset: assets.addCircleIcon,
+              onPressed: () {
+                _showCreateGroupDialog(context, positionBook);
+              },
+            ),
+            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
+            // Close icon - to go back to positions
+            _buildCloseGroupsIcon(theme),
+          ],
         ],
       ),
     );
+  }
+
+  // Show Create Group dialog - web style
+  void _showCreateGroupDialog(BuildContext context, PortfolioProvider positionBook) {
+    // Prevent multiple dialog opens
+    if (positionBook.isFilterNavigating) return;
+
+    try {
+      positionBook.setFilterNavigating(true);
+
+      showGeneralDialog(
+        context: context,
+        barrierDismissible: true,
+        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierColor: resolveThemeColor(
+          context,
+          dark: MyntColors.modalBarrierDark,
+          light: MyntColors.modalBarrierLight,
+        ),
+        transitionDuration: const Duration(milliseconds: 200),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const CreateGroupPos();
+        },
+        transitionBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOut,
+            reverseCurve: Curves.easeIn,
+          );
+
+          return FadeTransition(
+            opacity: curvedAnimation,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+              child: child,
+            ),
+          );
+        },
+      ).then((_) {
+        // Reset navigation lock after dialog is closed
+        positionBook.setFilterNavigating(false);
+      });
+    } catch (e) {
+      positionBook.setFilterNavigating(false);
+    }
   }
 
   // Icon button helper matching Holdings
@@ -641,6 +704,110 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           ),
         );
       },
+    );
+  }
+
+  // Position Groups toggle icon - shows posgrp icon to navigate to groups
+  Widget _buildGroupsToggleIcon(ThemesProvider theme) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 18,
+      tablet: 20,
+      desktop: 22,
+    );
+
+    return Tooltip(
+      message: 'Show Position Groups',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _showGroupsView = true;
+            });
+          },
+          borderRadius: BorderRadius.circular(6),
+          splashColor: isDarkMode(context)
+              ? MyntColors.rippleDark
+              : MyntColors.rippleLight,
+          highlightColor: isDarkMode(context)
+              ? MyntColors.highlightDark
+              : MyntColors.highlightLight,
+          child: Container(
+            width: buttonSize,
+            height: buttonSize,
+            alignment: Alignment.center,
+            child: SvgPicture.asset(
+              assets.posgrp,
+              width: iconSize,
+              height: iconSize,
+              colorFilter: ColorFilter.mode(
+                resolveThemeColor(
+                  context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary,
+                ),
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Close groups icon - shows X icon to go back to positions
+  Widget _buildCloseGroupsIcon(ThemesProvider theme) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 18,
+      tablet: 20,
+      desktop: 22,
+    );
+
+    return Tooltip(
+      message: 'Back to Positions',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _showGroupsView = false;
+            });
+          },
+          borderRadius: BorderRadius.circular(6),
+          splashColor: isDarkMode(context)
+              ? MyntColors.rippleDark
+              : MyntColors.rippleLight,
+          highlightColor: isDarkMode(context)
+              ? MyntColors.highlightDark
+              : MyntColors.highlightLight,
+          child: Container(
+            width: buttonSize,
+            height: buttonSize,
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.close,
+              size: iconSize,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -870,11 +1037,11 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             },
           ),
           const SizedBox(width: 16),
-          // Refresh Button - triggers shadcn RefreshTrigger animation
+          // Refresh Button - triggers manual refresh
           MyntIconButton(
             icon: Icons.refresh,
             onPressed: () {
-              _refreshTriggerKey.currentState?.refresh();
+              _handleManualRefresh();
             },
             size: MyntButtonSize.medium,
           ),

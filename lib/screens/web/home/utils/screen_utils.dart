@@ -51,6 +51,8 @@ class ScreenUtils {
         return 'Fund Details';
       case ScreenType.notification:
         return 'Notification';
+      case ScreenType.portfolioAnalysis:
+        return 'Portfolio Analysis';
     }
   }
 
@@ -103,6 +105,8 @@ class ScreenUtils {
         return Icons.show_chart;
       case ScreenType.notification:
         return Icons.notifications_outlined;
+      case ScreenType.portfolioAnalysis:
+        return Icons.pie_chart;
     }
   }
 

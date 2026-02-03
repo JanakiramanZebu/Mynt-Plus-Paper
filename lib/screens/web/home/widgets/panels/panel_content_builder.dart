@@ -16,6 +16,7 @@ import 'package:mynt_plus/screens/web/position/position_screen_web.dart';
 import 'package:mynt_plus/screens/web/profile/Reports/reports_screen_web.dart';
 // import 'package:mynt_plus/screens/web/profile/settings_web.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
+import 'package:mynt_plus/screens/web/portfolio_analysis_web.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/ca_action/ca_action_buyback.dart';
@@ -147,6 +148,8 @@ class PanelContentBuilder {
         return const SizedBox.shrink();
       case ScreenType.notification:
         return const SizedBox.shrink();
+      case ScreenType.portfolioAnalysis:
+        return const PortfolioDashboardScreen();
     }
   }
 }

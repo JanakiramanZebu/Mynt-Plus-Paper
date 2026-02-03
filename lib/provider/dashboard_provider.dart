@@ -430,6 +430,27 @@ Color getSectorAllocationColor(String sector) {
     notifyListeners();
   }
 
+  // Apply all filters at once (used by filter dialog)
+  void applyFilters({
+    required bool showAll,
+    required Set<String> accountTypes,
+    required Set<String> marketCaps,
+    required Set<String> sectors,
+  }) {
+    _showAll = showAll;
+    _selectedAccountTypes = Set<String>.from(accountTypes);
+    _selectedMarketCaps = Set<String>.from(marketCaps);
+    _selectedSectors = Set<String>.from(sectors);
+
+    // Auto-set showAll if no filters are selected
+    if (_selectedAccountTypes.isEmpty &&
+        _selectedMarketCaps.isEmpty &&
+        _selectedSectors.isEmpty) {
+      _showAll = true;
+    }
+    notifyListeners();
+  }
+
   // Get filtered holdings based on selected filters
   List<TopStocks> getFilteredHoldings(List<TopStocks> allHoldings) {
     if (_showAll ||

@@ -23,4 +23,5 @@ enum ScreenType {
   cagrCalculator,
   mfStockDetail,
   notification,
+  portfolioAnalysis,
 }

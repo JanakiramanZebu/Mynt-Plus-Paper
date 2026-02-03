@@ -90,9 +90,11 @@ class Assets {
   final String portfolioIcon = "assets/icon/watchlistIcon/Vector - 1.svg";
   final String bluerightarrow = "assets/icon/watchlistIcon/bluerightarrow.png";
   final String calc = "assets/icon/watchlistIcon/calc.svg";
+  final String chartnew = "assets/icon/watchlistIcon/chartnew.svg";
 
   final String ordersIcon = "assets/icon/watchlistIcon/Vector - 2.svg";
   final String profileIcon = "assets/icon/watchlistIcon/Vector - 3.svg";
+  final String posgrp = "assets/icon/posgrp.svg";
 
   final String rightarrow = "assets/icon/arrow_right.svg";
   final String depthIcon = "assets/icon/depthIcon.svg";

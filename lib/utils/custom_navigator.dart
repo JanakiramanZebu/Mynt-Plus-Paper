@@ -156,6 +156,9 @@ class WebNavigationHelper {
       case Routes.mfmainscreen:
       case 'mutualFunds':
         return WebRoutes.mutualFunds;
+      case Routes.portfolioDashboard:
+      case 'portfolioAnalysis':
+        return '/portfolio-analysis';
       case 'reports':
         return WebRoutes.reports;
       case 'optionChain':
@@ -185,6 +188,8 @@ class WebNavigationHelper {
         return 'ipo';
       case WebRoutes.mutualFunds:
         return 'mutualFunds';
+      case '/portfolio-analysis':
+        return Routes.portfolioDashboard;
       case WebRoutes.reports:
         return 'reports';
       case WebRoutes.optionChain:

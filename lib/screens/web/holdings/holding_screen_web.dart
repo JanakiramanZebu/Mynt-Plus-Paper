@@ -65,10 +65,6 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
   DateTime _lastUpdate = DateTime.now();
   static const Duration _updateInterval = Duration(milliseconds: 300);
 
-  // RefreshTrigger key for shadcn refresh animation
-  final GlobalKey<shadcn.RefreshTriggerState> _refreshTriggerKey =
-      GlobalKey<shadcn.RefreshTriggerState>();
-
   @override
   void initState() {
     super.initState();
@@ -144,6 +140,16 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     super.dispose();
   }
 
+  // Manual refresh method for button click
+  Future<void> _handleManualRefresh() async {
+    final portfolioData = ref.read(portfolioProvider);
+    if (_selectedTabIndex == 0) {
+      await portfolioData.fetchHoldings(context, "Refresh", isRefresh: true);
+    } else {
+      await ref.read(mfProvider).fetchmfholdingnew();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(portfolioProvider.select((p) => p.holdloader));
@@ -166,31 +172,32 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             light: MyntColors.backgroundColor),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: shadcn.RefreshTrigger(
-            key: _refreshTriggerKey,
-            onRefresh: () async {
-              if (_selectedTabIndex == 0) {
-                await portfolioData.fetchHoldings(context, "Refresh");
-              } else {
-                await ref.read(mfProvider).fetchmfholdingnew();
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Summary Cards Section
-                  _buildSummaryCards(
-                      context, theme, portfolioData, _selectedTabIndex),
-                  const SizedBox(height: 20),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Summary Cards Section
+                    _buildSummaryCards(
+                        context, theme, portfolioData, _selectedTabIndex),
+                    const SizedBox(height: 20),
 
-                  // Main Content Area - Expanded to fill remaining space
-                  Expanded(
-                    child: _buildMainContent(theme, portfolioData),
-                  ),
-                ],
+                    // Main Content Area
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.7,
+                      child: _buildMainContent(theme, portfolioData),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -438,31 +445,33 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         const SizedBox(height: 16),
         // Content based on selected tab - Using IndexedStack for better performance
         Expanded(
-          child: IndexedStack(
-            index: _selectedTabIndex,
-            children: [
-              // Stocks tab - Using TableExample1 from hold_table.dart with search
-              ValueListenableBuilder<String>(
-                valueListenable: _searchQuery,
-                builder: (context, searchQuery, child) {
-                  return ValueListenableBuilder<String>(
-                    valueListenable: _selectedFilter,
-                    builder: (context, filterType, child) {
-                      return TableExample1(
-                        searchQuery: searchQuery,
-                        filterType: filterType,
-                      );
-                    },
-                  );
-                },
-              ),
-              // Mutual Funds tab - Using MfTableExample from mf_hold_table.dart with search
-              ValueListenableBuilder<String>(
-                valueListenable: _mfSearchQuery,
-                builder: (context, searchQuery, child) {
-                  return MfTableExample(searchQuery: searchQuery);
-                },
-              ),
+          child: portfolioData.holdloader || portfolioData.isRefreshingHoldings
+              ? Center(child: MyntLoader.simple())
+              : IndexedStack(
+                  index: _selectedTabIndex,
+                  children: [
+                    // Stocks tab - Using TableExample1 from hold_table.dart with search
+                    ValueListenableBuilder<String>(
+                      valueListenable: _searchQuery,
+                      builder: (context, searchQuery, child) {
+                        return ValueListenableBuilder<String>(
+                          valueListenable: _selectedFilter,
+                          builder: (context, filterType, child) {
+                            return TableExample1(
+                              searchQuery: searchQuery,
+                              filterType: filterType,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    // Mutual Funds tab - Using MfTableExample from mf_hold_table.dart with search
+                    ValueListenableBuilder<String>(
+                      valueListenable: _mfSearchQuery,
+                      builder: (context, searchQuery, child) {
+                        return MfTableExample(searchQuery: searchQuery);
+                      },
+                    ),
             ],
           ),
         ),
@@ -693,11 +702,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
-              // Reload button - triggers shadcn RefreshTrigger animation
+              // Reload button - triggers manual refresh
               _buildIconButton(
                 icon: Icons.refresh,
                 onPressed: () {
-                  _refreshTriggerKey.currentState?.refresh();
+                  _handleManualRefresh();
                   
                 },
                 theme: theme,

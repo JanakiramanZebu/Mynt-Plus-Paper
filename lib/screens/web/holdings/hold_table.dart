@@ -7,6 +7,8 @@ import 'package:flutter/material.dart'
         Icon,
         BoxDecoration,
         BorderRadius,
+        BlendMode,
+        ColorFilter,
         TextPainter,
         TextSpan,
         WidgetSpan,
@@ -52,9 +54,11 @@ import 'package:flutter/material.dart'
         Radius;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../provider/portfolio_provider.dart';
+import '../../../res/res.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -1438,7 +1442,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
 
   // Build styled menu button matching profile dropdown
   shadcn.MenuButton _buildMenuButton({
-    required IconData icon,
+    IconData? icon,
+    Widget? iconWidget,
     required String title,
     required void Function(BuildContext) onPressed,
     required Color iconColor,
@@ -1450,7 +1455,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: iconColor),
+            if (iconWidget != null)
+              iconWidget
+            else if (icon != null)
+              Icon(icon, size: 18, color: iconColor),
             const SizedBox(width: 10),
             Text(
               title,
@@ -1558,7 +1566,12 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             // Chart option (always available)
             menuItems.add(
               _buildMenuButton(
-                icon: Icons.bar_chart,
+                iconWidget: SvgPicture.asset(
+                  assets.chartnew,
+                  width: 18,
+                  height: 18,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
                 title: 'Chart',
                 iconColor: iconColor,
                 textColor: textColor,

@@ -46,6 +46,7 @@ import '../../../provider/ledger_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
+import '../../../provider/dashboard_provider.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
 import '../../../provider/sidebar_provider.dart';
@@ -69,6 +70,7 @@ import 'holdings/holding_screen_web.dart';
 import 'position/position_screen_web.dart';
 import 'dashboard_screen_web.dart';
 import 'trade_action_screen_web.dart';
+import 'portfolio_analysis_web.dart';
 // import '../Mobile/order_book/order_book_screen.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
@@ -123,6 +125,7 @@ enum ScreenTypeParam {
   reports,
   settings,
   tradeAction,
+  portfolioAnalysis,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -333,6 +336,11 @@ class _CustomizableSplitHomeScreenState
               routeName == "Ipo" ||
               routeName == "ipo") {
             _handleIPOTap();
+          } else if (routeName == Routes.portfolioDashboard ||
+              routeName == "portfolioAnalysis" ||
+              routeName == "portfolioDashboard") {
+            debugPrint("Portfolio analysis route matched: $routeName");
+            _handlePortfolioAnalysisTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -382,6 +390,11 @@ class _CustomizableSplitHomeScreenState
               routeName == "Ipo" ||
               routeName == "ipo") {
             _handleIPOTap();
+          } else if (routeName == Routes.portfolioDashboard ||
+              routeName == "portfolioAnalysis" ||
+              routeName == "portfolioDashboard") {
+            debugPrint("Portfolio analysis route matched: $routeName");
+            _handlePortfolioAnalysisTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -529,11 +542,17 @@ class _CustomizableSplitHomeScreenState
       case ScreenTypeParam.tradeAction:
         showTradeActionInPanel();
         break;
+      case ScreenTypeParam.portfolioAnalysis:
+        debugPrint('WebRouter: Handling portfolioAnalysis initial panel');
+        _handlePortfolioAnalysisTap();
+        debugPrint('WebRouter: portfolioAnalysis handler called');
+        break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
         // Default panels, no action needed
         break;
     }
+    debugPrint('WebRouter: _applyInitialRightPanel completed');
   }
 
   void _createPanelsForCount(int count) {
@@ -1975,6 +1994,8 @@ class _CustomizableSplitHomeScreenState
           key: ValueKey('tradeAction_$tabIndex'),
           initialTabIndex: tabIndex,
         );
+      case ScreenType.portfolioAnalysis:
+        return const PortfolioDashboardScreen();
       case ScreenType.mfCollection:
         return SaveTaxesScreen(
           title: _currentCollectionTitle ?? "Collection",
@@ -2049,6 +2070,8 @@ class _CustomizableSplitHomeScreenState
         return 'Settings';
       case ScreenType.tradeAction:
         return 'Trade Action';
+      case ScreenType.portfolioAnalysis:
+        return 'Portfolio Analysis';
       case ScreenType.mfCollection:
         return 'Collections';
 
@@ -2102,6 +2125,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.settings;
       case ScreenType.tradeAction:
         return Icons.trending_up;
+      case ScreenType.portfolioAnalysis:
+        return Icons.pie_chart;
       case ScreenType.mfCollection:
         return Icons.collections_bookmark;
 
@@ -2486,6 +2511,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.tradeAction:
         _handleTradeActionTap();
+        break;
+      case ScreenType.portfolioAnalysis:
+        _handlePortfolioAnalysisTap();
         break;
       case ScreenType.notification:
         _handleNotificationTap();
@@ -3191,6 +3219,9 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.optionChain:
         urlPath = WebRoutes.optionChain;
         break;
+      case ScreenType.portfolioAnalysis:
+        urlPath = '/portfolio-analysis';
+        break;
       case ScreenType.reports:
         urlPath = WebRoutes.reports;
         break;
@@ -3717,6 +3748,49 @@ class _CustomizableSplitHomeScreenState
     await ref
         .read(orderProvider)
         .requestWSOrderBook(context: context, isSubscribe: false);
+  }
+
+  // Handle portfolio analysis tap
+  void _handlePortfolioAnalysisTap() async {
+    debugPrint('_handlePortfolioAnalysisTap called');
+
+    // Set loading state immediately
+    setState(() {
+      _screenLoadingStates[ScreenType.portfolioAnalysis] = true;
+    });
+
+    // Replace screen in panel (right panel) immediately for instant UI response
+    _replaceScreenInPanel(ScreenType.portfolioAnalysis);
+    debugPrint('Replaced screen in panel with portfolio analysis');
+
+    // Move all async operations to background to prevent blocking UI
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      final portfolio = ref.read(portfolioProvider);
+      final dashboard = ref.read(dashboardProvider);
+
+      portfolio.cancelTimer();
+
+      // Unsubscribe from other real-time data
+      await portfolio.requestWSHoldings(context: context, isSubscribe: false);
+      await portfolio.requestWSPosition(context: context, isSubscribe: false);
+      await ref
+          .read(orderProvider)
+          .requestWSOrderBook(context: context, isSubscribe: false);
+
+      // Fetch portfolio analysis data
+      if (dashboard.portfolioAnalysis == null) {
+        await dashboard.getPortfolioAnalysis();
+      }
+
+      // Clear loading state
+      if (mounted) {
+        setState(() {
+          _screenLoadingStates[ScreenType.portfolioAnalysis] = false;
+        });
+      }
+    });
   }
 
   // Handle notification tap
@@ -4264,6 +4338,7 @@ enum ScreenType {
   cagrCalculator,
   mfStockDetail,
   notification,
+  portfolioAnalysis,
 }
 
 // Hoverable navigation item widget
