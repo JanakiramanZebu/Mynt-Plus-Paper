@@ -4543,8 +4543,12 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     }
 
     // Notify listeners to update the UI - only if data actually changed
+    // Use post-frame callback to avoid mouse tracker assertion errors
+    // ("!_debugDuringDeviceUpdate is not true")
     if (dataUpdated) {
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 

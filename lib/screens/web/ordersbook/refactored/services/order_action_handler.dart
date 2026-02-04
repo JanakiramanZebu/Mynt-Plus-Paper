@@ -25,6 +25,10 @@ class OrderActionHandler {
   final WidgetRef ref;
   final BuildContext context;
 
+  // Static flag to prevent double-click from opening sheet twice
+  // Static so it's shared across all instances
+  static bool _isSheetOpening = false;
+
   OrderActionHandler({
     required this.ref,
     required this.context,
@@ -32,6 +36,10 @@ class OrderActionHandler {
 
   /// Open order detail sheet
   void openOrderDetail(OrderBookModel order) {
+    // Prevent double-click from opening sheet twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     final parentCtx = context; // Capture the parent context
     shadcn.openSheet(
       context: context,
@@ -62,11 +70,17 @@ class OrderActionHandler {
       },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
-    );
+    ).then((_) {
+      _isSheetOpening = false;
+    });
   }
 
   /// Open trade detail dialog
   void openTradeDetail(dynamic trade) {
+    // Prevent double-click from opening sheet twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     shadcn.openSheet(
       context: context,
       builder: (sheetContext) {
@@ -93,17 +107,25 @@ class OrderActionHandler {
       },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
-    );
+    ).then((_) {
+      _isSheetOpening = false;
+    });
   }
 
   /// Open GTT order detail dialog
   void openGttOrderDetail(GttOrderBookModel gttOrder) {
+    // Prevent double-click from opening dialog twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return GttOrderBookDetailScreenWeb(gttOrder: gttOrder);
       },
-    );
+    ).then((_) {
+      _isSheetOpening = false;
+    });
   }
 
   /// Cancel order with confirmation

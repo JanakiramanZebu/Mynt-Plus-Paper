@@ -120,6 +120,9 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   // Timer for delayed popover close (allows mouse to move from row to dropdown)
   Timer? _popoverCloseTimer;
 
+  // Prevent double-click from opening sheet twice
+  bool _isSheetOpening = false;
+
   @override
   void initState() {
     super.initState();
@@ -1281,6 +1284,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   }
 
   void _showGttOrderDetail(GttOrderBookModel gttOrder) {
+    // Prevent double-click from opening sheet twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     // Responsive width calculation
     shadcn.openSheet(
       context: context,
@@ -1311,7 +1318,10 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
       },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
-    );
+    ).then((_) {
+      // Reset flag when sheet closes
+      _isSheetOpening = false;
+    });
   }
 
   Future<void> _handleCancelGttOrder(GttOrderBookModel gttOrder) async {

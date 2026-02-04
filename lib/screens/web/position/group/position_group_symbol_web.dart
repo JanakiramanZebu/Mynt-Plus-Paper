@@ -344,9 +344,9 @@ class _PositionGroupSymbolState extends ConsumerState<PositionGroupSymbol> {
         );
       }
 
-      return Expanded(
-        child: SingleChildScrollView(
-          child: ExpandedTileList.separated(
+      // NOTE: Don't use Expanded here - parent is a Column in SingleChildScrollView
+      // which has unbounded height. Expanded requires bounded constraints.
+      return ExpandedTileList.separated(
               key: ValueKey(
                   'groups_${widget.filterType ?? 'all'}_${itemCount}_${filteredGroupSymbols.join('_')}'),
               padding: EdgeInsets.zero,
@@ -466,9 +466,7 @@ class _PositionGroupSymbolState extends ConsumerState<PositionGroupSymbol> {
                       dark: MyntColors.dividerDark,
                       light: MyntColors.divider),
                 );
-              }),
-        ),
-      );
+              });
     } catch (e) {
       // If any error occurs during build, show empty state instead of crashing
       return const Center(

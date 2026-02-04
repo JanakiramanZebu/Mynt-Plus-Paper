@@ -48,6 +48,9 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
   // Timer for delayed popover close (allows mouse to move from row to dropdown)
   Timer? _popoverCloseTimer;
 
+  // Prevent double-click from opening sheet twice
+  bool _isSheetOpening = false;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -1362,6 +1365,10 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
 
   // Show trade detail using shadcn sheet
   void _showTradeDetail(TradeBookModel trade) {
+    // Prevent double-click from opening sheet twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     shadcn.openSheet(
       context: context,
       builder: (sheetContext) {
@@ -1391,7 +1398,10 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
       },
       position: shadcn.OverlayPosition.end,
       barrierColor: Colors.transparent,
-    );
+    ).then((_) {
+      // Reset flag when sheet closes
+      _isSheetOpening = false;
+    });
   }
 }
 

@@ -669,9 +669,10 @@ class WebSocketProvider extends ChangeNotifier {
     // Notify market watch provider with the updated data
     _notifyMarketWatchProvider();
 
-    // CRITICAL: Notify Riverpod listeners after processing all buffered updates
-    // This ensures ref.watch().select() triggers rebuilds for new tokens
-    _safeNotifyListeners();
+    // NOTE: Don't call _safeNotifyListeners() here directly - it causes
+    // "!_debugDuringDeviceUpdate is not true" assertion errors.
+    // The caller (_scheduleThrottledUpdate) handles notification via
+    // addPostFrameCallback which is safe from mouse tracker conflicts.
 
     // Clear the buffer after applying
     _pendingSocketUpdates.clear();
@@ -1017,9 +1018,12 @@ class WebSocketProvider extends ChangeNotifier {
 
       _socketDataController.add(_socketDatas);
 
-      // CRITICAL: Notify Riverpod listeners so ref.watch().select() triggers rebuilds
-      // Without this, the .select() pattern won't detect changes even with new Map reference
-      _safeNotifyListeners();
+      // CRITICAL: Use post-frame callback to avoid mouse tracker assertion errors
+      // ("!_debugDuringDeviceUpdate is not true"). Direct notifyListeners() during
+      // frame rendering causes conflicts with Flutter's mouse tracking phase.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _safeNotifyListeners();
+      });
 
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data

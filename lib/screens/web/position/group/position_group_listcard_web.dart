@@ -28,9 +28,14 @@ class PositionListGrpCard extends ConsumerWidget {
     final positions = ref.watch(portfolioProvider);
 
     // Check both qty and netqty to determine if position is closed
-    final qty = "${groupData['qty']}";
+    final rawQty = int.tryParse(groupData['qty']?.toString() ?? '0') ?? 0;
     final netQty = "${groupData['netqty'] ?? groupData['qty']}";
-    final isClosedPosition = qty == "0" || netQty == "0";
+    final isClosedPosition = rawQty == 0 || netQty == "0";
+
+    // For MCX, divide qty by lotSize for display
+    final exchange = groupData['exch']?.toString() ?? '';
+    final lotSize = double.tryParse(groupData['ls']?.toString() ?? '1') ?? 1.0;
+    final qty = exchange == 'MCX' ? (rawQty / lotSize).toInt().toString() : rawQty.toString();
 
     // Get PNL and determine its color
     final pnlValue = positions.isNetPnl

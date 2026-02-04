@@ -363,7 +363,10 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
           final product = groupItem['s_prdt_ali']?.toString() ?? 'N/A';
           final instrument = _formatInstrument(groupItem);
           final exchange = groupItem['exch']?.toString() ?? '';
-          final qty = int.tryParse(groupItem['qty']?.toString() ?? '0') ?? 0;
+          // For MCX, divide qty by lotSize for display
+          final rawQty = int.tryParse(groupItem['qty']?.toString() ?? '0') ?? 0;
+          final lotSize = double.tryParse(groupItem['ls']?.toString() ?? '1') ?? 1.0;
+          final qty = exchange == 'MCX' ? (rawQty / lotSize).toInt() : rawQty;
           final qtyStr = qty > 0 ? '+$qty' : '$qty';
 
           // Get average price based on day/net mode

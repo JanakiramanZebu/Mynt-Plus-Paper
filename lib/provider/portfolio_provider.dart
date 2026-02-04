@@ -1044,7 +1044,10 @@ changeHoldingsTabIndex(int index) {
         _totPnlPercHolding = invest > 0
             ? ((totalPnl / invest) * 100).toStringAsFixed(2)
             : '0.00';
-        notifyListeners();
+        // Use post-frame callback to avoid mouse tracker assertion errors
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          notifyListeners();
+        });
       }
     }
 
@@ -1168,7 +1171,10 @@ changeHoldingsTabIndex(int index) {
     _totPnL = totalPnl.toStringAsFixed(2);
     _totUnRealMtm = unRealMtm.toStringAsFixed(2);
     _totBookedPnL = bookPnl.toStringAsFixed(2);
-    notifyListeners();
+    // Use post-frame callback to avoid mouse tracker assertion errors
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
   }
 
   // websocket Connection Request for Position scrip
@@ -1807,8 +1813,11 @@ changeHoldingsTabIndex(int index) {
       debugPrint('Stack: $stackTrace');
     } finally {
       // Always notify listeners even if error occurs to ensure UI updates
+      // Use post-frame callback to avoid mouse tracker assertion errors
       debugPrint('Calling notifyListeners');
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 
@@ -2172,7 +2181,10 @@ changeHoldingsTabIndex(int index) {
       }
       // tabSize(theme);
 
-      notifyListeners();
+      // Use post-frame callback to avoid mouse tracker assertion errors
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
     }
   }
 

@@ -132,6 +132,9 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   // Timer for delayed popover close (allows mouse to move from row to dropdown)
   Timer? _popoverCloseTimer;
 
+  // Prevent double-click from opening sheet twice
+  bool _isSheetOpening = false;
+
   // Track if data has been initialized
   bool _hasInitialized = false;
 
@@ -1046,6 +1049,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
   void _showAlertDetail(dynamic alert) {
     // Only show detail sheet for pending alerts, not triggered ones
     if (alert is! BrokerMessage) {
+      // Prevent double-click from opening sheet twice
+      if (_isSheetOpening) return;
+      _isSheetOpening = true;
+
       shadcn.openSheet(
         context: context,
         builder: (sheetContext) {
@@ -1072,7 +1079,10 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
         },
         position: shadcn.OverlayPosition.end,
         barrierColor: Colors.transparent,
-      );
+      ).then((_) {
+        // Reset flag when sheet closes
+        _isSheetOpening = false;
+      });
     }
   }
 

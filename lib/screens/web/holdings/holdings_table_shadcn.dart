@@ -54,6 +54,9 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
   final ValueNotifier<String?> _hoveredRowToken = ValueNotifier<String?>(null);
   final ValueNotifier<int?> _hoveredColumnIndex = ValueNotifier<int?>(null);
 
+  // Prevent double-click from opening dialog twice
+  bool _isDialogOpening = false;
+
   // Responsive breakpoints
   static const double _mobileBreakpoint = 768;
   static const double _tabletBreakpoint = 1024;
@@ -812,11 +815,16 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
   }
 
   void _showHoldingDetail(dynamic holding) {
+    // Prevent double-click from opening dialog twice
+    if (_isDialogOpening) return;
+
     final exchTsym = holding.exchTsym != null && holding.exchTsym!.isNotEmpty
         ? holding.exchTsym![0]
         : null;
 
     if (exchTsym == null) return;
+
+    _isDialogOpening = true;
 
     material.showDialog(
       context: context,
@@ -824,7 +832,10 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         holding: holding,
         exchTsym: exchTsym,
       ),
-    );
+    ).then((_) {
+      // Reset flag when dialog closes
+      _isDialogOpening = false;
+    });
   }
 
   // ==================== ACTION HANDLERS ====================

@@ -104,6 +104,9 @@ class _PositionTableState extends ConsumerState<PositionTable> {
   // Timer for delayed popover close (allows mouse to move from row to dropdown)
   Timer? _popoverCloseTimer;
 
+  // Prevent double-click from opening overlay twice
+  bool _isSheetOpening = false;
+
   // Scroll controllers - must be in state to persist across rebuilds
   late ScrollController _verticalScrollController;
   late ScrollController _horizontalScrollController;
@@ -1714,6 +1717,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
 
   // Show position detail - Using shadcn.openSheet like holdings
   void _showPositionDetail(PositionBookModel position) {
+    // Prevent double-click from opening overlay twice
+    if (_isSheetOpening) return;
+    _isSheetOpening = true;
+
     // Save parent context to pass to sheet
     final parentCtx = context;
 
@@ -1746,9 +1753,11 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         );
       },
       position: shadcn.OverlayPosition.end,
-    );
+    ).then((_) {
+      // Reset flag when sheet closes
+      _isSheetOpening = false;
+    });
   }
-
   // Handle chart tap
   Future<void> _handleChartTap(PositionBookModel position) async {
     final scripData = ref.read(marketWatchProvider);
