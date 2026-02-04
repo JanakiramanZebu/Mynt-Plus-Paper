@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart';
@@ -8349,18 +8351,33 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       priceType = "Limit";
     }
 
+    // Get current LTP from websocket first, then fallback to orderArg.ltp
+    String currentLtp = widget.orderArg.ltp ?? "0.00";
+    final socketData = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+    if (socketData != null) {
+      final wsLtp = socketData['lp']?.toString();
+      if (wsLtp != null && wsLtp != "null" && wsLtp != "0" && wsLtp != "0.00") {
+        currentLtp = wsLtp;
+      }
+    }
+    // If still 0, try using existing ordPrice if it's valid
+    if ((currentLtp == "0.00" || currentLtp == "0" || currentLtp.isEmpty) &&
+        ordPrice != "0.00" && ordPrice != "0" && ordPrice.isNotEmpty && ordPrice != "Market") {
+      currentLtp = ordPrice;
+    }
+
     // Update price controller based on type
     if (priceType == "Market" || priceType == "SL MKT") {
       priceCtrl.text = "Market";
-      double ltp = (SafeParse.toDouble(widget.orderArg.ltp) *
+      double ltp = (SafeParse.toDouble(currentLtp) *
               SafeParse.toDouble(mktProtCtrl.text)) /
           100;
 
       if (isBuy!) {
-        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) + ltp)
+        ordPrice = (SafeParse.toDouble(currentLtp) + ltp)
             .toStringAsFixed(2);
       } else {
-        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) - ltp)
+        ordPrice = (SafeParse.toDouble(currentLtp) - ltp)
             .toStringAsFixed(2);
       }
       double result =
@@ -8379,7 +8396,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         ordPrice = result.toStringAsFixed(2);
       }
     } else if (priceCtrl.text == "Market") {
-      priceCtrl.text = "${widget.orderArg.ltp}";
+      priceCtrl.text = currentLtp;
       ordPrice = priceCtrl.text;
     }
   }
