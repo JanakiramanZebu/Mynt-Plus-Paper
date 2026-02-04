@@ -21,7 +21,7 @@ class OrderScreenHeaderWeb extends ConsumerWidget {
     // Watch websocket provider to get current socket data immediately
     final wsProvider = ref.watch(websocketProvider);
 
-    // **FIX: Get current socket data FIRST (not just from stream)**
+    // Get current socket data FIRST (not just from stream)
     // This ensures we show LTP immediately on load, not just after stream emits
     final currentSocketData = wsProvider.socketDatas[headerData.token];
 

@@ -364,16 +364,36 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
 
     _isStock = widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE";
-    if(_isStock && _stockExchangesList.isNotEmpty){
-      // Filter the exchange list to find the matching exchange
-      final matchingExchange = _stockExchangesList.firstWhere(
-        (exchange) => exchange.exch == widget.scripInfo.exch,
-        orElse: () => _stockExchangesList[0],
-      );
-      stockExchangeSelected = matchingExchange;
-      selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
-      selectedStockSubscribe.token=stockExchangeSelected.token??"";
-      selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+    if(_isStock){
+      // Check if equls list matches the current symbol (by checking if any token matches)
+      final bool equlsMatchesCurrentSymbol = _stockExchangesList.isNotEmpty &&
+          _stockExchangesList.any((eq) => eq.token == widget.scripInfo.token);
+
+      if (equlsMatchesCurrentSymbol) {
+        // Use equls list for exchange switching (NSE/BSE toggle)
+        final matchingExchange = _stockExchangesList.firstWhere(
+          (exchange) => exchange.exch == widget.scripInfo.exch,
+          orElse: () => _stockExchangesList[0],
+        );
+        stockExchangeSelected = matchingExchange;
+      } else {
+        // equls has stale data - create a temporary entry from widget data
+        stockExchangeSelected = Equls(
+          exch: widget.scripInfo.exch,
+          token: widget.scripInfo.token,
+          tsym: widget.orderArg.tSym,
+        );
+        // Clear stale list to avoid showing wrong exchange options
+        _stockExchangesList = [];
+      }
+
+      // Always use widget data for selectedStockSubscribe to ensure correct values
+      selectedStockSubscribe.exchange = widget.scripInfo.exch ?? "";
+      selectedStockSubscribe.token = widget.scripInfo.token ?? "";
+      selectedStockSubscribe.tSym = widget.orderArg.tSym;
+      selectedStockSubscribe.ltp = widget.orderArg.ltp ?? "";
+      selectedStockSubscribe.perChange = widget.orderArg.perChange ?? "";
+
       // Subscribe to websocket for initial stock exchange
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _subscribeSelectedStock(context);
@@ -1131,6 +1151,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 selectedStockSubscribe.exchange = stockExchangeSelected.exch ?? "";
                                                                 selectedStockSubscribe.token = stockExchangeSelected.token ?? "";
                                                                 selectedStockSubscribe.tSym = stockExchangeSelected.tsym ?? "";
+                                                                // Reset LTP and perChange to allow fresh websocket data
+                                                                selectedStockSubscribe.ltp = "";
+                                                                selectedStockSubscribe.perChange = "";
                                                                 widget.scripInfo.exch = stockExchangeSelected.exch ?? "";
                                                                 widget.scripInfo.token = stockExchangeSelected.token ?? "";
                                                                 widget.scripInfo.tsym = stockExchangeSelected.tsym ?? "";
