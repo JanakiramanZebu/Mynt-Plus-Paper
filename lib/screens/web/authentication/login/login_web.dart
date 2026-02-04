@@ -505,7 +505,6 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     return Consumer(builder: ((context, WidgetRef ref, _) {
       final auth = ref.watch(authProvider);
       final forpass = ref.watch(changePasswordProvider);
-      final theme = ref.watch(themeProvider);
       final userProfile = ref.watch(userProfileProvider);
 
       final webAuth = ref.watch(webAuthProvider);
@@ -516,8 +515,8 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
       // 3. Auto-login session check (webAuth.loading) - but NOT during manual login (_isProcessing)
       if (_isInitializing || auth.initLoad || (webAuth.loading && !_isProcessing)) {
         return Scaffold(
-          backgroundColor:
-              theme.isDarkMode ? MyntColors.searchBgDark : MyntColors.searchBg,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
           body: Center(child: MyntLoader.branded()),
         );
       }
@@ -527,10 +526,17 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          backgroundColor:
-              theme.isDarkMode ? MyntColors.searchBgDark : Colors.white,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           body: Center(
             child: Container(
+              decoration: BoxDecoration(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
+                // borderRadius: BorderRadius.circular(12),
+              ),
               height: MediaQuery.of(context).size.height - 40,
               margin: const EdgeInsets.symmetric(vertical: 20),
               width: getResponsiveWidth(context),
@@ -544,14 +550,14 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 20),
                       decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? MyntColors.searchBgDark
-                            : Colors.white,
+                     color: resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
                         // borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                            color: theme.isDarkMode
-                                ? MyntColors.dividerDark
-                                : Colors.grey.shade300,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.dividerDark,
+                                light: Colors.grey.shade300),
                             width: 0.3),
                         // boxShadow: [
                         //   BoxShadow(
@@ -602,8 +608,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               context,
                               size: MediaQuery.of(context).size.width < 600 ? 18 : 22,
                               weight: FontWeight.w900,
-                              color: MyntColors.textPrimary,
-                              darkColor: MyntColors.textPrimaryDark,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
                             ),
                           ),
                           const SizedBox(height: 32),
@@ -626,7 +633,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     Text(
                                       "Scan QR code from profile tab top appbar of MYNT to login.",
                                       textAlign: TextAlign.center,
-                                      style: MyntWebTextStyles.body(context, color: MyntColors.textSecondary),
+                                      style: MyntWebTextStyles.body(context, color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary)),
                                     ),
                                     const SizedBox(height: 16),
                                     Row(
@@ -826,14 +835,18 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           "Change",
                                           style: MyntWebTextStyles.body(
                                               context,
-                                              fontWeight: MyntFonts.bold,
-                                              color: MyntColors.primary
+                                              fontWeight: MyntFonts.semiBold,
+                                             color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                           ),
                                         ),
                                       )
                                     ],
                                   ),
-                                  const Divider(height: 24, thickness: 1, color: MyntColors.divider),
+                                   Divider(height: 24, thickness: 1, color: resolveThemeColor(context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider)),
                                 ],
                             ),
                             
@@ -857,8 +870,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                    style: MyntWebTextStyles.title(
                                      context,
                                      fontWeight: MyntFonts.medium,
-                                     color: MyntColors.textPrimary,
-                                     darkColor: MyntColors.textPrimaryDark,
+                                     color: resolveThemeColor(context,
+                                         dark: MyntColors.textPrimaryDark,
+                                         light: MyntColors.textPrimary),
                                    ),
                                    decoration: InputDecoration(
                                      filled: false,
@@ -869,16 +883,23 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      labelStyle: MyntWebTextStyles.body(
                                        context,
                                        fontWeight: MyntFonts.regular,
-                                       color: MyntColors.textSecondary,
-                                       darkColor: MyntColors.textSecondaryDark,
+                                       color: resolveThemeColor(context,
+                                           dark: MyntColors.textSecondaryDark,
+                                           light: MyntColors.textSecondary),
                                      ),
-                                     enabledBorder: const UnderlineInputBorder(
+                                     enabledBorder:  UnderlineInputBorder(
                                        borderSide: BorderSide(
-                                           color: MyntColors.divider, width: 1),
+                                           color: resolveThemeColor(context,
+                                               dark: MyntColors.dividerDark,
+                                               light: MyntColors.divider),
+                                           width: 1),
                                      ),
-                                     focusedBorder: const UnderlineInputBorder(
+                                     focusedBorder:  UnderlineInputBorder(
                                        borderSide: BorderSide(
-                                           color: MyntColors.primary, width: 1),
+                                           color: resolveThemeColor(context,
+                                               dark: MyntColors.primaryDark,
+                                               light: MyntColors.primary),
+                                           width: 1),
                                      ),
                                      counterText: "",
                                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
@@ -891,8 +912,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                              crossAxisAlignment: CrossAxisAlignment.end,
                                              mainAxisSize: MainAxisSize.min,
                                              children: [
-                                                Text("Resend", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary)),
-                                                Text("in $_start", style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary, fontWeight: FontWeight.bold)),
+                                                Text("Resend", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.textSecondaryDark,
+                                                    light: MyntColors.textSecondary))),
+                                                Text("in $_start", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.textSecondaryDark,
+                                                    light: MyntColors.textSecondary), fontWeight: FontWeight.bold)),
                                              ],
                                            )
                                          : (!webAuth.isTotp && _start == 0)
@@ -901,7 +926,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                     if (!mounted) return;
                                                     _handleWebResendOtp(); // Use new web resend OTP
                                                 },
-                                                child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: MyntColors.primary, fontWeight: FontWeight.bold)),
+                                                child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
+                                                    dark: MyntColors.secondary,
+                                                    light: MyntColors.secondary), fontWeight: FontWeight.bold)),
                                               )
                                             // Generate TOTP button when in TOTP mode
                                             : webAuth.isTotp
@@ -910,7 +937,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                         if (!mounted) return;
                                                         _handleGenerateTotpFlow(); // Start Generate TOTP flow
                                                     },
-                                                    child: Text("Generate TOTP", style: MyntWebTextStyles.caption(context, color: MyntColors.primary, fontWeight: FontWeight.bold)),
+                                                    child: Text("Generate TOTP", style: MyntWebTextStyles.caption(context,  color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary), fontWeight: MyntFonts.semiBold)),
                                                   )
                                                 : null
                                    ),
@@ -947,8 +976,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     webAuth.otpError!,
                                     style: MyntWebTextStyles.para(
                                       context,
-                                      color: MyntColors.loss,
-                                      darkColor: MyntColors.lossDark,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.lossDark,
+                                          light: MyntColors.loss),
                                     ),
                                   );
                                 }
@@ -966,7 +996,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      ? null
                                      : () => _handleWebOtpVerify(auth.otpCtrl.text), // Use new web OTP verify
                                  style: ElevatedButton.styleFrom(
-                                   backgroundColor: MyntColors.primary,
+                                   backgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.primaryDark,
+                                       light: MyntColors.primary),
                                    disabledBackgroundColor:
                                        MyntColors.primary.withOpacity(0.6),
                                    shape: RoundedRectangleBorder(
@@ -1008,7 +1040,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           style: MyntWebTextStyles.body(
                                             context,
                                             fontWeight: MyntFonts.bold,
-                                            color: MyntColors.primary,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.secondary,
+                                                light: MyntColors.secondary),
                                           ),
                                         );
                                       },
@@ -1028,11 +1062,15 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           style: MyntWebTextStyles.body(
                                             context,
                                             fontWeight: MyntFonts.bold,
-                                            color: MyntColors.primary,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.secondary,
+                                                light: MyntColors.secondary),
                                           ),
                                         ),
                                         const SizedBox(width: 4),
-                                        const Icon(Icons.qr_code_scanner, size: 20, color: MyntColors.primary),
+                                        Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary)),
                                       ],
                                     ),
                                 ),
@@ -1056,8 +1094,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                style: MyntWebTextStyles.title(
                                  context,
                                  fontWeight: MyntFonts.medium,
-                                 color: MyntColors.textPrimary,
-                                 darkColor: MyntColors.textPrimaryDark,
+                                 color: resolveThemeColor(context,
+                                     dark: MyntColors.textPrimaryDark,
+                                     light: MyntColors.textPrimary),
                                ),
                                decoration: InputDecoration(
                                  filled: false,
@@ -1066,16 +1105,19 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                  labelStyle: MyntWebTextStyles.head(
                                    context,
                                    fontWeight: MyntFonts.regular,
-                                   color: MyntColors.textSecondary,
-                                   darkColor: MyntColors.textSecondaryDark,
+                                   color: resolveThemeColor(context,
+                                       dark: MyntColors.textSecondaryDark,
+                                       light: MyntColors.textSecondary),
                                  ),
                                  enabledBorder: const UnderlineInputBorder(
                                    borderSide: BorderSide(
                                        color: MyntColors.divider, width: 1),
                                  ),
-                                 focusedBorder: const UnderlineInputBorder(
+                                 focusedBorder:  UnderlineInputBorder(
                                    borderSide: BorderSide(
-                                       color: MyntColors.primary, width: 1),
+                                       color: resolveThemeColor(context,
+                                           dark: MyntColors.primaryDark,
+                                           light: MyntColors.primary), width: 1),
                                  ),
                                  counterText: "",
                                  contentPadding:
@@ -1096,8 +1138,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                  "${forpass.forgetpassError}",
                                  style: MyntWebTextStyles.para(
                                    context,
-                                   color: MyntColors.loss,
-                                   darkColor: MyntColors.lossDark,
+                                   color: resolveThemeColor(context,
+                                       dark: MyntColors.lossDark,
+                                       light: MyntColors.loss),
                                  ),
                                ),
                              
@@ -1111,9 +1154,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      ? null
                                      : () => forpass.submitForgetPassword(context),
                                  style: ElevatedButton.styleFrom(
-                                   backgroundColor: MyntColors.primary,
+                                   backgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.primaryDark,
+                                       light: MyntColors.primary),
                                    disabledBackgroundColor:
-                                       MyntColors.primary.withOpacity(0.6),
+                                       resolveThemeColor(context,
+                                           dark: MyntColors.primaryDark.withOpacity( 0.6),
+                                           light: MyntColors.primary.withOpacity(0.6)),
                                    shape: RoundedRectangleBorder(
                                        borderRadius: BorderRadius.circular(6)),
                                    elevation: 0,
@@ -1148,7 +1195,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     style: MyntWebTextStyles.body(
                                       context,
                                       fontWeight: MyntFonts.bold,
-                                      color: MyntColors.primary,
+                                      color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                     ),
                                  ),
                                ),
@@ -1171,9 +1220,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                         height: 100,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: MyntColors.listItemBg,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.backgroundColorDark,
+                                              light: MyntColors.backgroundColor),
                                           border: Border.all(
-                                            color: MyntColors.primary,
+                                            color: resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary),
                                             width: 1.5,
                                           ),
                                         ),
@@ -1186,10 +1239,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                     .take(2)
                                                     .join('')
                                                 : '',
-                                            style: MyntWebTextStyles.head(
+                                            style: MyntWebTextStyles.hero(
                                               context,
                                               fontWeight: MyntFonts.bold,
-                                              color: MyntColors.primary,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.primaryDark,
+                                                  light: MyntColors.primary),
                                             ),
                                           ),
                                         ),
@@ -1200,8 +1255,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                         style: MyntWebTextStyles.head(
                                           context,
                                           fontWeight: MyntFonts.bold,
-                                          color: MyntColors.textPrimary,
-                                          darkColor: MyntColors.textPrimaryDark,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary),
                                         ),
                                       ),
                                       const SizedBox(height: 6),
@@ -1210,8 +1266,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                         style: MyntWebTextStyles.title(
                                           context,
                                           fontWeight: MyntFonts.semiBold,
-                                          color: MyntColors.textPrimary,
-                                          darkColor: MyntColors.textPrimaryDark,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary),
                                         ),
                                       ),
                                     ],
@@ -1236,8 +1293,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               style: MyntWebTextStyles.title(
                                 context,
                                 fontWeight: MyntFonts.medium,
-                                color: MyntColors.textPrimary,
-                                darkColor: MyntColors.textPrimaryDark,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
                               ),
                               decoration: InputDecoration(
                                 filled: false,
@@ -1246,16 +1304,23 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 labelStyle: MyntWebTextStyles.body(
                                   context,
                                   fontWeight: MyntFonts.regular,
-                                  color: MyntColors.textSecondary,
-                                  darkColor: MyntColors.textSecondaryDark,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
                                 ),
-                                enabledBorder: const UnderlineInputBorder(
+                                enabledBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: MyntColors.divider, width: 1),
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
                                 ),
-                                focusedBorder: const UnderlineInputBorder(
+                                focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: MyntColors.primary, width: 1),
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
                                 ),
                                 counterText: "",
                                 contentPadding:
@@ -1279,8 +1344,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 "${auth.loginMethError}",
                                 style: MyntWebTextStyles.para(
                                   context,
-                                  color: MyntColors.loss,
-                                  darkColor: MyntColors.lossDark,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
                                 ),
                               ),
                           ],
@@ -1299,8 +1365,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               style: MyntWebTextStyles.title(
                                 context,
                                 fontWeight: MyntFonts.medium,
-                                color: MyntColors.textPrimary,
-                                darkColor: MyntColors.textPrimaryDark,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
                               ),
                               decoration: InputDecoration(
                                 labelText: "Password",
@@ -1308,8 +1375,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 labelStyle: MyntWebTextStyles.body(
                                   context,
                                   fontWeight: MyntFonts.regular,
-                                  color: MyntColors.textSecondary,
-                                  darkColor: MyntColors.textSecondaryDark,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
                                 ),
                                 suffixIcon: InkWell(
                                   onTap: auth.hiddenPass,
@@ -1319,20 +1387,26 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                       auth.hidePass
                                           ? "assets/icon/eye-off.svg"
                                           : "assets/icon/eye.svg",
-                                      color: theme.isDarkMode
-                                          ? MyntColors.textSecondaryDark
-                                          : MyntColors.textSecondary,
+                                      color: resolveThemeColor(context,
+                                          dark:  MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
                                       width: 20,
                                     ),
                                   ),
                                 ),
-                                enabledBorder: const UnderlineInputBorder(
+                                enabledBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: MyntColors.divider, width: 1),
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
                                 ),
-                                focusedBorder: const UnderlineInputBorder(
+                                focusedBorder: UnderlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: MyntColors.primary, width: 1),
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
                                 ),
                                 contentPadding:
                                     const EdgeInsets.symmetric(vertical: 8),
@@ -1360,8 +1434,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 "${auth.passError}",
                                 style: MyntWebTextStyles.para(
                                   context,
-                                  color: MyntColors.loss,
-                                  darkColor: MyntColors.lossDark,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
                                 ),
                               ),
                             const SizedBox(height: 32),
@@ -1375,9 +1450,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     ? null
                                     : _handleWebLogin, // Use new web login flow
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: MyntColors.primary,
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary),
                                   disabledBackgroundColor:
-                                      MyntColors.primary.withOpacity(0.6),
+                                      resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark.withOpacity(0.6),
+                                          light: MyntColors.primary.withOpacity(0.6)),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(6)),
                                   elevation: 0,
@@ -1419,7 +1498,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                       style: MyntWebTextStyles.para(
                                         context,
                                         fontWeight: MyntFonts.bold,
-                                        color: MyntColors.primary,
+                                       color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                       ),
                                     ),
                                   )
@@ -1437,7 +1518,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                       style: MyntWebTextStyles.para(
                                         context,
                                         fontWeight: MyntFonts.bold,
-                                        color: MyntColors.primary,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                       ),
                                     ),
                                   ),
@@ -1456,11 +1539,15 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                           style: MyntWebTextStyles.para(
                                             context,
                                             fontWeight: MyntFonts.bold,
-                                            color: MyntColors.primary,
+                                            color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                           ),
                                         ),
                                         const SizedBox(width: 4),
-                                        const Icon(Icons.qr_code_scanner, size: 20, color: MyntColors.primary),
+                                        Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary)),
                                       ],
                                     ),
                                 ),
@@ -1485,7 +1572,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      text: "Don't have an account yet? ",
                                      style: MyntWebTextStyles.body(
                                        context,
-                                       color: Colors.black,
+                                       color: resolveThemeColor(context,
+                                           dark: MyntColors.textPrimaryDark,
+                                           light: MyntColors.textPrimary),
                                      ),
                                      children: [
                                        TextSpan(
@@ -1493,7 +1582,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                            style: MyntWebTextStyles.body(
                                              context,
                                              fontWeight: MyntFonts.bold,
-                                             color: MyntColors.primary,
+                                          color: resolveThemeColor(context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary),
                                            ))
                                      ],
                                    ),
@@ -1518,7 +1609,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                 style: MyntWebTextStyles.body(
                                   context,
                                   fontWeight: MyntFonts.bold,
-                                  color: Colors.black,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
                                 ),
                                 textAlign: TextAlign.center,
                               ),

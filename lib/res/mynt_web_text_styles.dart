@@ -134,11 +134,11 @@ class _Base {
 class MyntWebTextStyles {
   // ---------------- HEADERS ----------------
   static TextStyle hero(BuildContext c,
-          {Color? color, Color? darkColor, Color? lightColor}) =>
+          {Color? color, Color? darkColor, Color? lightColor, FontWeight? fontWeight}) =>
       _text(
         c,
         size: MyntFonts.hero,
-        weight: MyntFonts.bold,
+        weight: fontWeight ?? MyntFonts.bold,
         color: color,
         darkColor: darkColor,
         lightColor: lightColor,
