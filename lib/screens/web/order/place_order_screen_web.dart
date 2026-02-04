@@ -641,7 +641,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       SafeParse.toInt(orderRawValue['dscqty']) > 0)
               ? true
               : false;
-      _afterMarketOrder = orderRawValue['amo'] == "Yes" ? true : false;
+
+      if (orderRawValue['amo'] == "Yes") {
+          isAdvancedOptionClicked = true;
+          _afterMarketOrder = true;
+        }else{
+           _afterMarketOrder = false;
+        }
       // Use orderRawValue price if available and not "0", otherwise fallback to LTP
       final rawPrice = orderRawValue['prc'];
       String fallbackPrice;
@@ -2063,9 +2069,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ? "Target Trigger Price"
                                                     : "Trigger Price",
                                                 theme),
-                                                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                                                // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                //                   dark: MyntColors.textPrimaryDark,
+                                                //                   light: MyntColors.textPrimary))),
                                           ]),
                                           const SizedBox(height: 10),
                                           SizedBox(
@@ -2809,9 +2815,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ? "Stoploss Trigger Price"
                                                       : "Trigger Price",
                                                   theme),
-                                                  Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                                                  // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                  //                 dark: MyntColors.textPrimaryDark,
+                                                  //                 light: MyntColors.textPrimary))),
                                             ]),
                                             const SizedBox(height: 10),
                                             SizedBox(
@@ -6961,9 +6967,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               const SizedBox(height: 2),
               Row(children: [
                 headerTitleText("Trigger", theme),
-                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                //                                                   dark: MyntColors.textPrimaryDark,
+                //                                                   light: MyntColors.textPrimary))),
               ],),
               const SizedBox(height: 10),
               SizedBox(

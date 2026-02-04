@@ -381,15 +381,15 @@ class AppRoutes {
           ),
           beginOffset: const Offset(0.0, 1.0),
         );
-      case Routes.placeOrderScreenWeb:
-        return _createRoute(
-          pageBuilder: (_, __, ___) => PlaceOrderScreenWeb(
-            orderArg: args['orderArg'],
-            scripInfo: args['scripInfo'],
-            isBasket: args["isBskt"],
-          ),
-          beginOffset: const Offset(0.0, 1.0),
-        );
+      // case Routes.placeOrderScreenWeb:
+      //   return _createRoute(
+      //     pageBuilder: (_, __, ___) => PlaceOrderScreenWeb(
+      //       orderArg: args['orderArg'],
+      //       scripInfo: args['scripInfo'],
+      //       isBasket: args["isBskt"],
+      //     ),
+      //     beginOffset: const Offset(0.0, 1.0),
+      //   );
 
       case Routes.orderConfirmation:
         return _createRoute(
