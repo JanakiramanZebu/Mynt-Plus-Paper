@@ -163,6 +163,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
     final portfolioData = ref.watch(portfolioProvider);
 
     // DrawerOverlay is now at app level in main.dart
+    // Using same scroll pattern as Positions page - no outer scroll, Expanded for table
     return SizedBox.expand(
       child: Container(
         width: double.infinity,
@@ -172,33 +173,21 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             light: MyntColors.backgroundColor),
         child: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Container(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Summary Cards Section
-                    _buildSummaryCards(
-                        context, theme, portfolioData, _selectedTabIndex),
-                    const SizedBox(height: 20),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Summary Cards Section
+                _buildSummaryCards(
+                    context, theme, portfolioData, _selectedTabIndex),
+                const SizedBox(height: 20),
 
-                    // Main Content Area
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.7,
-                      child: _buildMainContent(theme, portfolioData),
-                    ),
-                  ],
+                // Main Content Area - use Expanded to fill remaining space (like Positions page)
+                Expanded(
+                  child: _buildMainContent(theme, portfolioData),
                 ),
-              ),
+              ],
             ),
           ),
         ),
