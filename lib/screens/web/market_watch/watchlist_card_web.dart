@@ -75,9 +75,13 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final marketWatch = ref.read(marketWatchProvider);
-    // PERFORMANCE FIX: Use .select() to watch only getQuotes, not entire provider
-    final depthData =
-        ref.watch(marketWatchProvider.select((p) => p.getQuotes))!;
+    // CRITICAL FIX: Use ref.read instead of ref.watch for getQuotes
+    // Using ref.watch here caused ALL watchlist cards to rebuild when ANY symbol was clicked
+    // because getQuotes is updated for the clicked symbol. This caused symbol #2 to briefly
+    // show 0.00 during the rebuild cascade before socket data was re-read.
+    // The LTP/change display uses websocketProvider.socketDatas[token] directly, not getQuotes.
+    // getQuotes is only needed for action callbacks (Buy/Sell), so ref.read is appropriate.
+    final depthData = ref.read(marketWatchProvider).getQuotes!;
 
     // final expandedToken = ref.watch(expandedWatchlistItemProvider);
 

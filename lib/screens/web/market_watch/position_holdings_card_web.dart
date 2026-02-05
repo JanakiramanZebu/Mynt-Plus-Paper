@@ -302,9 +302,14 @@ class _PositionHoldingsCardWebState
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: resolveThemeColor(context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor),
+        // Darker/muted background for closed positions (QTY 0)
+        color: isZeroQty
+            ? resolveThemeColor(context,
+                dark: MyntColors.listItemBgDark.withValues(alpha: 0.6),
+                light: MyntColors.listItemBg.withValues(alpha: 0.6))
+            : resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: resolveThemeColor(context,
@@ -315,51 +320,56 @@ class _PositionHoldingsCardWebState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row 1: Symbol name | Exit icon button
+          // Row 1: Symbol name | Exit icon button (only for open positions)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Symbol name
+              // Symbol name - muted for closed positions
               Expanded(
                 child: Text(
                   symbolName,
                   style: MyntWebTextStyles.body(
                     context,
                     fontWeight: MyntFonts.semiBold,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
+                    color: isZeroQty
+                        ? resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              // Exit icon button - always red with tooltip
-              Tooltip(
-                message: "Exit",
-                child: InkWell(
-                  onTap: () => _exitPosition(position, ltp),
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: resolveThemeColor(context,
-                              dark: MyntColors.lossDark,
-                              light: MyntColors.loss)
-                          .withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Icon(
-                      Icons.output,
-                      size: 18,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.lossDark,
-                          light: MyntColors.loss),
+              // Exit icon button - only show for open positions (QTY != 0)
+              if (!isZeroQty)
+                Tooltip(
+                  message: "Exit",
+                  child: InkWell(
+                    onTap: () => _exitPosition(position, ltp),
+                    borderRadius: BorderRadius.circular(4),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Icon(
+                        Icons.output,
+                        size: 18,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss),
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 4),

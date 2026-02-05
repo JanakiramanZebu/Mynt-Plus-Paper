@@ -2609,7 +2609,51 @@ class _CustomizableSplitHomeScreenState
       final websocket = ref.read(websocketProvider);
       int removedCount = 0;
 
+      // CRITICAL FIX: Build a set of protected tokens that should NOT be removed
+      // These are tokens visible in other screens (watchlist, depth panel, etc.)
+      final protectedTokens = <String>{};
+
+      // Protect watchlist tokens - always visible in left panel
+      final marketWatch = ref.read(marketWatchProvider);
+      for (var scrip in marketWatch.scrips) {
+        final token = scrip['token']?.toString();
+        if (token != null && token.isNotEmpty) {
+          protectedTokens.add(token);
+        }
+      }
+
+      // Protect current depth symbol token
+      if (_currentDepthArgs != null) {
+        protectedTokens.add(_currentDepthArgs!.token);
+      }
+
+      // Protect holdings tokens if holdings panel is active elsewhere
+      for (var panel in _panels) {
+        if (panel.screenType == ScreenType.holdings) {
+          final holdingsModel = ref.read(portfolioProvider).holdingsModel;
+          if (holdingsModel != null) {
+            for (var holding in holdingsModel) {
+              for (var exchTsym in holding.exchTsym ?? []) {
+                if (exchTsym.token != null) {
+                  protectedTokens.add(exchTsym.token!);
+                }
+              }
+            }
+          }
+        }
+        // Protect positions tokens if positions panel is active elsewhere
+        if (panel.screenType == ScreenType.positions) {
+          final positionsList = ref.read(portfolioProvider).allPostionList;
+          for (var position in positionsList) {
+            if (position.token != null) {
+              protectedTokens.add(position.token!);
+            }
+          }
+        }
+      }
+
       // Get tokens/data specific to this screen type and clear them
+      // ONLY if they are not protected by other active screens
       switch (screenType) {
         case ScreenType.holdings:
           final holdingsModel = ref.read(portfolioProvider).holdingsModel;
@@ -2618,8 +2662,9 @@ class _CustomizableSplitHomeScreenState
               // Get tokens from ExchTsym list within each holding
               for (var exchTsym in holding.exchTsym ?? []) {
                 if (exchTsym.token != null && exchTsym.token!.isNotEmpty) {
-                  // Remove the token data from socket cache
-                  if (websocket.socketDatas.containsKey(exchTsym.token)) {
+                  // Only remove if NOT protected by watchlist or other screens
+                  if (!protectedTokens.contains(exchTsym.token) &&
+                      websocket.socketDatas.containsKey(exchTsym.token)) {
                     websocket.socketDatas.remove(exchTsym.token);
                     removedCount++;
                   }
@@ -2633,8 +2678,9 @@ class _CustomizableSplitHomeScreenState
           final positionsList = ref.read(portfolioProvider).allPostionList;
           for (var position in positionsList) {
             if (position.token != null && position.token!.isNotEmpty) {
-              // Remove the token data from socket cache
-              if (websocket.socketDatas.containsKey(position.token)) {
+              // Only remove if NOT protected by watchlist or other screens
+              if (!protectedTokens.contains(position.token) &&
+                  websocket.socketDatas.containsKey(position.token)) {
                 websocket.socketDatas.remove(position.token);
                 removedCount++;
               }
@@ -2650,8 +2696,11 @@ class _CustomizableSplitHomeScreenState
       }
 
       if (removedCount > 0) {
-      } else {}
-    } catch (e) {}
+        print('🗑️ [Cache] Cleared $removedCount tokens from ${screenType.name} cache (protected ${protectedTokens.length} tokens)');
+      }
+    } catch (e) {
+      print('⚠️ [Cache] Error clearing screen cache: $e');
+    }
   }
 
   // Show ScripDepthInfo in a panel
