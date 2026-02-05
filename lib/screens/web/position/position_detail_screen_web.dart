@@ -85,6 +85,8 @@ class _PositionDetailScreenWebState
     copy.qty = original.qty;
     copy.prd = original.prd;
     copy.ls = original.ls;
+    copy.daybuyamt = original.daybuyamt;
+    copy.daysellamt = original.daysellamt;
     return copy;
   }
 
@@ -756,7 +758,7 @@ class _PositionDetailScreenWebState
         _rowOfInfoData(
           "Buy / Sell Value",
           Text(
-            "929.90 / 0.00", // Placeholder matching screenshot style
+            "${_positionData.daybuyamt ?? '0.00'} / ${_positionData.daysellamt ?? '0.00'}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
