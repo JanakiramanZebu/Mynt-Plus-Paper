@@ -963,6 +963,14 @@ class WebSocketProvider extends ChangeNotifier {
     // Track if we've made meaningful updates that require UI refresh
     bool hasUpdates = false;
 
+    // CRITICAL FIX: If this is a "dk" (depth key) message, ensure depth data is properly initialized
+    // This handles the case where a symbol was first subscribed via touchline ("tk") and later
+    // gets a depth subscription ("dk"). The depth-specific fields need to be initialized.
+    if (res['t']?.toString().toLowerCase() == "dk") {
+      _initializeDepthData(data, res);
+      hasUpdates = true;
+    }
+
     // Update only fields that are present in the new data and have changed
     for (final field in res.keys) {
       final value = res[field];
@@ -996,13 +1004,23 @@ class WebSocketProvider extends ChangeNotifier {
 
       // Only calculate if both values are valid
       if (lp > 0.0 && c > 0.0) {
-        // Calculate the percentage change
+        // Calculate the change (price difference)
         final newChng = (lp - c).toStringAsFixed(2);
 
         // Only update if the change is actually different
         if (data["chng"] != newChng) {
           data["chng"] = newChng;
-          data["pc"] = res["pc"];
+
+          // CRITICAL FIX: Only update pc from response if it's present
+          // Otherwise calculate it from change and close price
+          // This prevents pc from being set to null when df message doesn't include it
+          if (res["pc"] != null) {
+            data["pc"] = res["pc"];
+          } else {
+            // Calculate percentage change: (change / close) * 100
+            final newPc = ((lp - c) / c * 100).toStringAsFixed(2);
+            data["pc"] = newPc;
+          }
           hasUpdates = true;
         }
       }

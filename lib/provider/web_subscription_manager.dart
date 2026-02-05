@@ -975,6 +975,32 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         symbolsStillNeeded.addAll(indexSymbols);
         print('   🔒 Protected ${indexSymbols.length} index symbols');
       }
+
+      // CRITICAL FIX: Protect holdings symbols - they need real-time updates
+      final portfolio = ref.read(portfolioProvider);
+      final holdings = portfolio.holdingsModel ?? [];
+      for (var holding in holdings) {
+        final exchTsymList = holding.exchTsym ?? [];
+        for (var exchTsym in exchTsymList) {
+          if (exchTsym.exch != null && exchTsym.token != null) {
+            symbolsStillNeeded.add('${exchTsym.exch}|${exchTsym.token}');
+          }
+        }
+      }
+      if (holdings.isNotEmpty) {
+        print('   🔒 Protected ${holdings.length} holdings symbols');
+      }
+
+      // CRITICAL FIX: Protect positions symbols - they need real-time updates
+      final positions = portfolio.postionBookModel ?? [];
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          symbolsStillNeeded.add('${position.exch}|${position.token}');
+        }
+      }
+      if (positions.isNotEmpty) {
+        print('   🔒 Protected ${positions.length} positions symbols');
+      }
     } catch (e) {
       print('   ⚠️ Error getting protected symbols: $e');
     }

@@ -275,17 +275,31 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     });
   }
 
-  // Preprocess depth data - only update fields that have non-null values
-  // This preserves existing values when incremental updates don't include certain fields
+  // Helper to check if a value is valid (non-null, non-empty, non-zero)
+  bool _isValidValue(dynamic value) {
+    if (value == null) return false;
+    final strVal = value.toString();
+    if (strVal.isEmpty || strVal == 'null') return false;
+    // For numeric values, check if it's effectively zero
+    final numVal = double.tryParse(strVal);
+    if (numVal != null && numVal <= 0) return false;
+    return true;
+  }
+
+  // Preprocess depth data - only update fields that have valid non-null, non-zero values
+  // This preserves existing values from API when socket data has default "0.00" values
   void _processDepthData(GetQuotes depthData, Map<String, dynamic> socketData) {
     if (socketData['ap'] != null) depthData.ap = "${socketData['ap']}";
+    // LTP should always update if present (even for low-priced stocks)
     if (socketData['lp'] != null) depthData.lp = "${socketData['lp']}";
-    if (socketData['pc'] != null) depthData.pc = "${socketData['pc']}";
-    if (socketData['o'] != null) depthData.o = "${socketData['o']}";
-    if (socketData['l'] != null) depthData.l = "${socketData['l']}";
-    if (socketData['c'] != null) depthData.c = "${socketData['c']}";
+    // CRITICAL FIX: For OHLC and change fields, only update if socket value is valid (> 0)
+    // This prevents default "0.00" values from overwriting valid API data
+    if (_isValidValue(socketData['pc'])) depthData.pc = "${socketData['pc']}";
+    if (_isValidValue(socketData['o'])) depthData.o = "${socketData['o']}";
+    if (_isValidValue(socketData['l'])) depthData.l = "${socketData['l']}";
+    if (_isValidValue(socketData['c'])) depthData.c = "${socketData['c']}";
     if (socketData['chng'] != null) depthData.chng = "${socketData['chng']}";
-    if (socketData['h'] != null) depthData.h = "${socketData['h']}";
+    if (_isValidValue(socketData['h'])) depthData.h = "${socketData['h']}";
     if (socketData['poi'] != null) depthData.poi = "${socketData['poi']}";
     if (socketData['v'] != null) depthData.v = "${socketData['v']}";
     if (socketData['toi'] != null) depthData.toi = "${socketData['toi']}";
@@ -316,10 +330,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
     // Totals and other fields
     if (socketData['tbq'] != null) depthData.tbq = "${socketData['tbq']}";
     if (socketData['tsq'] != null) depthData.tsq = "${socketData['tsq']}";
-    if (socketData['52h'] != null) depthData.wk52H = "${socketData['52h']}";
-    if (socketData['52l'] != null) depthData.wk52L = "${socketData['52l']}";
-    if (socketData['lc'] != null) depthData.lc = "${socketData['lc']}";
-    if (socketData['uc'] != null) depthData.uc = "${socketData['uc']}";
+    // Use valid value check for 52-week high/low and circuit limits to preserve API values
+    if (_isValidValue(socketData['52h'])) depthData.wk52H = "${socketData['52h']}";
+    if (_isValidValue(socketData['52l'])) depthData.wk52L = "${socketData['52l']}";
+    if (_isValidValue(socketData['lc'])) depthData.lc = "${socketData['lc']}";
+    if (_isValidValue(socketData['uc'])) depthData.uc = "${socketData['uc']}";
     if (socketData['ltq'] != null) depthData.ltq = "${socketData['ltq']}";
     if (socketData['ltt'] != null) depthData.ltt = "${socketData['ltt']}";
     if (socketData['ft'] != null) depthData.ft = "${socketData['ft']}";
