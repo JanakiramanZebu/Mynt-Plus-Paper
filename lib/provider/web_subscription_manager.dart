@@ -37,6 +37,10 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   // This persists across screen changes and is used to resend all subscriptions on reconnect
   final Set<String> _activeSubscriptions = <String>{};
 
+  // TICKER SUBSCRIPTIONS: Persistent subscriptions for ticker header (positions)
+  // These symbols are NEVER unsubscribed while user is logged in, ensuring ticker always updates
+  final Set<String> _tickerSubscriptions = <String>{};
+
   // Track which screens need which subscription types
   Map<ScreenType, SubscriptionType> _screenSubscriptionTypes = {};
   
@@ -66,6 +70,11 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
   Set<String> get activeSubscriptions => Set.from(_activeSubscriptions);
   int get subscriptionCount => _activeSubscriptions.length;
   bool get hasActiveSubscriptions => _activeSubscriptions.isNotEmpty;
+
+  // Ticker subscription getters
+  Set<String> get tickerSubscriptions => Set.from(_tickerSubscriptions);
+  int get tickerSubscriptionCount => _tickerSubscriptions.length;
+  bool get hasTickerSubscriptions => _tickerSubscriptions.isNotEmpty;
   
   void _init() {
     // Initialize subscription types for each screen
@@ -910,6 +919,116 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     return symbols;
   }
 
+  /// Subscribe to ticker symbols (positions) - these persist across screen changes
+  /// Call this after positions data is fetched to ensure ticker always shows live data
+  Future<void> subscribeTickerSymbols(BuildContext context) async {
+    if (!_isUserLoggedIn()) {
+      log('WebSubscriptionManager: Not subscribing ticker - user not logged in');
+      return;
+    }
+
+    // Check WebSocket readiness
+    if (!_isWebSocketReady()) {
+      print('⏳ [WebSubscriptionManager] WebSocket not ready for ticker subscriptions');
+      return;
+    }
+
+    print('═══════════════════════════════════════════════════════════');
+    print('📊 [WebSubscriptionManager] SUBSCRIBING TICKER SYMBOLS (Positions)');
+    print('═══════════════════════════════════════════════════════════');
+
+    try {
+      // Get position symbols for ticker
+      final portfolio = ref.read(portfolioProvider);
+      final positions = portfolio.postionBookModel ?? [];
+
+      final newTickerSymbols = <String>{};
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          newTickerSymbols.add('${position.exch}|${position.token}');
+        }
+      }
+
+      if (newTickerSymbols.isEmpty) {
+        print('ℹ️  [WebSubscriptionManager] No positions for ticker subscription');
+        print('═══════════════════════════════════════════════════════════\n');
+        return;
+      }
+
+      // Find symbols that need to be subscribed (not already in master list)
+      final symbolsToSubscribe = newTickerSymbols.where((symbol) =>
+        !_currentWebSocketSubscriptions.contains(symbol)
+      ).toSet();
+
+      // Update ticker subscriptions tracking
+      _tickerSubscriptions.clear();
+      _tickerSubscriptions.addAll(newTickerSymbols);
+
+      if (symbolsToSubscribe.isEmpty) {
+        print('ℹ️  [WebSubscriptionManager] All ticker symbols already subscribed');
+        print('   Ticker symbols: ${newTickerSymbols.length}');
+        print('═══════════════════════════════════════════════════════════\n');
+        return;
+      }
+
+      print('✅ [WebSubscriptionManager] Subscribing ${symbolsToSubscribe.length} ticker symbols');
+      print('   Total ticker symbols: ${newTickerSymbols.length}');
+      print('   New symbols: ${symbolsToSubscribe.length}');
+      if (symbolsToSubscribe.length <= 10) {
+        print('   Symbols: ${symbolsToSubscribe.join(", ")}');
+      } else {
+        print('   First 10 symbols: ${symbolsToSubscribe.take(10).join(", ")}...');
+      }
+
+      // Subscribe via websocket
+      final wsProvider = ref.read(websocketProvider);
+      final symbolString = symbolsToSubscribe.join('#');
+
+      wsProvider.connectTouchLine(
+        task: "d",
+        input: symbolString,
+        context: context,
+      );
+
+      // Track subscriptions
+      _currentWebSocketSubscriptions.addAll(symbolsToSubscribe);
+      _activeSubscriptions.addAll(symbolsToSubscribe);
+
+      print('✅ [WebSubscriptionManager] Ticker symbols subscribed successfully');
+      print('   Current total subscriptions: ${_currentWebSocketSubscriptions.length}');
+      print('   Master list total: ${_activeSubscriptions.length}');
+      print('═══════════════════════════════════════════════════════════\n');
+
+    } catch (e) {
+      print('❌ [WebSubscriptionManager] Error subscribing ticker symbols: $e');
+      log('WebSubscriptionManager: Error subscribing ticker symbols: $e');
+    }
+  }
+
+  /// Refresh ticker subscriptions when positions data changes
+  /// Call this after positions are fetched/refreshed
+  Future<void> refreshTickerSubscriptions(BuildContext context) async {
+    print('🔄 [WebSubscriptionManager] Refreshing ticker subscriptions...');
+    await subscribeTickerSymbols(context);
+  }
+
+  /// Get current ticker (position) symbols
+  Set<String> _getTickerSymbols() {
+    final symbols = <String>{};
+    try {
+      final portfolio = ref.read(portfolioProvider);
+      final positions = portfolio.postionBookModel ?? [];
+      for (var position in positions) {
+        if (position.exch != null && position.token != null) {
+          symbols.add('${position.exch}|${position.token}');
+        }
+      }
+    } catch (e) {
+      log('WebSubscriptionManager: Error getting ticker symbols: $e');
+    }
+    return symbols;
+  }
+
   /// Unsubscribe from a screen's data
   Future<void> _unsubscribeFromScreen(ScreenType screenType) async {
     final context = _getValidContext();
@@ -974,6 +1093,13 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       if (indexSymbols.isNotEmpty) {
         symbolsStillNeeded.addAll(indexSymbols);
         print('   🔒 Protected ${indexSymbols.length} index symbols');
+      }
+
+      // CRITICAL: Protect ticker symbols (positions) - these NEVER get unsubscribed
+      // Ticker header needs live position data regardless of which screen is active
+      if (_tickerSubscriptions.isNotEmpty) {
+        symbolsStillNeeded.addAll(_tickerSubscriptions);
+        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols (positions)');
       }
     } catch (e) {
       print('   ⚠️ Error getting protected symbols: $e');
@@ -1098,6 +1224,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
         if (position.exch != null && position.token != null) {
           protectedSymbols.add('${position.exch}|${position.token}');
         }
+      }
+
+      // 6. Protect ticker symbols (always active for ticker header)
+      if (_tickerSubscriptions.isNotEmpty) {
+        protectedSymbols.addAll(_tickerSubscriptions);
+        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols');
       }
     } catch (e) {
       print('   ⚠️ Error getting protected symbols: $e');
@@ -1271,6 +1403,12 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
           }
           print('   🔒 Protected ${optionChainModel.optValue!.length} option chain symbols');
         }
+      }
+
+      // 9. Protect ticker symbols (always active for ticker header)
+      if (_tickerSubscriptions.isNotEmpty) {
+        protectedSymbols.addAll(_tickerSubscriptions);
+        print('   🔒 Protected ${_tickerSubscriptions.length} ticker symbols');
       }
 
     } catch (e) {
@@ -1523,6 +1661,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _screenSubscriptions.clear();
     _currentWebSocketSubscriptions.clear();
     _activeSubscriptions.clear(); // Clear master list on logout
+    _tickerSubscriptions.clear(); // Clear ticker subscriptions on logout
     notifyListeners();
   }
 
@@ -1533,6 +1672,8 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
       'screenSubscriptions': _screenSubscriptions.map((k, v) => MapEntry(k.toString(), v.length.toString())),
       'currentWebSocketSubscriptions': _currentWebSocketSubscriptions.length,
       'activeSubscriptions (master list)': _activeSubscriptions.length,
+      'tickerSubscriptions': _tickerSubscriptions.length,
+      'tickerSymbols': _tickerSubscriptions.toList(),
       'websocketSymbols': _currentWebSocketSubscriptions.toList(),
       'masterListSymbols': _activeSubscriptions.toList(),
       'currentState': _currentState.toString(),
@@ -1567,6 +1708,7 @@ class WebSubscriptionManager extends ChangeNotifier with WidgetsBindingObserver 
     _screenSubscriptions.clear();
     _currentWebSocketSubscriptions.clear();
     _activeSubscriptions.clear(); // Clear master list
+    _tickerSubscriptions.clear(); // Clear ticker subscriptions
     _pendingSubscriptionQueue.clear();
     _pendingScreenChanges.clear();
     super.dispose();

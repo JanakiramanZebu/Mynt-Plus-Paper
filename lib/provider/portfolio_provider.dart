@@ -2036,6 +2036,178 @@ changeHoldingsTabIndex(int index) {
     }
   }
 
+  // Optimized for fast updates from websocket - Updates position values when price changes
+  // This enables ticker to show real-time P&L regardless of which screen is active
+  void updatePositionValues(String token, Map<String, dynamic> socketData) {
+    // Early return if no token or data
+    if (token.isEmpty || socketData.isEmpty || _postionBookModel == null) return;
+
+    // Find the position by token
+    var positionIndex = -1;
+    for (int i = 0; i < _postionBookModel!.length; i++) {
+      if (_postionBookModel![i].token == token) {
+        positionIndex = i;
+        break;
+      }
+    }
+
+    if (positionIndex == -1) return; // Not found, nothing to update
+
+    var position = _postionBookModel![positionIndex];
+    bool hasUpdates = false;
+
+    // Get new values from socket data
+    final newLp = socketData['lp']?.toString();
+
+    // Only update if valid lp value is received
+    if (newLp != null && newLp != "null" && newLp != "0" && newLp != "0.0" && newLp != "0.00") {
+      final oldLp = position.lp;
+      if (oldLp != newLp) {
+        position.lp = newLp;
+        hasUpdates = true;
+      }
+    }
+
+    // Only recalculate if we've actually updated any values
+    if (hasUpdates) {
+      _updatePositionDerivedValues(position);
+
+      // Also update in _allPostionList if it exists
+      for (int i = 0; i < _allPostionList.length; i++) {
+        if (_allPostionList[i].token == token) {
+          _allPostionList[i].lp = position.lp;
+          _allPostionList[i].mTm = position.mTm;
+          _allPostionList[i].profitNloss = position.profitNloss;
+          break;
+        }
+      }
+
+      // Always update group P&L for ticker header (regardless of selection mode)
+      // The ticker displays grouped positions and needs real-time P&L updates
+      if (position.symbol != null) {
+        _updateGroupPnlForSymbol(position.symbol!);
+      }
+
+      // Recalculate totals
+      _recalculateTotalPnl();
+    }
+  }
+
+  // Helper method to update derived values for a single position
+  void _updatePositionDerivedValues(PositionBookModel position) {
+    final lp = double.tryParse(position.lp ?? "0.00") ?? 0.0;
+    final prcFtr = double.tryParse(position.prcftr ?? "1.0") ?? 1.0;
+    final mult = double.tryParse(position.mult ?? "1.0") ?? 1.0;
+    final netQty = int.tryParse(position.netqty ?? "0") ?? 0;
+
+    final dayBuyQty = int.tryParse(position.daybuyqty ?? "0") ?? 0;
+    final daySellQty = int.tryParse(position.daysellqty ?? "0") ?? 0;
+    final cfBuyQty = int.tryParse(position.cfbuyqty ?? "0") ?? 0;
+    final cfSellQty = int.tryParse(position.cfsellqty ?? "0") ?? 0;
+
+    final dayBuyAmt = double.tryParse(position.daybuyamt ?? "0.00") ?? 0.0;
+    final daySellAmt = double.tryParse(position.daysellamt ?? "0.00") ?? 0.0;
+    final upldPrc = double.tryParse(position.upldprc ?? "0.00") ?? 0.0;
+    final netAvgPrc = double.tryParse(position.netavgprc ?? "0.00") ?? 0.0;
+    final netUpldPrc = double.tryParse(position.netupldprc ?? "0.00") ?? 0.0;
+    final rpnl = double.tryParse(position.rpnl ?? "0.00") ?? 0.0;
+
+    // Net Buy/Sell Qty
+    final netBuyQty = dayBuyQty + cfBuyQty;
+    final netSellQty = daySellQty + cfSellQty;
+
+    // Calculate ActualBuyAvgPrice (for BookedPNL calculation)
+    double actualBuyAvgPrice = 0.0;
+    if (netBuyQty != 0) {
+      actualBuyAvgPrice =
+          ((dayBuyAmt / mult) + (upldPrc * prcFtr * cfBuyQty)) / netBuyQty;
+    }
+
+    // Calculate ActualSellAvgPrice (for BookedPNL calculation)
+    double actualSellAvgPrice = 0.0;
+    if (netSellQty != 0) {
+      actualSellAvgPrice =
+          ((daySellAmt / mult) + (upldPrc * prcFtr * cfSellQty)) / netSellQty;
+    }
+
+    // Calculate ActualBookedPNL
+    double actualBookedPnl = 0.0;
+    if (netQty > 0) {
+      actualBookedPnl =
+          (actualSellAvgPrice - actualBuyAvgPrice) * netSellQty * mult;
+    } else {
+      actualBookedPnl =
+          (actualSellAvgPrice - actualBuyAvgPrice) * netBuyQty * mult;
+    }
+
+    // For MTM, avgprc = netavgprc
+    double actualUnrealizedMtm = netQty * prcFtr * mult * (lp - netAvgPrc);
+
+    // For PnL, avgprc = netupldprc if not 0 else netavgprc
+    double avgPrcForUnrealized = netUpldPrc != 0.0 ? netUpldPrc : netAvgPrc;
+    double actualUnrealizedPnl =
+        netQty * prcFtr * mult * (lp - avgPrcForUnrealized);
+
+    // MTM = rpnl + ActualUnrealizedMtoM
+    double mtm = rpnl + actualUnrealizedMtm;
+
+    // PnL = ActualBookedPNL + ActualUnrealizedPnL
+    double pnl = actualBookedPnl + actualUnrealizedPnl;
+
+    // Assign back to position
+    position.mTm = mtm.toStringAsFixed(2);
+    position.profitNloss = pnl.toStringAsFixed(2);
+  }
+
+  // Helper method to update group P&L for a specific symbol
+  void _updateGroupPnlForSymbol(String symbol) {
+    if (!_groupedBySymbol.containsKey(symbol)) return;
+
+    final groupData = _groupedBySymbol[symbol]['groupList'];
+    final isCustomGrp = _groupedBySymbol[symbol]['isCustomGrp'] ?? false;
+
+    if (groupData != null && groupData.isNotEmpty) {
+      // Sync lp values from _allPostionList to group data (group data is JSON copy, not reference)
+      for (var groupPosition in groupData) {
+        final groupToken = groupPosition['token']?.toString();
+        if (groupToken != null) {
+          // Find the corresponding position in _allPostionList to get updated lp
+          for (var pos in _allPostionList) {
+            if (pos.token == groupToken) {
+              groupPosition['lp'] = pos.lp;
+              break;
+            }
+          }
+        }
+      }
+      positionGroupCal(_isDay, groupData, symbol, isCustomGrp);
+    }
+  }
+
+  // Helper method to recalculate total P&L from all positions
+  void _recalculateTotalPnl() {
+    if (_posSelection == "Group by symbol") {
+      _updateTotalGroupValues();
+    } else {
+      // Recalculate from _allPostionList
+      double totalPnl = 0.0;
+      double totalMtm = 0.0;
+
+      for (var position in _allPostionList) {
+        totalPnl += double.tryParse(position.profitNloss ?? "0.00") ?? 0.0;
+        totalMtm += double.tryParse(position.mTm ?? "0.00") ?? 0.0;
+      }
+
+      _totPnL = totalPnl.toStringAsFixed(2);
+      _totMtm = totalMtm.toStringAsFixed(2);
+    }
+
+    // Use post-frame callback to avoid mouse tracker assertion errors
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      notifyListeners();
+    });
+  }
+
   // Cache expiry duration: 12 hours in milliseconds
   static const int _oplistCacheExpiryMs = 12 * 60 * 60 * 1000;
 
