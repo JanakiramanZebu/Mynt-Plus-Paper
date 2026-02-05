@@ -131,7 +131,7 @@ class ApiLinks {
 
   // String get mainBaseURL => 'https://copy.mynt.in/uat';
 
-  String get mainBaseURL => 'https://copy.mynt.in';
+  String get mainBaseURL => 'https://ws.mynt.in/login';
 
   String get mobileLogin => 'https://ws.mynt.in/login/MobileLogin';
 
@@ -144,7 +144,7 @@ class ApiLinks {
 
   String get forgetPassword => '$mainBaseURL/ForgetPassword';
 
-  String get myntchangePassword => '$mainBaseURL/ChangePass';
+  String get myntchangePassword => 'https://go.mynt.in/NorenWClientWeb/Changepwd';
 
   String get placeSipOrder => '$goMyntURL/PlaceSipOrder';
 

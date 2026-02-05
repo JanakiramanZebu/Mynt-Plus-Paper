@@ -143,16 +143,10 @@ class _PositionGroupSymbolState extends ConsumerState<PositionGroupSymbol> {
               // Safety check: Ensure list is not empty
               if (originalGroupList.isEmpty) continue;
 
-              // Create a snapshot of the list to avoid concurrent modification
-              final groupListSnapshot = List.from(originalGroupList);
-              final snapshotLength = groupListSnapshot.length;
-
-              // Update each position in the group with bounds checking
-              for (var i = 0; i < snapshotLength; i++) {
-                // Extra safety: ensure we don't exceed snapshot bounds
-                if (i >= groupListSnapshot.length) break;
-
-                final position = groupListSnapshot[i];
+              // Update each position in the group directly (like normal position screen)
+              // This ensures ALL positions get updated, even if multiple have same token
+              for (var i = 0; i < originalGroupList.length; i++) {
+                final position = originalGroupList[i];
                 if (position == null) continue;
 
                 final token = position['token'];
@@ -162,44 +156,31 @@ class _PositionGroupSymbolState extends ConsumerState<PositionGroupSymbol> {
                   final socketData = socketDatas[token];
                   if (socketData == null) continue;
 
-                  // Find the position in the original list by token to update it
-                  try {
-                    final originalPosition = originalGroupList.firstWhere(
-                      (p) => p != null && p['token'] == token,
-                      orElse: () => null,
-                    );
+                  // Update LTP if valid
+                  final lp = socketData['lp']?.toString();
+                  if (lp != null &&
+                      lp != "null" &&
+                      lp != position['lp']) {
+                    position['lp'] = lp;
+                    needsUpdate = true;
+                  }
 
-                    if (originalPosition == null) continue;
+                  // Update percent change if available
+                  final pc = socketData['pc']?.toString();
+                  if (pc != null &&
+                      pc != "null" &&
+                      pc != position['perChange']) {
+                    position['perChange'] = pc;
+                    needsUpdate = true;
+                  }
 
-                    // FIX: Accept all valid values for LTP updates to ensure real-time prices
-                    final lp = socketData['lp']?.toString();
-                    if (lp != null &&
-                        lp != "null" &&
-                        lp != originalPosition['lp']) {
-                      originalPosition['lp'] = lp;
-                      needsUpdate = true;
-                    }
-
-                    // Update percent change if available
-                    final pc = socketData['pc']?.toString();
-                    if (pc != null &&
-                        pc != "null" &&
-                        pc != originalPosition['perChange']) {
-                      originalPosition['perChange'] = pc;
-                      needsUpdate = true;
-                    }
-
-                    // Update change if available
-                    final chng = socketData['chng']?.toString();
-                    if (chng != null &&
-                        chng != "null" &&
-                        chng != originalPosition['chng']) {
-                      originalPosition['chng'] = chng;
-                      needsUpdate = true;
-                    }
-                  } catch (e) {
-                    // Skip if position no longer exists in original list
-                    continue;
+                  // Update change if available
+                  final chng = socketData['chng']?.toString();
+                  if (chng != null &&
+                      chng != "null" &&
+                      chng != position['chng']) {
+                    position['chng'] = chng;
+                    needsUpdate = true;
                   }
                 }
               }
@@ -344,8 +325,6 @@ class _PositionGroupSymbolState extends ConsumerState<PositionGroupSymbol> {
         );
       }
 
-      // NOTE: Don't use Expanded here - parent is a Column in SingleChildScrollView
-      // which has unbounded height. Expanded requires bounded constraints.
       return ExpandedTileList.separated(
               key: ValueKey(
                   'groups_${widget.filterType ?? 'all'}_${itemCount}_${filteredGroupSymbols.join('_')}'),

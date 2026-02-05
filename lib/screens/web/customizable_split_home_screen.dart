@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/provider/option_flash_provider.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
@@ -22,6 +23,7 @@ import 'package:mynt_plus/screens/web/bonds/bonds_main_screen_web.dart';
 
 // import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
+import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
@@ -794,6 +796,8 @@ class _CustomizableSplitHomeScreenState
             _buildMainScaffold(),
             // const WebChartOverlay(), // Commented out - using panel chart only
             const InlineChartPortal(), // Persistent chart that follows ChartWithDepthWeb's target
+            const OptionFlashPanel(), 
+
           ],
         ),
       ),
@@ -917,6 +921,14 @@ class _CustomizableSplitHomeScreenState
                   onMutualFundTap: _handleMutualFundTap,
                   onBondsTap: _handleBondTap,
                   onOptionZTap: _handleOptionZTap,
+                  onOptionFlashTap: () {
+                    final optionFlash = ref.read(optionFlashProvider);
+                    if (optionFlash.isVisible) {
+                      optionFlash.closePanel();
+                    } else {
+                      optionFlash.showPanel(context);
+                    }
+                  },
                   onThemeToggle: () {
                     ref.read(themeProvider.notifier).toggleTheme(
                       themeMod: theme.isDarkMode ? 'Light' : 'Dark',
@@ -938,7 +950,13 @@ class _CustomizableSplitHomeScreenState
 
     // Refresh portfolio data (holdings, positions)
     final portfolio = ref.read(portfolioProvider);
-    portfolio.fetchPositionBook(context, true); // isDay = true for day positions
+    portfolio.fetchPositionBook(context, true).then((_) {
+      // After positions are fetched, refresh ticker subscriptions
+      if (mounted) {
+        final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+        subscriptionManager.refreshTickerSubscriptions(context);
+      }
+    });
     portfolio.fetchHoldings(context, "");
 
     // Refresh order book data
@@ -1244,6 +1262,13 @@ class _CustomizableSplitHomeScreenState
             const SizedBox(width: 12),
             _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
                   () => _handleOptionZTap()),
+
+                  const SizedBox(width: 12),
+                // Option Flash button
+                Consumer(builder: (context, ref, _) {
+                  return _buildOptionFlashButton(isDarkMode, ref);
+                }),
+
             ],
 
             const Spacer(),
@@ -1317,6 +1342,12 @@ class _CustomizableSplitHomeScreenState
                 const SizedBox(width: 12),
                 _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
                     () => _handleOptionZTap()),
+                    const SizedBox(width: 12),
+            // Option Flash button
+            Consumer(builder: (context, ref, _) {
+              return _buildOptionFlashButton(isDarkMode, ref);
+            }),
+
 
                 const Spacer(),
 
@@ -1736,6 +1767,24 @@ class _CustomizableSplitHomeScreenState
       title: title,
       isActive: isActive,
       onTap: onTap,
+      isDarkMode: isDarkMode,
+    );
+  }
+
+  Widget _buildOptionFlashButton(bool isDarkMode, WidgetRef ref) {
+    final optionFlash = ref.watch(optionFlashProvider);
+    final isActive = optionFlash.isVisible;
+
+    return _HoverableNavItem(
+      title: 'Flash',
+      isActive: isActive,
+      onTap: () {
+        if (optionFlash.isVisible) {
+          optionFlash.closePanel();
+        } else {
+          optionFlash.showPanel(context);
+        }
+      },
       isDarkMode: isDarkMode,
     );
   }
@@ -3002,7 +3051,44 @@ class _CustomizableSplitHomeScreenState
               ConnectivityResult.none) {
         _handleWebSocketConnections();
       }
+
+      // Always fetch positions for ticker header regardless of initial screen
+      // Ticker needs live position P&L data on all screens
+      _initializeTickerData();
     }
+  }
+
+  /// Initialize ticker data by fetching positions
+  /// Called once on initial load to ensure ticker has data regardless of initial screen
+  void _initializeTickerData() {
+    // If positions screen or dashboard is active, positions are already being fetched
+    // by their respective handlers. Only fetch if not already fetching.
+    final rightPanelScreen = _panels.length > 1 ? _panels[1].screenType : null;
+    if (rightPanelScreen == ScreenType.positions ||
+        rightPanelScreen == ScreenType.dashboard) {
+      // Positions will be fetched by the screen handler
+      return;
+    }
+
+    // Fetch positions in background for ticker header
+    Future.microtask(() async {
+      if (!mounted) return;
+
+      final portfolio = ref.read(portfolioProvider);
+
+      // Only fetch if positions haven't been fetched yet
+      if (portfolio.postionBookModel == null ||
+          portfolio.postionBookModel!.isEmpty) {
+        debugPrint('[TICKER] Fetching positions for ticker header...');
+        await portfolio.fetchPositionBook(context, false);
+
+        // Subscribe ticker symbols after positions are fetched
+        if (mounted) {
+          final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+          subscriptionManager.subscribeTickerSymbols(context);
+        }
+      }
+    });
   }
 
   // Debounce timer to prevent rapid subscription manager updates
@@ -3129,6 +3215,12 @@ class _CustomizableSplitHomeScreenState
       // Subscribe position tokens to WebSocket for real-time price updates
       if (mounted) {
         portfolio.requestWSPosition(context: context, isSubscribe: true);
+      }
+
+      // Subscribe ticker symbols (positions) for persistent ticker header updates
+      if (mounted) {
+        final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+        subscriptionManager.subscribeTickerSymbols(context);
       }
 
       // Update subscription manager AFTER data is fetched
@@ -3608,6 +3700,10 @@ class _CustomizableSplitHomeScreenState
         // Start position update timer
         if (mounted) {
           portfolio.timerfunc();
+
+          // Subscribe ticker symbols (positions) for persistent ticker header updates
+          final subscriptionManager = ref.read(webSubscriptionManagerProvider);
+          subscriptionManager.subscribeTickerSymbols(context);
 
           // Update subscription manager AFTER data is fetched
           // This ensures tokens are available for subscription
@@ -5009,15 +5105,22 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
   Widget _buildTickerContent(BuildContext context) {
     final theme = ref.watch(themeProvider);
     final portfolio = ref.watch(portfolioProvider);
-    final fund = ref.watch(fundProvider);
+    // Commented out for future use - Holdings and Fund data
+    // final fund = ref.watch(fundProvider);
     final isDarkMode = theme.isDarkMode;
 
-    // Get portfolio data
-    final positionsPnL = double.tryParse(portfolio.totPnL) ?? 0.0;
-    final holdingsPnL = portfolio.totalPnlHolding;
-    final mfPnL = portfolio.mfTotalPnl;
-    final availableFund =
-        double.tryParse(fund.fundDetailModel?.avlMrg ?? "0") ?? 0.0;
+    // Get position groups data
+    final groupedBySymbol = portfolio.groupedBySymbol;
+    final groupPositionSym = portfolio.groupPositionSym;
+
+    // Get total P&L for display
+    final totalPnL = double.tryParse(portfolio.totPnL) ?? 0.0;
+
+    // Commented out for future use - Holdings and Fund data
+    // final holdingsPnL = portfolio.totalPnlHolding;
+    // final mfPnL = portfolio.mfTotalPnl;
+    // final availableFund =
+    //     double.tryParse(fund.fundDetailModel?.avlMrg ?? "0") ?? 0.0;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -5030,35 +5133,48 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
             dark: const Color(0xFF1A1A2E),
             light: const Color(0xFFFAFAFA),
           ),
-          // border: Border(
-          //   bottom: BorderSide(
-          //     color: shadcn.Theme.of(context).colorScheme.border,
-          //     width: 1,
-          //   ),
-          // ),
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Build ticker items
-            final tickerItems = _buildTickerItems(
-              positionsPnL: positionsPnL,
-              holdingsPnL: holdingsPnL,
-              mfPnL: mfPnL,
-              availableFund: availableFund,
+            // Build ticker items from position groups
+            final tickerItems = _buildPositionGroupTickerItems(
+              groupedBySymbol: groupedBySymbol,
+              groupPositionSym: groupPositionSym,
+              totalPnL: totalPnL,
               isDarkMode: isDarkMode,
             );
 
+            // If no positions, show empty state message
+            if (tickerItems.isEmpty) {
+              return Center(
+                child: Text(
+                  "No open positions",
+                  style: MyntWebTextStyles.para(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                    color: isDarkMode
+                        ? MyntColors.textSecondaryDark
+                        : MyntColors.textSecondary,
+                  ),
+                ),
+              );
+            }
+
             // Check if content fits in available width
-            // Approximate width per item: ~180px (label + value + divider)
-            const double approxItemWidth = 180.0;
-            final double contentWidth = approxItemWidth * 4; // 4 items
+            // Approximate width per item: ~150px (symbol + value + divider)
+            const double approxItemWidth = 150.0;
+            final double contentWidth = approxItemWidth * tickerItems.length;
             final bool needsScrolling = contentWidth > constraints.maxWidth;
 
             if (!needsScrolling) {
               // Content fits - show centered, no scrolling
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: tickerItems,
+                children: [
+                  const SizedBox(width: 16),
+                  ...tickerItems,
+                  const SizedBox(width: 16),
+                ],
               );
             }
 
@@ -5069,9 +5185,11 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
               physics: const ClampingScrollPhysics(),
               child: Row(
                 children: [
+                  const SizedBox(width: 16),
                   ...tickerItems,
                   const SizedBox(width: 32),
                   ...tickerItems, // Duplicate for seamless scrolling
+                  const SizedBox(width: 16),
                 ],
               ),
             );
@@ -5081,18 +5199,20 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
     );
   }
 
-  List<Widget> _buildTickerItems({
-    required double positionsPnL,
-    required double holdingsPnL,
-    required double mfPnL,
-    required double availableFund,
+  /// Build ticker items from position groups (symbol name + P&L)
+  List<Widget> _buildPositionGroupTickerItems({
+    required Map groupedBySymbol,
+    required List<String> groupPositionSym,
+    required double totalPnL,
     required bool isDarkMode,
   }) {
-    return [
-      const SizedBox(width: 16),
+    final List<Widget> items = [];
+
+    // First add Total P&L
+    items.add(
       _TickerItem(
-        label: "Positions P&L",
-        value: positionsPnL,
+        label: "Total P&L",
+        value: totalPnL,
         isDarkMode: isDarkMode,
         showAsAmount: true,
         onTap: () {
@@ -5101,45 +5221,118 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
           }
         },
       ),
-      _tickerDivider(isDarkMode),
-      _TickerItem(
-        label: "Holdings P&L",
-        value: holdingsPnL,
-        isDarkMode: isDarkMode,
-        showAsAmount: true,
-        onTap: () {
-          if (WebNavigationHelper.isAvailable) {
-            WebNavigationHelper.navigateTo(Routes.holdingscreen);
-          }
-        },
-      ),
-      _tickerDivider(isDarkMode),
-      _TickerItem(
-        label: "Mutual Fund P&L",
-        value: mfPnL,
-        isDarkMode: isDarkMode,
-        showAsAmount: true,
-        onTap: () {
-          if (WebNavigationHelper.isAvailable) {
-            WebNavigationHelper.navigateTo(Routes.mfmainscreen);
-          }
-        },
-      ),
-      _tickerDivider(isDarkMode),
-      _TickerItem(
-        label: "Available Fund",
-        value: availableFund,
-        isDarkMode: isDarkMode,
-        showAsAmount: true,
-        onTap: () {
-          if (WebNavigationHelper.isAvailable) {
-            WebNavigationHelper.navigateTo(Routes.fundscreen);
-          }
-        },
-      ),
-      const SizedBox(width: 16),
-    ];
+    );
+
+    // Add divider after total if there are position groups
+    if (groupPositionSym.isNotEmpty) {
+      items.add(_tickerDivider(isDarkMode));
+    }
+
+    // Add each position group (excluding custom groups)
+    for (int i = 0; i < groupPositionSym.length; i++) {
+      final symbol = groupPositionSym[i];
+      final groupData = groupedBySymbol[symbol];
+
+      if (groupData == null) continue;
+
+      // Skip custom groups - only show symbol-based groups
+      final isCustomGrp = groupData['isCustomGrp'] ?? false;
+      if (isCustomGrp) continue;
+
+      final pnl = double.tryParse(groupData['totPnl'] ?? '0.0') ?? 0.0;
+
+      // Get display name (use symbol name)
+      final displayName = symbol;
+
+      items.add(
+        _TickerItem(
+          label: displayName,
+          value: pnl,
+          isDarkMode: isDarkMode,
+          showAsAmount: true,
+          onTap: () {
+            if (WebNavigationHelper.isAvailable) {
+              WebNavigationHelper.navigateTo(Routes.positionscreen);
+            }
+          },
+        ),
+      );
+
+      // Add divider between items (but not after the last one)
+      if (i < groupPositionSym.length - 1) {
+        // Check if next item is not a custom group
+        final nextSymbol = groupPositionSym[i + 1];
+        final nextGroupData = groupedBySymbol[nextSymbol];
+        final nextIsCustomGrp = nextGroupData?['isCustomGrp'] ?? false;
+        if (!nextIsCustomGrp) {
+          items.add(_tickerDivider(isDarkMode));
+        }
+      }
+    }
+
+    return items;
   }
+
+  // Commented out for future use - Original ticker items with Holdings, MF, and Fund
+  // List<Widget> _buildTickerItems({
+  //   required double positionsPnL,
+  //   required double holdingsPnL,
+  //   required double mfPnL,
+  //   required double availableFund,
+  //   required bool isDarkMode,
+  // }) {
+  //   return [
+  //     const SizedBox(width: 16),
+  //     _TickerItem(
+  //       label: "Positions P&L",
+  //       value: positionsPnL,
+  //       isDarkMode: isDarkMode,
+  //       showAsAmount: true,
+  //       onTap: () {
+  //         if (WebNavigationHelper.isAvailable) {
+  //           WebNavigationHelper.navigateTo(Routes.positionscreen);
+  //         }
+  //       },
+  //     ),
+  //     _tickerDivider(isDarkMode),
+  //     _TickerItem(
+  //       label: "Holdings P&L",
+  //       value: holdingsPnL,
+  //       isDarkMode: isDarkMode,
+  //       showAsAmount: true,
+  //       onTap: () {
+  //         if (WebNavigationHelper.isAvailable) {
+  //           WebNavigationHelper.navigateTo(Routes.holdingscreen);
+  //         }
+  //       },
+  //     ),
+  //     _tickerDivider(isDarkMode),
+  //     _TickerItem(
+  //       label: "Mutual Fund P&L",
+  //       value: mfPnL,
+  //       isDarkMode: isDarkMode,
+  //       showAsAmount: true,
+  //       onTap: () {
+  //         if (WebNavigationHelper.isAvailable) {
+  //           WebNavigationHelper.navigateTo(Routes.mfmainscreen);
+  //         }
+  //       },
+  //     ),
+  //     _tickerDivider(isDarkMode),
+  //     _TickerItem(
+  //       label: "Available Fund",
+  //       value: availableFund,
+  //       isDarkMode: isDarkMode,
+  //       showAsAmount: true,
+  //       onTap: () {
+  //         if (WebNavigationHelper.isAvailable) {
+  //           WebNavigationHelper.navigateTo(Routes.fundscreen);
+  //         }
+  //       },
+  //     ),
+  //     const SizedBox(width: 16),
+  //   ];
+  // }
 
   Widget _tickerDivider(bool isDarkMode) {
     return Container(

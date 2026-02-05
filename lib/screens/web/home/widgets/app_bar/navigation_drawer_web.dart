@@ -20,6 +20,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback? onMutualFundTap;
   final VoidCallback? onBondsTap;
   final VoidCallback? onOptionZTap;
+  final VoidCallback? onOptionFlashTap;
 
   const NavigationDrawerWeb({
     super.key,
@@ -37,6 +38,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.onMutualFundTap,
     this.onBondsTap,
     this.onOptionZTap,
+    this.onOptionFlashTap,
   });
 
   @override
@@ -131,6 +133,17 @@ class NavigationDrawerWeb extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).pop();
                         onOptionZTap!();
+                      },
+                    ),
+                  if (onOptionFlashTap != null)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Option Flash',
+                      icon: Icons.flash_on_outlined,
+                      screenName: 'optionFlash',
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        onOptionFlashTap!();
                       },
                     ),
 

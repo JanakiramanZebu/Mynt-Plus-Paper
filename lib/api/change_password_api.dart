@@ -15,9 +15,8 @@ mixin ChangePasswordApi on ApiCore {
     try {
       final uri = Uri.parse(apiLinks.myntchangePassword);
       final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode(
-              {"userId": userId, "oldpwd": "$sha256Pass", "pwd": password}));
+          headers: {'Content-Type': 'text/plain'},
+          body: 'jData=${jsonEncode({"uid": userId, "oldpwd": "$sha256Pass", "pwd": password})}');
 
       // log("change Password => ${res.body}");
       final json = jsonDecode(res.body);

@@ -24,6 +24,7 @@ import '../locator/preference.dart';
 import 'market_watch_provider.dart';
 import 'notification_provider.dart';
 import 'subscription_manager.dart';
+import 'web_subscription_manager.dart';
 
 final websocketProvider = ChangeNotifierProvider((ref) => WebSocketProvider(ref));
 
@@ -659,6 +660,8 @@ class WebSocketProvider extends ChangeNotifier {
             _socketDatas[token]['lp'] != '0' &&
             _socketDatas[token]['lp'] != '0.00') {
           ref.read(portfolioProvider).updateHoldingValues(token, _socketDatas[token]);
+          // Also update position values for ticker header to show live P&L
+          ref.read(portfolioProvider).updatePositionValues(token, _socketDatas[token]);
         }
       } else {
         // Update existing token data
@@ -945,10 +948,16 @@ class WebSocketProvider extends ChangeNotifier {
       ref.read(orderProvider).fetchGTTOrderBook(context, "");
       ref.read(fundProvider).fetchFunds(context);
 
-      Timer(const Duration(seconds: 1), () {
+      Timer(const Duration(seconds: 1), () async {
         // Also check before delayed call
         if (!_isDisposed) {
-          ref.read(portfolioProvider).fetchPositionBook(context, false);
+          await ref.read(portfolioProvider).fetchPositionBook(context, false);
+
+          // Refresh ticker subscriptions after positions update (web only)
+          // This ensures new position symbols are subscribed for ticker header
+          if (kIsWeb && !_isDisposed) {
+            ref.read(webSubscriptionManagerProvider).refreshTickerSubscriptions(context);
+          }
         }
       });
     } catch (e) {
@@ -1047,6 +1056,8 @@ class WebSocketProvider extends ChangeNotifier {
       // and only update if we have valid price data
       if ((res.containsKey('lp') || res.containsKey('pc') || res.containsKey('c')) && data["lp"] != null && data["lp"] != "0" && data["lp"] != "0.00") {
         ref.read(portfolioProvider).updateHoldingValues(key, data);
+        // Also update position values for ticker header to show live P&L
+        ref.read(portfolioProvider).updatePositionValues(key, data);
       }
     }
   }

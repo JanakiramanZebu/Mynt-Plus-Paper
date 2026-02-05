@@ -298,171 +298,182 @@ class _PositionHoldingsCardWebState
                 dark: MyntColors.lossDark,
                 light: MyntColors.loss);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        // Darker/muted background for closed positions (QTY 0)
-        color: isZeroQty
-            ? resolveThemeColor(context,
-                dark: MyntColors.listItemBgDark.withValues(alpha: 0.6),
-                light: MyntColors.listItemBg.withValues(alpha: 0.6))
-            : resolveThemeColor(context,
-                dark: MyntColors.backgroundColorDark,
-                light: MyntColors.backgroundColor),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(context,
-              dark: MyntColors.dividerDark, light: MyntColors.divider),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row 1: Symbol name | Exit icon button (only for open positions)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Symbol name - muted for closed positions
-              Expanded(
-                child: Text(
-                  symbolName,
-                  style: MyntWebTextStyles.body(
-                    context,
-                    fontWeight: MyntFonts.semiBold,
-                    color: isZeroQty
-                        ? resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary)
-                        : resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Exit icon button - only show for open positions (QTY != 0)
-              if (!isZeroQty)
-                Tooltip(
-                  message: "Exit",
-                  child: InkWell(
-                    onTap: () => _exitPosition(position, ltp),
-                    borderRadius: BorderRadius.circular(4),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: resolveThemeColor(context,
-                                dark: MyntColors.lossDark,
-                                light: MyntColors.loss)
-                            .withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Icon(
-                        Icons.output,
-                        size: 18,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.lossDark,
-                            light: MyntColors.loss),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            // Darker/muted background for closed positions (QTY 0)
+            color: isZeroQty
+                ? resolveThemeColor(context,
+                    dark: MyntColors.listItemBgDark.withValues(alpha: 0.6),
+                    light: MyntColors.listItemBg.withValues(alpha: 0.6))
+                : resolveThemeColor(context,
+                    dark: MyntColors.backgroundColorDark,
+                    light: MyntColors.backgroundColor),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.dividerDark, light: MyntColors.divider),
+              width: 1,
+            ),
           ),
-          const SizedBox(height: 4),
-
-          // Row 2: QTY X AVG X.XX | P&L value
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // QTY and AVG info - QTY value has dynamic color
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "QTY ",
-                      style: MyntWebTextStyles.para(
+              // Row 1: Symbol name | Exit icon button (only for open positions)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Symbol name - muted for closed positions
+                  Expanded(
+                    child: Text(
+                      symbolName,
+                      style: MyntWebTextStyles.body(
                         context,
-                        fontWeight: MyntFonts.medium,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
+                        fontWeight: MyntFonts.semiBold,
+                        color: isZeroQty
+                            ? resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary)
+                            : resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary),
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    TextSpan(
-                      text: "$absQty ",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: positionColor,
-                      ),
-                    ),
-                    TextSpan(
-                      text: "AVG ${avgPrice.toStringAsFixed(2)}",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        fontWeight: MyntFonts.medium,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
+                  ),
+                  // Exit icon button - only show if position is open (not closed)
+                  if (!isZeroQty) ...[
+                    const SizedBox(width: 8),
+                    Tooltip(
+                      message: "Exit",
+                      child: InkWell(
+                        onTap: () => _exitPosition(position, ltp),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: resolveThemeColor(context,
+                                    dark: MyntColors.lossDark,
+                                    light: MyntColors.loss)
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Icon(
+                            Icons.output,
+                            size: 18,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss),
+                          ),
+                        ),
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
-              // P&L value only (no percentage)
-              Text(
-                pnl.toStringAsFixed(2),
-                style: MyntWebTextStyles.body(
-                  context,
-                  fontWeight: MyntFonts.semiBold,
-                  color: isProfit
-                      ? resolveThemeColor(context,
-                          dark: MyntColors.profitDark,
-                          light: MyntColors.profit)
-                      : resolveThemeColor(context,
-                          dark: MyntColors.lossDark,
-                          light: MyntColors.loss),
-                ),
+              const SizedBox(height: 4),
+        
+              // Row 2: QTY X AVG X.XX | P&L value
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // QTY and AVG info - QTY value has dynamic color
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "QTY ",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                        TextSpan(
+                          text: "$absQty ",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: positionColor,
+                          ),
+                        ),
+                        TextSpan(
+                          text: "AVG ${avgPrice.toStringAsFixed(2)}",
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // P&L value only (no percentage)
+                  Text(
+                    pnl.toStringAsFixed(2),
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: isProfit
+                          ? resolveThemeColor(context,
+                              dark: MyntColors.profitDark,
+                              light: MyntColors.profit)
+                          : resolveThemeColor(context,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+        
+              // Row 3: Product type | LTP value
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Product type
+                  Text(
+                    productType,
+                    style: MyntWebTextStyles.para(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                    ),
+                  ),
+                  // LTP value
+                  Text(
+                    "LTP ${ltp.toStringAsFixed(2)}",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 4),
-
-          // Row 3: Product type | LTP value
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Product type
-              Text(
-                productType,
-                style: MyntWebTextStyles.para(
-                  context,
-                  fontWeight: MyntFonts.medium,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary),
-                ),
-              ),
-              // LTP value
-              Text(
-                "LTP ${ltp.toStringAsFixed(2)}",
-                style: MyntWebTextStyles.para(
-                  context,
-                  fontWeight: MyntFonts.medium,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+        ),
+      
+    Divider(
+      color: resolveThemeColor(context,
+          dark: MyntColors.dividerDark, light: MyntColors.divider),
+      thickness: 1,
+      height: 1,
+    ),
+  ]);
   }
 
   Widget _buildHoldingsCard(

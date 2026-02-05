@@ -92,7 +92,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   bool validateForgetpassWord() {
     clearError();
     if (forGetloginMethCtrl.text.trim().isEmpty) {
-      forgetpassError = "Your client id / mobile is required";
+      forgetpassError = "Your mobile / client id is required";
     }
     return forgetpassError == null;
   }
@@ -180,6 +180,10 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   // }
 
   void validateNewPassword() {
+    // Remove spaces from password
+    if (newPassword.text.contains(' ')) {
+      newPassword.text = newPassword.text.replaceAll(' ', '');
+    }
     String value = newPassword.text.trim();
     newPasswordError = "";
 
@@ -215,8 +219,12 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
   }
 
   validateOldPassword() {
+    // Remove spaces from password
+    if (oldPassword.text.contains(' ')) {
+      oldPassword.text = oldPassword.text.replaceAll(' ', '');
+    }
     if (oldPassword.text.trim().isEmpty) {
-      oldPasswordError = "Please enter the Old Password";
+      oldPasswordError = "Please enter the Generated Password";
     } else {
       oldPasswordError = "";
     }
@@ -292,7 +300,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
 
 // Fetching data from the api and stored in a variable
   fetchChangePassword(String userId, String oldpassword, String password,
-      BuildContext context) async {
+      BuildContext context, {bool preventNavigation = false}) async {
     try {
       toggleLoadingOn(true);
       _changepasswordmodel =
@@ -313,11 +321,13 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
           ResponsiveSnackBar.showSuccess(context, '${_changepasswordmodel!.dmsg}');
         }
         pref.setHideLoginOptBtn(false);
-        ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
+        // ref.read(authProvider).loginMethCtrl.text = pref.clientId!;
+        ref.read(authProvider).loginMethCtrl.text = userIdController.text;
         pref.setMobileLogin(false);
         changePassMethod();
 
-        if (context.mounted) {
+        // Only navigate if not prevented (for web inline flow)
+        if (!preventNavigation && context.mounted) {
           Navigator.pushNamedAndRemoveUntil(
               context, Routes.loginScreen, (route) => route.isFirst);
         }
