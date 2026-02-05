@@ -355,8 +355,9 @@ class _ResizablePanelSplitterState extends State<ResizablePanelSplitter> {
                 child: Column(
                   children: [
                     // Bottom panel header (same style as top panel)
-                    _buildPanelHeader(widget.bottomSectionLabel, isTopPanel: false),
+                    // _buildPanelHeader(widget.bottomSectionLabel, isTopPanel: false),
                     // Bottom panel scrollable content
+                    const SizedBox(height: 15),
                     Expanded(
                       child: ClipRect(
                         child: ScrollConfiguration(
@@ -380,6 +381,7 @@ class _ResizablePanelSplitterState extends State<ResizablePanelSplitter> {
                         ),
                       ),
                     ),
+                    
                   ],
                 ),
               ),

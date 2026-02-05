@@ -44,6 +44,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
   bool _showForgotPassword = false;
   bool _showOtpScreen = false;
   bool _showQrScreen = false;
+  bool _showChangePassword = false;
   
   // OTP Timer Logic
   Timer? _timer;
@@ -141,6 +142,38 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     focusNode1.dispose();
     _timer?.cancel();
     super.dispose();
+  }
+
+  /// Helper method for consistent Mobile/Client ID input decoration
+  InputDecoration _mobileInputDecoration(BuildContext context) {
+    return InputDecoration(
+      filled: false,
+      labelText: "Mobile / Client ID",
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
+      labelStyle: MyntWebTextStyles.body(
+        context,
+        fontWeight: MyntFonts.regular,
+        color: resolveThemeColor(context,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.textSecondary),
+      ),
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark,
+                light: MyntColors.divider),
+            width: 1),
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.primaryDark,
+                light: MyntColors.primary),
+            width: 1),
+      ),
+      counterText: "",
+      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+    );
   }
 
   Future<void> _handleContinue() async {
@@ -499,6 +532,66 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
     }
   }
 
+  /// Handle forgot password and show change password form inline on success
+  Future<void> _handleForgotPasswordSubmit() async {
+    final forpass = ref.read(changePasswordProvider);
+
+    // Validate first
+    if (!forpass.validateForgetpassWord()) {
+      return;
+    }
+
+    // Store the value before API call
+    final inputValue = forpass.forGetloginMethCtrl.text;
+
+    // Call the API - this will show success snackbar and set userIdController
+    await forpass.fetchForgetPassword(
+      inputValue,
+      inputValue.toUpperCase(),
+      context,
+    );
+
+    // Check if forgot password was successful by checking if userIdController was set
+    if (forpass.userIdController.text.isNotEmpty && forpass.changePass?.stat == "Ok") {
+      // Success! Show change password
+      if (mounted) {
+        setState(() {
+          _showForgotPassword = false;
+          _showChangePassword = true;
+        });
+      }
+    }
+  }
+
+  /// Handle change password submission for web
+  Future<void> _handleChangePasswordSubmit() async {
+    final forpass = ref.read(changePasswordProvider);
+
+    // Validate both fields
+    forpass.validateOldPassword();
+    forpass.validateNewPassword();
+
+    if (forpass.oldPasswordError == "" && forpass.newPasswordError == "") {
+      await forpass.fetchChangePassword(
+        forpass.userIdController.text.toUpperCase(),
+        forpass.oldPassword.text,
+        forpass.newPassword.text,
+        context,
+        preventNavigation: true,
+      );
+
+      // Check if change password was successful
+      if (forpass.changepasswordmodel?.stat == "Ok") {
+        // Success! Go back to login form
+        if (mounted) {
+          setState(() {
+            _showChangePassword = false;
+          });
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Preferences pref = Preferences();
@@ -603,7 +696,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               (pref.clientId?.isNotEmpty == true ||
                                   pref.clientMob?.isNotEmpty == true)))
                           Text(
-                            "Login to MYNT",
+                            _showChangePassword ? "Change or Reset Password" : "Login to MYNT",
                             style: webText(
                               context,
                               size: MediaQuery.of(context).size.width < 600 ? 18 : 22,
@@ -1098,37 +1191,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      dark: MyntColors.textPrimaryDark,
                                      light: MyntColors.textPrimary),
                                ),
-                               decoration: InputDecoration(
-                                 filled: false,
-                                 labelText: "Mobile / Client ID",
-                                 floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                 labelStyle: MyntWebTextStyles.head(
-                                   context,
-                                   fontWeight: MyntFonts.regular,
-                                   color: resolveThemeColor(context,
-                                       dark: MyntColors.textSecondaryDark,
-                                       light: MyntColors.textSecondary),
-                                 ),
-                                 enabledBorder: const UnderlineInputBorder(
-                                   borderSide: BorderSide(
-                                       color: MyntColors.divider, width: 1),
-                                 ),
-                                 focusedBorder:  UnderlineInputBorder(
-                                   borderSide: BorderSide(
-                                       color: resolveThemeColor(context,
-                                           dark: MyntColors.primaryDark,
-                                           light: MyntColors.primary), width: 1),
-                                 ),
-                                 counterText: "",
-                                 contentPadding:
-                                     const EdgeInsets.symmetric(vertical: 8),
-                               ),
+                               decoration: _mobileInputDecoration(context),
                                onChanged: (v) {
                                   forpass.validateForgetpassWord();
                                   forpass.activateFrogetbtn();
                                },
                                onFieldSubmitted: (_) {
-                                  forpass.submitForgetPassword(context);
+                                  _handleForgotPasswordSubmit();
                                },
                              ),
                              const SizedBox(height: 5),
@@ -1152,7 +1221,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                child: ElevatedButton(
                                  onPressed: (forpass.loading)
                                      ? null
-                                     : () => forpass.submitForgetPassword(context),
+                                     : _handleForgotPasswordSubmit,
                                  style: ElevatedButton.styleFrom(
                                    backgroundColor: resolveThemeColor(context,
                                        dark: MyntColors.primaryDark,
@@ -1192,7 +1261,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                  },
                                  child: Text(
                                     "Back to login",
-                                    style: MyntWebTextStyles.body(
+                                    style: MyntWebTextStyles.para(
                                       context,
                                       fontWeight: MyntFonts.bold,
                                       color: resolveThemeColor(context,
@@ -1202,6 +1271,272 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                  ),
                                ),
                              ),
+
+                          ] else if (_showChangePassword) ...[
+                            // Change Password Form
+
+                            // Client ID Field (Disabled)
+                            TextFormField(
+                              controller: forpass.userIdController,
+                              readOnly: true,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: "Client ID",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                disabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                counterText: "",
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Old/Generated Password Field
+                            TextFormField(
+                              controller: forpass.oldPassword,
+                              focusNode: focusNode,
+                              readOnly: forpass.loading,
+                              obscureText: forpass.hideoldpassword,
+                              textInputAction: TextInputAction.next,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: "Generated Password",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: () {
+                                    forpass.hiddeoldpasswords();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      forpass.hideoldpassword
+                                          ? "assets/icon/eye-off.svg"
+                                          : "assets/icon/eye.svg",
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              onChanged: (v) {
+                                forpass.validateOldPassword();
+                                forpass.activateChangePass();
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (forpass.oldPasswordError != null &&
+                                forpass.oldPasswordError!.isNotEmpty &&
+                                forpass.oldPasswordError != "")
+                              Text(
+                                "${forpass.oldPasswordError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+                            const SizedBox(height: 20),
+
+                            // New Password Field
+                            TextFormField(
+                              controller: forpass.newPassword,
+                              focusNode: focusNode1,
+                              readOnly: forpass.loading,
+                              obscureText: forpass.hidenewpassword,
+                              textInputAction: TextInputAction.done,
+                              style: MyntWebTextStyles.title(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                              decoration: InputDecoration(
+                                filled: false,
+                                labelText: "New Password",
+                                floatingLabelBehavior: FloatingLabelBehavior.auto,
+                                labelStyle: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.regular,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                                suffixIcon: InkWell(
+                                  onTap: () {
+                                    forpass.hiddenewpasswords();
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: SvgPicture.asset(
+                                      forpass.hidenewpassword
+                                          ? "assets/icon/eye-off.svg"
+                                          : "assets/icon/eye.svg",
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      width: 20,
+                                    ),
+                                  ),
+                                ),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.dividerDark,
+                                          light: MyntColors.divider),
+                                      width: 1),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary),
+                                      width: 1),
+                                ),
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                              ),
+                              onChanged: (v) {
+                                forpass.validateNewPassword();
+                                forpass.activateChangePass();
+                              },
+                              onFieldSubmitted: (_) {
+                                _handleChangePasswordSubmit();
+                              },
+                            ),
+                            const SizedBox(height: 5),
+                            if (forpass.newPasswordError != null &&
+                                forpass.newPasswordError!.isNotEmpty &&
+                                forpass.newPasswordError != "")
+                              Text(
+                                "${forpass.newPasswordError}",
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                                ),
+                              ),
+
+                            const SizedBox(height: 32),
+
+                            // Continue Button (Change Password Submit)
+                            SizedBox(
+                              height: 48,
+                              child: ElevatedButton(
+                                onPressed: (forpass.loading)
+                                    ? null
+                                    : _handleChangePasswordSubmit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.primaryDark,
+                                      light: MyntColors.primary),
+                                  disabledBackgroundColor: resolveThemeColor(
+                                      context,
+                                      dark:
+                                          MyntColors.primaryDark.withOpacity(0.6),
+                                      light:
+                                          MyntColors.primary.withOpacity(0.6)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6)),
+                                  elevation: 0,
+                                ),
+                                child: (forpass.loading)
+                                    ? MyntLoader.inline()
+                                    : Text(
+                                        "Continue",
+                                        style: MyntWebTextStyles.title(
+                                          context,
+                                          fontWeight: MyntFonts.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Back to Login Button
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _showChangePassword = false;
+                                    forpass.changePassMethod();
+                                  });
+                                },
+                                child: Text(
+                                  "Back to login",
+                                  style: MyntWebTextStyles.para(
+                                    context,
+                                    fontWeight: MyntFonts.bold,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.secondary,
+                                        light: MyntColors.secondary),
+                                  ),
+                                ),
+                              ),
+                            ),
 
                           ] else if (!_showQrScreen && !_showOtpScreen && pref.islogOut! &&
                               (pref.clientId!.isNotEmpty ||
@@ -1297,35 +1632,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     dark: MyntColors.textPrimaryDark,
                                     light: MyntColors.textPrimary),
                               ),
-                              decoration: InputDecoration(
-                                filled: false,
-                                labelText: "Mobile / Client ID",
-                                floatingLabelBehavior: FloatingLabelBehavior.auto,
-                                labelStyle: MyntWebTextStyles.body(
-                                  context,
-                                  fontWeight: MyntFonts.regular,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary),
-                                ),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: resolveThemeColor(context,
-                                          dark: MyntColors.dividerDark,
-                                          light: MyntColors.divider),
-                                      width: 1),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                      color: resolveThemeColor(context,
-                                          dark: MyntColors.primaryDark,
-                                          light: MyntColors.primary),
-                                      width: 1),
-                                ),
-                                counterText: "",
-                                contentPadding:
-                                    const EdgeInsets.symmetric(vertical: 8),
-                              ),
+                              decoration: _mobileInputDecoration(context),
                               onTap: pref.isMobileLogin!
                                   ? auth.getCurrentPhone
                                   : null,
@@ -1351,8 +1658,8 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                               ),
                           ],
                           
-                          // Password and Actions (Only Show if NOT in Forgot Password Mode)
-                          if (!_showQrScreen && !_showForgotPassword && !_showOtpScreen) ...[
+                          // Password and Actions (Only Show if NOT in Forgot Password or Change Password Mode)
+                          if (!_showQrScreen && !_showForgotPassword && !_showOtpScreen && !_showChangePassword) ...[
                             const SizedBox(height: 20),
                             
                             // Password Input (Always Visible)
@@ -1508,9 +1815,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                   InkWell(
                                     onTap: () {
                                       setState(() {
+                                        // Copy client ID to forgot password form before clearing
+                                        forpass.forGetloginMethCtrl.text = auth.loginMethCtrl.text;
+                                        // Clear the login client ID field
+                                        auth.loginMethCtrl.clear();
+                                        auth.loginMethError = null;
                                         _showForgotPassword = true;
                                         forpass.clearError();
-                                        forpass.clearTextField();
                                       });
                                     },
                                     child: Text(

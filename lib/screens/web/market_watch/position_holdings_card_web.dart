@@ -298,23 +298,27 @@ class _PositionHoldingsCardWebState
                 dark: MyntColors.lossDark,
                 light: MyntColors.loss);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: resolveThemeColor(context,
+    // Background color: muted for closed positions, normal for open
+    final cardBackgroundColor = isZeroQty
+        ? resolveThemeColor(context,
+            dark: MyntColors.textPrimary.withValues(alpha: 0.05),
+            light: const Color(0x8F121212).withValues(alpha: 0.03))
+        : resolveThemeColor(context,
             dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(context,
-              dark: MyntColors.dividerDark, light: MyntColors.divider),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+            light: MyntColors.backgroundColor);
+
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: cardBackgroundColor,
+            borderRadius: BorderRadius.circular(0),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // Row 1: Symbol name | Exit icon button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -334,32 +338,34 @@ class _PositionHoldingsCardWebState
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
-              // Exit icon button - always red with tooltip
-              Tooltip(
-                message: "Exit",
-                child: InkWell(
-                  onTap: () => _exitPosition(position, ltp),
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: resolveThemeColor(context,
-                              dark: MyntColors.lossDark,
-                              light: MyntColors.loss)
-                          .withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Icon(
-                      Icons.output,
-                      size: 18,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.lossDark,
-                          light: MyntColors.loss),
+              // Exit icon button - only show if position is open (not closed)
+              if (!isZeroQty) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: "Exit",
+                  child: InkWell(
+                    onTap: () => _exitPosition(position, ltp),
+                    borderRadius: BorderRadius.circular(4),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                                dark: MyntColors.lossDark,
+                                light: MyntColors.loss)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Icon(
+                        Icons.output,
+                        size: 18,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss),
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
           const SizedBox(height: 4),
@@ -452,7 +458,14 @@ class _PositionHoldingsCardWebState
           ),
         ],
       ),
-    );
+    ),
+    Divider(
+      color: resolveThemeColor(context,
+          dark: MyntColors.dividerDark, light: MyntColors.divider),
+      thickness: 1,
+      height: 1,
+    ),
+  ]);
   }
 
   Widget _buildHoldingsCard(
