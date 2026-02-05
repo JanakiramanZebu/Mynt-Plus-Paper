@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -335,6 +337,24 @@ class _PortfolioDashboardScreenState
                       final availableWidth = constraints.maxWidth;
                       const double kSpacing = 16.0;
 
+                      // Card decoration (same as Market Cap, Sector, Asset Allocation)
+                      BoxDecoration cardDecoration = BoxDecoration(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.backgroundColorDark,
+                          light: MyntColors.backgroundColor,  
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider,
+                          ),
+                          width: 1,
+                        ),
+                      );
+
                       // If width is less than 900, stack vertically
                       if (availableWidth < 900) {
                         return Column(
@@ -344,16 +364,18 @@ class _PortfolioDashboardScreenState
                               RepaintBoundary(
                                 key: _portfolioSummaryKey,
                                 child: Container(
-                                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: cardDecoration,
                                   child: _buildInvestmentChart(data.chartData!, data),
                                 ),
                               ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 16),
                             // Heatmap Section
                             RepaintBoundary(
                               key: _heatmapSectionKey,
                               child: Container(
-                                color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                padding: const EdgeInsets.all(16),
+                                decoration: cardDecoration,
                                 child: _buildHeatMap(data.topStocks),
                               ),
                             ),
@@ -364,34 +386,38 @@ class _PortfolioDashboardScreenState
                       // Side by side layout for larger screens
                       final cardWidth = (availableWidth - kSpacing) / 2;
 
-                      return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Portfolio Summary Section (50%)
-                          if (data.chartData != null)
+                      return IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Portfolio Summary Section (50%)
+                            if (data.chartData != null)
+                              SizedBox(
+                                width: cardWidth,
+                                child: RepaintBoundary(
+                                  key: _portfolioSummaryKey,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: cardDecoration,
+                                    child: _buildInvestmentChart(data.chartData!, data),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(width: kSpacing),
+                            // Heatmap Section (50%)
                             SizedBox(
                               width: cardWidth,
                               child: RepaintBoundary(
-                                key: _portfolioSummaryKey,
+                                key: _heatmapSectionKey,
                                 child: Container(
-                                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                                  child: _buildInvestmentChart(data.chartData!, data),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: cardDecoration,
+                                  child: _buildHeatMap(data.topStocks),
                                 ),
                               ),
                             ),
-                          const SizedBox(width: kSpacing),
-                          // Heatmap Section (50%)
-                          SizedBox(
-                            width: cardWidth,
-                            child: RepaintBoundary(
-                              key: _heatmapSectionKey,
-                              child: Container(
-                                color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                                child: _buildHeatMap(data.topStocks),
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -862,18 +888,13 @@ class _PortfolioDashboardScreenState
       );
     }
 
-    // Fixed table height
-    const double tableHeight = 600;
-
     return SliverMainAxisGroup(
       slivers: [
         // Table container using shadcn.OutlinedContainer (matches hold_table.dart)
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
-              height: tableHeight,
-              child: shadcn.OutlinedContainer(
+            child: shadcn.OutlinedContainer(
                 child: LayoutBuilder(
                 builder: (context, constraints) {
                   // Calculate column widths based on available width (flex proportions: 3:2:2:2:2 = 11 total)
@@ -940,30 +961,12 @@ class _PortfolioDashboardScreenState
                           ),
                         ],
                       ),
-                      // Scrollable Body
-                      Expanded(
-                        child: RawScrollbar(
-                          controller: _tableScrollController,
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          trackColor: resolveThemeColor(context,
-                              dark: Colors.grey.withValues(alpha: 0.1),
-                              light: Colors.grey.withValues(alpha: 0.1)),
-                          thumbColor: resolveThemeColor(context,
-                              dark: Colors.grey.withValues(alpha: 0.3),
-                              light: Colors.grey.withValues(alpha: 0.3)),
-                          thickness: 6,
-                          radius: const Radius.circular(3),
-                          interactive: true,
-                          child: ScrollConfiguration(
-                            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                            child: SingleChildScrollView(
-                              controller: _tableScrollController,
-                              child: shadcn.Table(
-                              key: ValueKey('table_${_tableSortColumnIndex}_$_tableSortAscending'),
-                              columnWidths: columnWidths,
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: [
+                      // Table Body (no scroll - uses page scroll)
+                      shadcn.Table(
+                        key: ValueKey('table_${_tableSortColumnIndex}_$_tableSortAscending'),
+                        columnWidths: columnWidths,
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        rows: [
                                 // Data Rows
                                 ...sortedHoldings.asMap().entries.map((entry) {
                     final index = entry.key;
@@ -1050,18 +1053,13 @@ class _PortfolioDashboardScreenState
                   }),
                 ],
               ),
-            ),
-          ),
-        ),
-        ),
-      ],
-    );
+            ],
+          );
                 },
               ),
             ),
           ),
         ),
-      ),
       ],
     );
   }
@@ -1076,7 +1074,7 @@ class _PortfolioDashboardScreenState
       decoration: BoxDecoration(
         color: resolveThemeColor(
           context,
-          dark: MyntColors.listItemBgDark,
+          dark: MyntColors.backgroundColorDark,
           light: MyntColors.backgroundColor,
         ),
         borderRadius: BorderRadius.circular(8),
@@ -1237,204 +1235,350 @@ class _PortfolioDashboardScreenState
           ],
         ),
         const SizedBox(height: 16),
-        Column(
-          children: [
-            SizedBox(
-              height: 200,
-              width: double.infinity,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    drawHorizontalLine: false,
-                    getDrawingHorizontalLine: (value) => const FlLine(
-                      color: Color(0xFFE5E7EB),
-                      strokeWidth: 0.1,
-                      dashArray: [1, 1],
+        SizedBox(
+          height: 320,
+          width: double.infinity,
+          child: SfCartesianChart(
+            plotAreaBorderWidth: 0,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            primaryXAxis: DateTimeAxis(
+              isVisible: true,
+              majorGridLines: const MajorGridLines(width: 0),
+              axisLine: const AxisLine(width: 0),
+              labelStyle: MyntWebTextStyles.caption(
+                context,
+                color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                fontWeight: FontWeight.w400,
+              ),
+              labelRotation: 0,
+              edgeLabelPlacement: EdgeLabelPlacement.shift,
+              intervalType: DateTimeIntervalType.auto,
+              dateFormat: DateFormat('MMM yy'),
+            ),
+            primaryYAxis: const NumericAxis(
+              isVisible: false,
+              majorGridLines: MajorGridLines(width: 0),
+            ),
+            tooltipBehavior: TooltipBehavior(
+              enable: true,
+              activationMode: ActivationMode.singleTap,
+              tooltipPosition: TooltipPosition.auto,
+              canShowMarker: true,
+              shouldAlwaysShow: false,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.listItemBgDark,
+                light: MyntColors.backgroundColor,
+              ),
+              borderColor: resolveThemeColor(
+                context,
+                dark: MyntColors.dividerDark,
+                light: MyntColors.divider,
+              ),
+              borderWidth: 1,
+              textStyle: MyntWebTextStyles.para(
+                context,
+                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                fontWeight: FontWeight.w500,
+              ),
+              builder: (dynamic data, dynamic point, dynamic series, int pointIndex, int seriesIndex) {
+                final investedValue = chartData.totalInvestedValue[pointIndex];
+                final currentValue = chartData.totalCurrentValue[pointIndex];
+                String dateLabel = '';
+                try {
+                  final date = DateTime.parse(chartData.dates[pointIndex]);
+                  dateLabel = '${date.day}/${date.month}/${date.year}';
+                } catch (e) {
+                  dateLabel = chartData.dates[pointIndex];
+                }
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.listItemBgDark,
+                      light: MyntColors.backgroundColor,
                     ),
-                    horizontalInterval: 1,
-                  ),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 35,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          if (value.toInt() < investedSpots.length) {
-                            final dataIndex = value
-                                .toInt()
-                                .clamp(0, chartData.dates.length - 1);
-                            final totalPoints = investedSpots.length;
-                            final labelInterval =
-                                (totalPoints / 6).ceil().clamp(1, totalPoints);
-
-                            if (value.toInt() == 0 ||
-                                value.toInt() == investedSpots.length - 1 ||
-                                value.toInt() % labelInterval == 0) {
-                              final dateString = chartData.dates[dataIndex];
-
-                              try {
-                                final date = DateTime.parse(dateString);
-                                final month =
-                                    portfolio.getMonthAbbreviation(date.month);
-                                final year = date.year.toString().substring(2);
-
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    left: value.toInt() == 0 ? 20 : 0,
-                                    right: value.toInt() ==
-                                            investedSpots.length - 1
-                                        ? 20
-                                        : 0,
-                                  ),
-                                  child: Text(
-                                    '$month $year',
-                                    style: MyntWebTextStyles.caption(
-                                      context,
-                                      color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              } catch (e) {
-                                return const Text('');
-                              }
-                            }
-                          }
-                          return const Text('');
-                        },
-                      ),
-                    ),
-                    topTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles:
-                        AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  minX: 0,
-                  maxX: (chartData.dates.length - 1).toDouble(),
-                  minY: 0,
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    handleBuiltInTouches: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      fitInsideHorizontally: true,
-                      fitInsideVertically: true,
-                      tooltipBorder: BorderSide(
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.dividerDark,
-                          light: MyntColors.divider,
-                        ),
-                        width: 1,
-                      ),
-                      tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      getTooltipColor: (touchedSpot) => resolveThemeColor(
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: resolveThemeColor(
                         context,
-                        dark: MyntColors.listItemBgDark,
-                        light: MyntColors.backgroundColor,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
                       ),
-                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                        return touchedBarSpots.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final spot = entry.value;
-                          final dataIndex = spot.x.toInt().clamp(0, chartData.dates.length - 1);
-
-                          // Format date
-                          String dateLabel = '';
-                          try {
-                            final date = DateTime.parse(chartData.dates[dataIndex]);
-                            dateLabel = '${date.day}/${date.month}/${date.year}';
-                          } catch (e) {
-                            dateLabel = chartData.dates[dataIndex];
-                          }
-
-                          final isInvested = index == 0;
-                          final label = isInvested ? 'Invested' : 'Current';
-                          final color = isInvested ? const Color(0xFF3B82F6) : const Color(0xFF8B5CF6);
-
-                          // Get actual values from chartData (not the scaled spot.y)
-                          final actualValue = isInvested
-                              ? chartData.totalInvestedValue[dataIndex]
-                              : chartData.totalCurrentValue[dataIndex];
-
-                          return LineTooltipItem(
-                            index == 0 ? '$dateLabel\n' : '',
-                            MyntWebTextStyles.caption(
-                              context,
-                              color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
-                              fontWeight: FontWeight.w400,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '$label: ',
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '₹${actualValue.toStringAsFixed(2)}',
-                                style: MyntWebTextStyles.para(
-                                  context,
-                                  color: color,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList();
-                      },
                     ),
-                    getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
-                      return spotIndexes.map((spotIndex) {
-                        return TouchedSpotIndicatorData(
-                          const FlLine(
-                            color: Color(0xFF9CA3AF),
-                            strokeWidth: 1,
-                            dashArray: [4, 4],
-                          ),
-                          FlDotData(
-                            show: true,
-                            getDotPainter: (spot, percent, barData, index) {
-                              return FlDotCirclePainter(
-                                radius: 5,
-                                color: barData.color ?? Colors.blue,
-                                strokeWidth: 2,
-                                strokeColor: Colors.white,
-                              );
-                            },
-                          ),
-                        );
-                      }).toList();
-                    },
                   ),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: investedSpots,
-                      isCurved: true,
-                      color: const Color(0xFF3B82F6),
-                      barWidth: 1.5,
-                      dotData: FlDotData(show: false),
-                    ),
-                    LineChartBarData(
-                      spots: currentSpots,
-                      isCurved: true,
-                      color: const Color(0xFF8B5CF6),
-                      barWidth: 1.5,
-                      dotData: FlDotData(show: false),
-                    ),
-                  ],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateLabel,
+                        style: MyntWebTextStyles.caption(
+                          context,
+                          color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Invested: ',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${investedValue.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: const Color(0xFF3B82F6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Current: ',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${currentValue.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.para(
+                              context,
+                              color: const Color(0xFF8B5CF6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            trackballBehavior: TrackballBehavior(
+              enable: true,
+              activationMode: ActivationMode.singleTap,
+              lineType: TrackballLineType.vertical,
+              lineColor: resolveThemeColor(
+                context,
+                dark: const Color(0xFF9CA3AF),
+                light: const Color(0xFF6B7280),
+              ),
+              lineDashArray: const <double>[4, 4],
+              lineWidth: 1,
+              tooltipSettings: const InteractiveTooltip(enable: false),
+              hideDelay: 2000,
+              markerSettings: TrackballMarkerSettings(
+                markerVisibility: TrackballVisibilityMode.visible,
+                height: 10,
+                width: 10,
+                borderWidth: 2,
+                borderColor: resolveThemeColor(
+                  context,
+                  dark: Colors.white,
+                  light: const Color(0xFF1F2937),
                 ),
               ),
+              tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+              builder: (BuildContext context, TrackballDetails trackballDetails) {
+                final groupingDetails = trackballDetails.groupingModeInfo;
+                if (groupingDetails == null || groupingDetails.points.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                // Get point index from grouping details
+                final pointIndex = groupingDetails.currentPointIndices.isNotEmpty
+                    ? groupingDetails.currentPointIndices.first
+                    : 0;
+                final investedValue = chartData.totalInvestedValue[pointIndex];
+                final currentValue = chartData.totalCurrentValue[pointIndex];
+                String dateLabel = '';
+                try {
+                  final date = DateTime.parse(chartData.dates[pointIndex]);
+                  dateLabel = '${date.day}/${date.month}/${date.year}';
+                } catch (e) {
+                  dateLabel = chartData.dates[pointIndex];
+                }
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(
+                      this.context,
+                      dark: MyntColors.listItemBgDark,
+                      light: MyntColors.backgroundColor,
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: resolveThemeColor(
+                        this.context,
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider,
+                      ),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateLabel,
+                        style: MyntWebTextStyles.caption(
+                          this.context,
+                          color: resolveThemeColor(this.context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Invested: ',
+                            style: MyntWebTextStyles.para(
+                              this.context,
+                              color: resolveThemeColor(this.context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${investedValue.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.para(
+                              this.context,
+                              color: const Color(0xFF3B82F6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8B5CF6),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Current: ',
+                            style: MyntWebTextStyles.para(
+                              this.context,
+                              color: resolveThemeColor(this.context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            '₹${currentValue.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.para(
+                              this.context,
+                              color: const Color(0xFF8B5CF6),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          ],
+            series: <CartesianSeries>[
+              SplineSeries<_PortfolioChartPoint, DateTime>(
+                dataSource: List.generate(
+                  chartData.dates.length,
+                  (index) {
+                    DateTime dateTime;
+                    try {
+                      dateTime = DateTime.parse(chartData.dates[index]);
+                    } catch (e) {
+                      dateTime = DateTime.now();
+                    }
+                    return _PortfolioChartPoint(
+                      dateTime,
+                      chartData.totalInvestedValue[index] / 1000,
+                      chartData.totalCurrentValue[index] / 1000,
+                    );
+                  },
+                ),
+                xValueMapper: (_PortfolioChartPoint data, _) => data.date,
+                yValueMapper: (_PortfolioChartPoint data, _) => data.invested,
+                name: 'Invested',
+                color: const Color(0xFF3B82F6),
+                width: 1.5,
+                markerSettings: const MarkerSettings(
+                  isVisible: false,
+                  height: 10,
+                  width: 10,
+                  shape: DataMarkerType.circle,
+                  borderWidth: 2,
+                  borderColor: Colors.white,
+                  color: Color(0xFF3B82F6),
+                ),
+                enableTooltip: true,
+              ),
+              SplineSeries<_PortfolioChartPoint, DateTime>(
+                dataSource: List.generate(
+                  chartData.dates.length,
+                  (index) {
+                    DateTime dateTime;
+                    try {
+                      dateTime = DateTime.parse(chartData.dates[index]);
+                    } catch (e) {
+                      dateTime = DateTime.now();
+                    }
+                    return _PortfolioChartPoint(
+                      dateTime,
+                      chartData.totalInvestedValue[index] / 1000,
+                      chartData.totalCurrentValue[index] / 1000,
+                    );
+                  },
+                ),
+                xValueMapper: (_PortfolioChartPoint data, _) => data.date,
+                yValueMapper: (_PortfolioChartPoint data, _) => data.current,
+                name: 'Current',
+                color: const Color(0xFF8B5CF6),
+                width: 1.5,
+                markerSettings: const MarkerSettings(
+                  isVisible: false,
+                  height: 10,
+                  width: 10,
+                  shape: DataMarkerType.circle,
+                  borderWidth: 2,
+                  borderColor: Colors.white,
+                  color: Color(0xFF8B5CF6),
+                ),
+                enableTooltip: true,
+              ),
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -2169,6 +2313,7 @@ class _PortfolioDashboardScreenState
     }
 
     return Container(
+
       width: double.infinity,
       decoration: BoxDecoration(
         color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
@@ -3112,4 +3257,13 @@ class TreemapPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return true;
   }
+}
+
+/// Data model for portfolio chart points
+class _PortfolioChartPoint {
+  final DateTime date;
+  final double invested;
+  final double current;
+
+  _PortfolioChartPoint(this.date, this.invested, this.current);
 }

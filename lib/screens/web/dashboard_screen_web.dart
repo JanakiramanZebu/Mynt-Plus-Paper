@@ -299,9 +299,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               }
             },
               child: Text(
-                'Portfolio Insights >>>',
+                'Insights',
                 style: MyntWebTextStyles.symbol(
                   context,
+                  fontWeight: MyntFonts.bold,
                   color: resolveThemeColor(context,
                       dark: MyntColors.primaryDark,
                       light: MyntColors.primary),
@@ -355,6 +356,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                 'Add Money',
                 style: MyntWebTextStyles.symbol(
                   context,
+                  fontWeight: MyntFonts.bold,
                   color: resolveThemeColor(context,
                       dark: MyntColors.primaryDark,
                       light: MyntColors.primary),

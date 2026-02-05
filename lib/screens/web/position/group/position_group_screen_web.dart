@@ -34,28 +34,36 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
     // Web version without Scaffold/AppBar - embeds directly in position screen
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Container(
-          color: resolveThemeColor(context,
-              dark: MyntColors.backgroundColorDark,
-              light: MyntColors.backgroundColor),
-          child: _hasAnyGroups(positionBook)
-              ? SizedBox(
-                  height: constraints.maxHeight,
-                  width: constraints.maxWidth,
-                  child: Scrollbar(
-                    controller: _scrollController,
-                    thumbVisibility: true,
-                    child: SingleChildScrollView(
-                      primary: false,
-                      controller: _scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: _buildGroupsContent(context, positionBook),
+        final hasGroups = _hasAnyGroups(positionBook);
+
+        return SizedBox(
+          height: constraints.maxHeight,
+          width: constraints.maxWidth,
+          child: Container(
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            child: hasGroups
+                ? ScrollConfiguration(
+                    // Hide any nested scrollbars to prevent double scrollbar
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      scrollbars: false,
                     ),
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        primary: false,
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: _buildGroupsContent(context, positionBook),
+                      ),
+                    ),
+                  )
+                : Center(
+                    child: _buildGroupsContent(context, positionBook),
                   ),
-                )
-              : Center(
-                  child: _buildGroupsContent(context, positionBook),
-                ),
+          ),
         );
       },
     );
@@ -63,7 +71,7 @@ class _PositionGroupScreenState extends ConsumerState<PositionGroupScreen> {
 
   // Check if any groups exist (default or custom)
   bool _hasAnyGroups(PortfolioProvider positionBook) {
-    return _hasGroups(positionBook, 'default');
+    return _hasGroups(positionBook, 'default') || _hasGroups(positionBook, 'custom');
   }
 
   // Build groups content - show single "No Groups" if both are empty, otherwise show sections

@@ -7,6 +7,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/screens/web/holdings/hold_table.dart';
 import 'package:mynt_plus/screens/web/holdings/mf_hold_table.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
+import 'package:mynt_plus/routes/route_names.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
@@ -715,9 +717,44 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 // Row 1: Tabs
                 buildTabs(),
                 const SizedBox(height: 12),
-                // Row 2: Search + Actions
+                
                 Row(
                   children: [
+                    // Insights button (only for Equity tab)
+                    if (_selectedTabIndex == 0) ...[
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            if (WebNavigationHelper.isAvailable) {
+                              WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          hoverColor: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                            light: MyntColors.primary.withValues(alpha: 0.1),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Text(
+                              'Insights',
+                              style: MyntWebTextStyles.symbol(
+                                context,
+                                fontWeight: MyntFonts.bold,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(child: buildSearch()),
                     const SizedBox(width: 12),
                     buildActionButtons(),
@@ -735,6 +772,41 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
             children: [
               buildTabs(),
               const Spacer(),
+              // Insights button (only for Equity tab)
+              if (_selectedTabIndex == 0) ...[
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      if (WebNavigationHelper.isAvailable) {
+                        WebNavigationHelper.navigateTo(Routes.portfolioDashboard);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(4),
+                    hoverColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark.withValues(alpha: 0.1),
+                      light: MyntColors.primary.withValues(alpha: 0.1),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Text(
+                        'Insights',
+                        style: MyntWebTextStyles.symbol(
+                          context,
+                          fontWeight: MyntFonts.bold,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
               buildSearch(),
               const SizedBox(width: 12),
               buildActionButtons(),

@@ -17,6 +17,7 @@ import 'package:local_auth/local_auth.dart';
 // import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/banner_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
+import 'package:mynt_plus/provider/option_flash_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/stocks_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
@@ -1026,6 +1027,8 @@ class AuthProvider extends DefaultChangeNotifier {
 
         // Clear notification data on logout to prevent data leaking between users
         ref.read(notificationprovider).clearData();
+
+        ref.read(optionFlashProvider).closePanel();
 
         // Reset web auth provider state to ensure clean login on web
         if (kIsWeb) {

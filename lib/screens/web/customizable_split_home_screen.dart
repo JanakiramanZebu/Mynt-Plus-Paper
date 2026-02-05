@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart';
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
+import 'package:mynt_plus/provider/option_flash_provider.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
@@ -22,6 +23,7 @@ import 'package:mynt_plus/screens/web/bonds/bonds_main_screen_web.dart';
 
 // import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
+import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
@@ -794,6 +796,8 @@ class _CustomizableSplitHomeScreenState
             _buildMainScaffold(),
             // const WebChartOverlay(), // Commented out - using panel chart only
             const InlineChartPortal(), // Persistent chart that follows ChartWithDepthWeb's target
+            const OptionFlashPanel(), 
+
           ],
         ),
       ),
@@ -917,6 +921,14 @@ class _CustomizableSplitHomeScreenState
                   onMutualFundTap: _handleMutualFundTap,
                   onBondsTap: _handleBondTap,
                   onOptionZTap: _handleOptionZTap,
+                  onOptionFlashTap: () {
+                    final optionFlash = ref.read(optionFlashProvider);
+                    if (optionFlash.isVisible) {
+                      optionFlash.closePanel();
+                    } else {
+                      optionFlash.showPanel(context);
+                    }
+                  },
                   onThemeToggle: () {
                     ref.read(themeProvider.notifier).toggleTheme(
                       themeMod: theme.isDarkMode ? 'Light' : 'Dark',
@@ -1250,6 +1262,13 @@ class _CustomizableSplitHomeScreenState
             const SizedBox(width: 12),
             _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
                   () => _handleOptionZTap()),
+
+                  const SizedBox(width: 12),
+                // Option Flash button
+                Consumer(builder: (context, ref, _) {
+                  return _buildOptionFlashButton(isDarkMode, ref);
+                }),
+
             ],
 
             const Spacer(),
@@ -1323,6 +1342,12 @@ class _CustomizableSplitHomeScreenState
                 const SizedBox(width: 12),
                 _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
                     () => _handleOptionZTap()),
+                    const SizedBox(width: 12),
+            // Option Flash button
+            Consumer(builder: (context, ref, _) {
+              return _buildOptionFlashButton(isDarkMode, ref);
+            }),
+
 
                 const Spacer(),
 
@@ -1742,6 +1767,24 @@ class _CustomizableSplitHomeScreenState
       title: title,
       isActive: isActive,
       onTap: onTap,
+      isDarkMode: isDarkMode,
+    );
+  }
+
+  Widget _buildOptionFlashButton(bool isDarkMode, WidgetRef ref) {
+    final optionFlash = ref.watch(optionFlashProvider);
+    final isActive = optionFlash.isVisible;
+
+    return _HoverableNavItem(
+      title: 'Flash',
+      isActive: isActive,
+      onTap: () {
+        if (optionFlash.isVisible) {
+          optionFlash.closePanel();
+        } else {
+          optionFlash.showPanel(context);
+        }
+      },
       isDarkMode: isDarkMode,
     );
   }
