@@ -510,7 +510,7 @@ class _HoldingDetailScreenWebState
         _rowOfInfoData(
           "Non POA / Sell",
           Text(
-            "${_holdingData.saleableQty ?? 0}.00",
+            "${_holdingData.saleableQty ?? 0} / ${_holdingData.currentQty ?? 0}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
@@ -566,13 +566,13 @@ class _HoldingDetailScreenWebState
         _rowOfInfoData(
           "Buy / Sell Value",
           Text(
-            "-",
+            "${(double.tryParse(_holdingData.invested?.toString() ?? '0') ?? 0.0).toStringAsFixed(2)} / ${(double.tryParse(_holdingData.sellAmt?.toString() ?? '0') ?? 0.0).toStringAsFixed(2)}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
           theme,
           showDivider: false,
-        ),
+        ),  
       ],
     );
   }
