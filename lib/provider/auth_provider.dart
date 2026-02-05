@@ -1013,6 +1013,9 @@ class AuthProvider extends DefaultChangeNotifier {
         pref.setHideLoginOptBtn(false);
         pref.setMobileLogin(false);
 
+        // Clear session state from index list provider to ensure fresh data load on re-login
+        ref.read(indexListProvider).clearSessionState();
+
         ref.read(fundProvider).clearFunds();
 
         // Clear banner seen storage on logout
@@ -2219,6 +2222,9 @@ class AuthProvider extends DefaultChangeNotifier {
     pref.setHideLoginOptBtn(false);
     pref.setMobileLogin(false);
 
+    // Clear session state from index list provider to ensure fresh data load on re-login
+    ref.read(indexListProvider).clearSessionState();
+
     // Clear banner seen storage on logout (network failure scenario)
     ref.read(bannerProvider).onUserLogout();
 
@@ -2346,6 +2352,9 @@ class AuthProvider extends DefaultChangeNotifier {
       pref.setLogout(true);
       pref.setHideLoginOptBtn(false);
       pref.setMobileLogin(false);
+
+      // Clear session state from index list provider to ensure fresh data load on re-login
+      ref.read(indexListProvider).clearSessionState();
 
       // Clear banner seen storage on session expiry
       ref.read(bannerProvider).onUserLogout();

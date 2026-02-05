@@ -658,6 +658,13 @@ class IndexListProvider extends DefaultChangeNotifier {
     }
   }
 
+  /// Clear session check state - called when session expires or user logs out
+  /// This ensures that on re-login, the data loading is not skipped
+  void clearSessionState() {
+    _checkSess = null;
+    notifyListeners();
+  }
+
 // Push Notification call
   fetchNotifyMsg() async {
     try {
