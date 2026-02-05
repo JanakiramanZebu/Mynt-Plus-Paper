@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart';
@@ -362,16 +364,36 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     bool prdcheck = widget.orderArg.prd?.isNotEmpty ?? false;
 
     _isStock = widget.scripInfo.exch == "NSE" || widget.scripInfo.exch == "BSE";
-    if(_isStock && _stockExchangesList.isNotEmpty){
-      // Filter the exchange list to find the matching exchange
-      final matchingExchange = _stockExchangesList.firstWhere(
-        (exchange) => exchange.exch == widget.scripInfo.exch,
-        orElse: () => _stockExchangesList[0],
-      );
-      stockExchangeSelected = matchingExchange;
-      selectedStockSubscribe.exchange=stockExchangeSelected.exch??"";
-      selectedStockSubscribe.token=stockExchangeSelected.token??"";
-      selectedStockSubscribe.tSym=stockExchangeSelected.tsym??"";
+    if(_isStock){
+      // Check if equls list matches the current symbol (by checking if any token matches)
+      final bool equlsMatchesCurrentSymbol = _stockExchangesList.isNotEmpty &&
+          _stockExchangesList.any((eq) => eq.token == widget.scripInfo.token);
+
+      if (equlsMatchesCurrentSymbol) {
+        // Use equls list for exchange switching (NSE/BSE toggle)
+        final matchingExchange = _stockExchangesList.firstWhere(
+          (exchange) => exchange.exch == widget.scripInfo.exch,
+          orElse: () => _stockExchangesList[0],
+        );
+        stockExchangeSelected = matchingExchange;
+      } else {
+        // equls has stale data - create a temporary entry from widget data
+        stockExchangeSelected = Equls(
+          exch: widget.scripInfo.exch,
+          token: widget.scripInfo.token,
+          tsym: widget.orderArg.tSym,
+        );
+        // Clear stale list to avoid showing wrong exchange options
+        _stockExchangesList = [];
+      }
+
+      // Always use widget data for selectedStockSubscribe to ensure correct values
+      selectedStockSubscribe.exchange = widget.scripInfo.exch ?? "";
+      selectedStockSubscribe.token = widget.scripInfo.token ?? "";
+      selectedStockSubscribe.tSym = widget.orderArg.tSym;
+      selectedStockSubscribe.ltp = widget.orderArg.ltp ?? "";
+      selectedStockSubscribe.perChange = widget.orderArg.perChange ?? "";
+
       // Subscribe to websocket for initial stock exchange
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _subscribeSelectedStock(context);
@@ -641,7 +663,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                       SafeParse.toInt(orderRawValue['dscqty']) > 0)
               ? true
               : false;
-      _afterMarketOrder = orderRawValue['amo'] == "Yes" ? true : false;
+
+      if (orderRawValue['amo'] == "Yes") {
+          isAdvancedOptionClicked = true;
+          _afterMarketOrder = true;
+        }else{
+           _afterMarketOrder = false;
+        }
       // Use orderRawValue price if available and not "0", otherwise fallback to LTP
       final rawPrice = orderRawValue['prc'];
       String fallbackPrice;
@@ -1123,6 +1151,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 selectedStockSubscribe.exchange = stockExchangeSelected.exch ?? "";
                                                                 selectedStockSubscribe.token = stockExchangeSelected.token ?? "";
                                                                 selectedStockSubscribe.tSym = stockExchangeSelected.tsym ?? "";
+                                                                // Reset LTP and perChange to allow fresh websocket data
+                                                                selectedStockSubscribe.ltp = "";
+                                                                selectedStockSubscribe.perChange = "";
                                                                 widget.scripInfo.exch = stockExchangeSelected.exch ?? "";
                                                                 widget.scripInfo.token = stockExchangeSelected.token ?? "";
                                                                 widget.scripInfo.tsym = stockExchangeSelected.tsym ?? "";
@@ -2063,9 +2094,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ? "Target Trigger Price"
                                                     : "Trigger Price",
                                                 theme),
-                                                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                                                // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                //                   dark: MyntColors.textPrimaryDark,
+                                                //                   light: MyntColors.textPrimary))),
                                           ]),
                                           const SizedBox(height: 10),
                                           SizedBox(
@@ -2809,9 +2840,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       ? "Stoploss Trigger Price"
                                                       : "Trigger Price",
                                                   theme),
-                                                  Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                                                  // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                                                  //                 dark: MyntColors.textPrimaryDark,
+                                                  //                 light: MyntColors.textPrimary))),
                                             ]),
                                             const SizedBox(height: 10),
                                             SizedBox(
@@ -6961,9 +6992,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               const SizedBox(height: 2),
               Row(children: [
                 headerTitleText("Trigger", theme),
-                Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+                // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+                //                                                   dark: MyntColors.textPrimaryDark,
+                //                                                   light: MyntColors.textPrimary))),
               ],),
               const SizedBox(height: 10),
               SizedBox(
@@ -8343,18 +8374,33 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       priceType = "Limit";
     }
 
+    // Get current LTP from websocket first, then fallback to orderArg.ltp
+    String currentLtp = widget.orderArg.ltp ?? "0.00";
+    final socketData = ref.read(websocketProvider).socketDatas[widget.scripInfo.token];
+    if (socketData != null) {
+      final wsLtp = socketData['lp']?.toString();
+      if (wsLtp != null && wsLtp != "null" && wsLtp != "0" && wsLtp != "0.00") {
+        currentLtp = wsLtp;
+      }
+    }
+    // If still 0, try using existing ordPrice if it's valid
+    if ((currentLtp == "0.00" || currentLtp == "0" || currentLtp.isEmpty) &&
+        ordPrice != "0.00" && ordPrice != "0" && ordPrice.isNotEmpty && ordPrice != "Market") {
+      currentLtp = ordPrice;
+    }
+
     // Update price controller based on type
     if (priceType == "Market" || priceType == "SL MKT") {
       priceCtrl.text = "Market";
-      double ltp = (SafeParse.toDouble(widget.orderArg.ltp) *
+      double ltp = (SafeParse.toDouble(currentLtp) *
               SafeParse.toDouble(mktProtCtrl.text)) /
           100;
 
       if (isBuy!) {
-        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) + ltp)
+        ordPrice = (SafeParse.toDouble(currentLtp) + ltp)
             .toStringAsFixed(2);
       } else {
-        ordPrice = (SafeParse.toDouble(widget.orderArg.ltp) - ltp)
+        ordPrice = (SafeParse.toDouble(currentLtp) - ltp)
             .toStringAsFixed(2);
       }
       double result =
@@ -8373,7 +8419,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         ordPrice = result.toStringAsFixed(2);
       }
     } else if (priceCtrl.text == "Market") {
-      priceCtrl.text = "${widget.orderArg.ltp}";
+      priceCtrl.text = currentLtp;
       ordPrice = priceCtrl.text;
     }
   }

@@ -13,6 +13,7 @@ import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart' show resolveThemeColor;
+import 'package:mynt_plus/utils/safe_parse.dart';
 import '../../../../res/res.dart';
 import '../../../models/marketwatch_model/scrip_info.dart';
 import '../../../models/order_book_model/modify_order_model.dart';
@@ -262,7 +263,8 @@ class _ModifyPlaceOrderScreenState
   bool _isStoplossOrder = false;
   bool _isBOCOOrderEnabled = false;
   bool isAdvancedOptionClicked = false;
-  bool _afterMarketOrder = false;
+  bool _hasValidCircuitBreakerValues = false;
+  // bool _afterMarketOrder = false;
   bool _addValidityAndDisclosedQty = false;
   // String orderType = "Delivery";
 
@@ -278,6 +280,14 @@ class _ModifyPlaceOrderScreenState
     tik = double.parse(widget.scripInfo.ti.toString());
 
     prcType = widget.modifyOrderArgs.prctyp!;
+
+    // Initialize circuit breaker validation flag
+    _hasValidCircuitBreakerValues = widget.scripInfo.lc != null &&
+        widget.scripInfo.uc != null &&
+        widget.scripInfo.lc != "0.00" &&
+        widget.scripInfo.uc != "0.00" &&
+        widget.scripInfo.lc!.isNotEmpty &&
+        widget.scripInfo.uc!.isNotEmpty;
     // isActivePrice = [
     //   prcType == 'LMT' ? true : false,
     //   prcType == 'MKT' ? true : false,
@@ -374,10 +384,10 @@ class _ModifyPlaceOrderScreenState
       }
 
       // Auto-expand for AMO orders (if AMO flag exists in order data)
-      if (isAmo) {
-        isAdvancedOptionClicked = true;
-        _afterMarketOrder = true;
-      }
+      // if (isAmo) {
+      //   isAdvancedOptionClicked = true;
+      //   _afterMarketOrder = true;
+      // }
 
       marginUpdate();
     });
@@ -1108,21 +1118,14 @@ class _ModifyPlaceOrderScreenState
                                                         .showWarning(context,
                                                             "Limit Price can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");
                                                   } else {
-                                                    if ((double.parse(value) <
-                                                            double.parse(
-                                                                "${widget.scripInfo.lc}")) ||
-                                                        (double.parse(value) >
-                                                            double.parse(
-                                                                "${widget.scripInfo.uc}"))) {
-                                                      ResponsiveSnackBar.showWarning(
-                                                          context,
-                                                          double.parse(
-                                                                      value) <
-                                                                  double.parse(
-                                                                      "${widget.scripInfo.lc}")
-                                                              ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
-                                                              : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
-                                                    }
+                                                    if ((double.parse(value) < double.parse("${widget.scripInfo.lc}")) ||
+                                                          (double.parse(value) > double.parse("${widget.scripInfo.uc}"))) {
+                                                          ResponsiveSnackBar.showWarning(
+                                                              context,
+                                                              double.parse(value) < double.parse("${widget.scripInfo.lc}")
+                                                                  ? "Limit Price can not be lesser than Lower Circuit Limit ${widget.scripInfo.lc}"
+                                                                  : "Limit Price can not be greater than Upper Circuit Limit ${widget.scripInfo.uc}");
+                                                      }
                                                     setState(() {
                                                       price = value;
                                                       marginUpdate();
@@ -1192,7 +1195,7 @@ class _ModifyPlaceOrderScreenState
                                         onPressed: () {
                                           setState(() {
                                             if (!_isStoplossOrder &&
-                                                !_afterMarketOrder &&
+                                                // !_afterMarketOrder &&
                                                 !_addValidityAndDisclosedQty) {
                                               isAdvancedOptionClicked =
                                                   !isAdvancedOptionClicked;
@@ -1390,68 +1393,68 @@ class _ModifyPlaceOrderScreenState
                                           ],
                                         ),
                 
-                                        if (!_isBOCOOrderEnabled) ...[
+                                        // if (!_isBOCOOrderEnabled) ...[
                                           // AMO switch section
-                                          Divider(
-                                                      color: resolveThemeColor(
-                                                          context,
-                                                          dark: colors
-                                                              .darkColorDivider,
-                                                          light: colors
-                                                              .colorDivider),thickness: 0.5,),
-                                          Theme(
-                                            data: ThemeData(
-                                              unselectedWidgetColor: theme
-                                                      .isDarkMode
-                                                  ? MyntColors.textPrimary
-                                                  : MyntColors.textPrimary,
-                                            ),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16,
-                                                      vertical: 5),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    'After market order (AMO)',
-                                                    style: WebTextStyles.sub(
-                                                      isDarkTheme:
-                                                          theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? MyntColors.textSecondary
-                                                          : MyntColors.textSecondary,
-                                                    ),
-                                                  ),
-                                                  Checkbox(
-                                                    value: _afterMarketOrder,
-                                                    onChanged: (bool? value) {
-                                                      setState(() {
-                                                        _afterMarketOrder =
-                                                            value ?? false;
-                                                        isAmo =
-                                                            _afterMarketOrder;
-                                                      });
-                                                    },
-                                                    activeColor:
-                                                        colors.colorBlue,
-                                                    checkColor: Colors.white,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                         Divider(
-                                                      color: resolveThemeColor(
-                                                          context,
-                                                          dark: colors
-                                                              .darkColorDivider,
-                                                          light: colors
-                                                              .colorDivider),thickness: 0.5,),
-                                        ],
+                                          // Divider(
+                                          //             color: resolveThemeColor(
+                                          //                 context,
+                                          //                 dark: colors
+                                          //                     .darkColorDivider,
+                                          //                 light: colors
+                                          //                     .colorDivider),thickness: 0.5,),
+                                          // Theme(
+                                          //   data: ThemeData(
+                                          //     unselectedWidgetColor: theme
+                                          //             .isDarkMode
+                                          //         ? MyntColors.textPrimary
+                                          //         : MyntColors.textPrimary,
+                                          //   ),
+                                          //   child: Container(
+                                          //     padding:
+                                          //         const EdgeInsets.symmetric(
+                                          //             horizontal: 16,
+                                          //             vertical: 5),
+                                          //     child: Row(
+                                          //       mainAxisAlignment:
+                                          //           MainAxisAlignment
+                                          //               .spaceBetween,
+                                          //       children: [
+                                          //         Text(
+                                          //           'After market order (AMO)',
+                                          //           style: WebTextStyles.sub(
+                                          //             isDarkTheme:
+                                          //                 theme.isDarkMode,
+                                          //             color: theme.isDarkMode
+                                          //                 ? MyntColors.textSecondary
+                                          //                 : MyntColors.textSecondary,
+                                          //           ),
+                                          //         ),
+                                          //         Checkbox(
+                                          //           value: _afterMarketOrder,
+                                          //           onChanged: (bool? value) {
+                                          //             setState(() {
+                                          //               _afterMarketOrder =
+                                          //                   value ?? false;
+                                          //               isAmo =
+                                          //                   _afterMarketOrder;
+                                          //             });
+                                          //           },
+                                          //           activeColor:
+                                          //               colors.colorBlue,
+                                          //           checkColor: Colors.white,
+                                          //         ),
+                                          //       ],
+                                          //     ),
+                                          //   ),
+                                          // ),
+                                          //  Divider(
+                                          //               color: resolveThemeColor(
+                                          //                   context,
+                                          //                   dark: colors
+                                          //                       .darkColorDivider,
+                                          //                   light: colors
+                                          //                       .colorDivider),thickness: 0.5,),
+                                          // ],
                                       ],
                                     ),
                                   ),
@@ -2238,106 +2241,79 @@ class _ModifyPlaceOrderScreenState
                                                                             ? "Trigger can not be empty"
                                                                             : "Trigger can not be 0");
                                                                   } else {
+                                                                    // Get the order price for limit orders
+                                                                    String ordPrice = prcType == "SL-MKT" ? price : priceCtrl.text;
+
                                                                     if (isBuy) {
-                                                                      if (prcType ==
-                                                                          "SL-LMT") {
-                                                                        if (double.parse(triggerPriceCtrl.text) <
-                                                                            double.parse(widget.orderArg.ltp ??
-                                                                                "0.00")) {
-                                                                          showResponsiveWarningMessage(
-                                                                              context,
-                                                                              "Trigger should be greater than LTP ${double.parse(triggerPriceCtrl.text) > double.parse(widget.orderArg.ltp ?? "0.00")}");
-                                                                        } else if (double.parse(triggerPriceCtrl.text) >
-                                                                            double.parse(widget.scripInfo.uc ??
-                                                                                "0.00")) {
+                                                                      // BUY + SL-MKT: Trigger should be greater than LTP
+                                                                      if (prcType == "SL-MKT") {
+                                                                        if (SafeParse.toDouble(triggerPriceCtrl.text) <
+                                                                            SafeParse.toDouble(widget.orderArg.ltp)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                              "Trigger should be greater than LTP");
+                                                                        } else if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
+                                                                          ResponsiveSnackBar.showWarning(
+                                                                              context,
+                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                         } else {
-                                                                          if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) > frezQty &&
-                                                                              widget.scripInfo.frzqty != null)) {
-                                                                            modifyOrder();
-                                                                          } else {
-                                                                            modifyOrder();
-                                                                          }
+                                                                          modifyOrder();
                                                                         }
                                                                       } else {
-                                                                        if (double.parse(triggerPriceCtrl.text) <
-                                                                            double.parse(widget.scripInfo.lc ??
-                                                                                "0.00")) {
+                                                                        // BUY + SL-LMT: Trigger should be less than or equal to limit price
+                                                                        if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
-                                                                        } else if (double.parse(priceCtrl.text) <
-                                                                            double.parse(triggerPriceCtrl
-                                                                                .text)) {
+                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
+                                                                        } else if (SafeParse.toDouble(ordPrice) < SafeParse.toDouble(triggerPriceCtrl.text)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
                                                                               "Trigger should be less than price");
-                                                                        } else if (double.parse(triggerPriceCtrl.text) >
-                                                                            double.parse(widget.scripInfo.uc ??
-                                                                                "0.00")) {
+                                                                        } else if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
+                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
                                                                         } else {
-                                                                          if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) > frezQty &&
-                                                                              widget.scripInfo.frzqty != null)) {
-                                                                            modifyOrder();
-                                                                          } else {
-                                                                            modifyOrder();
-                                                                          }
+                                                                          modifyOrder();
                                                                         }
                                                                       }
                                                                     } else {
-                                                                      if (prcType ==
-                                                                          "SL-LMT") {
-                                                                        if (double.parse(triggerPriceCtrl.text) >
-                                                                            double.parse(widget.orderArg.ltp ??
-                                                                                "0.00")) {
+                                                                      // SELL + SL-MKT: Trigger should be less than LTP
+                                                                      if (prcType == "SL-MKT") {
+                                                                        if (SafeParse.toDouble(triggerPriceCtrl.text) >
+                                                                            SafeParse.toDouble(widget.orderArg.ltp)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
                                                                               "Trigger should be lesser than LTP");
-                                                                        } else if (double.parse(triggerPriceCtrl.text) <
-                                                                            double.parse(widget.scripInfo.lc ??
-                                                                                "0.00")) {
+                                                                        } else if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                         } else {
-                                                                          if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) > frezQty &&
-                                                                              widget.scripInfo.frzqty != null)) {
-                                                                            modifyOrder();
-                                                                          } else {
-                                                                            modifyOrder();
-                                                                          }
+                                                                          modifyOrder();
                                                                         }
                                                                       } else {
-                                                                        if (double.parse(triggerPriceCtrl.text) >
-                                                                            double.parse(widget.scripInfo.uc ??
-                                                                                "0.00")) {
+                                                                        // SELL + SL-LMT: Trigger should be greater than or equal to limit price
+                                                                        if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) > SafeParse.toDouble(widget.scripInfo.uc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc ?? 0.00}");
-                                                                        } else if (double.parse(price) >
-                                                                            double.parse(triggerPriceCtrl
-                                                                                .text)) {
+                                                                              "Trigger can not be greater than upper circuit limit of ${widget.scripInfo.uc}");
+                                                                        } else if (SafeParse.toDouble(ordPrice) > SafeParse.toDouble(triggerPriceCtrl.text)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
                                                                               "Trigger should be greater than price");
-                                                                        } else if (double.parse(triggerPriceCtrl.text) <
-                                                                            double.parse(widget.scripInfo.lc ??
-                                                                                "0.00")) {
+                                                                        } else if (_hasValidCircuitBreakerValues &&
+                                                                            SafeParse.toDouble(triggerPriceCtrl.text) < SafeParse.toDouble(widget.scripInfo.lc)) {
                                                                           ResponsiveSnackBar.showWarning(
                                                                               context,
-                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc ?? 0.00}");
+                                                                              "Trigger can not be lesser than lower circuit limit of ${widget.scripInfo.lc}");
                                                                         } else {
-                                                                          if ((int.parse(qtyCtrl.text.isEmpty ? "0" : qtyCtrl.text) > frezQty &&
-                                                                              widget.scripInfo.frzqty != null)) {
-                                                                            modifyOrder();
-                                                                          } else {
-                                                                            modifyOrder();
-                                                                          }
+                                                                          modifyOrder();
                                                                         }
                                                                       }
                                                                     }
@@ -2478,9 +2454,9 @@ class _ModifyPlaceOrderScreenState
           const SizedBox(height: 2),
           Row(children: [
           headerTitleText("Trigger", theme),
-          Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textPrimaryDark,
-                                                                  light: MyntColors.textPrimary))),
+          // Text(" (in Rs)", style: WebTextStyles.para(isDarkTheme: theme.isDarkMode, color: resolveThemeColor(context,
+          //                                                         dark: MyntColors.textPrimaryDark,
+          //                                                         light: MyntColors.textPrimary))),
           ],),
           const SizedBox(height: 10),
           SizedBox(
