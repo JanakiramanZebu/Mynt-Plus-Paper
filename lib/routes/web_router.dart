@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
+import '../screens/web/strategy_builder/strategy_builder_screen.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
 
@@ -35,6 +36,7 @@ class WebRoutes {
   static const String reports = '/reports';
   static const String profile = '/profile';
   static const String portfolioAnalysis = '/portfolio-analysis';
+  static const String strategyBuilder = '/strategy-builder';
 }
 
 /// Global GoRouter instance for web
@@ -144,6 +146,12 @@ void initializeWebRouter() {
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.portfolioAnalysis,
         ),
+      ),
+
+      // Strategy Builder screen
+      GoRoute(
+        path: WebRoutes.strategyBuilder,
+        builder: (context, state) => const StrategyBuilderScreenWeb(),
       ),
     ],
 

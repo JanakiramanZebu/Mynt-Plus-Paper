@@ -27,6 +27,7 @@ import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
@@ -1269,6 +1270,10 @@ class _CustomizableSplitHomeScreenState
                   return _buildOptionFlashButton(isDarkMode, ref);
                 }),
 
+            const SizedBox(width: 12),
+            // _buildNavItem('Strategy Builder', isDarkMode, ScreenType.strategyBuilder,
+            //       () => _handleStrategyBuilderTap()),
+         
             ],
 
             const Spacer(),
@@ -1348,6 +1353,10 @@ class _CustomizableSplitHomeScreenState
               return _buildOptionFlashButton(isDarkMode, ref);
             }),
 
+                const SizedBox(width: 12),
+                _buildNavItem('StrBuilder', isDarkMode, ScreenType.strategyBuilder,
+                    () => _handleStrategyBuilderTap()),
+             
 
                 const Spacer(),
 
@@ -1723,6 +1732,11 @@ class _CustomizableSplitHomeScreenState
     await funds.openOptionZInNewTab();
   }
 
+  void _handleStrategyBuilderTap() {
+    // Show Strategy Builder in panel instead of navigating to separate route
+    _replaceScreenInPanel(ScreenType.strategyBuilder);
+  }
+
   // Build navigation screens for app bar
   Widget _buildNavigationScreens(bool isDarkMode) {
     return Row(
@@ -2082,6 +2096,8 @@ class _CustomizableSplitHomeScreenState
         return const SizedBox.shrink();
       case ScreenType.notification:
         return const NotificationScreenWeb();
+      case ScreenType.strategyBuilder:
+        return const StrategyBuilderPanelWeb();
       // caEvent and cpAction removed
     }
   }
@@ -2137,6 +2153,8 @@ class _CustomizableSplitHomeScreenState
         return 'Fund Details';
       case ScreenType.notification:
         return 'Notification';
+      case ScreenType.strategyBuilder:
+        return 'Strategy Builder';
       // caEvent and cpAction removed
     }
   }
@@ -2192,6 +2210,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.show_chart;
       case ScreenType.notification:
         return Icons.notifications_outlined;
+      case ScreenType.strategyBuilder:
+        return Icons.architecture;
       // caEvent and cpAction removed
     }
   }
@@ -2575,6 +2595,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.sipCalculator:
       case ScreenType.cagrCalculator:
       case ScreenType.mfStockDetail:
+      case ScreenType.strategyBuilder:
         break;
       // caEvent and cpAction removed
     }
@@ -4487,6 +4508,7 @@ enum ScreenType {
   mfStockDetail,
   notification,
   portfolioAnalysis,
+  strategyBuilder,
 }
 
 // Hoverable navigation item widget

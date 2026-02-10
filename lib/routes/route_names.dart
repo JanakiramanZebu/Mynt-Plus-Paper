@@ -184,6 +184,7 @@ class Routes {
   static const String iosfundscreen = "iosfundscreen";
 
   static const String optionStrategy = "optionStrategy";
+  static const String strategyBuilder = "strategyBuilder";
 
   static const String bestMfScreen = "bestMfScreen";
 

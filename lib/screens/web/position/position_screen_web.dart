@@ -27,6 +27,8 @@ import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
+import '../../../../provider/strategy_builder_provider.dart';
+import '../strategy_builder/strategy_builder_screen.dart';
 
 class PositionScreenWeb extends ConsumerStatefulWidget {
   final List<PositionBookModel> listofPosition;
@@ -535,6 +537,63 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                               color: Colors.white,
                               fontWeight: MyntFonts.semiBold,
                             ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Analyze Button - only show when F&O options are selected
+            Consumer(
+              builder: (context, ref, _) {
+                final selectedFnO = ref.watch(portfolioProvider.select((p) => p.selectedFnOPositions));
+                if (selectedFnO.isEmpty) return const SizedBox.shrink();
+
+                final buttonHeight = context.responsive<double>(
+                  mobile: 30,
+                  tablet: 32,
+                  desktop: 35,
+                );
+                final buttonPadding = context.responsive<double>(
+                  mobile: 12,
+                  tablet: 16,
+                  desktop: 20,
+                );
+
+                return Padding(
+                  padding: EdgeInsets.only(left: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+                  child: SizedBox(
+                    height: buttonHeight,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showAnalyzeDialog(selectedFnO),
+                      icon: const Icon(Icons.analytics_outlined, size: 16),
+                      label: Text(
+                        'Analyze (${selectedFnO.length})',
+                        style: context.isMobile
+                            ? MyntWebTextStyles.para(
+                                context,
+                                color: Colors.white,
+                                fontWeight: MyntFonts.semiBold,
+                              )
+                            : MyntWebTextStyles.body(
+                                context,
+                                color: Colors.white,
+                                fontWeight: MyntFonts.semiBold,
+                              ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: resolveThemeColor(
+                          context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: buttonPadding, vertical: 0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 );
@@ -2257,6 +2316,108 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
         ),
       );
     }
+  }
+
+  void _showAnalyzeDialog(List<PositionBookModel> positions) {
+    final strategyProvider = ref.read(strategyBuilderProvider);
+
+    // Load positions into strategy builder
+    strategyProvider.loadFromPositions(positions, context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.85,
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: BoxDecoration(
+              color: resolveThemeColor(
+                context,
+                dark: const Color(0xFF1E1E1E),
+                light: Colors.white,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                // Header bar
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(
+                          context,
+                          dark: const Color(0xFF333333),
+                          light: const Color(0xFFE0E0E0),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.analytics_outlined,
+                        size: 20,
+                        color: resolveThemeColor(
+                          context,
+                          dark: Colors.white,
+                          light: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Analyze Positions',
+                        style: MyntWebTextStyles.body(
+                          context,
+                          fontWeight: MyntFonts.semiBold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(dialogContext).pop();
+                          strategyProvider.exitAnalyzeMode();
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: resolveThemeColor(
+                            context,
+                            dark: Colors.white70,
+                            light: Colors.black54,
+                          ),
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                      ),
+                    ],
+                  ),
+                ),
+                // Strategy Builder panel
+                const Expanded(
+                  child: StrategyBuilderPanelWeb(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ).then((_) {
+      // Ensure analyze mode is exited when dialog is dismissed
+      if (strategyProvider.isAnalyzeMode) {
+        strategyProvider.exitAnalyzeMode();
+      }
+    });
   }
 
   void _onSortTable(int columnIndex) {

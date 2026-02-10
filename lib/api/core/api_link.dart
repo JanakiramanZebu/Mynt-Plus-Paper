@@ -102,6 +102,10 @@ class ApiLinks {
   String get cancelGTTOrderURL => '$goMyntURL/CancelGTTOrder';
   String get basketMargin => '$goMyntURL/GetBasketMargin';
 
+// Payoff & Greeks
+  String get payoffCalculation => '${bemynt}payoff-calculation';
+  String get optionGreeks => '${bemynt}getoptiongreeks';
+
 // Order
 
   String get orderMargin => '$goMyntURL/GetOrderMargin';

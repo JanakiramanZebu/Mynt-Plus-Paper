@@ -228,6 +228,26 @@ print("res.body: ${res.body}");
     }
   }
 
+  /// Search scrip for Strategy Builder - properly encodes exchange filter array
+  Future<SearchScripNewModel> searchScripForStrategyBuilder({
+    required String searchText,
+    required List<String> exchanges,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.searchScripNew);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"","fil":${jsonEncode(exchanges)},"opt":"false"}&jKey=${prefs.clientSession}''');
+
+      print('''[StrategyBuilder] jData={"uid":"${prefs.clientId}","stext":"${UrlUtils.encodeParameter(searchText)}","cat":"","fil":${jsonEncode(exchanges)},"opt":"false"}&jKey=${prefs.clientSession}''');
+      final json = jsonDecode(res.body);
+      return SearchScripNewModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 // Get Linked scrip details from kambala
 
   Future<LinkedScrips> getLinkedScrip(String token, String exch) async {
@@ -264,6 +284,8 @@ print("res.body: ${res.body}");
               '''jData={"uid":"${prefs.clientId}","exch":"$exchange" ,"tsym":"${UrlUtils.encodeParameter(tradeSym)}","cnt":"$numofStrike ","strprc":"$strPrc"}&jKey=${prefs.clientSession}''');
 
       //  log(" Option Chain   => ${res.body}");
+
+      print(" Option Chain Response => ${res.body}");
 
       final resp = OptionChainModel.fromJson(
           jsonDecode(res.body) as Map<String, dynamic>);

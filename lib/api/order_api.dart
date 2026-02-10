@@ -756,4 +756,72 @@ mixin OrderAPI on ApiCore {
       rethrow;
     }
   }
+
+  /// Get Payoff Calculation from be.mynt.in
+  Future<Map<String, dynamic>> getPayoffCalculation({
+    required String strategy,
+    required bool isPosition,
+    required String spotPrice,
+    required int daysToExpiry,
+    required List<Map<String, dynamic>> legs,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.payoffCalculation);
+
+      final payload = {
+        "strategy": strategy,
+        "ispotion": isPosition,
+        "spotPrice": spotPrice,
+        "daysToExpiry": daysToExpiry,
+        "legs": legs,
+      };
+
+      log("[PayoffCalculation] Request: ${jsonEncode(payload)}");
+
+      final res = await apiClient.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      log("[PayoffCalculation] Response: ${res.body}");
+      final json = jsonDecode(res.body);
+      return json as Map<String, dynamic>;
+    } catch (e) {
+      log("[PayoffCalculation] Error: $e");
+      rethrow;
+    }
+  }
+
+  /// Get Option Greeks from be.mynt.in
+  Future<Map<String, dynamic>> getOptionGreeks({
+    required String spotPrice,
+    required int expiryDay,
+    required Map<String, dynamic> options,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.optionGreeks);
+
+      final payload = {
+        "spotPrice": spotPrice,
+        "expiryDay": expiryDay,
+        "OPTIONS": options,
+      };
+
+      log("[OptionGreeks] Request: ${jsonEncode(payload)}");
+
+      final res = await apiClient.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      log("[OptionGreeks] Response: ${res.body}");
+      final json = jsonDecode(res.body);
+      return json as Map<String, dynamic>;
+    } catch (e) {
+      log("[OptionGreeks] Error: $e");
+      rethrow;
+    }
+  }
 }

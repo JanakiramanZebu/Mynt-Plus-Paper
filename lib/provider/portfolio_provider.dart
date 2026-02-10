@@ -104,6 +104,18 @@ class PortfolioProvider extends DefaultChangeNotifier {
   Set<String> _exitSelectedPositions = {};
   Set<String> get exitSelectedPositions => _exitSelectedPositions;
 
+  /// Get selected F&O option positions for strategy builder analysis
+  List<PositionBookModel> get selectedFnOPositions {
+    if (_openPosition == null) return [];
+    return _openPosition!.where((p) =>
+      p.isExitSelection == true &&
+      p.qty != "0" &&
+      (p.exch == 'NFO' || p.exch == 'BFO' || p.exch == 'MCX' || p.exch == 'CDS') &&
+      p.option != null &&
+      (p.option!.contains('CE') || p.option!.contains('PE'))
+    ).toList();
+  }
+
   int _exitHoldingsQty = 0;
   int get exitHoldingsQty => _exitHoldingsQty;
   bool _isExitAllHoldings = false;

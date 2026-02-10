@@ -134,6 +134,7 @@ import '../screens/Mobile/stocks/explore/stocks/trade_action/all_trade.dart';
 import '../screens/Mobile/stocks/explore/stocks/trade_action/sector_themeatic_details.dart';
 import '../screens/web/market_watch/options/option_chain_ss_web.dart';
 import '../screens/web/market_watch/set_alert_web.dart';
+import '../screens/web/strategy_builder/strategy_builder_screen.dart';
 import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -1051,6 +1052,12 @@ class AppRoutes {
       //     pageBuilder: (_, __, ___) => const OptionStrategey(),
       //     beginOffset: const Offset(-1.0, 0.0),
       //   );
+
+      case Routes.strategyBuilder:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => const StrategyBuilderScreenWeb(),
+          beginOffset: const Offset(1.0, 0.0),
+        );
 
       case Routes.bestMfScreen:
         return _createRoute(

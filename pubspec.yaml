@@ -150,6 +150,11 @@ flutter:
     - assets/explore/
     - assets/strategiesimg/
     - assets/mock_json/
+    - predefined_strategies/
+    - predefined_strategies/bullish/
+    - predefined_strategies/bearish/
+    - predefined_strategies/neutral/
+    - predefined_strategies/others/
     - assets/explore/
     - assets/icon/dashboard/
     - shorebird.yaml

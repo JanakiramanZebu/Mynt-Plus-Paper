@@ -442,6 +442,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const SizedBox.shrink(); // Not implemented in window mode
       case ScreenType.portfolioAnalysis:
         return const PortfolioDashboardScreen();
+      case ScreenType.strategyBuilder:
+        return const SizedBox.shrink(); // Strategy Builder opens as separate route
     }
   }
 
@@ -495,6 +497,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Notification';
       case ScreenType.portfolioAnalysis:
         return 'Portfolio Analysis';
+      case ScreenType.strategyBuilder:
+        return 'Strategy Builder';
     }
   }
 
