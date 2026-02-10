@@ -260,7 +260,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   String quotemsg = "";
 //   bool addValidity = false;
 //   bool isAmo = false;
-  bool isAvbSecu = false;
+  // bool isAvbSecu = false;
   bool isSecu = false;
   Future<void> Function()? _pendingSurveillanceAction;
 
@@ -639,17 +639,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       priceCtrl.text = priceType == "Market" || priceType == "SL MKT" ? "Market" : ordPrice;
     });
 
-    final quote = ref.read(marketWatchProvider).getQuotes?.ordMsg;
+    final quote = widget.scripInfo.ordMsg;
 
     if (widget.isBasket == "Basket" ||
         widget.isBasket == "BasketEdit" ||
         widget.isBasket == "BasketMode" ||
         quote == null) {
-      isAvbSecu = false;
+      // isAvbSecu = false;
       isSecu = true;
     } else {
       quotemsg = quote;
-      isAvbSecu = true;
+      // isAvbSecu = true;
       isSecu = false;
     }
     // addStoploss = orderType != "Delivery" && orderType != "Intraday" ? true : false;

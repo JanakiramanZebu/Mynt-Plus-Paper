@@ -57,6 +57,8 @@ class ScripInfoModel {
   String? option;
   String? lp;
   String? perChng;
+  String? ordMsg;
+
 
   ScripInfoModel(
       {this.requestTime,
@@ -116,7 +118,8 @@ class ScripInfoModel {
       this.option,
       this.symbol,
       this.lp,
-      this.perChng});
+      this.perChng,
+      this.ordMsg});
 
   ScripInfoModel.fromJson(Map<String, dynamic> json) {
     requestTime = json['request_time'];
@@ -174,7 +177,7 @@ class ScripInfoModel {
     expDate = json['expDate'];
     symbol = json['symbol'];
     option = json['option'];
-
+    ordMsg = json['ord_msg'];
     emsg = json['emsg'].toString();
   }
 
@@ -236,6 +239,7 @@ class ScripInfoModel {
     data['option'] = option;
     data['expDate'] = expDate;
     data['symbol'] = symbol;
+    data['ord_msg'] = ordMsg;
     return data;
   }
 }
