@@ -10,14 +10,13 @@ import '../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
-import '../../../res/global_state_text.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/res.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
-import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/mynt_loader.dart';
-import '../../Mobile/market_watch/over_view/financial.dart';
-import '../../Mobile/market_watch/over_view/price_comparision.dart';
+import 'over_view/financial_web.dart';
+import 'over_view/chart_web.dart';
+import 'over_view/price_comparision_web.dart';
 
 class PriceData {
   final DateTime date;
@@ -45,86 +44,17 @@ class EventData {
   });
 }
 
-// Custom Donut Chart Painter for Shareholders Chart
-class ShareholdersDonutChartPainter extends CustomPainter {
-  final List<Map<String, dynamic>> data;
-  final ThemesProvider theme;
+// Data model for Syncfusion Circular Chart
+class _ShareholderChartData {
+  final String category;
+  final double value;
+  final Color color;
 
-  ShareholdersDonutChartPainter({
-    required this.data,
-    required this.theme,
+  _ShareholderChartData({
+    required this.category,
+    required this.value,
+    required this.color,
   });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    const strokeWidth = 20.0;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    // Calculate total value for percentage calculation
-    final total =
-        data.fold(0.0, (sum, item) => sum + (item['value'] as double));
-
-    if (total == 0) return;
-
-    double startAngle = -math.pi / 2; // Start from top
-
-    for (final item in data) {
-      final value = item['value'] as double;
-      final percentage = (value / total * 100);
-      final sweepAngle = (value / total) * 2 * math.pi;
-
-      paint.color = item['color'] as Color;
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
-        startAngle,
-        sweepAngle,
-        false,
-        paint,
-      );
-
-      // Draw percentage text on each segment
-      if (percentage > 2.0) {
-        // Only show percentage if segment is large enough
-        final segmentCenterAngle = startAngle + sweepAngle / 2;
-        final textRadius = radius +
-            18; // Position text outside the arc with appropriate spacing for 180x180 size
-        final textX = center.dx + textRadius * math.cos(segmentCenterAngle);
-        final textY = center.dy + textRadius * math.sin(segmentCenterAngle);
-
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: '${percentage.toStringAsFixed(1)}%',
-            style: WebTextStyles.caption(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        );
-
-        textPainter.layout();
-        final textOffset = Offset(
-          textX - textPainter.width / 2,
-          textY - textPainter.height / 2,
-        );
-        textPainter.paint(canvas, textOffset);
-      }
-
-      startAngle += sweepAngle;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class NewFundamentalScreen extends ConsumerStatefulWidget {
@@ -670,19 +600,18 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                   ),
                 ),
               ),
             ),
             title: Text(
               "${widget.wlValue.symbol.toUpperCase()} Fundamental",
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: WebFonts.bold,
+              style: MyntWebTextStyles.head(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.bold,
               ),
             ),
           ),
@@ -719,19 +648,18 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   child: Icon(
                     Icons.arrow_back_ios_outlined,
                     size: 18,
-                    color: theme.isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary,
+                    color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                   ),
                 ),
               ),
             ),
             title: Text(
               "${widget.wlValue.symbol.toUpperCase()} Fundamental",
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
-                fontWeight: WebFonts.bold,
+              style: MyntWebTextStyles.head(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+                fontWeight: MyntFonts.bold,
               ),
             ),
           ),
@@ -739,59 +667,18 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: NoDataFoundWeb(),
           ),
         );
-      }
-
-      // Returns data is now available directly from fundamental API
-      // No need to calculate it separately
+      }    
 
       return Scaffold(
-        // appBar: AppBar(
-        //   centerTitle: false,
-        //   elevation: _hasScrolled ? 2 : 1,
-        //   leadingWidth: 48,
-        //   titleSpacing: 0,
-        //   leading: Material(
-        //     color: Colors.transparent,
-        //     shape: const CircleBorder(),
-        //     clipBehavior: Clip.hardEdge,
-        //     child: InkWell(
-        //       customBorder: const CircleBorder(),
-        //       splashColor: Colors.grey.withOpacity(0.4),
-        //       highlightColor: Colors.grey.withOpacity(0.2),
-        //       onTap: () {
-        //         Navigator.pop(context);
-        //       },
-        //       child: Container(
-        //         width: 44,
-        //         height: 44,
-        //         alignment: Alignment.center,
-        //         child: Icon(
-        //           Icons.arrow_back_ios_outlined,
-        //           size: 18,
-        //           color:
-        //               theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        //   shadowColor:
-        //       theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-        //   title: TextWidget.headText(
-        //     text: " ${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option} Stock Report",
-        //     color: Color(theme.isDarkMode ? 0xffffffff : 0xff000000),
-        //     theme: theme.isDarkMode,
-        //     fw: 1,
-        //   ),
-        // ),
         body: SafeArea(
           child: Container(
             width: double.infinity,
             height: double.infinity,
-            color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
+            color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
             child: Consumer(
               builder: (context, ref, child) {
                 final marketWatch = ref.watch(marketWatchProvider);
-                
+
                 return NotificationListener<ScrollNotification>(
                       onNotification: (scrollNotification) {
                         if (scrollNotification is ScrollUpdateNotification) {
@@ -802,7 +689,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         return true;
                       },
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -810,33 +697,486 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             _buildHeaderSection(theme, marketWatch),
                             const SizedBox(height: 24),
 
-                            // Company Overview Section
-                            // _buildCompanyOverviewSection(theme),
-                            // const SizedBox(height: 24),
+                            // Chart & Key Indicators Section - Side by Side (Responsive)
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableWidth = constraints.maxWidth;
+                                const double kSpacing = 16.0;
 
-                            // // Rewards (Investment Thesis & Recommendation) Section
-                            // _buildRewardsSection(theme),
-                            // const SizedBox(height: 24),
+                                // Card decoration (consistent style)
+                                BoxDecoration cardDecoration = BoxDecoration(
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.backgroundColorDark,
+                                    light: MyntColors.backgroundColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider,
+                                    ),
+                                    width: 1,
+                                  ),
+                                );
 
-                            // // Risks Section
-                            // _buildRisksSection(theme),
-                            // const SizedBox(height: 24),
+                                // If width is less than 900, stack vertically
+                                if (availableWidth < 900) {
+                                  return Column(
+                                    children: [
+                                      // Chart Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: _buildPriceHistoryChart(theme, marketWatch),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Key Indicators Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Key Indicators",
+                                              style: MyntWebTextStyles.title(
+                                                context,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.textPrimaryDark,
+                                                  light: MyntColors.textPrimary,
+                                                ),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildRatiosTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
 
-                            // Price History & Performance Chart
-                            _buildPriceHistoryChart(theme, marketWatch),
-                            const SizedBox(height: 16),
+                                // Side by side layout for larger screens
+                                final cardWidth = (availableWidth - kSpacing) / 2;
 
-                            // Key Indicators - Always show section, but hide content when no data
-                            _buildRatiosTab(marketWatch, theme),
-                            const SizedBox(height: 16),
+                                return IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      // Chart Section (50%)
+                                      SizedBox(
+                                        width: cardWidth,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: cardDecoration,
+                                          child: _buildPriceHistoryChart(theme, marketWatch),
+                                        ),
+                                      ),
+                                      const SizedBox(width: kSpacing),
+                                      // Key Indicators Section (50%)
+                                      SizedBox(
+                                        width: cardWidth,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: cardDecoration,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Key Indicators",
+                                                style: MyntWebTextStyles.title(
+                                                  context,
+                                                  color: resolveThemeColor(
+                                                    context,
+                                                    dark: MyntColors.textPrimaryDark,
+                                                    light: MyntColors.textPrimary,
+                                                  ),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 12),
+                                              Expanded(child: _buildRatiosTab(marketWatch, theme)),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 24),
 
-                            _buildHoldingsTab(marketWatch, theme),
-                            const SizedBox(height: 16),
+                            // Holdings Trend & Income Statement Section - Side by Side (Responsive)
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableWidth = constraints.maxWidth;
+                                const double kSpacing = 16.0;
 
-                            _buildFinancialTab(marketWatch, theme),
-                            const SizedBox(height: 16),
+                                // Card decoration (consistent style)
+                                BoxDecoration cardDecoration = BoxDecoration(
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.backgroundColorDark,
+                                    light: MyntColors.backgroundColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider,
+                                    ),
+                                    width: 1,
+                                  ),
+                                );
 
-                            _buildPeersTab(marketWatch, theme),
+                                // If width is less than 900, stack vertically
+                                if (availableWidth < 900) {
+                                  return Column(
+                                    children: [
+                                      // Holdings Trend Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Holdings Trend",
+                                              style: MyntWebTextStyles.title(
+                                                context,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.textPrimaryDark,
+                                                  light: MyntColors.textPrimary,
+                                                ),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildHoldingsTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Income Statement Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Income Statement",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildFinancialToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildFinancialTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                // Side by side layout for larger screens
+                                final cardWidth = (availableWidth - kSpacing) / 2;
+
+                                return IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                    // Holdings Trend Section (50%)
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Holdings Trend",
+                                              style: MyntWebTextStyles.title(
+                                                context,
+                                                color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors.textPrimaryDark,
+                                                  light: MyntColors.textPrimary,
+                                                ),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildHoldingsTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: kSpacing),
+                                    // Income Statement Section (50%)
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Income Statement",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildFinancialToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildFinancialTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Balance Sheet & Cash Flow Section - Side by Side (Responsive)
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableWidth = constraints.maxWidth;
+                                const double kSpacing = 16.0;
+
+                                // Card decoration (consistent style)
+                                BoxDecoration cardDecoration = BoxDecoration(
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.backgroundColorDark,
+                                    light: MyntColors.backgroundColor,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: resolveThemeColor(
+                                      context,
+                                      dark: MyntColors.dividerDark,
+                                      light: MyntColors.divider,
+                                    ),
+                                    width: 1,
+                                  ),
+                                );
+
+                                // If width is less than 900, stack vertically
+                                if (availableWidth < 900) {
+                                  return Column(
+                                    children: [
+                                      // Balance Sheet Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Balance Sheet",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildBalanceSheetToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildBalanceSheetTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      // Cash Flow Section
+                                      Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Cash Flow",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildCashFlowToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildCashFlowTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
+                                // Side by side layout for larger screens
+                                final cardWidth = (availableWidth - kSpacing) / 2;
+
+                                return IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                    // Balance Sheet Section (50%)
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Balance Sheet",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildBalanceSheetToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildBalanceSheetTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: kSpacing),
+                                    // Cash Flow Section (50%)
+                                    SizedBox(
+                                      width: cardWidth,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(16),
+                                        decoration: cardDecoration,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  "Cash Flow",
+                                                  style: MyntWebTextStyles.title(
+                                                    context,
+                                                    color: resolveThemeColor(
+                                                      context,
+                                                      dark: MyntColors.textPrimaryDark,
+                                                      light: MyntColors.textPrimary,
+                                                    ),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                _buildCashFlowToggle(marketWatch, theme),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 12),
+                                            _buildCashFlowTab(marketWatch, theme),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Peers Section - Half Width
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                final availableWidth = constraints.maxWidth;
+                                const double kSpacing = 16.0;
+                                final halfWidth = (availableWidth - kSpacing) / 2;
+
+                                return Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Peers Section (50%)
+                                    SizedBox(
+                                      width: halfWidth,
+                                      child: _buildPeersTab(marketWatch, theme),
+                                    ),
+                                    const SizedBox(width: kSpacing),
+                                    // Empty space (50%) - can be used for future content
+                                    SizedBox(width: halfWidth),
+                                  ],
+                                );
+                              },
+                            ),
                             const SizedBox(height: 16),
                           ],
                         ),
@@ -848,6 +1188,51 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         ),
       );
     });
+  }
+
+  // Allocation card wrapper for consistent styling
+  Widget _buildAllocationCard({
+    required String title,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(
+          context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.dividerDark,
+            light: MyntColors.divider,
+          ),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: MyntWebTextStyles.title(
+              context,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary,
+              ),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(child: child),
+        ],
+      ),
+    );
   }
 
   // Header Section
@@ -867,11 +1252,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 children: [
                   Text(
                     "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option}",
-                    style: WebTextStyles.head(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                    style: MyntWebTextStyles.head(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -884,11 +1268,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             widget.wlValue.symbol.toUpperCase()
                         : marketWatch.scripInfoModel?.cname ??
                             widget.wlValue.symbol.toUpperCase(),
-                    style: WebTextStyles.sub(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
                     ),
                   ),
                 ],
@@ -899,22 +1282,24 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   children: [
                     Text(
                       "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
-                      style: WebTextStyles.head(
-                        isDarkTheme: theme.isDarkMode,
-                        color: (widget.depthData.chng == "null" ||
+                      style: MyntWebTextStyles.head(
+                        context,
+                        darkColor: (widget.depthData.chng == "null" ||
                                     widget.depthData.chng == null) ||
                                 widget.depthData.chng == "0.00"
-                            ? theme.isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary
+                            ? MyntColors.textSecondaryDark
                             : widget.depthData.chng!.startsWith("-") ||
                                     widget.depthData.pc!.startsWith("-")
-                                ? theme.isDarkMode
-                                    ? WebDarkColors.loss
-                                    : WebColors.loss
-                                : theme.isDarkMode
-                                    ? WebDarkColors.profit
-                                    : WebColors.profit,
+                                ? MyntColors.lossDark
+                                : MyntColors.profitDark,
+                        lightColor: (widget.depthData.chng == "null" ||
+                                    widget.depthData.chng == null) ||
+                                widget.depthData.chng == "0.00"
+                            ? MyntColors.textSecondary
+                            : widget.depthData.chng!.startsWith("-") ||
+                                    widget.depthData.pc!.startsWith("-")
+                                ? MyntColors.loss
+                                : MyntColors.profit,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -922,11 +1307,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     // Price Change and Percentage
                     Text(
                       "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                      style: WebTextStyles.sub(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
                       ),
                     ),
                     // const SizedBox(height: 8),
@@ -936,72 +1320,38 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             ],
           ),
         ),
-
-        // // Sector Information
-        // TextWidget.paraText(
-        //   text: "Sector: Energy – Oil & Gas – Refineries (Large‑Cap)",
-        //   theme: theme.isDarkMode,
-        //   fw: 0,
-        //   color: theme.isDarkMode
-        //       ? colors.textSecondaryDark
-        //       : colors.textSecondaryLight,
-        // ),
       ],
     );
   }
  Widget _buildRatiosTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: WebColors.textSecondary.withOpacity(0.1)),
-        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Key indicators",
-            style: WebTextStyles.head(
-              isDarkTheme: theme.isDarkMode,
-              fontWeight: WebFonts.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Show data if available, otherwise show "No Data Found"
-          if (marketWatch.fundamentalData?.fundamental?.isNotEmpty == true) ...[
-            _buildRatiosSection(marketWatch.fundamentalData!.fundamental![0], theme),
-          ] else ...[
-            SizedBox(height: 250, child:  Center(child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // SvgPicture.asset(assets.noDatafound,
-        // color:   Color(0xff777777)
-        // ),
-        // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: Text(
-            "Data not available",
-            textAlign: TextAlign.center,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
-            ),
-          ),
-        )
-      ]
-    ))),
+    // Show data if available, otherwise show "No Data Found"
+    if (marketWatch.fundamentalData?.fundamental?.isNotEmpty == true) {
+      return SingleChildScrollView(
+        child: _buildRatiosSection(marketWatch.fundamentalData!.fundamental![0], theme),
+      );
+    } else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 250,
+              child: Text(
+                "Data not available",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                ),
+              ),
+            )
           ],
-          
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 
 
@@ -1089,11 +1439,14 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       children: [
         Text(
           title,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+          style: MyntWebTextStyles.body(
+            context,
+            fontWeight: MyntFonts.semiBold,
+            color : resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
           ),
         ),
         if (title == "Value" || title == "Growth" || title == "Quality") ...[
@@ -1110,9 +1463,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               onTap: () {}, // required for splash
               child: TooltipTheme(
                 data: TooltipThemeData(
-                  textStyle: WebTextStyles.caption(
-                    isDarkTheme: false,
-                    color: Colors.white,
+                  textStyle: MyntWebTextStyles.caption(
+                    context,
+                    lightColor: Colors.white,
+                    darkColor: Colors.white,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.black,
@@ -1180,26 +1534,26 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             children: [
               Text(
                 title1,
-                style: WebTextStyles.caption(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color : resolveThemeColor(
+                    context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 _formatNumber(value1, title1),
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  fontWeight: WebFonts.bold,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.medium,
                 ),
               ),
               const SizedBox(height: 2),
               Divider(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
+                color: resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider),
               ),
             ],
           ),
@@ -1210,17 +1564,24 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.captionText(
-                  text: title2,
-                  color: const Color(0xff666666),
-                  theme: theme.isDarkMode,
-                  fw: 0,
+                Text(
+                  title2,
+                  style: MyntWebTextStyles.para(
+                    context,
+                    color : resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                TextWidget.subText(
-                  text: _formatNumber(value2, title2),
-                  theme: theme.isDarkMode,
-                  fw: 1,
+                Text(
+                  _formatNumber(value2, title2),
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Divider(
@@ -1238,17 +1599,24 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget.captionText(
-                  text: title3,
-                  color: const Color(0xff666666),
-                  theme: theme.isDarkMode,
-                  fw: 0,
+                Text(
+                  title3,
+                  style: MyntWebTextStyles.para(
+                    context,
+                    color : resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                TextWidget.subText(
-                  text: _formatNumber(value3, title3),
-                  theme: theme.isDarkMode,
-                  fw: 1,
+                Text(
+                  _formatNumber(value3, title3),
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Divider(
@@ -1405,176 +1773,134 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         marketWatch.fundamentalData!.peersComparison!.peers != null &&
         (marketWatch.fundamentalData!.peersComparison!.stock!.isNotEmpty ||
          marketWatch.fundamentalData!.peersComparison!.peers!.isNotEmpty)) {
-      return const PriceComparision();
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
+            ),
+            width: 1,
+          ),
+        ),
+        child: const PriceComparisonWeb(),
+      );
     } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Peers Comparison",
-            style: WebTextStyles.head(
-              isDarkTheme: theme.isDarkMode,
-              fontWeight: WebFonts.bold,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textPrimary
-                  : WebColors.textPrimary,
-            ),
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor,
           ),
-          const SizedBox(height: 16),
-           SizedBox(height: 250, child:  Center(child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // SvgPicture.asset(assets.noDatafound,
-        // color:   Color(0xff777777)
-        // ),
-        // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: Text(
-            "Data not available",
-            textAlign: TextAlign.center,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.dividerDark,
+              light: MyntColors.divider,
             ),
+            width: 1,
           ),
-        )
-      ]
-    )))
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Peers Comparison",
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 250,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 250,
+                      child: Text(
+                        "Data not available",
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          darkColor: MyntColors.textSecondaryDark,
+                          lightColor: MyntColors.textSecondary,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
       );
     }
   }
 
   Widget _buildHoldingsTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
-    return Column(
-      children: [
-        // Pie Chart Section
-    
-        // Original Bar Chart Section
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border:
-                Border.all(color: WebColors.textSecondary.withOpacity(0.1)),
-            color: theme.isDarkMode ? WebDarkColors.background : WebColors.background,
-            borderRadius: BorderRadius.circular(4),
-          ),
+    // Show data if available, otherwise show "No Data Found"
+    if (marketWatch.fundamentalData?.msg != "no data found" &&
+        marketWatch.fundamentalData?.shareholdings != null &&
+        marketWatch.fundamentalData!.shareholdings!.isNotEmpty) {
+      return ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 600),
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Holdings Trend",
-                style: WebTextStyles.head(
-                  isDarkTheme: theme.isDarkMode,
-                  fontWeight: WebFonts.bold,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 24),
-    
-              // Show data if available, otherwise show "No Data Found"
-              if (marketWatch.fundamentalData?.msg != "no data found" &&
-                  marketWatch.fundamentalData?.shareholdings != null &&
-                  marketWatch.fundamentalData!.shareholdings!.isNotEmpty) ...[
-                // Pie Chart Container
-                _buildHoldingsPieChart(marketWatch, theme),
-                const SizedBox(height: 16),
-    
-                // Holdings Table
-                _buildHoldingsTable(marketWatch, theme),
-              ] else ...[
-                SizedBox(height: 250, child:  Center(child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // SvgPicture.asset(assets.noDatafound,
-        // color:   Color(0xff777777)
-        // ),
-        // const SizedBox(height: 2),
-        SizedBox(
-          width: 250,
-          child: Text(
-            "Data not available",
-            textAlign: TextAlign.center,
-            style: WebTextStyles.sub(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
-            ),
-          ),
-        )
-      ]
-    ))),
-              ],
-              // const ShareHoldChart(),
-              // const SizedBox(height: 16),
-              // Container(
-              //   margin: const EdgeInsets.only(bottom: 16),
-              //   child: Wrap(
-              //     alignment: WrapAlignment.start,
-              //     spacing: 16,
-              //     runSpacing: 12,
-              //     children: marketWatch.shareHoldType.map((holdType) {
-              //       final isSelected = marketWatch.selctedShareHold == holdType;
-              //       return GestureDetector(
-              //         onTap: () {
-              //           print("Selected Share Hold: $holdType");
-              //           marketWatch.chngshareHold(holdType);
-              //         },
-              //         child: Container(
-              //           padding: const EdgeInsets.symmetric(
-              //               horizontal: 12, vertical: 8),
-              //           decoration: BoxDecoration(
-              //             color: isSelected
-              //                 ? theme.isDarkMode
-              //                     ? colors.darkGrey
-              //                     : const Color(0xffF1F3F8)
-              //                 : Colors.transparent,
-              //             borderRadius: BorderRadius.circular(8),
-              //             border: isSelected
-              //                 ? null
-              //                 : null,
-              //           ),
-              //           child: Row(
-              //             mainAxisSize: MainAxisSize.min,
-              //             children: [
-              //               Container(
-              //                 width: 8,
-              //                 height: 8,
-              //                 decoration: BoxDecoration(
-              //                   color: _getHoldTypeColor(holdType),
-              //                   shape: BoxShape.circle,
-              //                 ),
-              //               ),
-              //               const SizedBox(width: 8),
-              //               TextWidget.captionText(
-              //                 text: holdType,
-              //                 theme: theme.isDarkMode,
-              //                 color: theme.isDarkMode
-              //                     ? colors.textPrimaryDark
-              //                     : colors.textPrimaryLight,
-              //                 fw: isSelected ? 2 : 0,
-              //               ),
-              //             ],
-              //           ),
-              //         ),
-              //       );
-              //     }).toList(),
-              //   ),
-              // ),
+              // Pie Chart Container
+              _buildHoldingsPieChart(marketWatch, theme),
+              const SizedBox(height: 16),
+              // Holdings Table
+              _buildHoldingsTable(marketWatch, theme),
             ],
           ),
         ),
-      ],
-    );
+      );
+    } else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 250,
+              child: Text(
+                "Data not available",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    }
   }
 
   // Helper method to get color for each holding type
@@ -1605,12 +1931,11 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           children: [
             Text(
               title,
-              style: WebTextStyles.head(
-                isDarkTheme: theme.isDarkMode,
-                fontWeight: WebFonts.bold,
-                color: theme.isDarkMode
-                    ? WebDarkColors.textPrimary
-                    : WebColors.textPrimary,
+              style: MyntWebTextStyles.head(
+                context,
+                fontWeight: MyntFonts.bold,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
               ),
             ),
           ],
@@ -1629,22 +1954,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       children: [
         Text(
           title,
-          style: WebTextStyles.sub(
-            isDarkTheme: theme.isDarkMode,
-            fontWeight: WebFonts.bold,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            fontWeight: MyntFonts.bold,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
           ),
         ),
         const SizedBox(height: 6),
         Text(
           description,
-          style: WebTextStyles.para(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textSecondary
-                : WebColors.textSecondary,
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
           ),
         ),
       ],
@@ -1662,7 +1985,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           height: 6,
           margin: const EdgeInsets.only(top: 6, right: 12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.profit : WebColors.profit,
+            color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit),
             shape: BoxShape.circle,
           ),
         ),
@@ -1672,22 +1995,20 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             children: [
               Text(
                 title,
-                style: WebTextStyles.sub(
-                  isDarkTheme: theme.isDarkMode,
-                  fontWeight: WebFonts.bold,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  fontWeight: MyntFonts.bold,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 description,
-                style: WebTextStyles.para(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary,
+                style: MyntWebTextStyles.para(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
                 ),
               ),
             ],
@@ -1697,15 +2018,282 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     );
   }
 
+  // Toggle helper for Income Statement
+  Widget _buildFinancialToggle(MarketWatchProvider marketWatch, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: marketWatch.finType.map((filter) {
+          final isSelected = marketWatch.selcteIncomeFinType == filter;
+          return GestureDetector(
+            onTap: () {
+              marketWatch.chngIncomeFinType(filter);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? colors.primaryLight : Colors.transparent,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                filter,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: isSelected ? colors.colorWhite : null,
+                  darkColor: isSelected ? null : MyntColors.textSecondaryDark,
+                  lightColor: isSelected ? null : MyntColors.textPrimary,
+                  fontWeight: isSelected ? MyntFonts.bold : MyntFonts.medium,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // Toggle helper for Balance Sheet
+  Widget _buildBalanceSheetToggle(MarketWatchProvider marketWatch, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: marketWatch.finType.map((filter) {
+          final isSelected = marketWatch.selcteBalanceSheetFinType == filter;
+          return GestureDetector(
+            onTap: () {
+              marketWatch.chngBalanceSheetFinType(filter);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? colors.primaryLight : Colors.transparent,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                filter,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: isSelected ? colors.colorWhite : null,
+                  darkColor: isSelected ? null : MyntColors.textSecondaryDark,
+                  lightColor: isSelected ? null : MyntColors.textPrimary,
+                  fontWeight: isSelected ? MyntFonts.bold : MyntFonts.medium,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // Toggle helper for Cash Flow
+  Widget _buildCashFlowToggle(MarketWatchProvider marketWatch, ThemesProvider theme) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: marketWatch.finType.map((filter) {
+          final isSelected = marketWatch.selcteCashFlowFinType == filter;
+          return GestureDetector(
+            onTap: () {
+              marketWatch.chngCashFlowFinType(filter);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? colors.primaryLight : Colors.transparent,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                filter,
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: isSelected ? colors.colorWhite : null,
+                  darkColor: isSelected ? null : MyntColors.textSecondaryDark,
+                  lightColor: isSelected ? null : MyntColors.textPrimary,
+                  fontWeight: isSelected ? MyntFonts.bold : MyntFonts.medium,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // Income Statement Section - Complete with chart and data
   Widget _buildFinancialTab(
       MarketWatchProvider marketWatch, ThemesProvider theme) {
-    if (marketWatch.fundamentalData?.msg == "no data found") {
-      return const Center(child: NoDataFoundWeb());
+    // Check if income data is available
+    final hasConsolidatedData = marketWatch.fundamentalData?.stockFinancialsConsolidated?.incomeSheet?.isNotEmpty ?? false;
+    final hasStandaloneData = marketWatch.fundamentalData?.stockFinancialsStandalone?.incomeSheet?.isNotEmpty ?? false;
+
+    if (marketWatch.fundamentalData?.msg == "no data found" || (!hasConsolidatedData && !hasStandaloneData)) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 250,
+              child: Text(
+                "Data not available",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
     }
 
-    return const SingleChildScrollView(
-      // padding: EdgeInsets.all(16),
-      child: FinancialWidget(),
+    // Show complete income section with chart and table (toggle is now in header)
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 600),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Income Chart
+            const FIncomeChartWeb(),
+            const SizedBox(height: 16),
+            // Income Data Table
+            IncomeSheetDataWeb(
+              themes: theme,
+              incomSheet: marketWatch.selcteIncomeFinType == "Consolidated"
+                  ? marketWatch.fundamentalData!.stockFinancialsConsolidated!.incomeSheet!
+                  : marketWatch.fundamentalData!.stockFinancialsStandalone!.incomeSheet!,
+              financialYear: marketWatch.selcteFinYear,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Balance Sheet Section - Complete with chart and data
+  Widget _buildBalanceSheetTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
+    // Check if balance sheet data is available
+    final hasConsolidatedData = marketWatch.fundamentalData?.stockFinancialsConsolidated?.balanceSheet?.isNotEmpty ?? false;
+    final hasStandaloneData = marketWatch.fundamentalData?.stockFinancialsStandalone?.balanceSheet?.isNotEmpty ?? false;
+
+    if (marketWatch.fundamentalData?.msg == "no data found" || (!hasConsolidatedData && !hasStandaloneData)) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 250,
+              child: Text(
+                "Data not available",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
+    // Show complete balance sheet section with chart and table (toggle is now in header)
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 600),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Balance Sheet Chart
+            const FBalSheetChartWeb(),
+            const SizedBox(height: 16),
+            // Balance Sheet Data Table
+            BalanceSheetDataWeb(
+              balanceSheet: marketWatch.selcteBalanceSheetFinType == "Consolidated"
+                  ? marketWatch.fundamentalData!.stockFinancialsConsolidated!.balanceSheet!
+                  : marketWatch.fundamentalData!.stockFinancialsStandalone!.balanceSheet!,
+              financialYear: marketWatch.selcteFinYear,
+              themes: theme,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Cash Flow Section - Complete with chart and data
+  Widget _buildCashFlowTab(
+      MarketWatchProvider marketWatch, ThemesProvider theme) {
+    // Check if cash flow data is available
+    final hasConsolidatedData = marketWatch.fundamentalData?.stockFinancialsConsolidated?.cashflowSheet?.isNotEmpty ?? false;
+    final hasStandaloneData = marketWatch.fundamentalData?.stockFinancialsStandalone?.cashflowSheet?.isNotEmpty ?? false;
+
+    if (marketWatch.fundamentalData?.msg == "no data found" || (!hasConsolidatedData && !hasStandaloneData)) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 250,
+              child: Text(
+                "Data not available",
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
+    // Show complete cash flow section with chart and table (toggle is now in header)
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 600),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cash Flow Chart
+            const FCashFlowChartWeb(),
+            const SizedBox(height: 16),
+            // Cash Flow Data Table
+            CashFlowSheetDataWeb(
+              cashFlowSheet: marketWatch.selcteCashFlowFinType == "Consolidated"
+                  ? marketWatch.fundamentalData!.stockFinancialsConsolidated!.cashflowSheet!
+                  : marketWatch.fundamentalData!.stockFinancialsStandalone!.cashflowSheet!,
+              financialYear: marketWatch.selcteFinYear,
+              themes: theme,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1725,18 +2313,17 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           height: 6,
           margin: const EdgeInsets.only(top: 6, right: 12),
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? WebDarkColors.loss : WebColors.loss,
+            color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
             shape: BoxShape.circle,
           ),
         ),
         Expanded(
           child: Text(
             description,
-            style: WebTextStyles.para(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode
-                  ? WebDarkColors.textSecondary
-                  : WebColors.textSecondary,
+            style: MyntWebTextStyles.para(
+              context,
+              darkColor: MyntColors.textSecondaryDark,
+              lightColor: MyntColors.textSecondary,
             ),
           ),
         ),
@@ -1747,30 +2334,27 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   // Price History & Performance Chart
   Widget _buildPriceHistoryChart(
       ThemesProvider theme, MarketWatchProvider marketWatch) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      decoration: BoxDecoration(
-        // border: Border.all(color: colors.textSecondaryLight.withOpacity(0.1)),
-        color: theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title
+        Text(
+          "Price History",
+          style: MyntWebTextStyles.title(
+            context,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
           // Header with Toggle
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              // TextWidget.titleText(
-              //   text: "Price History & Performance",
-              //   theme: theme.isDarkMode,
-              //   fw: 1,
-              //   color: theme.isDarkMode
-              //       ? colors.textPrimaryDark
-              //       : colors.textPrimaryLight,
-              // ),
-              // const SizedBox(height: 16),
-
+            children: [            
               Container(
                 height: 400,
                 decoration: BoxDecoration(
@@ -1785,11 +2369,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         ? Center(
                             child: Text(
                               "No Data Available",
-                              style: WebTextStyles.para(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textSecondary
-                                    : WebColors.textSecondary,
+                              style: MyntWebTextStyles.para(
+                                context,
+                                darkColor: MyntColors.textSecondaryDark,
+                                lightColor: MyntColors.textSecondary,
                               ),
                             ),
                           )
@@ -1797,8 +2380,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               ),
 
 
+              const SizedBox(height: 16),
               SizedBox(
-                height: 50, 
+                height: 70,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) {
@@ -1806,12 +2390,12 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     final timeframe = timeframes[index];
                     final isSelected =
                         marketWatch.selectedTimeframe == timeframe;
-                    
+
                     final returnPercentage = _getTechnicalReturnPercentage(marketWatch.returnsGridview, timeframe);
-                    
+
                     final percentValue = double.tryParse(returnPercentage.replaceAll(RegExp(r'[+%]'), '')) ?? 0.0;
                     final isPositive = percentValue >= 0;
-              
+
                     return GestureDetector(
                       onTap: () {
                         marketWatch.updateSelectedTimeframe(timeframe);
@@ -1820,7 +2404,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         touchedSpot = null;
                         _hideTooltipTimer?.cancel();
                         FocusScope.of(context).unfocus();
-              
+
                         if (marketWatch.eodChartData.isNotEmpty) {
                           _convertApiDataToPriceData(marketWatch.eodChartData, timeframe);
                           _lastConvertedTimeframe = timeframe;
@@ -1829,43 +2413,44 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? theme.isDarkMode
                                   ? colors.darkGrey
                                   : const Color(0xffF1F3F8)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(5),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // Timeframe text
                             Text(
                               timeframe,
-                              style: WebTextStyles.para(
-                                isDarkTheme: theme.isDarkMode,
-                                color: theme.isDarkMode
-                                    ? WebDarkColors.textPrimary
-                                    : WebColors.textPrimary,
-                                fontWeight: isSelected ? WebFonts.bold : WebFonts.regular,
+                              style: MyntWebTextStyles.body(
+                                context,
+                               color :  resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                                fontWeight: isSelected ? MyntFonts.bold : MyntFonts.semiBold,
                               ),
                             ),
                             const SizedBox(height: 4),
                             // Return percentage
                             Text(
                               returnPercentage,
-                              style: WebTextStyles.para(
-                                isDarkTheme: theme.isDarkMode,
-                                color: isPositive
-                                    ? (theme.isDarkMode
-                                        ? WebDarkColors.profit
-                                        : WebColors.profit)
-                                    : (theme.isDarkMode
-                                        ? WebDarkColors.loss
-                                        : WebColors.loss),
-                                fontWeight: isSelected ? WebFonts.semiBold : WebFonts.regular,
+                              style: MyntWebTextStyles.bodySmall(
+                                context,
+                                color :  resolveThemeColor(
+                                  context,
+                                  dark: isPositive ? MyntColors.profitDark : MyntColors.lossDark,
+                                  light: isPositive ? MyntColors.profit : MyntColors.loss,
+                                ),
+                                fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.regular,
                               ),
                             ),
                           ],
@@ -1874,7 +2459,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                     );
                   },
                   separatorBuilder: (context, index) {
-                    return const SizedBox(width: 4);
+                    return const SizedBox(width: 8);
                   },
                   itemCount: 4, // 1W, 1M, 3M, 1Y
                 ),
@@ -1882,12 +2467,11 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             ],
           ),
           if (eventData.isNotEmpty) ...[
-            // const SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildEventLegend(theme),
           ],
         ],
-      ),
-    );
+      );
   }
 
   // Non-scrollable Price Chart - fits 1 year data within screen
@@ -1950,11 +2534,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               final year = date.year.toString().substring(2);
                               return Text(
                                 '$monthName $year',
-                                style: WebTextStyles.caption(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                style: MyntWebTextStyles.caption(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               );
                             case "3M":
@@ -1963,11 +2546,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               final day = date.day;
                               return Text(
                                 '$monthName $day',
-                                style: WebTextStyles.caption(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                style: MyntWebTextStyles.caption(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               );
                             case "1M":
@@ -1975,11 +2557,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               final day = date.day;
                               return Text(
                                 '$day',
-                                style: WebTextStyles.caption(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                style: MyntWebTextStyles.caption(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               );
                             case "1W":
@@ -1988,11 +2569,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                               final day = date.day;
                               return Text(
                                 '$day $monthName',
-                                style: WebTextStyles.caption(
-                                  isDarkTheme: theme.isDarkMode,
-                                  color: theme.isDarkMode
-                                      ? WebDarkColors.textSecondary
-                                      : WebColors.textSecondary,
+                                style: MyntWebTextStyles.caption(
+                                  context,
+                                  darkColor: MyntColors.textSecondaryDark,
+                                  lightColor: MyntColors.textSecondary,
                                 ),
                               );
                             default:
@@ -2052,8 +2632,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       return TouchedSpotIndicatorData(
                         FlLine(
                           color: theme.isDarkMode
-                              ? WebDarkColors.primary
-                              : WebColors.primary,
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary,
                           strokeWidth: 1, // Thin vertical line
                           dashArray: [3, 3], // Dashed line for cleaner look
                         ),
@@ -2197,22 +2777,23 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextWidget.overlineText(
-                            text: _getFormattedDate(data.date),
-                            theme: theme.isDarkMode,
-                            fw: 1,
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : colors.textSecondaryLight,
+                          Text(
+                            _getFormattedDate(data.date),
+                            style: MyntWebTextStyles.caption(
+                              context,
+                              darkColor: colors.textSecondaryDark,
+                              lightColor: colors.textSecondaryLight,
+                              fontWeight: MyntFonts.bold,
+                            ),
                           ),
                           const SizedBox(height: 4),
-                          TextWidget.subText(
-                            text: '₹${data.price.toStringAsFixed(2)}',
-                            theme: theme.isDarkMode,
-                            fw: 0,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
+                          Text(
+                            '₹${data.price.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              darkColor: colors.textPrimaryDark,
+                              lightColor: colors.textPrimaryLight,
+                            ),
                           ),
                           // Show events if any exist for this date or nearby
                           if (eventsForDate.isNotEmpty) ...[
@@ -2244,13 +2825,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
-                                      child: TextWidget.captionText(
-                                        text: event.type == 'Dividend'
+                                      child: Text(
+                                        event.type == 'Dividend'
                                             ? '${event.title} ${event.description.split(' - ')[0]}' // Show "Dividend X%"
                                             : event.title,
-                                        theme: theme.isDarkMode,
-                                        fw: 0,
-                                        color: eventColor,
+                                        style: MyntWebTextStyles.caption(
+                                          context,
+                                          lightColor: eventColor,
+                                          darkColor: eventColor,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -2278,10 +2861,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
         children: [
           MyntLoader.simple(),
           const SizedBox(height: 16),
-          TextWidget.paraText(
-            text: "Loading stock data...",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+          Text(
+            "Loading stock data...",
+            style: MyntWebTextStyles.para(
+              context,
+              darkColor: colors.textSecondaryDark,
+              lightColor: colors.textSecondaryLight,
+            ),
           ),
         ],
       ),
@@ -2389,24 +2975,23 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextWidget.captionText(
-                text: duration,
-                theme: theme.isDarkMode,
-                fw: 0,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
+              Text(
+                duration,
+                style: MyntWebTextStyles.caption(
+                  context,
+                  darkColor: colors.textSecondaryDark,
+                  lightColor: colors.textSecondaryLight,
+                ),
               ),
               const SizedBox(width: 4),
-              TextWidget.captionText(
-                text: '${isPositive ? '+' : ''}$percent%',
-                theme: theme.isDarkMode,
-                fw: 1,
-                color: isPositive
-                    ? (theme.isDarkMode
-                  ? WebDarkColors.profit
-                  : WebColors.profit)
-                    : (theme.isDarkMode ? colors.lossDark : colors.lossLight),
+              Text(
+                '${isPositive ? '+' : ''}$percent%',
+                style: MyntWebTextStyles.caption(
+                  context,
+                  darkColor: isPositive ? MyntColors.profitDark : colors.lossDark,
+                  lightColor: isPositive ? MyntColors.profit : colors.lossLight,
+                  fontWeight: MyntFonts.bold,
+                ),
               ),
             ],
           ),
@@ -2477,22 +3062,25 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 8,
-                height: 8,
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 8),
-              TextWidget.custmText(
-                text: eventType,
-                fs: 10,
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                fw: 0,
+              Text(
+                eventType,
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.regular,
+                  color : resolveThemeColor(
+                    context,
+                    dark: colors.textPrimaryDark,
+                    light: colors.textPrimaryLight,
+                  ),
+                ),
               ),
             ],
           );
@@ -2525,13 +3113,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     final shareholdingsData = marketWatch.fundamentalData?.shareholdings;
     if (shareholdingsData == null || shareholdingsData.isEmpty) {
       return Center(
-        child: TextWidget.paraText(
-          text: 'No holdings data available',
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
+        child: Text(
+          'No holdings data available',
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: colors.textSecondaryDark,
+            lightColor: colors.textSecondaryLight,
+          ),
         ),
       );
     }
@@ -2540,13 +3128,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     final latestData = _getLatestHoldingsData(shareholdingsData);
     if (latestData == null) {
       return Center(
-        child: TextWidget.paraText(
-          text: 'No latest holdings data available',
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
+        child: Text(
+          'No latest holdings data available',
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: colors.textSecondaryDark,
+            lightColor: colors.textSecondaryLight,
+          ),
         ),
       );
     }
@@ -2557,11 +3145,36 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Center(
-        child: CustomPaint(
-          size: const Size(180, 180),
-          painter: ShareholdersDonutChartPainter(
-            data: chartData,
-            theme: theme,
+        child: SizedBox(
+          height: 240,
+          width: 240,
+          child: PieChart(
+            PieChartData(
+              sections: chartData.map((data) {
+                final totalSum = chartData.fold(0.0, (sum, item) => sum + item.value);
+                final percentage = (data.value / totalSum * 100);
+
+                return PieChartSectionData(
+                  value: data.value,
+                  title: '${percentage.toStringAsFixed(1)}%',
+                  color: data.color,
+                  radius: 70,
+                  titleStyle: MyntWebTextStyles.para(
+                    context,
+                    color: theme.isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ).copyWith(
+                    fontSize: 13,
+                  ),
+                  titlePositionPercentageOffset: 1.3,
+                  badgeWidget: null,
+                );
+              }).toList(),
+              centerSpaceRadius: 50,
+              sectionsSpace: 2,
+            ),
           ),
         ),
       ),
@@ -2589,7 +3202,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   }
 
   // Prepare shareholders chart data from Shareholdings
-  List<Map<String, dynamic>> _prepareShareholdersChartData(Shareholdings data) {
+  List<_ShareholderChartData> _prepareShareholdersChartData(Shareholdings data) {
     final holdingsData = [
       {
         'name': 'Institutions',
@@ -2618,22 +3231,16 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       },
     ];
 
-    // Filter out zero values and calculate total
+    // Filter out zero values
     final filteredData =
         holdingsData.where((item) => item['value'] as double > 0).toList();
-    final total =
-        filteredData.fold(0.0, (sum, item) => sum + (item['value'] as double));
 
     return filteredData.map((item) {
-      final value = item['value'] as double;
-      final percentage = total > 0 ? (value / total * 100) : 0.0;
-
-      return {
-        'name': item['name'],
-        'value': value,
-        'percentage': percentage,
-        'color': item['color'],
-      };
+      return _ShareholderChartData(
+        category: item['name'] as String,
+        value: item['value'] as double,
+        color: item['color'] as Color,
+      );
     }).toList();
   }
 
@@ -2645,13 +3252,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     final shareholdingsData = marketWatch.fundamentalData?.shareholdings;
     if (shareholdingsData == null || shareholdingsData.isEmpty) {
       return Center(
-        child: TextWidget.paraText(
-          text: 'No holdings data available',
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
+        child: Text(
+          'No holdings data available',
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: colors.textSecondaryDark,
+            lightColor: colors.textSecondaryLight,
+          ),
         ),
       );
     }
@@ -2716,38 +3323,41 @@ class HoldingsTable extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row with years
-          _buildHeaderRow(),
+          _buildHeaderRow(context),
           // Data rows with colored circles
-          ..._buildMetricRows(data),
+          ..._buildMetricRows(context, data),
           // Legend below table
-          _buildLegend(),
+          _buildLegend(context),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderRow() {
+  Widget _buildHeaderRow(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
       child: Row(
         children: [
-          // Empty space for the colored circle column
-          Expanded(
-            flex: 0,
-            child: Container(width: 8), // Same width as the colored circles
+          // Empty space for the metric name column
+          const Expanded(
+            flex: 2,
+            child: SizedBox(),
           ),
           // Year headers
           ...data
               .map((item) => Expanded(
-                    child: TextWidget.custmText(
-                      text: _formatDate(item.convDate),
-                      fs: 12,
-                      theme: themes.isDarkMode,
-                      color: themes.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                      fw: 0,
-                      align: TextAlign.right,
+                    child: Text(
+                      _formatDate(item.convDate),
+                      textAlign: TextAlign.right,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: MyntFonts.semiBold,
+                        color : resolveThemeColor(
+                          context,
+                          dark: colors.textSecondaryDark,
+                          light: colors.textSecondaryLight,
+                        ),
+                      ),
                     ),
                   ))
               ,
@@ -2756,33 +3366,33 @@ class HoldingsTable extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildMetricRows(List<Shareholdings> sortedData) {
+  List<Widget> _buildMetricRows(BuildContext context, List<Shareholdings> sortedData) {
     final metrics = [
       {
-        "name": "",
+        "name": "Promoter Holding",
         "getValue": (item) => item.promoters,
         "color": const Color(0xFF7C3AED)
-      }, // Modern Purple (Insiders)
+      }, // Modern Purple
       {
-        "name": "",
+        "name": "Foreign Institution",
         "getValue": (item) => item.fiiFpi,
         "color": const Color(0xFF2563EB)
-      }, // Modern Blue (Institutions)
+      }, // Modern Blue
       {
-        "name": "",
+        "name": "Other Domestic Institution",
         "getValue": (item) => item.dii,
         "color": const Color(0xFF059669)
-      }, // Modern Green (Holding Company)
+      }, // Modern Green
       {
-        "name": "",
+        "name": "Retail and Others",
         "getValue": (item) => item.retailAndOthers,
         "color": const Color(0xFFEA580C)
-      }, // Modern Orange (Others)
+      }, // Modern Orange
       {
-        "name": "",
+        "name": "Mutual Funds",
         "getValue": (item) => item.mutualFunds,
         "color": const Color(0xFFDC2626)
-      }, // Modern Red (Corporation)
+      }, // Modern Red
     ];
 
     return metrics
@@ -2790,31 +3400,38 @@ class HoldingsTable extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
               child: Row(
                 children: [
+                  // Metric name
                   Expanded(
-                    flex: 0,
-                    child: Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: metric["color"] as Color,
-                          shape: BoxShape.circle,
+                    flex: 2,
+                    child: Text(
+                      metric["name"] as String,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: MyntFonts.regular,
+                        color : resolveThemeColor(
+                          context,
+                          dark: colors.textPrimaryDark,
+                          light: colors.textPrimaryLight,
                         ),
                       ),
                     ),
                   ),
+                  // Data values
                   ...sortedData
                       .map((item) => Expanded(
-                            child: TextWidget.custmText(
-                              text: _formatValue(
+                            child: Text(
+                              _formatValue(
                                   (metric["getValue"] as Function)(item)),
-                              fs: 12,
-                              theme: themes.isDarkMode,
-                              color: themes.isDarkMode
-                                  ? colors.textPrimaryDark
-                                  : colors.textPrimaryLight,
-                              fw: 0,
-                              align: TextAlign.right,
+                              textAlign: TextAlign.right,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: MyntFonts.regular,
+                                color : resolveThemeColor(
+                                  context,
+                                  dark: colors.textPrimaryDark,
+                                  light: colors.textPrimaryLight,
+                                ),
+                              ),
                             ),
                           ))
                       ,
@@ -2824,7 +3441,7 @@ class HoldingsTable extends StatelessWidget {
         .toList();
   }
 
-  Widget _buildLegend() {
+  Widget _buildLegend(BuildContext context) {
     final legendItems = [
       {"name": "Promoter Holding", "color": const Color(0xFF7C3AED)}, // Modern Purple
       {
@@ -2860,14 +3477,17 @@ class HoldingsTable extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    TextWidget.custmText(
-                      text: item["name"] as String,
-                      fs: 10,
-                      theme: themes.isDarkMode,
-                      color: themes.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 0,
+                    Text(
+                      item["name"] as String,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: MyntFonts.regular,
+                        color : resolveThemeColor(
+                          context,
+                          dark: colors.textPrimaryDark,
+                          light: colors.textPrimaryLight,
+                        ),
+                      ),
                     ),
                   ],
                 ))

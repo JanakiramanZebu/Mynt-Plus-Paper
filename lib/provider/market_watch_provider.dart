@@ -2674,7 +2674,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       required String numofStrike}) async {
     try {
       if (numofStrike == "All") {
-        numofStrike = "50";
+        numofStrike = "100";
       }
       toggleLoad(true);
 

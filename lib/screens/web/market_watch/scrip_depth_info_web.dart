@@ -18,7 +18,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'dart:html' as html;
 import 'tv_chart/chart_iframe_guard.dart';
-import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
+import 'package:mynt_plus/screens/web/market_watch/stock_report_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_detail_web.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import 'package:percent_indicator/percent_indicator.dart';

@@ -13,7 +13,7 @@ import 'package:mynt_plus/screens/web/market_watch/tv_chart/webview_chart.dart';
 import 'package:mynt_plus/screens/web/market_watch/options/option_chain_ss_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/search_dialog_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/set_alert_web.dart';
-import 'package:mynt_plus/screens/web/market_watch/stock_report.dart';
+import 'package:mynt_plus/screens/web/market_watch/stock_report_web.dart';
 import 'package:mynt_plus/screens/web/market_watch/scrip_detail_web.dart';
 import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/res/res.dart';

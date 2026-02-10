@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/screens/web/market_watch/over_view/stock_row_table_web.dart';
 import '../../../../models/marketwatch_model/scrip_overview/stock_data.dart';
 import '../../../../provider/market_watch_provider.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
-import 'stock_row_data.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 
-class PriceComparision extends ConsumerWidget {
-  const PriceComparision({super.key});
+class PriceComparisonWeb extends ConsumerWidget {
+  const PriceComparisonWeb({super.key});
 
   // Helper function to remove exchange prefix from symbol and clean up suffixes
   String _cleanSymbol(String? symbol) {
@@ -43,53 +43,62 @@ class PriceComparision extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextWidget.titleText(
-                    text: "Peers comparison",
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
-                 Material(
-                   color: Colors.transparent,
-                   child: InkWell(
-                     onTap: () async {
-                       await Future.delayed(const Duration(milliseconds: 150));
-                       await peersData.cyclePeersType();
-                     },
-                     splashColor: theme.isDarkMode
-                         ? colors.splashColorDark
-                         : colors.splashColorLight,
-                     highlightColor: theme.isDarkMode
-                         ? colors.highlightDark
-                         : colors.highlightLight,
-                     borderRadius: BorderRadius.circular(8),
-                     child: Padding(
-                       padding: const EdgeInsets.all(8.0),
-                       child: Row(
-                         mainAxisSize: MainAxisSize.min,
-                         children: [
-                           TextWidget.subText(
-                             text: peersData.selctedPeers,
-                             theme: theme.isDarkMode,
-                             color: theme.isDarkMode
-                                 ? colors.textSecondaryDark
-                                 : colors.textSecondaryLight,
-                             fw: 0,
-                           ),
-                           const SizedBox(width: 4),
-                           Icon(
-                             Icons.code,
-                             size: 16,
-                             color: theme.isDarkMode
-                                 ? colors.textSecondaryDark
-                                 : colors.textSecondaryLight,
-                           ),
-                         ],
-                       ),
-                     ),
-                   ),
-                 ),
+                Text(
+                  "Peers Comparison",
+                  style: MyntWebTextStyles.title(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                    fontWeight: MyntFonts.semiBold,
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () async {
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      await peersData.cyclePeersType();
+                    },
+                    splashColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.rippleDark,
+                      light: MyntColors.rippleLight,
+                    ),
+                    highlightColor: resolveThemeColor(
+                      context,
+                      dark: MyntColors.highlightDark,
+                      light: MyntColors.highlightLight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            peersData.selctedPeers,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.code,
+                            size: 16,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -141,7 +150,7 @@ class PriceComparision extends ConsumerWidget {
       itemCount: sortedList.length,
       
       itemBuilder: (BuildContext context, int index) {
-        return StockRowTable(
+        return StockRowTableWeb(
             showIcon: false,
             title: sortedList[index].sYMBOL ?? 'N/A',
             metricType: peersData.selctedPeers,
@@ -166,7 +175,7 @@ class PriceComparision extends ConsumerWidget {
 
   // Top Performers Card
   Widget _buildTopPerformersCard(
-      MarketWatchProvider peersData, ThemesProvider theme) {
+      BuildContext context, MarketWatchProvider peersData, ThemesProvider theme) {
     if (peersData.fundamentalData?.peersComparison?.peers == null) {
       return const SizedBox.shrink();
     }
@@ -181,13 +190,15 @@ class PriceComparision extends ConsumerWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         // color: theme.isDarkMode
-        //     ? colors.primaryDark.withOpacity(0.05)
-        //     : colors.primaryLight.withOpacity(0.05),
+        //     ? MyntColors.primaryDark.withOpacity(0.05)
+        //     : MyntColors.primaryLight.withOpacity(0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.isDarkMode
-              ? colors.primaryDark.withOpacity(0.7)
-              : colors.primaryDark.withOpacity(0.7),
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.primaryDark.withOpacity(0.7),
+            light: MyntColors.primaryDark.withOpacity(0.7),
+          ),
         ),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -201,6 +212,7 @@ class PriceComparision extends ConsumerWidget {
                     // Lowest P/E
                     Expanded(
                       child: _buildPerformerCard(
+                        context,
                         "Lowest P/E",
                         topPerformers['lowestPE']?['symbol'] ?? 'N/A',
                         topPerformers['lowestPE']?['value'] ?? 'N/A',
@@ -213,15 +225,18 @@ class PriceComparision extends ConsumerWidget {
                       child: Container(
                         width: 0.5,
                         height: 80,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.2)
-                            : colors.textSecondaryLight.withOpacity(0.3),
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark.withOpacity(0.2),
+                          light: MyntColors.textSecondary.withOpacity(0.3),
+                        ),
                       ),
                     ),
 
                     // Highest ROCE
                     Expanded(
                       child: _buildPerformerCard(
+                        context,
                         "Highest ROCE",
                         topPerformers['highestROCE']?['symbol'] ?? 'N/A',
                         topPerformers['highestROCE']?['value'] ?? 'N/A',
@@ -237,6 +252,7 @@ class PriceComparision extends ConsumerWidget {
                     // Best Dividend Yield
                     Expanded(
                       child: _buildPerformerCard(
+                        context,
                         "Best Div Yield",
                         topPerformers['bestDividend']?['symbol'] ?? 'N/A',
                         topPerformers['bestDividend']?['value'] ?? 'N/A',
@@ -249,14 +265,17 @@ class PriceComparision extends ConsumerWidget {
                       child: Container(
                         width: 0.5,
                         height: 80,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark.withOpacity(0.2)
-                            : colors.textSecondaryLight.withOpacity(0.3),
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.textSecondaryDark.withOpacity(0.2),
+                          light: MyntColors.textSecondary.withOpacity(0.3),
+                        ),
                       ),
                     ),
                     // Largest Market Cap
                     Expanded(
                       child: _buildPerformerCard(
+                        context,
                         "Largest Mkt Cap",
                         topPerformers['largestMarketCap']?['symbol'] ?? 'N/A',
                         topPerformers['largestMarketCap']?['value'] ?? 'N/A',
@@ -274,40 +293,43 @@ class PriceComparision extends ConsumerWidget {
     );
   }
 
-  Widget _buildPerformerCard(String title, String symbol, String value,
+  Widget _buildPerformerCard(BuildContext context, String title, String symbol, String value,
       Color color, ThemesProvider theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TextWidget.subText(
-          text: title,
-          theme: theme.isDarkMode,
-          fw: 1,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-          align: TextAlign.center,
+        Text(
+          title,
+          style: MyntWebTextStyles.body(
+            context,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
+            fontWeight: MyntFonts.medium,
+          ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        TextWidget.heroText(
-          text: value,
-          theme: theme.isDarkMode,
-          fw: 1,
-          color: theme.isDarkMode
-              ? colors.textPrimaryDark
-              : colors.textPrimaryLight,
-          align: TextAlign.center,
+        Text(
+          value,
+          style: MyntWebTextStyles.title(
+            context,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
+            fontWeight: MyntFonts.semiBold,
+          ),
+          textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        TextWidget.paraText(
-          text: _cleanSymbol(symbol),
-          theme: theme.isDarkMode,
-          fw: 0,
-          color: theme.isDarkMode
-              ? colors.textSecondaryDark
-              : colors.textSecondaryLight,
-          align: TextAlign.center,
+        Text(
+          _cleanSymbol(symbol),
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
+            fontWeight: MyntFonts.regular,
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
     );

@@ -59,6 +59,44 @@ class WatchlistCardWeb extends ConsumerStatefulWidget {
 class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
   // Add navigation lock to prevent multiple navigation events
   bool _isNavigating = false;
+
+  bool _isExpiryToday(String? expDateStr) {
+    if (expDateStr == null || expDateStr.isEmpty) return false;
+
+    try {
+      // Parse the expiry date format "11 NOV 25"
+      final parts = expDateStr.trim().split(' ');
+      if (parts.length != 3) return false;
+
+      final day = int.tryParse(parts[0]);
+      if (day == null) return false;
+
+      final monthStr = parts[1].toUpperCase();
+      final yearStr = parts[2];
+
+      // Map month abbreviations to numbers
+      const months = {
+        'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+        'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12
+      };
+
+      final month = months[monthStr];
+      if (month == null) return false;
+
+      // Parse year (assuming 2-digit year)
+      final year = int.tryParse('20$yearStr');
+      if (year == null) return false;
+
+      final expDate = DateTime(year, month, day);
+      final today = DateTime.now();
+
+      return expDate.year == today.year &&
+             expDate.month == today.month &&
+             expDate.day == today.day;
+    } catch (e) {
+      return false;
+    }
+  }
   // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
   final ValueNotifier<bool> _isHovered = ValueNotifier<bool>(false);
   // bool _isExpanded = false;
@@ -252,6 +290,47 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                             ),
                                           ),
                                         ),
+
+                                             if (widget.watchListData["weekly"] != null &&
+                                          widget.watchListData["weekly"].toString().isNotEmpty &&
+                                          widget.watchListData["weekly"].toString() != "null")
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                          margin: const EdgeInsets.only(left: 4),
+                            decoration: BoxDecoration(
+                              color:  resolveThemeColor(
+                                  context,
+                                  dark: Color(0XFFF1F3F8),
+                                  light: Color(0XFFF1F3F8),
+                                ),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.searchBgDark.withOpacity(0.3),
+                                  light: MyntColors.searchBg.withOpacity(0.3),
+                                ),
+                                width: 1,
+                              ),
+                            ),
+                                          child: Text(
+                                          widget.watchListData["weekly"]?.toString() ?? "",
+                                              // .toString()
+                                              // .replaceAll("-EQ", "")
+                                              // .toUpperCase(),
+                                          style: MyntWebTextStyles.para(
+                                            context,
+                                            fontWeight: MyntFonts.medium,
+                                            color: resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary,
+                                            ),
+                                          ),
+                                                                                ),
+                                        ),
+
+
                                     ],
                                   ),
                                 ),
@@ -298,6 +377,46 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                           ),
                                         ),
                                       ),
+if (_isExpiryToday(widget.watchListData['expDate'])) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color:  resolveThemeColor(
+                                  context,
+                                  dark: Color(0XFFF1F3F8),
+                                  light: Color(0XFFF1F3F8),
+                                ),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.searchBgDark.withOpacity(0.3),
+                                  light: MyntColors.searchBg.withOpacity(0.3),
+                                ),
+                                width: 1,
+                              ),
+                            ),
+                        child:
+
+                         Text(
+                                        "Expiry",
+                                        style: MyntWebTextStyles.exch(
+                                          context,
+                                          fontWeight: FontWeight.w500,
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.secondary,
+                                            light: MyntColors.secondary,
+                                          ),
+                                        ),
+                                      ),
+                        
+                        
+                       
+                      ),
+                    ],
+
                                     if (widget.watchListData['holdingQty'] !=
                                             null &&
                                         widget.watchListData['holdingQty']
