@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import '../locator/locator.dart';
 import '../locator/preference.dart';
+import '../res/mynt_web_color_styles.dart';
 import '../themes/theme.dart';
 import 'core/default_change_notifier.dart';
 import 'user_profile_provider.dart';
@@ -68,10 +69,74 @@ class ThemesProvider extends DefaultChangeNotifier {
   /// Get shadcn ColorScheme for web platform
   /// This ensures web (ShadcnApp) stays in sync with theme changes
   shadcn.ColorScheme getShadcnColorScheme() {
-    return themeMode == ThemeMode.dark
-        ? shadcn.ColorSchemes.darkDefaultColor
-        : shadcn.ColorSchemes.lightDefaultColor;
+    if (themeMode == ThemeMode.dark) {
+      return _DarkColorScheme;
+    }
+    return shadcn.ColorSchemes.lightDefaultColor;
   }
+
+  static final shadcn.ColorScheme _DarkColorScheme = shadcn.ColorScheme(
+    // Brightness
+    brightness: Brightness.dark,
+
+    // Background colors
+    background: MyntColors.backgroundColorDark, // #0D1117 - canvas-default
+    foreground: MyntColors.textPrimaryDark, // #C9D1D9 - fg-default
+
+    // Card / Surface
+    card: MyntColors.cardDark, // #161B22 - canvas-subtle
+    cardForeground: MyntColors.textPrimaryDark,
+
+    // Popover / Overlay
+    popover: MyntColors.overlayBgDark, // #161B22
+    popoverForeground: MyntColors.textPrimaryDark,
+
+    // Primary (accent blue)
+    primary: MyntColors.primaryDark, // #58A6FF - accent-fg
+    primaryForeground: const Color(0xFFFFFFFF),
+
+    // Secondary
+    secondary: MyntColors.cardHoverDark, // #21262D - surface-hover
+    secondaryForeground: MyntColors.textPrimaryDark,
+
+    // Muted
+    muted: MyntColors.cardDark, // #161B22
+    mutedForeground: MyntColors.textSecondaryDark, // #8B949E - fg-muted
+
+    // Accent
+    accent: MyntColors.cardHoverDark, // #21262D
+    accentForeground: MyntColors.textPrimaryDark,
+
+    // Destructive (error/danger)
+    destructive: MyntColors.lossDark, // #F85149 - danger-fg
+    destructiveForeground: const Color(0xFFFFFFFF),
+
+    // Border
+    border: MyntColors.dividerDark, // #30363D - border-default
+
+    // Input
+    input: MyntColors.dividerDark, // #30363D
+
+    // Ring (focus)
+    ring: MyntColors.primaryDark, // #58A6FF
+
+    // Sidebar
+    sidebar: MyntColors.sidebarBgDark, // #010409 - canvas-inset
+    sidebarForeground: MyntColors.textPrimaryDark,
+    sidebarPrimary: MyntColors.primaryDark,
+    sidebarPrimaryForeground: const Color(0xFFFFFFFF),
+    sidebarAccent: MyntColors.cardHoverDark, // #21262D
+    sidebarAccentForeground: MyntColors.textPrimaryDark,
+    sidebarBorder: MyntColors.dividerDark, // #30363D
+    sidebarRing: MyntColors.primaryDark,
+
+    // Chart colors
+    chart1: MyntColors.primaryDark,
+    chart2: MyntColors.profitDark,
+    chart3: MyntColors.lossDark,
+    chart4: MyntColors.warningDark,
+    chart5: const Color(0xFFA371F7),
+  );
 
 // Getting a default app theme
 

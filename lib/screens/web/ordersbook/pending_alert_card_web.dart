@@ -888,8 +888,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: Colors.white.withValues(alpha: 0.04),
-              light: Colors.black.withValues(alpha: 0.03),
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
             ),
           ),
           child: Row(
@@ -1220,7 +1220,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
           boxShadow: [
             BoxShadow(
               color: resolveThemeColor(context,
-                  dark: Colors.grey,
+                  dark: Colors.transparent,
                   light: Colors.grey),
               blurRadius: 2,
               offset: const Offset(0, 1),
@@ -1371,7 +1371,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
@@ -1765,7 +1765,7 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: styles.MyntColors.tertiary,
+                            backgroundColor:resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),

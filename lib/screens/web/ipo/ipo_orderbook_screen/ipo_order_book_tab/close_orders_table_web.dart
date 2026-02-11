@@ -123,8 +123,8 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
                     child: Container(
                       color: resolveThemeColor(
                         context,
-                        dark: MyntColors.primaryDark.withOpacity(0.05),
-                        light: MyntColors.primary.withOpacity(0.05),
+                        dark: MyntColors.cardDark,
+                        light: MyntColors.listItemBg,
                       ),
                       child: shadcn.Table(
                         columnWidths: columnWidths,
@@ -327,7 +327,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
             padding: padding ??
@@ -412,8 +412,8 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
-                    .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
+                    .withOpacity(theme.isDarkMode ? 0.08 : 0.10)
                 : Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             width: double.infinity,
@@ -543,7 +543,7 @@ class _CloseOrdersTableState extends ConsumerState<CloseOrdersTable> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

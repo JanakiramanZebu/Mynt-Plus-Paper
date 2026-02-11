@@ -441,7 +441,7 @@ class _PositionDetailScreenWebState
               onPressed: _handleExit,
               isFullWidth: true,
               textColor: resolveThemeColor(context,
-                  dark: MyntColors.primaryDark, light: MyntColors.primary),
+                  dark: MyntColors.textWhite, light: MyntColors.primary),
             ),
           ),
         ),

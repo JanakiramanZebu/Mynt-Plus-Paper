@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/res/web_colors.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../provider/thems.dart';
@@ -65,7 +65,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
       double rate = double.tryParse(_interestCtrl.text) ?? 0;
       double tenure = double.tryParse(_tenureCtrl.text) ?? 0;
 
-      // Basic Validation 
+      // Basic Validation
        if (principal <= 0) {
          setState(() {
           _totalAmount = 0;
@@ -74,7 +74,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         });
         return;
       }
-      
+
       // Calculation Logic
       // Monthly Interest Rate
       double monthlyRate = rate / (100 * 12);
@@ -84,7 +84,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
       if (monthlyRate > 0 && months > 0) {
         // Formula: P * ({[1 + i]^n - 1} / i) * (1 + i)
         // P = Amount, i = monthlyRate, n = months
-        
+
         double first = pow(1 + monthlyRate, months) - 1;
         double second = first / monthlyRate;
         double finalVal = principal * second * (1 + monthlyRate);
@@ -113,7 +113,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
     double? val = double.tryParse(value);
     if (val != null) {
       setState(() {
-        _sliderPrincipalAmount = val.clamp(1, 1000000); 
+        _sliderPrincipalAmount = val.clamp(1, 1000000);
       });
       calculateSIP();
     }
@@ -149,21 +149,27 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final theme = ref.watch(themeProvider);
-      final isDarkMode = theme.isDarkMode;
+      ref.watch(themeProvider);
 
-      // Define colors based on image
-      final principalColor = const Color(0xff015FEC); // Blue
-      final interestColor = const Color(0xff1C1C1C); // Blackish
-      
+      // Chart colors using MyntColors
+      final principalColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
+      final interestColor = resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textPrimary,
+      );
+      final totalColor = resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
+
       final List<ChartData> donutChart = [
         ChartData('Principal', _investedAmount.toDouble(), principalColor),
         ChartData('Interest', _returns.toDouble(), interestColor),
       ];
 
       return Scaffold(
-        // backgroundColor:
-        //     isDarkMode ? colors.darkGrey : const Color(0xffF9FAFB),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: AppBar(
@@ -171,14 +177,22 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            backgroundColor: isDarkMode ? colors.darkGrey : Colors.white,
+            backgroundColor: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
             leading: widget.onBack != null
                 ? IconButton(
                     onPressed: widget.onBack,
                     icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 18,
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
                     ),
                   )
                 : const CustomBackBtn(),
@@ -186,15 +200,17 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               "Calculator",
               style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
             ),
-            
+
              bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
               child: Divider(
                 height: 1,
                 thickness: 1,
-                color: isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.2)
-                    : colors.textSecondaryLight.withOpacity(0.2),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
               ),
             ),
           ),
@@ -205,27 +221,17 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
             constraints: const BoxConstraints(maxWidth: double.infinity),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDarkMode ? colors.secondaryDark : const Color.fromARGB(255, 255, 255, 255),
+              color: resolveThemeColor(
+                context,
+                dark: Colors.transparent,
+                light: MyntColors.card,
+              ),
               borderRadius: BorderRadius.circular(16),
-              // border: Border.all(
-              //   color: isDarkMode
-              //       ? Colors.white.withOpacity(0.2)
-              //       : Colors.black.withOpacity(0.1),
-              //   width: 1,
-              // ),
-              // boxShadow: [
-              //   BoxShadow(
-              //     color: Colors.black.withOpacity(0.05),
-              //     blurRadius: 10,
-              //     offset: const Offset(0, 4),
-              //   ),
-              // ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header
                 // Header
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,24 +245,24 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                       "Want to see how your SIP adds up over time? This shows you the full picture - step by step.",
                       style: MyntWebTextStyles.para(
                         context,
-                        darkColor: Colors.white70,
-                        lightColor: Colors.grey[600],
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
                       ).copyWith(fontSize: 13),
                       maxLines: 2,
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-          
+
                 // Content Row
                 LayoutBuilder(builder: (context, constraints) {
                   // Use column on small screens, row on large
                   if (constraints.maxWidth < 700) {
                     return Column(
                       children: [
-                        _buildInputSection(isDarkMode, theme, context),
+                        _buildInputSection(context),
                         const SizedBox(height: 40),
-                        _buildEstimationSection(isDarkMode, donutChart, context),
+                        _buildEstimationSection(donutChart, totalColor, principalColor, interestColor, context),
                       ],
                     );
                   }
@@ -265,12 +271,12 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                     children: [
                       Expanded(
                         flex: 6,
-                        child: _buildInputSection(isDarkMode, theme, context),
+                        child: _buildInputSection(context),
                       ),
                       const SizedBox(width: 40),
                        Expanded(
                         flex: 6,
-                        child: _buildEstimationSection(isDarkMode, donutChart, context),
+                        child: _buildEstimationSection(donutChart, totalColor, principalColor, interestColor, context),
                       ),
                     ],
                   );
@@ -283,7 +289,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
     });
   }
 
-  Widget _buildInputSection(bool isDarkMode, ThemesProvider theme, BuildContext context) {
+  Widget _buildInputSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -311,7 +317,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
             const Spacer(flex: 6),
           ],
         ),
-        
+
         const SizedBox(height: 32),
 
         // Interest Rate
@@ -342,7 +348,11 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                            "%",
                            style: MyntWebTextStyles.bodySmall(
                              context,
-                             color: Colors.grey,
+                             color: resolveThemeColor(
+                               context,
+                               dark: MyntColors.textSecondaryDark,
+                               light: MyntColors.textSecondary,
+                             ),
                            ),
                          ),
                        ),
@@ -355,19 +365,19 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         ),
         const SizedBox(height: 4),
         _buildCustomSlider(
+          context: context,
           value: _sliderInterestRate,
           min: 1,
           max: 30,
-          divisions: 290, 
+          divisions: 290,
           onChanged: (val) {
             setState(() {
               _sliderInterestRate = val;
               _interestCtrl.text =
-                  val.toStringAsFixed(0); 
+                  val.toStringAsFixed(0);
             });
             calculateSIP();
           },
-          isDarkMode: isDarkMode,
         ),
 
         const SizedBox(height: 32),
@@ -400,7 +410,11 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                            "Yr",
                            style: MyntWebTextStyles.bodySmall(
                              context,
-                             color: Colors.grey,
+                             color: resolveThemeColor(
+                               context,
+                               dark: MyntColors.textSecondaryDark,
+                               light: MyntColors.textSecondary,
+                             ),
                            ),
                          ),
                        ),
@@ -413,8 +427,9 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
         ),
         const SizedBox(height: 4),
         _buildCustomSlider(
+          context: context,
           value: _sliderTenureYears,
-          min: 1, 
+          min: 1,
           max: 40,
           divisions: 39,
           onChanged: (val) {
@@ -424,27 +439,30 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
             });
             calculateSIP();
           },
-          isDarkMode: isDarkMode,
         ),
       ],
     );
   }
 
   Widget _buildCustomSlider({
+    required BuildContext context,
     required double value,
     required double min,
     required double max,
     required int divisions,
     required ValueChanged<double> onChanged,
-    required bool isDarkMode,
   }) {
     return SliderTheme(
       data: SliderThemeData(
         trackHeight: 6.0,
-        activeTrackColor: WebColors.primaryLight.withOpacity(0.5), 
-        inactiveTrackColor: Colors.grey.withOpacity(0.2),
-        thumbColor: WebColors.primary, 
-        overlayColor: WebColors.primary.withOpacity(0.1),
+        activeTrackColor:  resolveThemeColor(context, dark: MyntColors.primaryDark,light: MyntColors.primary.withOpacity(0.5)),
+        inactiveTrackColor: resolveThemeColor(
+          context,
+          dark: MyntColors.dividerDark,
+          light: MyntColors.divider,
+        ),
+        thumbColor:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+        overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark.withOpacity(0.1),light: MyntColors.primary.withOpacity(0.1)),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
         trackShape: const RectangularSliderTrackShape(),
@@ -459,7 +477,13 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
     );
   }
 
-  Widget _buildEstimationSection(bool isDarkMode, List<ChartData> data, BuildContext context) {
+  Widget _buildEstimationSection(
+    List<ChartData> data,
+    Color totalColor,
+    Color principalColor,
+    Color interestColor,
+    BuildContext context,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -483,7 +507,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                     radius: '100%',
                     innerRadius: '92%',
                     dataSource: [
-                      ChartData('Total', 1, const Color(0xff6eb94b))
+                      ChartData('Total', 1, totalColor)
                     ],
                     pointColorMapper: (ChartData data, _) => data.color,
                     xValueMapper: (ChartData data, _) => data.x,
@@ -513,24 +537,21 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
                   _buildLegendItem(
                     "Principal Amount",
                     _investedAmount,
-                     const Color(0xff015FEC), // Blue
-                    isDarkMode,
+                    principalColor,
                     context,
                   ),
                   const SizedBox(height: 24),
                   _buildLegendItem(
                     "Total Interest",
                     _returns,
-                    const Color(0xff1C1C1C), // Black
-                    isDarkMode,
+                    interestColor,
                     context,
                   ),
                    const SizedBox(height: 24),
                    _buildLegendItem(
                     "Total Amount",
                     _totalAmount,
-                    const Color(0xff6eb94b), // Green
-                    isDarkMode,
+                    totalColor,
                     context,
                   ),
                 ],
@@ -543,7 +564,7 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
   }
 
   Widget _buildLegendItem(
-      String label, int value, Color color, bool isDarkMode, BuildContext context) {
+      String label, int value, Color color, BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -563,18 +584,18 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
               label,
               style: MyntWebTextStyles.bodyMedium(
                 context,
-                darkColor: Colors.white70,
-                lightColor: Colors.grey[600],
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              "₹ ${_formattingNumber(value)}", 
+              "\u20B9 ${_formattingNumber(value)}",
                style: MyntWebTextStyles.head(
                  context,
                  fontWeight: FontWeight.bold,
-                 darkColor: Colors.white,
-                 lightColor: Colors.black87,
+                 darkColor: MyntColors.textPrimaryDark,
+                 lightColor: MyntColors.textPrimary,
                ),
             ),
           ],

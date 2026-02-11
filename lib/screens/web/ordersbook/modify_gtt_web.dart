@@ -16,6 +16,7 @@ import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/no_internet_widget.dart';
 import '../../../sharedWidget/snack_bar.dart';
@@ -317,7 +318,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
     Widget headerContent = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? colors.darkGrey : const Color(0xfffafbff),
+        color: theme.isDarkMode ? MyntColors.overlayBgDark : const Color(0xfffafbff),
       ),
       child: Row(
         children: [
@@ -359,7 +360,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                         color: (change == "null" || change == "0.00")
                             ? MyntColors.textSecondaryDark
                             : (change.startsWith("-") == true || perChange.startsWith("-") == true)
-                                ? MyntColors.loss
+                                ? resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)
                                 : MyntColors.profit,
                         fontWeight: WebFonts.medium,
                       ),
@@ -638,6 +639,10 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       width: 16,
                       height: 16,
                       fit: BoxFit.contain,
+                      colorFilter: ColorFilter.mode(
+                        resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ],
                 ),
@@ -848,6 +853,10 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                       width: 16,
                       height: 16,
                       fit: BoxFit.contain,
+                      colorFilter: ColorFilter.mode(
+                        resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ],
                 ),
@@ -897,7 +906,7 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: theme.isDarkMode ? MyntColors.divider : MyntColors.divider,
+            color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
           ),
         ),
       ),
@@ -1010,8 +1019,8 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   backgroundColor: isBuy! 
-                      ? (theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary)
-                      : (theme.isDarkMode ? MyntColors.tertiary : MyntColors.tertiary),
+                      ? (theme.isDarkMode ? MyntColors.secondary : MyntColors.primary)
+                      : (theme.isDarkMode ? MyntColors.errorDark : MyntColors.tertiary),
                   minimumSize: const Size(double.infinity, 40),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1246,7 +1255,7 @@ class _DraggableModifyGttDialogState extends ConsumerState<_DraggableModifyGttDi
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
-                          color: theme.isDarkMode ? MyntColors.divider : MyntColors.divider,
+                          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
                         ),
                       ),
                       child: _ModifyGttDialogCloseNotifier(

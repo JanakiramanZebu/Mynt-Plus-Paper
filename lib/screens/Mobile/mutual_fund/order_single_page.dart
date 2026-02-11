@@ -50,7 +50,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
         child: Container(
           decoration: BoxDecoration(
             color: theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(0),
             border: Border(
               top: BorderSide(
                 color: theme.isDarkMode
@@ -140,7 +140,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
                         style: MyntWebTextStyles.body(
                         context,
                         color: theme.isDarkMode
-                            ? MyntColors.lossDark
+                            ? MyntColors.errorDark
                             : MyntColors.loss,
                         ),
                         maxLines: 3,

@@ -354,8 +354,9 @@ class ApiLinks {
 
 //mf new3
   String get newvenketmfurl => "https://v3.mynt.in/mfapi";
-
+  
   String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
+  String get mfAllHoldingsApi => "$newvenketmfurl/order/All_holdings";
   String get mfnewbestMf => "$newvenketmfurl/dashboard/getMfBaskets";
   String get mfnfoMF => "$newvenketmfurl/dashboard/NFO_datas";
   String get newmfallcatnewendpoit =>

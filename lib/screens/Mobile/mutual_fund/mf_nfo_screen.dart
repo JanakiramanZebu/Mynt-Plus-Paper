@@ -180,9 +180,11 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: isRowHovered
-                  ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
-                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  ? resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ).withValues(alpha: 0.08)
                   : null,
               alignment:
                   alignRight ? Alignment.centerRight : Alignment.centerLeft,
@@ -278,9 +280,11 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: isHovered
-                  ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
-                      light: MyntColors.primary.withValues(alpha: 0.08))
+                  ?resolveThemeColor(
+                              context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary,
+                            ).withValues(alpha: 0.08)
                   : null,
               child: Row(
                 children: [
@@ -430,7 +434,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey, light: Colors.grey),
+                      dark: Colors.transparent, light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -440,7 +444,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+                  dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
             ),
           ),
@@ -492,9 +496,12 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
     }).toList();
 
     return Scaffold(
+      // backgroundColor: theme.isDarkMode
+      //     ? colors.kColorDarkThemeBackground
+      //     : colors.kColorlightThemeBackground,
       backgroundColor: theme.isDarkMode
-          ? colors.kColorDarkThemeBackground
-          : colors.kColorlightThemeBackground,
+          ? MyntColors.backgroundColorDark
+          : MyntColors.backgroundColor,
       body: SafeArea(
         child: MyntLoaderOverlay(
           isLoading: mf.investloader,
@@ -564,7 +571,7 @@ class _MFNFOScreenState extends ConsumerState<MFNFOScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: colors.colorBlue,
+                                  color: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(

@@ -332,7 +332,7 @@ class IpoDetailsSheetWeb extends ConsumerWidget {
               style: MyntWebTextStyles.body(
                 context,
                 color: isLink
-                    ? MyntColors.primary
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                     : resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark,
                         light: MyntColors.textPrimary),

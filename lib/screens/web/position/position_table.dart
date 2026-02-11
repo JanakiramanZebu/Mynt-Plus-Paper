@@ -318,7 +318,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             } else if (isRowHovered) {
               // Open positions: show hover effect only
               backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.08),
+                  dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                   light: MyntColors.primary.withValues(alpha: 0.08));
             }
 
@@ -1097,7 +1097,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
               enabled: hasOpenPositions,
               activeColor: resolveThemeColor(
                 context,
-                dark: MyntColors.primaryDark,
+                dark: MyntColors.secondary,
                 light: MyntColors.primary,
               ),
               borderRadius: BorderRadius.circular(4),
@@ -1364,7 +1364,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             enabled: !isClosed,
             activeColor: resolveThemeColor(
               context,
-              dark: MyntColors.primaryDark,
+              dark: MyntColors.secondary,
               light: MyntColors.primary,
             ),
             borderRadius: BorderRadius.circular(4),
@@ -1506,7 +1506,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
             boxShadow: [
               BoxShadow(
                 color: resolveThemeColor(context,
-                    dark: Colors.grey,
+                    dark: Colors.transparent,
                     light: Colors.grey),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
@@ -1695,7 +1695,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

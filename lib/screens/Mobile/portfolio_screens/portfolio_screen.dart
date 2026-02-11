@@ -2,7 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
-import '../../../screens/Mobile/mutual_fund/mf_hold_new_screen.dart';
+import '../mutual_fund/mf_hold_new_screen.dart';
 import '../../../provider/ledger_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/order_provider.dart';

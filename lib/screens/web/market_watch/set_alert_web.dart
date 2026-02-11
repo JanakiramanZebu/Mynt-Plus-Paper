@@ -165,7 +165,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
               },
               child: Dialog(
                 backgroundColor: resolveThemeColor(context,
-                    dark: MyntColors.backgroundColorDark,
+                    dark: MyntColors.dialogDark,
                     light: MyntColors.backgroundColor),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -330,7 +330,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                             decoration: BoxDecoration(
                                                 color: resolveThemeColor(
                                                   context,
-                                                  dark: MyntColors.searchBgDark,
+                                                  dark: MyntColors.transparent,
                                                   light: MyntColors.searchBg,
                                                 ),
                                                 border: Border.all(
@@ -461,7 +461,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                           decoration: BoxDecoration(
                                             color: resolveThemeColor(
                                               context,
-                                              dark: MyntColors.searchBgDark,
+                                              dark: MyntColors.transparent,
                                               light: MyntColors.searchBg,
                                             ),
                                             border: Border.all(
@@ -566,7 +566,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   backgroundColor: resolveThemeColor(
                                     context,
-                                    dark: MyntColors.searchBgDark,
+                                    dark: MyntColors.transparent,
                                     light: MyntColors.searchBg,
                                   ),
                                   borderColor: resolveThemeColor(
@@ -643,7 +643,7 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                   ),
                                   backgroundColor: resolveThemeColor(
                                     context,
-                                    dark: MyntColors.searchBgDark,
+                                    dark: MyntColors.transparent,
                                     light: MyntColors.searchBg,
                                   ),
                                   borderColor: resolveThemeColor(

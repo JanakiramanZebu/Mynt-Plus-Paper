@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_orderbook_screen/bonds_order_book_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/live_bonds/bonds_list.dart';
 import 'package:mynt_plus/screens/web/bonds/bonds_orderbook_screen/bonds_order_book_main_screen_web.dart';
@@ -214,9 +216,9 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreensWeb>
             text: title,
             color: isActive
                 ? theme.isDarkMode
-                    ? colors.secondaryDark
-                    : colors.secondaryLight
-                : colors.textSecondaryLight,
+                    ? MyntColors.primaryDark
+                    : MyntColors.primary
+                : MyntColors.textSecondary,
             textOverflow: TextOverflow.ellipsis,
             maxLines: 1,
             theme: theme.isDarkMode,
@@ -230,7 +232,7 @@ class _ExploreScreensState extends ConsumerState<BondsExploreScreensWeb>
           width: isActive ? 82 : 0,
           margin: const EdgeInsets.only(top: 1),
           decoration: BoxDecoration(
-            color: colors.colorBlue,
+            color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
             borderRadius: BorderRadius.circular(2),
           ),
         ),

@@ -298,7 +298,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
               padding: cellPadding,
               color: isRowHovered
                   ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                       light: MyntColors.primary.withValues(alpha: 0.08))
                   : null,
               alignment: alignRight ? Alignment.topRight : null,
@@ -1498,32 +1498,27 @@ class _TableExample1State extends ConsumerState<TableExample1> {
             boxShadow: [
               BoxShadow(
                 color: resolveThemeColor(context,
-                    dark: Colors.grey,
+                    dark: Colors.transparent,
                     light: Colors.grey),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
             ],
           ),
-          child: Icon(
-            Icons.output,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.lossDark,
-                light: MyntColors.tertiary),
+          child: SvgPicture.asset(
+            assets.exitPositionIcon,
+            height: 18,
+            width: 18,
+            colorFilter: ColorFilter.mode(
+              resolveThemeColor(context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.tertiary),
+              BlendMode.srcIn,
+            ),
           ),
         ),
       ),
     );
-    // OLD UI - SVG exit icon
-    // child: SvgPicture.asset(
-    //   assets.exitPositionIcon,
-    //   height: 18,
-    //   width: 18,
-    //   color: resolveThemeColor(context,
-    //       dark: MyntColors.lossDark,
-    //       light: MyntColors.tertiary),
-    // ),
   }
 
   // Build the 3-dot options menu button with shadcn dropdown
@@ -1652,7 +1647,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

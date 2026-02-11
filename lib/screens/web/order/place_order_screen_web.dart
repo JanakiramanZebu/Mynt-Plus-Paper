@@ -1010,7 +1010,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
+                                    color: resolveThemeColor(context, dark: MyntColors.cardDark, light: const Color(0xfffafbff)),
                                     // (isBuy ?? true)
                                     //     ? resolveThemeColor(context,
                                     //             dark: MyntColors.primary,
@@ -1080,7 +1080,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       color: resolveThemeColor(
                                                           context,
                                                           dark: MyntColors
-                                                              .textPrimary,
+                                                              .textPrimaryDark,
                                                           light: MyntColors
                                                               .textPrimary),
                                                       fontWeight:
@@ -1108,7 +1108,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       color: resolveThemeColor(
                                                           context,
                                                           dark: MyntColors
-                                                              .textPrimary,
+                                                              .textPrimaryDark,
                                                           light: MyntColors
                                                               .textPrimary),
                                                       fontWeight:
@@ -1166,7 +1166,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                               decoration: BoxDecoration(
                                                                 color: isSelected
-                                                                    ? (theme.isDarkMode ? colors.secondaryDark : colors.secondaryLight)
+                                                                    ? (theme.isDarkMode ? MyntColors.secondary : MyntColors.primary)
                                                                     : (theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8)),
                                                                 borderRadius: BorderRadius.circular(4),
                                                               ),
@@ -1196,7 +1196,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         theme.isDarkMode,
                                                     color: resolveThemeColor(context,
                                                         dark:
-                                                            MyntColors.textPrimary,
+                                                            MyntColors.textPrimaryDark,
                                                         light: MyntColors.textPrimary),
                                                     fontWeight: WebFonts.medium,
                                                   ),
@@ -1250,7 +1250,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       width: 20,
                                                       height: 20,
                                                       decoration: BoxDecoration(
-                                                        color: MyntColors.primary,
+                                                        color: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                                 5),
@@ -1309,7 +1309,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .primary) : resolveThemeColor(
                                                                     context,
                                                                     dark: MyntColors
-                                                                        .tertiary,
+                                                                        .errorDark,
                                                                     light: MyntColors
                                                                         .tertiary),),
                                                         borderRadius:
@@ -1341,7 +1341,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         .primary) : resolveThemeColor(
                                                                     context,
                                                                     dark: MyntColors
-                                                                        .tertiary,
+                                                                        .errorDark,
                                                                     light: MyntColors
                                                                         .tertiary),
                                                                 borderRadius:
@@ -1373,7 +1373,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       width: 20,
                                                       height: 20,
                                                       decoration: BoxDecoration(
-                                                        color: MyntColors.tertiary,
+                                                        color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                                 5),
@@ -1615,7 +1615,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               border: Border(bottom: BorderSide(
                                                 color: isSelected
                                                     ? resolveThemeColor(context,
-                                                        dark: MyntColors.primary,
+                                                        dark: MyntColors.primaryDark,
                                                         light: MyntColors.primary)
                                                     : Colors.transparent,
                                                 width: isSelected ? 1.5 : 1,),
@@ -1656,10 +1656,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: MyntColors.primary.withValues(alpha: 0.1),
+                                color: MyntColors.primaryDark.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: MyntColors.primary.withValues(alpha: 0.3),
+                                  color: resolveThemeColor(context, dark: MyntColors.primaryDark.withValues(alpha: 0.3), light: MyntColors.primary.withValues(alpha: 0.3)),
                                   width: 1,
                                 ),
                               ),
@@ -1667,7 +1667,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                 children: [
                                   Icon(
                                     Icons.info_outline,
-                                    color: MyntColors.primary,
+                                    color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                                     size: 18,
                                   ),
                                   const SizedBox(width: 10),
@@ -2634,7 +2634,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                             assets
                                                                                 .switchIcon,
                                                                             fit:
-                                                                                BoxFit.contain),
+                                                                                BoxFit.contain,
+                                                                            colorFilter: ColorFilter.mode(
+                                                                                resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                                                                                BlendMode.srcIn)),
                                                                       ),
                                                                     ),
                                                                   ),
@@ -2746,7 +2749,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 isDarkTheme: theme.isDarkMode,
                                                 color: theme.isDarkMode
                                                     ? MyntColors
-                                                        .textSecondary
+                                                        .textPrimaryDark
                                                     : MyntColors.textSecondary,
                                               ),
                                             ),
@@ -2789,7 +2792,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                   }
                                                 },
                                                 activeColor: theme.isDarkMode
-                                                    ? MyntColors.primary
+                                                    ? MyntColors.secondary
                                                     : MyntColors.primary,
                                                 checkColor: Colors.white,
                                               ),
@@ -3335,17 +3338,20 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       });
                                                                     },
                                                                     child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                          .all(
-                                                                          12.0),
-                                                                      child: SvgPicture.asset(
-                                                                          assets
-                                                                              .switchIcon,
-                                                                          fit: BoxFit
-                                                                              .contain),
+                                                                          Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            12.0),
+                                                                        child: SvgPicture.asset(
+                                                                            assets
+                                                                                .switchIcon,
+                                                                            fit:
+                                                                                BoxFit.contain,
+                                                                            colorFilter: ColorFilter.mode(
+                                                                                resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                                                                                BlendMode.srcIn)),
+                                                                      ),
                                                                     ),
-                                                                  ),
                                                                   controller:
                                                                       orderInput
                                                                           .ocoPriceCtrl,
@@ -3870,7 +3876,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 Icon(Icons.lock_outline,
                                                     size: 40,
                                                     color: theme.isDarkMode
-                                                        ? MyntColors.loss
+                                                        ? MyntColors.lossDark
                                                         : MyntColors
                                                             .loss), // your blue
                                                 const SizedBox(height: 16),
@@ -3881,7 +3887,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     isDarkTheme:
                                                         theme.isDarkMode,
                                                     color: theme.isDarkMode
-                                                        ? MyntColors.loss
+                                                        ? MyntColors.lossDark
                                                         : MyntColors.loss,
                                                   ),
                                                 ),
@@ -3892,7 +3898,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     style: ElevatedButton
                                                         .styleFrom(
                                                       backgroundColor:
-                                                          MyntColors.primary,
+                                                          resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                                       minimumSize:
                                                           const Size(0, 50),
                                                       shape:
@@ -4092,6 +4098,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     16,
                                                                 fit: BoxFit
                                                                     .contain,
+                                                                colorFilter: ColorFilter.mode(
+                                                                  resolveThemeColor(
+                                                                    context,
+                                                                    dark: MyntColors.primaryDark,
+                                                                    light: MyntColors.primary,
+                                                                  ),
+                                                                  BlendMode.srcIn,
+                                                                ),
                                                                   ),
                                                                 ),
                                                             ],
@@ -4153,26 +4167,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         ),
                                                         leadingWidget: _isStock
                                                             ? null
-                                                            : Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                shape:
-                                                                    const CircleBorder(),
-                                                                child: InkWell(
-                                                                  customBorder:
-                                                                      const CircleBorder(),
-                                                                  splashColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .splashColorDark
-                                                                      : colors
-                                                                          .splashColorLight,
-                                                                  highlightColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .highlightDark
-                                                                      : colors
-                                                                          .highlightLight,
+                                                            : GestureDetector(
                                                                   onTap: () {
                                                                     setState(
                                                                         () {
@@ -4218,41 +4213,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       _debouncedMarginUpdate();
                                                                     });
                                                                   },
-                                                                  child:
-                                                                      SvgPicture
-                                                                          .asset(
-                                                                    theme.isDarkMode
-                                                                        ? assets
-                                                                            .darkCMinus
-                                                                        : assets
-                                                                            .minusIcon,
-                                                                    fit: BoxFit
-                                                                        .scaleDown,
+                                                                  child: Icon(
+                                                                    Icons.remove,
+                                                                    size: 18,
+                                                                    color: theme.isDarkMode
+                                                                        ? MyntColors.primaryDark
+                                                                        : MyntColors.primary,
                                                                   ),
-                                                                )),
+                                                                ),
 
                                                         trailingWidget: _isStock
                                                             ? null
-                                                            : Material(
-                                                                color: Colors
-                                                                    .transparent,
-                                                                shape:
-                                                                    const CircleBorder(),
-                                                                child: InkWell(
-                                                                  customBorder:
-                                                                      const CircleBorder(),
-                                                                  splashColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .splashColorDark
-                                                                      : colors
-                                                                          .splashColorLight,
-                                                                  highlightColor: theme
-                                                                          .isDarkMode
-                                                                      ? colors
-                                                                          .highlightDark
-                                                                      : colors
-                                                                          .highlightLight,
+                                                            : GestureDetector(
                                                                   onTap: () {
                                                                     setState(
                                                                         () {
@@ -4327,16 +4299,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       _debouncedMarginUpdate();
                                                                     });
                                                                   },
-                                                                  child: SvgPicture.asset(
-                                                                      theme.isDarkMode
-                                                                          ? assets
-                                                                              .darkAdd
-                                                                          : assets
-                                                                              .addIcon,
-                                                                      fit: BoxFit
-                                                                          .scaleDown),
+                                                                  child: Icon(
+                                                                    Icons.add,
+                                                                    size: 18,
+                                                                    color: theme.isDarkMode
+                                                                        ? MyntColors.primaryDark
+                                                                        : MyntColors.primary,
+                                                                  ),
                                                                 ),
-                                                              ),
 
                                                         controller: qtyCtrl,
                                                         textAlign: _isStock
@@ -4442,7 +4412,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             theme.isDarkMode,
                                                         color: theme.isDarkMode
                                                             ? MyntColors
-                                                                .textSecondary
+                                                                .textPrimaryDark
                                                             : MyntColors
                                                                 .textSecondary,
                                                       ),
@@ -4466,7 +4436,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           color: theme
                                                                   .isDarkMode
                                                               ? MyntColors
-                                                                  .textSecondary
+                                                                  .textPrimaryDark
                                                               : MyntColors
                                                                   .textSecondary,
                                                         ),
@@ -4525,6 +4495,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                             width: 16,
                                                             height: 16,
                                                             fit: BoxFit.contain,
+                                                            colorFilter: ColorFilter.mode(
+                                                              resolveThemeColor(
+                                                                context,
+                                                                dark: MyntColors.primaryDark,
+                                                                light: MyntColors.primary,
+                                                              ),
+                                                              BlendMode.srcIn,
+                                                            ),
                                                           ),
                                                         ]),
                                                   ),
@@ -4679,8 +4657,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                       const RoundedRectangleBorder(),
                                                   padding:
                                                       const EdgeInsets.all(0),
-                                                  backgroundColor: Colors.white,
-                                                  foregroundColor: Colors.white,
+                                                  backgroundColor: Colors.transparent,
+                                                  foregroundColor: Colors.transparent,
                                                   elevation: 0.0,
                                                   minimumSize:
                                                       const Size(0, 30),
@@ -4715,9 +4693,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               color: theme
                                                                       .isDarkMode
                                                                   ? MyntColors
-                                                                      .secondary
+                                                                      .primaryDark
                                                                   : MyntColors
-                                                                      .secondary,
+                                                                      .primary,
                                                               fontWeight:
                                                                   WebFonts
                                                                       .semiBold,
@@ -4735,10 +4713,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     .keyboard_arrow_down,
                                                             color: theme
                                                                     .isDarkMode
-                                                                ? colors
-                                                                    .secondaryDark
-                                                                : colors
-                                                                    .secondaryLight,
+                                                                ? MyntColors.primaryDark : MyntColors.primary,
                                                           ),
                                                         ),
                                                       ],
@@ -4753,12 +4728,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             child: Column(
                                               children: [
                                                 Divider(
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: colors
-                                                                .darkColorDivider,
-                                                            light: colors
-                                                                .colorDivider),thickness: 0.5,),
+                                                        color: theme.isDarkMode
+                                                            ? Colors.transparent
+                                                            : colors.colorDivider,
+                                                        thickness: 0.5,),
 
                                                 // Column with Stoploss and Add validity (stacked vertically)
                                                 Column(
@@ -4795,7 +4768,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
                                                                   color: resolveThemeColor(context,
-                                                                      dark: MyntColors.textSecondaryDark,
+                                                                      dark: MyntColors.textPrimaryDark,
                                                                       light: MyntColors.textSecondary),
                                                                 ),
                                                                 overflow:
@@ -4850,12 +4823,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     ],
                                                     // Divider after Stoploss order
                                                     Divider(
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: colors
-                                                                .darkColorDivider,
-                                                            light: colors
-                                                                .colorDivider),thickness: 0.5,),
+                                                        color: theme.isDarkMode
+                                                            ? Colors.transparent
+                                                            : colors.colorDivider,
+                                                        thickness: 0.5,),
 
                                                     // Add validity & Disclosed Qty (only if not CO-BO)
                                                     if (!(orderType ==
@@ -4891,7 +4862,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         theme
                                                                             .isDarkMode,
                                                                     color: resolveThemeColor(context,
-                                                                        dark: MyntColors.textSecondaryDark,
+                                                                        dark: MyntColors.textPrimaryDark,
                                                                         light: MyntColors.textSecondary),
                                                                   ),
                                                                   overflow:
@@ -4944,12 +4915,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                     "CO - BO")) ...[
                                                   // AMO switch section
                                                   Divider(
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: colors
-                                                                .darkColorDivider,
-                                                            light: colors
-                                                                .colorDivider),thickness: 0.5,),
+                                                        color: theme.isDarkMode
+                                                            ? Colors.transparent
+                                                            : colors.colorDivider,
+                                                        thickness: 0.5,),
                                                   Theme(
                                                     data: ThemeData(
                                                       unselectedWidgetColor: theme
@@ -4976,7 +4945,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                               isDarkTheme: theme
                                                                   .isDarkMode,
                                                               color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  dark: MyntColors.textPrimaryDark,
                                                                   light: MyntColors.textSecondary),
                                                             ),
                                                           ),
@@ -5061,7 +5030,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 .isDarkMode,
                                                             color: resolveThemeColor(context,
                                                                 dark: MyntColors
-                                                                    .textSecondaryDark,
+                                                                    .textPrimaryDark,
                                                                 light: MyntColors
                                                                     .textSecondary),
                                                           ),
@@ -5125,7 +5094,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                 .isDarkMode,
                                                             color: resolveThemeColor(context,
                                                                 dark: MyntColors
-                                                                    .textSecondaryDark,
+                                                                    .textPrimaryDark,
                                                                 light: MyntColors
                                                                     .textSecondary),
                                                           ),
@@ -5163,8 +5132,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 ),
                                                 Divider(
                                                     color: theme.isDarkMode
-                                                        ? colors
-                                                            .darkColorDivider
+                                                        ? Colors.transparent
                                                         : colors.colorDivider),
                                               ],
                                             ),
@@ -5240,18 +5208,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 .size
                                                 .width,
                                             decoration: BoxDecoration(
-                                                color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
+                                                color: resolveThemeColor(context, dark: MyntColors.cardDark, light: const Color(0xfffafbff)),
                                                 border: Border(
                                                     top: BorderSide(
                                                         color: theme.isDarkMode
-                                                            ? colors
-                                                                .darkColorDivider
+                                                            ? Colors.transparent
                                                             : colors
                                                                 .colorDivider),
                                                     bottom: BorderSide(
                                                         color: theme.isDarkMode
-                                                            ? colors
-                                                                .darkColorDivider
+                                                            ? Colors.transparent
                                                             : colors
                                                                 .colorDivider))),
                                             padding: const EdgeInsets.only(
@@ -5466,7 +5432,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                         isDarkTheme:
                                                                             theme.isDarkMode,
                                                                         color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  dark: MyntColors.textPrimaryDark,
                                                                   light: MyntColors.textSecondary),
                                                                       ),
                                                                     ),
@@ -5477,8 +5443,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .para(
                                                                         isDarkTheme:
                                                                             theme.isDarkMode,
-                                                                        color: !theme.isDarkMode
-                                                                            ? MyntColors.primary
+                                                                        color: theme.isDarkMode
+                                                                            ? MyntColors.primaryDark
                                                                             : MyntColors.primary,
                                                                         fontWeight:
                                                                             WebFonts.semiBold,
@@ -5494,9 +5460,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     Icon(
                                                                         Icons
                                                                             .arrow_drop_down,
-                                                                        color: !theme.isDarkMode
-                                                                            ? colors.colorBlue
-                                                                            : colors.colorLightBlue)
+                                                                        color: theme.isDarkMode ?
+                                                                            MyntColors.primaryDark : MyntColors.primary
+                                                                            )
                                                                   ])),
 
                                                           const SizedBox(
@@ -5511,7 +5477,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                   isDarkTheme: theme
                                                                       .isDarkMode,
                                                                   color: resolveThemeColor(context,
-                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  dark: MyntColors.textPrimaryDark,
                                                                   light: MyntColors.textSecondary),
                                                                 ),
                                                               ),
@@ -5591,7 +5557,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                               '+ Add fund',
                                                                               style: WebTextStyles.para(
                                                                                 isDarkTheme: theme.isDarkMode,
-                                                                                color: theme.isDarkMode ? MyntColors.secondary : MyntColors.secondary,
+                                                                                color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                                                                                 fontWeight: WebFonts.semiBold,
                                                                               )),
                                                                           const SizedBox(
@@ -6716,12 +6682,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     "BasketEdit" ||
                                                                 widget.isBasket ==
                                                                     "BasketMode")
-                                                            ? colors
-                                                                .primary // Use primary color for basket mode
+                                                            ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) // Use primary color for basket mode
                                                             : isBuy!
-                                                                ? colors.primary
-                                                                : colors
-                                                                    .tertiary,
+                                                                ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
+                                                                : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                                                         shape:
                                                             RoundedRectangleBorder(
                                                           borderRadius:
@@ -6829,12 +6793,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   ? validityType != validityTypes[index]
                                       ? const Color(0xffF1F3F8)
                                       : resolveThemeColor(context,
-                                          dark: MyntColors.primaryDark,
+                                          dark: MyntColors.secondary,
                                           light: MyntColors.primary)
                                   : validityType != validityTypes[index]
                                       ? colors.darkGrey
                                       : resolveThemeColor(context,
-                                          dark: MyntColors.primaryDark,
+                                          dark: MyntColors.secondary,
                                           light: MyntColors.primary),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(5)),
@@ -7315,9 +7279,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
               Text("Market Protected by",
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? MyntColors.primary
-                        : MyntColors.primary,
+                    color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                   )),
               Semantics(
                 identifier: "Market Protection %",
@@ -7335,18 +7297,17 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           builder: (BuildContext context,
                               StateSetter dialogSetState) {
                             return AlertDialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? const Color(0xFF121212)
-                                  : const Color(0xFFF1F3F8),
-                              titlePadding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 4),
+                              backgroundColor: resolveThemeColor(context,
+                                  dark: MyntColors.cardDark,
+                                  light: const Color(0xFFF1F3F8)),
+                              titlePadding: const EdgeInsets.only(
+                                  left: 4, right: 4, top: 0, bottom: 0),
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(8))),
                               scrollable: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                              contentPadding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 10, top: 0,
                               ),
                               actionsPadding: const EdgeInsets.only(
                                   bottom: 16, right: 16, left: 16, top: 8),
@@ -7355,30 +7316,28 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                               title: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  TextButton(
-                                    style: TextButton.styleFrom(
-                                      shape: const CircleBorder(),
-                                      padding: const EdgeInsets.all(4),
-                                      backgroundColor: Colors.transparent,
-                                      foregroundColor: Colors.transparent,
-                                      elevation: 0.0,
-                                      minimumSize: const Size(0, 30),
-                                      side: BorderSide.none,
-                                    ),
-                                    onPressed: () async {
-                                      await Future.delayed(
-                                          const Duration(milliseconds: 150));
-                                      closeDialog();
-                                    },
-                                    // borderRadius: BorderRadius.circular(20),
-                                    // splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                                    // highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      size: 22,
-                                      color: theme.isDarkMode
-                                          ? MyntColors.textSecondary
-                                          : MyntColors.textSecondary,
+                                  Material(
+                                    color: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        await Future.delayed(
+                                            const Duration(milliseconds: 150));
+                                        closeDialog();
+                                      },
+                                      borderRadius: BorderRadius.circular(20),
+                                      splashColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                      highlightColor: theme.isDarkMode ? colors.splashColorDark : colors.splashColorLight,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Icon(
+                                          Icons.close_rounded,
+                                          size: 22,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textSecondaryDark,
+                                              light: MyntColors.textSecondary),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -7387,11 +7346,12 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text('Enter Market Protection',
+                                      textAlign: TextAlign.start,
                                       style: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? MyntColors.textPrimary
-                                            : MyntColors.textPrimary,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
                                       )),
                                   const SizedBox(height: 10),
                                   Semantics(
@@ -7452,7 +7412,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                 : MyntColors.backgroundColor),
                                         child: SvgPicture.asset(
                                             color: theme.isDarkMode
-                                                ? MyntColors.textPrimary
+                                                ? MyntColors.textPrimaryDark
                                                 : MyntColors.icon,
                                             assets.precentIcon,
                                             fit: BoxFit.scaleDown),
@@ -7462,7 +7422,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       placeholderStyle: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
                                         color: (theme.isDarkMode
-                                                ? MyntColors.textSecondary
+                                                ? MyntColors.textSecondaryDark
                                                 : MyntColors.textSecondary)
                                             .withValues(alpha: 0.5),
                                       ),
@@ -7479,7 +7439,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                           style: WebTextStyles.para(
                                             isDarkTheme: theme.isDarkMode,
                                             color: theme.isDarkMode
-                                                ? MyntColors.loss
+                                                ? MyntColors.errorDark
                                                 : MyntColors.loss,
                                           ),
                                         ),
@@ -7526,18 +7486,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                       minimumSize:
                                           const Size(0, 45), // width, height
                                       side: BorderSide(
-                                          color: colors
-                                              .btnOutlinedBorder), // Outline border color
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.cardBorderDark,
+                                              light: colors.btnOutlinedBorder)),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      backgroundColor: colors
-                                          .primaryDark, // Transparent background
+                                      backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                     ),
-                                    child: Text("OK",
+                                    child: Text("Ok",
                                         style: WebTextStyles.buttonMd(
                                           isDarkTheme: theme.isDarkMode,
-                                          color: MyntColors.backgroundColor,
+                                          color: Colors.white,
                                           fontWeight: WebFonts.semiBold,
                                         )),
                                   ),
@@ -7567,7 +7527,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: MyntColors.primary,
+                                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                                 width: 1,
                               ),
                             ),
@@ -7576,7 +7536,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             "$marketProtection %",
                             style: WebTextStyles.para(
                               isDarkTheme: theme.isDarkMode,
-                              color: MyntColors.primary,
+                              color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                               fontWeight: WebFonts.semiBold,
                             ),
                           ),

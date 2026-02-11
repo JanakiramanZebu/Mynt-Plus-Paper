@@ -39,11 +39,13 @@ class MFOverview extends ConsumerWidget {
     final List<NavGraphData> dataSource = navGraph?.data?.toList() ?? [];
 
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      // color: isDarkMode ? Colors.black : Colors.white,
+      color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       padding: const EdgeInsets.all(16),
       child: Container(
         decoration: BoxDecoration(
-          color: isDarkMode ? colors.colorBlack : Colors.white,
+          // color: isDarkMode ? colors.colorBlack : Colors.white,
+          color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
@@ -174,13 +176,14 @@ class MFOverview extends ConsumerWidget {
     final interactiveTooltip = InteractiveTooltip(
       enable: true,
       format: 'NAV : point.y',
-      borderColor: colors.colorBlue,
-      textStyle: const TextStyle(color: Colors.white),
+      borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark,light: MyntColors.primary),
+      textStyle: TextStyle(color: resolveThemeColor(context, dark: MyntColors.textPrimary, light: MyntColors.textPrimaryDark)),
     );
 
     return SfCartesianChart(
       margin: const EdgeInsets.all(12),
-      backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
+      // backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
+      backgroundColor: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       borderWidth: 0,
       plotAreaBorderWidth: 0,
       primaryXAxis: CategoryAxis(
@@ -217,7 +220,7 @@ class MFOverview extends ConsumerWidget {
         AreaSeries<NavGraphData, String>(
           name: "Historical NAV",
           color: colors.colorBlue.withValues(alpha: 0.1),
-          borderColor: colors.colorBlue,
+          borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
           borderWidth: 2,
           dataSource: dataSource,
           xValueMapper: (NavGraphData data, _) {

@@ -53,7 +53,7 @@ import '../../../provider/dashboard_provider.dart';
 import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import '../../../res/res.dart';
 import '../../../provider/sidebar_provider.dart';
-import '../../../res/mynt_web_color_styles.dart' hide WebColors;
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/web_colors.dart';
 
 import '../../../sharedWidget/internet_widget.dart';
@@ -886,6 +886,9 @@ class _CustomizableSplitHomeScreenState
 
         return Scaffold(
           key: _scaffoldKey,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           drawerScrimColor: Colors.transparent, // Disable grey overlay
           endDrawer: Consumer(
             builder: (context, ref, _) {
@@ -1075,7 +1078,7 @@ class _CustomizableSplitHomeScreenState
             //   bottom: BorderSide(
             //     color: isDarkMode
             //         ? WebDarkColors.divider.withOpacity(0.3)
-            //         : WebColors.divider.withOpacity(0.2),
+            //         : MyntColors.divider.withOpacity(0.2),
             //     width: 1,
             //   ),
             // ),
@@ -1285,8 +1288,8 @@ class _CustomizableSplitHomeScreenState
                       child: Icon(
                         Icons.menu,
                         color: isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                            ? MyntColors.textPrimaryDark
+                            : MyntColors.textPrimary,
                         size: 22,
                       ),
                     ),
@@ -1327,8 +1330,8 @@ class _CustomizableSplitHomeScreenState
                 }),
 
             const SizedBox(width: 12),
-            // _buildNavItem('Strategy Builder', isDarkMode, ScreenType.strategyBuilder,
-            //       () => _handleStrategyBuilderTap()),
+            _buildNavItem('Strategy Builder', isDarkMode, ScreenType.strategyBuilder,
+                  () => _handleStrategyBuilderTap()),
          
             ],
 
@@ -4610,14 +4613,14 @@ class _HoverableNavItemState extends State<_HoverableNavItem> {
               color: widget.isActive
                   ? resolveThemeColor(
                       context,
-                      dark: WebColors.primaryDark,
-                      light: WebColors.primary,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
                     )
                   : (_isHovered
                       ? resolveThemeColor(
                           context,
-                          dark: WebColors.primaryDark,
-                          light: WebColors.primary,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
                         ).withOpacity(0.8)
                       : resolveThemeColor(
                           context,
@@ -4766,8 +4769,8 @@ class _AppBarIndexSlotState extends ConsumerState<_AppBarIndexSlot> {
             color: _isHovered
                 ? resolveThemeColor(
                     context,
-                    dark: WebColors.primaryDark,
-                    light: WebColors.primary,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
                   ).withValues(alpha: 0.08)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(0),
@@ -5208,9 +5211,17 @@ class _PortfolioTickerStripState extends ConsumerState<PortfolioTickerStrip>
         decoration: BoxDecoration(
           color: resolveThemeColor(
             context,
-            dark: const Color(0xFF1A1A2E),
+            dark: const Color.fromARGB(0, 26, 26, 46),
             light: const Color(0xFFFAFAFA),
           ),
+          border: isDarkMode
+              ? Border(
+                  bottom: BorderSide(
+                    color: shadcn.Theme.of(context).colorScheme.border,
+                    width: 1,
+                  ),
+                )
+              : null,
         ),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -5462,8 +5473,8 @@ class _TickerItemState extends State<_TickerItem> {
           : MyntColors.textPrimary;
     } else {
       valueColor = isPositive
-          ? (widget.isDarkMode ? WebDarkColors.profit : WebColors.profit)
-          : (widget.isDarkMode ? WebDarkColors.loss : WebColors.loss);
+          ? (widget.isDarkMode ? MyntColors.profitDark : MyntColors.profit)
+          : (widget.isDarkMode ? MyntColors.lossDark : MyntColors.loss);
     }
 
     return MouseRegion(

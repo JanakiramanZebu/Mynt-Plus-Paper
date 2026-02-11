@@ -845,7 +845,7 @@ class _DynamicPriceContentWeb extends StatelessWidget {
     // Calculate change color
     final changeColor =
         displayChange.startsWith("-") || displayPerChange.startsWith('-')
-            ? WebColors.loss
+            ? isDarkMode ? MyntColors.lossDark : MyntColors.loss
             : (displayChange == "0.00" || displayPerChange == "0.00")
                 ? resolveThemeColor(
                     context,

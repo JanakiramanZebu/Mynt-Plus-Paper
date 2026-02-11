@@ -105,12 +105,12 @@ class HoverActionButton extends StatelessWidget {
       color: Colors.white,
       backgroundColor: resolveThemeColor(
         context,
-        dark: MyntColors.primaryDark,
+        dark: MyntColors.secondary,
         light: MyntColors.primary,
       ),
       borderColor: resolveThemeColor(
         context,
-        dark: MyntColors.primaryDark,
+        dark: MyntColors.secondary,
         light: MyntColors.primary,
       ),
       onPressed: onPressed,
@@ -264,10 +264,11 @@ class HoverActionButton extends StatelessWidget {
       final isDarkMode = Theme.of(context).brightness == Brightness.dark;
       return Text(
         label!,
-        style: WebTextStyles.buttonSm(
-          isDarkTheme: isDarkMode,
-          color: color,
-        ),
+        // style: WebTextStyles.buttonSm(
+        //   isDarkTheme: isDarkMode,
+        //   color: color,
+        // ),
+        style: MyntWebTextStyles.buttonSm(context, color: color),
       );
     }
 
@@ -310,7 +311,7 @@ class HoverActionsContainer extends StatelessWidget {
     final defaultBackgroundColor = backgroundColor ??
         resolveThemeColor(
           context,
-          dark: MyntColors.listItemBgDark,
+          dark: MyntColors.textWhite,
           light: Colors.white,
         );
     final defaultBoxShadow = boxShadow ??

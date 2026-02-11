@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:intl/intl.dart';
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
+import 'package:mynt_plus/models/mf_model/all_mf_holdings_model.dart';
 import 'package:mynt_plus/models/mf_model/allcatlistviewmodel.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
@@ -104,6 +105,12 @@ class MFProvider extends DefaultChangeNotifier {
 
   Sip_list_data? _mfsiporderlist;
   Sip_list_data? get mfsiporderlist => _mfsiporderlist;
+
+  AllMfModel? _allMfHoldings;
+  AllMfModel? get allMfHoldings => _allMfHoldings;
+
+  bool _showAllMfHoldings = false;
+  bool get showAllMfHoldings => _showAllMfHoldings;
 
   // Search results for MF orders
   List<dynamic>? _mfOrderSearch = [];
@@ -1577,22 +1584,30 @@ class MFProvider extends DefaultChangeNotifier {
     }
   }
 
-  void fetchmfholdsingpage(String isin) async {
+  void fetchmfholdsingpage(String isin, {bool isAllMf = false}) async {
     // print("qqqq|${isin}---");
 
     // Clear previous data
     _holssinglelist = [];
     notifyListeners();
 
-    for (var item in _mfholdingnew?.data ?? []) {
-      if (isin == item.iSIN) {
-        // print("ininin");
-
-        // Ensure item is not null before adding it to the list
-        _holssinglelist = item != null ? [item] : [];
-
-        // print("ttttttt$_holssinglelist");
-        break; // Found the item, no need to continue
+    if (isAllMf) {
+      // Search in All MF holdings
+      for (var item in _allMfHoldings?.data ?? []) {
+        if (isin == item.iSIN) {
+          // Ensure item is not null before adding it to the list
+          _holssinglelist = item != null ? [item] : [];
+          break; // Found the item, no need to continue
+        }
+      }
+    } else {
+      // Search in My MF holdings
+      for (var item in _mfholdingnew?.data ?? []) {
+        if (isin == item.iSIN) {
+          // Ensure item is not null before adding it to the list
+          _holssinglelist = item != null ? [item] : [];
+          break; // Found the item, no need to continue
+        }
       }
     }
 
@@ -2469,6 +2484,15 @@ class MFProvider extends DefaultChangeNotifier {
     //     _triggerfromMF = false;
     //   }
     // });
+  }
+
+  void cancelPaymentTransaction() {
+    // Cancel timers
+    _autoPopTimer?.cancel();
+    _threeSecondTimer?.cancel();
+    _triggerfromMF = false;
+    ispaymentcalled = false;
+    notifyListeners();
   }
 
   Future upipaymenttrigger(

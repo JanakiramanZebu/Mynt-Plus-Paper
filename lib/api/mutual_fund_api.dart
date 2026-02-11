@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
+import 'package:mynt_plus/models/mf_model/all_mf_holdings_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_hold_singlepage_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_holding_new_model.dart';
@@ -944,6 +945,23 @@ mixin MutualFundApi on ApiCore {
       // print("mflisttt Tmfholddddddype MF ==>$json.total_sip_amount");
 
       return mf_holdoing_new.fromJson(json);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AllMfModel> getAllMfHoldings() async {
+    try {
+      final uri = Uri.parse(apiLinks.mfAllHoldingsApi);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"ClientCode": "${prefs.clientId}"}));
+
+      final json = jsonDecode((res.body));
+
+      print("All MF Holdings ==> $json");
+
+      return AllMfModel.fromJson(json);
     } catch (e) {
       rethrow;
     }

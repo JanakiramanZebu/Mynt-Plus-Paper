@@ -289,7 +289,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+      color: theme.isDarkMode ? MyntColors.backgroundColorDark : Colors.white,
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: _isInitialized

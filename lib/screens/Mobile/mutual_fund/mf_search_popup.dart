@@ -30,7 +30,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
     final mfData = ref.watch(mfProvider);
 
     return Dialog(
-      backgroundColor: theme.isDarkMode ? const Color(0xff1E1E1E) : Colors.white,
+      backgroundColor: theme.isDarkMode ? MyntColors.backgroundColorDark : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       insetPadding: const EdgeInsets.all(16),
       child: Container(
@@ -52,7 +52,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       color: theme.isDarkMode
-                          ? MyntColors.searchBgDark
+                          ? MyntColors.inputBgDark
                           : MyntColors.searchBg,
                       borderRadius: BorderRadius.circular(5),
                     ),
@@ -79,7 +79,11 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                               contentPadding: EdgeInsets.zero,
                             ),
                             onChanged: (value) {
+                              if(value.isEmpty){
+                                mfData.commonsearch();
+                              }else{
                               mfData.fetchmfCommonsearch(value, context);
+                              }
                             },
                           ),
                         ),
@@ -90,6 +94,7 @@ class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
                 const SizedBox(width: 16),
                 InkWell(
                   onTap: () {
+                    mfData.commonsearch();
                     Navigator.pop(context);
                   },
                   child: Icon(

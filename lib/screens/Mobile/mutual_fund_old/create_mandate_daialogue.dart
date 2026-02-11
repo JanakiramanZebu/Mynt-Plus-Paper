@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 
 import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
@@ -42,25 +43,25 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
         child: Container(
           decoration: BoxDecoration(
              borderRadius: BorderRadius.circular(12),
-           color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+           color: theme.isDarkMode ? MyntColors.backgroundColorDark : colors.colorWhite,
            border: Border(
                                     top: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? MyntColors.textSecondaryDark
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : MyntColors.textWhite,
                                     ),
                                     left: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? MyntColors.textSecondaryDark
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : MyntColors.textWhite,
                                     ),
                                     right: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
+                                          ? MyntColors.textSecondaryDark
                                               .withOpacity(0.5)
-                                          : colors.colorWhite,
+                                          : MyntColors.textWhite,
                                     ),
                                   ),
       
@@ -205,7 +206,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                                             : const Color(0xffF1F3F8),
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: colors.colorBlue,
+                                          color:  theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                                           width: 1,
                                         ),
                                       ),
@@ -265,7 +266,7 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                                             : const Color(0xffF1F3F8),
                                         borderRadius: BorderRadius.circular(5),
                                         border: Border.all(
-                                          color: colors.colorBlue,
+                                        color:  theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                                           width: 1,
                                         ),
                                       ),
@@ -337,8 +338,8 @@ class _CreateMandateDialogueState extends ConsumerState<CreateMandateDialogue> {
                           minimumSize: const Size(0, 45), // width, height
       
                           backgroundColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                              ? MyntColors.secondary
+                              : MyntColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),

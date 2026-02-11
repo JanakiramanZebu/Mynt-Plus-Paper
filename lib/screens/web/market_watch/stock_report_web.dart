@@ -2052,7 +2052,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? colors.primaryLight : Colors.transparent,
+               color: isSelected ? MyntColors.secondary : Colors.transparent,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text(
@@ -2091,7 +2091,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? colors.primaryLight : Colors.transparent,
+                color: isSelected ? MyntColors.secondary : Colors.transparent,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text(
@@ -2130,7 +2130,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: isSelected ? colors.primaryLight : Colors.transparent,
+                color: isSelected ? MyntColors.secondary : Colors.transparent,
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Text(
@@ -2373,8 +2373,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               Container(
                 height: 400,
                 decoration: BoxDecoration(
-                  color:
-                      theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  color: Colors.transparent,
                 ),
                 child: marketWatch.chartDataLoading
                     ? Center(
@@ -2498,9 +2497,10 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
     final maxPrice = priceData.map((e) => e.price).reduce(math.max);
 
     return Container(
-      height: 400, 
+      height: 400,
+      color: Colors.transparent,
       padding: const EdgeInsets.only(
-          top: 16, bottom: 16, left: 8, right: 8), 
+          top: 16, bottom: 16, left: 8, right: 8),
       child: Stack(
         children: [
           AnimatedSwitcher(
@@ -2618,9 +2618,9 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                       return FlSpot(entry.key.toDouble(), entry.value.price);
                     }).toList(),
                     isCurved: true,
-                    color: theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.secondaryDark,
+                        light: MyntColors.secondary),
                     barWidth: 2,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(
@@ -2656,13 +2656,13 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                           getDotPainter: (spot, percent, barData, index) {
                             return FlDotCirclePainter(
                               radius: 3, // Smaller circle
-                              color: theme.isDarkMode
-                                  ? colors.primaryDark
-                                  : colors.primaryLight,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.secondaryDark,
+                                  light: MyntColors.secondary),
                               strokeWidth: 2, // Thinner border
-                              strokeColor: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : colors.colorWhite,
+                              strokeColor: resolveThemeColor(context,
+                                  dark: MyntColors.backgroundColorDark,
+                                  light: MyntColors.backgroundColor),
                             );
                           },
                         ),

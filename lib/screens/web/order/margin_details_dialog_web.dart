@@ -199,7 +199,7 @@ class _MarginDetailsDialogWebState extends ConsumerState<MarginDetailsDialogWeb>
                                                     MyntWebTextStyles.bodySmall(
                                                         context,
                                                         darkColor:
-                                                            MyntColors.errorDark,
+                                                            MyntColors.lossDark,
                                                         lightColor:
                                                             MyntColors.error,
                                                         fontWeight:

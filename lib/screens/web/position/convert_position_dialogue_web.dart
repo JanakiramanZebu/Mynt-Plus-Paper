@@ -373,7 +373,7 @@ class _ConvertPositionDialogueWebState
                                   decoration: BoxDecoration(
                                     color: resolveThemeColor(
                                       context,
-                                      dark: MyntColors.primaryDark,
+                                      dark: MyntColors.secondary,
                                       light: MyntColors.primary,
                                     ),
                                     borderRadius: BorderRadius.circular(5),

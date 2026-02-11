@@ -214,10 +214,10 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                 child: Container(
                   width: 840,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                    color: isDark ? MyntColors.dialogDark : MyntColors.dialog,
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFEBEEF0),
+                      color: isDark ? MyntColors.dialogDark : MyntColors.dialog,
                     ),
                   ),
                   child: Stack(
@@ -259,7 +259,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         ))
         : ( resolveThemeColor(
           context,
-          dark: MyntColors.tertiary.withValues(alpha: 0.2),
+          dark: MyntColors.errorDark.withValues(alpha: 0.2),
           light: MyntColors.tertiary.withValues(alpha: 0.2),
         ));
 
@@ -435,7 +435,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(6),
-                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
                 child: Container(
                   width: 140,
                   constraints: BoxConstraints(
@@ -720,7 +720,8 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         width: 40,
         height: 35,
         decoration: BoxDecoration(
-          color: optionFlash.isBuy ? MyntColors.primary : MyntColors.tertiary,
+          // color: optionFlash.isBuy ? MyntColors.primary : MyntColors.tertiary,
+          color: optionFlash.isBuy ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
           borderRadius: BorderRadius.circular(5),
         ),
         alignment: Alignment.center,
@@ -768,13 +769,14 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               color: optionFlash.productType == 'M'
                   ? resolveThemeColor(
                       context,
-                      dark: const Color(0xFFFF8A50),  // Lighter orange for dark mode
-                      light: const Color(0xFFff570a),
+                      dark: MyntColors.textPrimaryDark,  // Lighter orange for dark mode
+                      light: MyntColors.textPrimary,
                     )
                   : resolveThemeColor(
                       context,
-                      dark: const Color(0xFF42A5F5),  // Lighter blue for dark mode
-                      light: const Color.fromARGB(255, 23, 120, 199),
+                      dark: MyntColors.textPrimaryDark,  // Lighter blue for dark mode
+                      light: MyntColors.textPrimary,
+
                     ),
               fontWeight: MyntFonts.medium,
             ),
@@ -880,7 +882,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(6),
-                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
                 child: Container(
                   width: 160,
                   constraints: BoxConstraints(
@@ -1055,7 +1057,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               child: Material(
                 elevation: 8,
                 borderRadius: BorderRadius.circular(6),
-                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
                 child: Container(
                   width: 300,
                   constraints: BoxConstraints(
@@ -1106,7 +1108,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       left: BorderSide(
-                                        color: isCall ? MyntColors.profit : MyntColors.loss,
+                                        color: isCall ? MyntColors.profit :resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                                         width: 4,
                                       ),
                                     ),
@@ -1147,14 +1149,14 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: (isCall ? MyntColors.profit : MyntColors.loss).withValues(alpha: 0.15),
+                                          color: (isCall ? MyntColors.profit : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)).withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
                                         child: Text(
                                           isCall ? 'CE' : 'PE',
                                           style: MyntWebTextStyles.caption(
                                             context,
-                                            color: isCall ? MyntColors.profit : MyntColors.loss,
+                                            color: isCall ? (isDarkMode(context) ? MyntColors.profitDark : MyntColors.profit) : (isDarkMode(context) ? MyntColors.lossDark : MyntColors.loss),
                                             fontWeight: MyntFonts.semiBold,
                                           ),
                                         ),
@@ -1239,13 +1241,13 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
             color: optionFlash.priceType == 'MKT'
                 ? resolveThemeColor(
                     context,
-                    dark: const Color(0xFFBA68C8),  // Lighter purple for dark mode
-                    light: const Color(0xFF7B1FA2),
+                    dark: MyntColors.textPrimaryDark,  // Lighter purple for dark mode
+                    light: MyntColors.textPrimary,
                   )
                 : resolveThemeColor(
                     context,
-                    dark: const Color(0xFF4DB6AC),  // Lighter teal for dark mode
-                    light: const Color(0xFF006064),
+                    dark: MyntColors.textPrimaryDark,  // Lighter teal for dark mode
+                    light: MyntColors.textPrimary
                   ),
             fontWeight: MyntFonts.medium,
           ),
@@ -1391,7 +1393,7 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
               ? (Theme.of(context).brightness == Brightness.dark
                   ? const Color(0xFF444444)
                   : Colors.grey[400])
-              : MyntColors.primary,
+              : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
           foregroundColor: Colors.white,
           fixedSize: const Size(80, 33),
           padding: EdgeInsets.zero,

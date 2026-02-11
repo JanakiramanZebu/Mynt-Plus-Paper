@@ -831,7 +831,7 @@ class _PortfolioDashboardScreenState
                 padding: cellPadding,
                 color: isRowHovered
                     ? resolveThemeColor(context,
-                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                         light: MyntColors.primary.withValues(alpha: 0.08))
                     : null,
                 alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
@@ -1630,7 +1630,7 @@ class _PortfolioDashboardScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        color:  theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
         // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -2316,7 +2316,7 @@ class _PortfolioDashboardScreenState
 
       width: double.infinity,
       decoration: BoxDecoration(
-        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        color:  theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
         // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -2413,7 +2413,7 @@ class _PortfolioDashboardScreenState
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+        color:  theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
         // borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

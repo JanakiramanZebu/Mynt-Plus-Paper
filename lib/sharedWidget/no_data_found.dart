@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 import '../../provider/thems.dart';
 import '../../res/res.dart';
@@ -62,7 +63,6 @@ class NoDataFound extends ConsumerWidget {
         // margin: const EdgeInsets.all(24),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: bgCard,
           borderRadius: BorderRadius.circular(16),
           // border: Border.all(color: borderColor),
           // boxShadow: [

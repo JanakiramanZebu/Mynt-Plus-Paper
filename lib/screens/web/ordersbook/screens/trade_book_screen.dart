@@ -329,7 +329,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                                           context,
                                           color: trade.trantype == "S"
                                               ? resolveThemeColor(context,
-                                                  dark: MyntColors.lossDark,
+                                                  dark: MyntColors.errorDark,
                                                   light: MyntColors.loss)
                                               : resolveThemeColor(context,
                                                   dark: MyntColors.profitDark,
@@ -834,8 +834,8 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: Colors.white.withValues(alpha: 0.04),
-              light: Colors.black.withValues(alpha: 0.03),
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
             ),
           ),
           child: Row(
@@ -1310,7 +1310,7 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

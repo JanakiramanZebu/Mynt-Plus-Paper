@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../provider/thems.dart';
 import '../../../../../provider/mf_provider.dart';
-import '../../../../../res/res.dart';
 import '../../../../../res/global_font_web.dart';
+import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../sharedWidget/cust_text_formfield.dart';
 import '../../../../../sharedWidget/mynt_loader.dart';
-import '../../../../res/web_colors.dart';
 
 class RedemptionBottomSheetWeb extends ConsumerStatefulWidget {
   const RedemptionBottomSheetWeb({super.key});
@@ -41,6 +40,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
   Widget build(BuildContext context) {
     final theme = ref.read(themeProvider);
     final mfData = ref.watch(mfProvider);
+    final isDark = theme.isDarkMode;
 
     final holding = mfData.holssinglelist?.isNotEmpty == true ? mfData.holssinglelist![0] : null;
 
@@ -53,7 +53,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
       child: Container(
         width: 400,
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: isDark ? MyntColors.dialogDark : MyntColors.backgroundColor,
           borderRadius: BorderRadius.circular(5),
         ),
         child: Column(
@@ -66,9 +66,9 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+                    color: isDark
+                        ? MyntColors.dividerDark
+                        : MyntColors.divider,
                   ),
                 ),
               ),
@@ -78,8 +78,8 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                   Text(
                     holding.name ?? 'N/A',
                     style: WebTextStyles.dialogTitle(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      isDarkTheme: isDark,
+                      color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                     ),
                   ),
                   Material(
@@ -87,10 +87,10 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      splashColor: theme.isDarkMode
+                      splashColor: isDark
                           ? Colors.white.withOpacity(.15)
                           : Colors.black.withOpacity(.15),
-                      highlightColor: theme.isDarkMode
+                      highlightColor: isDark
                           ? Colors.white.withOpacity(.08)
                           : Colors.black.withOpacity(.08),
                       onTap: () => Navigator.of(context).pop(),
@@ -99,9 +99,9 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                         child: Icon(
                           Icons.close,
                           size: 20,
-                          color: theme.isDarkMode
-                              ? WebDarkColors.iconSecondary
-                              : WebColors.iconSecondary,
+                          color: isDark
+                              ? MyntColors.iconSecondaryDark
+                              : MyntColors.iconSecondary,
                         ),
                       ),
                     ),
@@ -109,7 +109,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                 ],
               ),
             ),
-            
+
             // Content
             Flexible(
               fit: FlexFit.loose,
@@ -134,14 +134,15 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
   }
 
 
- 
+
 
   Widget _buildRedemptionForm(dynamic holding, ThemesProvider theme, MFProvider mfData) {
+    final isDark = theme.isDarkMode;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-       
-        
+
+
         // Redemption Quantity Input
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,8 +150,8 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
             Text(
               'Redemption Quantity',
               style: WebTextStyles.dialogContent(
-                isDarkTheme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                isDarkTheme: isDark,
+                color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
               ),
             ),
             Row(
@@ -159,16 +160,16 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
                 Text(
                   'Available Units:',
                   style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                    isDarkTheme: isDark,
+                    color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   holding.avgQty ?? '0',
                   style: WebTextStyles.sub(
-                    isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                    isDarkTheme: isDark,
+                    color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                   ),
                 ),
               ],
@@ -179,26 +180,26 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
         SizedBox(
           height: 40,
           child: CustomTextFormField(
-            fillColor: theme.isDarkMode
-                ? WebDarkColors.backgroundTertiary
-                : WebColors.backgroundTertiary,
+            fillColor: isDark
+                ? MyntColors.inputBgDark
+                : MyntColors.listItemBg,
             onChanged: (value) {
               // Handle change if needed
             },
             hintText: 'Enter quantity to redeem',
             hintStyle: WebTextStyles.formInput(
-              isDarkTheme: theme.isDarkMode,
+              isDarkTheme: isDark,
             ),
             keyboardType: TextInputType.number,
             style: WebTextStyles.formInput(
-              isDarkTheme: theme.isDarkMode,
+              isDarkTheme: isDark,
             ),
             textCtrl: _redemptionQtyController,
             textAlign: TextAlign.start,
             autofocus: false,
           ),
         ),
-        
+
         // Redeem Button
         const SizedBox(height: 16),
         SizedBox(
@@ -209,9 +210,9 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
               _handleRedemption(holding, mfData);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.isDarkMode
-                  ? WebDarkColors.primary
-                  : WebColors.primary,
+              backgroundColor: isDark
+                  ? MyntColors.secondary
+                  : MyntColors.primary,
               minimumSize: const Size(0, 40),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
@@ -220,8 +221,8 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
             child: Text(
               'Redeem',
               style: WebTextStyles.buttonMd(
-                isDarkTheme: theme.isDarkMode,
-                color: WebColors.surface,
+                isDarkTheme: isDark,
+                color: MyntColors.textWhite,
                 fontWeight: WebFonts.bold,
               ),
             ),
@@ -231,54 +232,8 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
     );
   }
 
-  // Widget _buildFundDetails(dynamic holding, ThemesProvider theme) {
-  //   return Container(
-  //     padding: const EdgeInsets.all(20),
-  //     decoration: BoxDecoration(
-  //       color: theme.isDarkMode ? colors.kColorLightGreyDarkTheme : colors.kColorLightGrey,
-  //       borderRadius: BorderRadius.circular(12),
-  //       border: Border.all(
-  //         color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
-  //       ),
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         Text(
-  //           'Fund Details',
-  //           style: TextWidget.textStyle(
-  //             fontSize: 16,
-  //             theme: theme.isDarkMode,
-  //             color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-  //             fw: 3,
-  //           ),
-  //         ),
-  //         const SizedBox(height: 16),
-  //         _buildInfoRow('ISIN', holding.iSIN ?? 'N/A', theme),
-  //         _buildInfoRow('Folio Number', holding.foliono ?? 'N/A', theme),
-  //         _buildInfoRow('Units', holding.avgQty ?? '0', theme),
-  //         _buildInfoRow('Average NAV', holding.avgNav ?? '0.00', theme),
-  //         _buildInfoRow('Current NAV', holding.curNav ?? '0.00', theme),
-  //         _buildInfoRow('Invested Value', holding.investedValue ?? '0.00', theme),
-  //         _buildInfoRow('Current Value', holding.currentValue ?? '0.00', theme),
-  //         _buildInfoRow(
-  //           'Profit/Loss', 
-  //           holding.profitLoss ?? '0.00', 
-  //           theme,
-  //           valueColor: _getValueColor(holding.profitLoss ?? '0.00', theme),
-  //         ),
-  //         _buildInfoRow(
-  //           'Profit/Loss %', 
-  //           '${holding.changeprofitLoss ?? '0.00'}%', 
-  //           theme,
-  //           valueColor: _getValueColor(holding.changeprofitLoss ?? '0.00', theme),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildInfoRow(String title, String value, ThemesProvider theme, {Color? valueColor}) {
+    final isDark = theme.isDarkMode;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -287,15 +242,15 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
           Text(
             title,
             style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              isDarkTheme: isDark,
+              color: isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
             ),
           ),
           Text(
             value,
             style: WebTextStyles.dialogContent(
-              isDarkTheme: theme.isDarkMode,
-              color: valueColor ?? (theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+              isDarkTheme: isDark,
+              color: valueColor ?? (isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary),
             ),
           ),
         ],
@@ -306,17 +261,17 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
   Color _getValueColor(String value, ThemesProvider theme) {
     final numValue = double.tryParse(value) ?? 0.0;
     if (numValue > 0) {
-      return theme.isDarkMode ? colors.profitDark : colors.profitLight;
+      return theme.isDarkMode ? MyntColors.profitDark : MyntColors.profit;
     } else if (numValue < 0) {
-      return theme.isDarkMode ? colors.lossDark : colors.lossLight;
+      return theme.isDarkMode ? MyntColors.lossDark : MyntColors.loss;
     } else {
-      return theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+      return theme.isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary;
     }
   }
 
   void _handleRedemption(dynamic holding, MFProvider mfData) {
     final redemptionQty = _redemptionQtyController.text.trim();
-    
+
     if (redemptionQty.isEmpty) {
       _showErrorDialog('Please enter redemption quantity');
       return;
@@ -337,7 +292,7 @@ class _RedemptionBottomSheetWebState extends ConsumerState<RedemptionBottomSheet
 
     // Set redemption quantity in provider
     mfData.redemptionQty.text = redemptionQty;
-    
+
     // Call redemption validation and process
     try {
       final minRedemptionQty = holding.minRedemptionQty;

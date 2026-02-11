@@ -160,7 +160,7 @@ class _OptionChainRowWebState extends ConsumerState<OptionChainRowWeb> {
                   ? resolveThemeColor(context,
                           dark: MyntColors.primaryDark,
                           light: MyntColors.primary)
-                      .withOpacity(0.15)
+                      .withOpacity(0.10)
                   : Colors.transparent,
               child: Stack(
                 alignment: Alignment.center,

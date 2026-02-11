@@ -453,7 +453,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
   shadcn.TableCell _buildHeaderCell(String label, int index) {
      final headerBgColor = resolveThemeColor(
       context,
-      dark: const Color(0xff0D0D0D),
+      dark: MyntColors.cardDark, // Dark header bg
       light: const Color(0xffF9FAFB),
     );
   
@@ -541,7 +541,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                 padding: cellPadding,
                 color: isRowHovered
                     ? resolveThemeColor(context,
-                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                         light: MyntColors.primary.withValues(alpha: 0.08))
                     : null,
                 alignment: Alignment.centerLeft,
@@ -612,7 +612,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                 padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
                 color: isHovered
                     ? resolveThemeColor(context,
-                        dark: MyntColors.primary.withValues(alpha: 0.08),
+                        dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                         light: MyntColors.primary.withValues(alpha: 0.08))
                     : null,
                 child: SizedBox(
@@ -745,7 +745,9 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
                 _buildMenuButton(
                   icon: Icons.cancel_outlined,
                   title: 'Cancel',
-                  iconColor: MyntColors.tertiary,
+                  iconColor: resolveThemeColor(context,
+                      dark: MyntColors.errorDark,
+                      light: MyntColors.tertiary),
                   textColor: textColor,
                   onPressed: (ctx) {
                     _closePopover();
@@ -817,7 +819,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey, light: Colors.grey),
+                      dark: Colors.transparent, light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -827,7 +829,7 @@ class _BondsMyBidsWebState extends ConsumerState<BondsMyBidsWeb> {
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+                  dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
             ),
           ),

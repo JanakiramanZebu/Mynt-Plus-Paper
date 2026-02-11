@@ -145,7 +145,7 @@ class _PeersTableWebState extends ConsumerState<PeersTableWeb> {
             if (isCurrentStock) {
               if (isRowHovered) {
                 backgroundColor = resolveThemeColor(context,
-                    dark: MyntColors.primary.withValues(alpha: 0.15),
+                    dark: MyntColors.primaryDark.withValues(alpha: 0.15),
                     light: MyntColors.primary.withValues(alpha: 0.15));
               } else {
                 backgroundColor = resolveThemeColor(context,
@@ -154,7 +154,7 @@ class _PeersTableWebState extends ConsumerState<PeersTableWeb> {
               }
             } else if (isRowHovered) {
               backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.05),
+                  dark: MyntColors.primaryDark.withValues(alpha: 0.05),
                   light: MyntColors.primary.withValues(alpha: 0.05));
             }
 
@@ -610,7 +610,7 @@ class _PeersTableWebState extends ConsumerState<PeersTableWeb> {
                                             : MyntFonts.medium,
                                         color: isCurrentStock
                                             ? resolveThemeColor(context,
-                                                dark: MyntColors.primaryDark,
+                                                dark: MyntColors.textPrimaryDark,
                                                 light: MyntColors.primary)
                                             : null,
                                       ),

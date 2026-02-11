@@ -209,7 +209,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
                 ? Border(
                     bottom: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.primary, light: MyntColors.primary),
+                          dark: MyntColors.primaryDark, light: MyntColors.primary),
                       width: 2.0,
                     ),
                   )
@@ -227,7 +227,7 @@ class _ExploreScreensState extends ConsumerState<IpoExploreScreens>
               context,
               color: isSelected
                   ? resolveThemeColor(context,
-                      dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                   : resolveThemeColor(context,
                       dark: MyntColors.textPrimaryDark,
                       light: MyntColors.textPrimary),

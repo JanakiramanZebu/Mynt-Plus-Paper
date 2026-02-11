@@ -456,7 +456,7 @@ class _ModifyPlaceOrderScreenState
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: resolveThemeColor(context, dark: MyntColors.card, light: const Color(0xfffafbff)),
+                      color: resolveThemeColor(context, dark: MyntColors.cardDark, light: const Color(0xfffafbff)),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -532,26 +532,161 @@ class _ModifyPlaceOrderScreenState
                               ),
                             ],
                           ),
-                          Material(
-                            color: Colors.transparent,
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: () {
-                                closeNotifier?.onClose();
-                              },
-                              borderRadius: BorderRadius.circular(5),
-                              child: Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Icon(
-                                  Icons.close,
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.textSecondaryDark,
-                                      light: MyntColors.textSecondary),
-                                  size: 18,
+                          Row(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                // children: [
+                                //   // Green "B" Button
+                                //   Material(
+                                //     color: Colors.transparent,
+                                //     child: InkWell(
+                                //       onTap: () {
+                                //         setState(() {
+                                //           isBuy = true;
+                                //         });
+                                //         marginUpdate();
+                                //       },
+                                //       borderRadius: BorderRadius.circular(5),
+                                //       child: Container(
+                                //         width: 20,
+                                //         height: 20,
+                                //         decoration: BoxDecoration(
+                                //           color: resolveThemeColor(context,
+                                //               dark: MyntColors.secondary,
+                                //               light: MyntColors.primary),
+                                //           borderRadius: BorderRadius.circular(5),
+                                //         ),
+                                //         child: Center(
+                                //           child: Text(
+                                //             'B',
+                                //             style: WebTextStyles.para(
+                                //               isDarkTheme: theme.isDarkMode,
+                                //               color: Colors.white,
+                                //               fontWeight: WebFonts.medium,
+                                //             ),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                //   const SizedBox(width: 8),
+                                //   // Toggle Switch
+                                //   MouseRegion(
+                                //     cursor: SystemMouseCursors.click,
+                                //     child: GestureDetector(
+                                //       onTap: () {
+                                //         setState(() {
+                                //           isBuy = !isBuy;
+                                //         });
+                                //         marginUpdate();
+                                //       },
+                                //       child: Container(
+                                //         width: 42,
+                                //         height: 22,
+                                //         decoration: BoxDecoration(
+                                //           color: resolveThemeColor(context,
+                                //               dark: MyntColors.backgroundColorDark,
+                                //               light: MyntColors.backgroundColor),
+                                //           border: Border.all(
+                                //             color: isBuy
+                                //                 ? resolveThemeColor(context,
+                                //                     dark: MyntColors.primaryDark,
+                                //                     light: MyntColors.primary)
+                                //                 : resolveThemeColor(context,
+                                //                     dark: MyntColors.tertiary,
+                                //                     light: MyntColors.tertiary),
+                                //           ),
+                                //           borderRadius: BorderRadius.circular(11),
+                                //         ),
+                                //         child: Stack(
+                                //           children: [
+                                //             AnimatedPositioned(
+                                //               duration:
+                                //                   const Duration(milliseconds: 200),
+                                //               curve: Curves.easeInOut,
+                                //               left: isBuy ? 2 : 24,
+                                //               top: 2,
+                                //               child: Container(
+                                //                 width: 16,
+                                //                 height: 16,
+                                //                 decoration: BoxDecoration(
+                                //                   color: isBuy
+                                //                       ? resolveThemeColor(context,
+                                //                           dark: MyntColors.primaryDark,
+                                //                           light: MyntColors.primary)
+                                //                       : resolveThemeColor(context,
+                                //                           dark: MyntColors.tertiary,
+                                //                           light: MyntColors.tertiary),
+                                //                   borderRadius:
+                                //                       BorderRadius.circular(8),
+                                //                 ),
+                                //               ),
+                                //             ),
+                                //           ],
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                //   const SizedBox(width: 8),
+                                //   // Red "S" Button
+                                //   Material(
+                                //     color: Colors.transparent,
+                                //     child: InkWell(
+                                //       onTap: () {
+                                //         setState(() {
+                                //           isBuy = false;
+                                //         });
+                                //         marginUpdate();
+                                //       },
+                                //       borderRadius: BorderRadius.circular(5),
+                                //       child: Container(
+                                //         width: 20,
+                                //         height: 20,
+                                //         decoration: BoxDecoration(
+                                //           color: resolveThemeColor(context,
+                                //               dark: MyntColors.errorDark,
+                                //               light: MyntColors.tertiary),
+                                //           borderRadius: BorderRadius.circular(5),
+                                //         ),
+                                //         child: Center(
+                                //           child: Text(
+                                //             'S',
+                                //             style: WebTextStyles.para(
+                                //               isDarkTheme: theme.isDarkMode,
+                                //               color: Colors.white,
+                                //               fontWeight: WebFonts.medium,
+                                //             ),
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ],
+                              ),
+                              const SizedBox(width: 12),
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: () {
+                                    closeNotifier?.onClose();
+                                  },
+                                  borderRadius: BorderRadius.circular(5),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(4.0),
+                                    child: Icon(
+                                      Icons.close,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                      size: 18,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
@@ -946,8 +1081,15 @@ class _ModifyPlaceOrderScreenState
                                                   width: 16,
                                                   height: 16,
                                                   fit: BoxFit.contain,
+                                                  colorFilter: theme.isDarkMode
+                                                      ? const ColorFilter.mode(
+                                                          MyntColors.primaryDark,
+                                                          BlendMode.srcIn)
+                                                      : const ColorFilter.mode(
+                                                          MyntColors.primary,
+                                                          BlendMode.srcIn
                                                 ),
-                                              ],
+                                            )],
                                             ),
                                           ),
                                           const SizedBox(height: 10),
@@ -1055,8 +1197,9 @@ class _ModifyPlaceOrderScreenState
                                         style: TextButton.styleFrom(
                                           shape: const RoundedRectangleBorder(),
                                           padding: const EdgeInsets.all(0),
-                                          backgroundColor: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-                                          foregroundColor: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.backgroundColor),
+                                          backgroundColor: Colors.transparent,
+                                          foregroundColor: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                          overlayColor: Colors.transparent,
                                           elevation: 0.0,
                                           minimumSize: const Size(0, 30),
                                           side: BorderSide.none,
@@ -1082,9 +1225,9 @@ class _ModifyPlaceOrderScreenState
                                                 Text('Advance',
                                                     style: WebTextStyles.sub(
                                                       isDarkTheme: theme.isDarkMode,
-                                                      color: theme.isDarkMode
-                                                          ? MyntColors.secondary
-                                                          : MyntColors.secondary,
+                                                      color: resolveThemeColor(context,
+                                                          dark: MyntColors.secondaryDark,
+                                                          light: MyntColors.primary),
                                                       fontWeight: WebFonts.semiBold,
                                                     )),
                                                 Padding(
@@ -1094,9 +1237,9 @@ class _ModifyPlaceOrderScreenState
                                                     isAdvancedOptionClicked
                                                         ? Icons.keyboard_arrow_up
                                                         : Icons.keyboard_arrow_down,
-                                                    color: theme.isDarkMode
-                                                        ? colors.secondaryDark
-                                                        : colors.secondaryLight,
+                                                    color: resolveThemeColor(context,
+                                                        dark: MyntColors.secondaryDark,
+                                                        light: MyntColors.primary),
                                                   ),
                                                 ),
                                               ],
@@ -1112,8 +1255,8 @@ class _ModifyPlaceOrderScreenState
                                       children: [
                                         Divider(
                                           color: resolveThemeColor(context,
-                                              dark: colors.darkColorDivider,
-                                              light: colors.colorDivider),
+                                              dark: MyntColors.cardBorderDark,
+                                              light: MyntColors.cardBorder),
                                           thickness: 0.5,
                                         ),
                 
@@ -1150,7 +1293,7 @@ class _ModifyPlaceOrderScreenState
                                                           color: theme
                                                                   .isDarkMode
                                                               ? MyntColors
-                                                                  .textSecondary
+                                                                  .textPrimaryDark
                                                               : MyntColors
                                                                   .textSecondary,
                                                         ),
@@ -1169,10 +1312,12 @@ class _ModifyPlaceOrderScreenState
                                                           marginUpdate();
                                                         });
                                                       },
-                                                      activeColor:
-                                                          colors.colorBlue,
+                                                      activeColor: resolveThemeColor(context,
+                                                          dark: MyntColors.secondary,
+                                                          light: MyntColors.primary),
                                                       checkColor:
                                                           Colors.white,
+                                                      side: theme.isDarkMode ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
                                                     ),
                                                   ],
                                                 ),
@@ -1221,7 +1366,7 @@ class _ModifyPlaceOrderScreenState
                                                                 .isDarkMode,
                                                             color: theme
                                                                     .isDarkMode
-                                                                ? MyntColors.textSecondary
+                                                                ? MyntColors.textPrimaryDark
                                                                 : MyntColors.textSecondary,
                                                           ),
                                                           overflow:
@@ -1242,10 +1387,12 @@ class _ModifyPlaceOrderScreenState
                                                                 _addValidityAndDisclosedQty;
                                                           });
                                                         },
-                                                        activeColor:
-                                                            colors.colorBlue,
+                                                        activeColor: resolveThemeColor(context,
+                                                            dark: MyntColors.secondary,
+                                                            light: MyntColors.primary),
                                                         checkColor:
                                                             Colors.white,
+                                                        side: theme.isDarkMode ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
                                                       ),
                                                     ],
                                                   ),
@@ -1625,9 +1772,9 @@ class _ModifyPlaceOrderScreenState
                         padding: EdgeInsets.only(
                             bottom: MediaQuery.of(context).viewInsets.bottom),
                         child: Container(
-                            color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.backgroundColorDark,
+                                light: MyntColors.backgroundColor),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
@@ -1696,18 +1843,18 @@ class _ModifyPlaceOrderScreenState
                                       width: MediaQuery.of(context).size.width,
                                       // height: 36,
                                       decoration: BoxDecoration(
-                                          color: theme.isDarkMode
-                                              ? colors.darkGrey
-                                              : const Color(0xfffafbff),
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.cardDark,
+                                              light: const Color(0xfffafbff)),
                                           border: Border(
                                               top: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider),
+                                                  color: resolveThemeColor(context,
+                                                      dark: MyntColors.cardBorderDark,
+                                                      light: MyntColors.cardBorder)),
                                               bottom: BorderSide(
-                                                  color: theme.isDarkMode
-                                                      ? colors.darkColorDivider
-                                                      : colors.colorDivider))),
+                                                  color: resolveThemeColor(context,
+                                                      dark: MyntColors.cardBorderDark,
+                                                      light: MyntColors.cardBorder)))),
                                       padding: const EdgeInsets.only(
                                           left: 16.0, right: 3, top: 0),
                                       child: Column(
@@ -1791,19 +1938,15 @@ class _ModifyPlaceOrderScreenState
                                                               theme: theme
                                                                   .isDarkMode,
                                                               color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .textSecondaryDark
-                                                                  : colors
-                                                                      .textSecondaryLight,
+                                                                  ? MyntColors.textPrimaryDark
+                                                                  : MyntColors.textSecondary,
                                                               fw: 3),
                                                           Text(
                                                               "₹${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
                                                               style: textStyle(
                                                                   !theme.isDarkMode
-                                                                      ? colors
-                                                                          .colorBlue
-                                                                      : colors
-                                                                          .colorLightBlue,
+                                                                      ? MyntColors.primary
+                                                                      : MyntColors.primaryDark,
                                                                   12,
                                                                   FontWeight
                                                                       .w600)),
@@ -1812,10 +1955,8 @@ class _ModifyPlaceOrderScreenState
                                                                 .arrow_drop_down,
                                                             color: !theme
                                                                     .isDarkMode
-                                                                ? colors
-                                                                    .colorBlue
-                                                                : colors
-                                                                    .colorLightBlue,
+                                                                ? MyntColors.primary
+                                                                : MyntColors.primaryDark
                                                           )
                                                         ])),
                                                     const SizedBox(width: 16),
@@ -1915,9 +2056,9 @@ class _ModifyPlaceOrderScreenState
                                                                     Text(
                                                                       '+ Add fund',
                                                                       style: textStyle(
-                                                                          !theme.isDarkMode
-                                                                              ? colors.colorBlue
-                                                                              : colors.colorLightBlue,
+                                                                          resolveThemeColor(context,
+                                                                              dark: MyntColors.primaryDark,
+                                                                              light: MyntColors.primary),
                                                                           12,
                                                                           FontWeight.w600),
                                                                     ),
@@ -2237,18 +2378,13 @@ class _ModifyPlaceOrderScreenState
                                                                     .circular(
                                                                         5),
                                                           ),
-                                                          backgroundColor: theme
-                                                                  .isDarkMode
-                                                              ? isBuy
-                                                                  ? colors
-                                                                      .primary
-                                                                  : colors
-                                                                      .tertiary
-                                                              : isBuy
-                                                                  ? colors
-                                                                      .primary
-                                                                  : colors
-                                                                      .tertiary
+                                                          backgroundColor: isBuy
+                                                              ? resolveThemeColor(context,
+                                                                  dark: MyntColors.secondary,
+                                                                  light: MyntColors.primary)
+                                                              : resolveThemeColor(context,
+                                                                  dark: MyntColors.errorDark,
+                                                                  light: MyntColors.tertiary)
                                                           // shape: const StadiumBorder()
                                                           ),
                                                   child: orderProvide
@@ -2258,16 +2394,12 @@ class _ModifyPlaceOrderScreenState
                                                           height: 20,
                                                           child: CircularProgressIndicator(
                                                               strokeWidth: 2,
-                                                              color: theme.isDarkMode
-                                                                  ? colors
-                                                                      .colorBlack
-                                                                  : colors
-                                                                      .colorWhite),
+                                                              color: Colors.white),
                                                         )
                                                       : TextWidget.subText(
                                                           text: "Modify Order",
                                                           color:
-                                                              colors.colorWhite,
+                                                              Colors.white,
                                                           fw: 2,
                                                           theme:
                                                               theme.isDarkMode)
@@ -2524,9 +2656,9 @@ class _ModifyPlaceOrderScreenState
               Text("Market Protected by",
                   style: WebTextStyles.sub(
                     isDarkTheme: theme.isDarkMode,
-                    color: theme.isDarkMode
-                        ? MyntColors.primary
-                        : MyntColors.primary,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary),
                   )),
               InkWell(
                 // borderRadius: BorderRadius.circular(8),
@@ -2535,18 +2667,17 @@ class _ModifyPlaceOrderScreenState
                     context: context,
                     builder: (BuildContext dialogContext, VoidCallback closeDialog) {
                       return AlertDialog(
-                              backgroundColor: theme.isDarkMode
-                                  ? const Color(0xFF121212)
-                                  : const Color(0xFFF1F3F8),
-                              titlePadding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 4),
+                              backgroundColor: resolveThemeColor(context,
+                                  dark: MyntColors.cardDark,
+                                  light: const Color(0xFFF1F3F8)),
+                              titlePadding: const EdgeInsets.only(
+                                  left: 4, right: 4, top: 0, bottom: 0),
                               shape: const RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(8))),
                               scrollable: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                              contentPadding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 10, top: 0,
                               ),
                               actionsPadding: const EdgeInsets.only(
                                   bottom: 16, right: 16, left: 16, top: 8),
@@ -2576,9 +2707,9 @@ class _ModifyPlaceOrderScreenState
                                         child: Icon(
                                           Icons.close_rounded,
                                           size: 22,
-                                          color: theme.isDarkMode
-                                              ? colors.textSecondaryDark
-                                              : colors.textSecondaryLight,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textSecondaryDark,
+                                              light: MyntColors.textSecondary),
                                         ),
                                       ),
                                     ),
@@ -2592,9 +2723,9 @@ class _ModifyPlaceOrderScreenState
                             textAlign: TextAlign.start,
                                       style: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
-                                        color: theme.isDarkMode
-                                            ? MyntColors.textPrimary
-                                            : MyntColors.textPrimary,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.textPrimaryDark,
+                                            light: MyntColors.textPrimary),
                                       )),
                                   const SizedBox(height: 10),
                             MyntTextField(
@@ -2652,7 +2783,7 @@ class _ModifyPlaceOrderScreenState
                                                 : MyntColors.backgroundColor),
                                         child: SvgPicture.asset(
                                             color: theme.isDarkMode
-                                                ? MyntColors.textPrimary
+                                                ? MyntColors.textPrimaryDark
                                                 : MyntColors.icon,
                                             assets.precentIcon,
                                             fit: BoxFit.scaleDown),
@@ -2662,7 +2793,7 @@ class _ModifyPlaceOrderScreenState
                                       placeholderStyle: WebTextStyles.formLabel(
                                         isDarkTheme: theme.isDarkMode,
                                         color: (theme.isDarkMode
-                                                ? MyntColors.textSecondary
+                                                ? MyntColors.textSecondaryDark
                                                 : MyntColors.textSecondary)
                                             .withValues(alpha: 0.5),
                                       ),
@@ -2681,17 +2812,19 @@ class _ModifyPlaceOrderScreenState
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size(0, 45), // width, height
                                 side: BorderSide(
-                                    color: colors
-                                        .btnOutlinedBorder), // Outline border color
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.cardBorderDark,
+                                        light: colors.btnOutlinedBorder)),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5),
                                 ),
-                                backgroundColor: colors
-                                    .primaryDark, // Transparent background
+                                backgroundColor: resolveThemeColor(context,
+                                    dark: MyntColors.secondary,
+                                    light: MyntColors.primary),
                               ),
                               child: TextWidget.subText(
                                   text: "Ok",
-                                  color: colors.colorWhite,
+                                  color: Colors.white,
                                   theme: theme.isDarkMode,
                                   fw: 2),
                             ),
@@ -2721,7 +2854,7 @@ class _ModifyPlaceOrderScreenState
                         decoration: BoxDecoration(
                           border: Border(
                             bottom: BorderSide(
-                              color: MyntColors.primary,
+                              color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                               width: 1,
                             ),
                           ),
@@ -2730,7 +2863,7 @@ class _ModifyPlaceOrderScreenState
                           "$marketProtection %",
                           style: WebTextStyles.para(
                             isDarkTheme: theme.isDarkMode,
-                            color: MyntColors.primary,
+                            color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                             fontWeight: WebFonts.semiBold,
                           ),
                         ),
@@ -2925,17 +3058,13 @@ class _ModifyPlaceOrderScreenState
                                   minimumSize: const Size(0, 0),
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 12, vertical: 0),
-                                  backgroundColor: !theme.isDarkMode
-                                      ? validity != validityTypes[index]
-                                          ? const Color(0xffF1F3F8)
-                                          : theme.isDarkMode
-                                              ? colors.secondaryDark
-                                              : colors.secondaryLight
-                                      : validity != validityTypes[index]
-                                          ? colors.darkGrey
-                                          : theme.isDarkMode
-                                              ? colors.secondaryDark
-                                              : colors.secondaryLight,
+                                  backgroundColor: validity == validityTypes[index]
+                                      ? resolveThemeColor(context,
+                                          dark: MyntColors.secondary,
+                                          light: MyntColors.primary)
+                                      : resolveThemeColor(context,
+                                          dark: colors.darkGrey,
+                                          light: const Color(0xffF1F3F8)),
                                   shape: const RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(5)),
@@ -2943,17 +3072,11 @@ class _ModifyPlaceOrderScreenState
                               child: Text(
                                 validityTypes[index],
                                 style: WebTextStyles.sub(
-                                    color: !theme.isDarkMode
-                                        ? validity != validityTypes[index]
-                                            ? theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight
-                                            : colors.colorWhite
-                                        : validity != validityTypes[index]
-                                            ? theme.isDarkMode
-                                                ? colors.textSecondaryDark
-                                                : colors.textSecondaryLight
-                                            : colors.colorWhite,
+                                    color: validity == validityTypes[index]
+                                        ? Colors.white
+                                        : resolveThemeColor(context,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary),
                                     isDarkTheme: theme.isDarkMode,
                                     fontWeight: validity == validityTypes[index]
                                         ? FontWeight.w500

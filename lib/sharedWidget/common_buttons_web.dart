@@ -162,8 +162,8 @@ class MyntButton extends StatelessWidget {
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.primary, // Using primary for dark mode
-          light: WebColors.primary,
+          dark: MyntColors.secondary,
+          light: MyntColors.primary,
         );
     final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
     final buttonPadding = padding ?? _getDefaultPadding();
@@ -198,14 +198,14 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.textPrimaryDark,
-          light: WebColors.textPrimary,
+          dark: MyntColors.textPrimaryDark,
+          light: MyntColors.textPrimary,
         );
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.listItemBgDark,
-          light: WebColors.listItemBg,
+          dark: MyntColors.listItemBgDark,
+          light: MyntColors.listItemBg,
         );
     final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
     final buttonPadding = padding ?? _getDefaultPadding();
@@ -222,9 +222,9 @@ class MyntButton extends StatelessWidget {
           onTap: isLoading ? null : onPressed,
           borderRadius: BorderRadius.circular(borderRadiusValue),
           splashColor:
-              (resolveThemeColor(context, dark: WebColors.backgroundColorDark, light: WebColors.backgroundColor) ).withOpacity(0.05),
+              (resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor) ).withOpacity(0.05),
           highlightColor:
-              (resolveThemeColor(context, dark: WebColors.backgroundColorDark, light: WebColors.backgroundColor) ).withOpacity(0.02),
+              (resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor) ).withOpacity(0.02),
           child: Align(
             alignment: Alignment.center,
             widthFactor: 1.0,
@@ -243,19 +243,19 @@ class MyntButton extends StatelessWidget {
         resolveThemeColor(
           context,
           dark: Colors.white,
-          light: WebColors.primary,
+          light: MyntColors.primary,
         );
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.textSecondaryDark.withOpacity(0.6),
-          light: WebColors.listItemBg,
+          dark: MyntColors.textSecondaryDark.withOpacity(0.6),
+          light: MyntColors.listItemBg,
         );
     final brdrColor = borderColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.primary,
-          light: WebColors.primary,
+          dark: MyntColors.primaryDark,
+          light: MyntColors.primary,
         );
     final borderRadiusValue = borderRadius ?? _getDefaultBorderRadius();
     final buttonPadding = padding ?? _getDefaultPadding();
@@ -294,8 +294,8 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.primaryDark,
-          light: WebColors.primary,
+          dark: MyntColors.primaryDark,
+          light: MyntColors.primary,
         );
 
     return shadcn.TextButton(
@@ -308,8 +308,8 @@ class MyntButton extends StatelessWidget {
     final txtColor = textColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.textPrimaryDark,
-          light: WebColors.textPrimary,
+          dark: MyntColors.textPrimaryDark,
+          light: MyntColors.textPrimary,
         );
 
     // Use shadcn IconButton with ghost variance for ghost button
@@ -332,8 +332,8 @@ class MyntButton extends StatelessWidget {
     final bgColor = backgroundColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.tertiary,
-          light: WebColors.tertiary,
+          dark: MyntColors.errorDark,
+          light: MyntColors.tertiary,
         );
 
     // Tertiary button: Primary style but with tertiary background
@@ -636,8 +636,8 @@ class MyntIconButton extends StatelessWidget {
     final iconColor = color ??
         resolveThemeColor(
           context,
-          dark: WebColors.iconDark,
-          light: WebColors.icon,
+          dark: MyntColors.iconDark,
+          light: MyntColors.icon,
         );
 
     final iconSize = _getIconSize();
@@ -746,8 +746,8 @@ class MyntIconTextButton extends StatelessWidget {
     final defaultTextColor = textColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.primaryDark,
-          light: WebColors.primary,
+          dark: MyntColors.primaryDark,
+          light: MyntColors.primary,
         );
 
     final defaultIconColor = iconColor ?? defaultTextColor;
@@ -880,8 +880,8 @@ class MyntCloseButton extends StatelessWidget {
     final defaultIconColor = iconColor ??
         resolveThemeColor(
           context,
-          dark: WebColors.textSecondaryDark,
-          light: WebColors.textSecondary,
+          dark: MyntColors.textSecondaryDark,
+          light: MyntColors.textSecondary,
         );
 
     return Material(

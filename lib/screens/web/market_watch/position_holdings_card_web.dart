@@ -1291,7 +1291,9 @@ class _PositionHoldingsCardWebState
                                   Navigator.of(dialogContext).pop(true);
                                 },
                                 style: TextButton.styleFrom(
-                                  backgroundColor: MyntColors.tertiary,
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.errorDark,
+                                      light: MyntColors.tertiary),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(6),
                                   ),

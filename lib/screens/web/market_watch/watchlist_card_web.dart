@@ -503,12 +503,12 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                         color: Colors.white,
                                         backgroundColor: resolveThemeColor(
                                           context,
-                                          dark: MyntColors.primaryDark,
+                                          dark: MyntColors.secondary,
                                           light: MyntColors.primary,
                                         ),
                                         borderColor: resolveThemeColor(
                                           context,
-                                          dark: MyntColors.primaryDark,
+                                          dark: MyntColors.secondary,
                                           light: MyntColors.primary,
                                         ),
                                         onPressed: () async {
@@ -547,7 +547,7 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                       iconAsset: assets.depthIcon,
                                       color: resolveThemeColor(
                                         context,
-                                        dark: MyntColors.textSecondaryDark,
+                                        dark: MyntColors.textPrimary,
                                         light: Colors.black,
                                       ),
                                       backgroundColor: Colors.transparent,
@@ -630,7 +630,7 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                         iconAsset: assets.trash,
                                         color: resolveThemeColor(
                                           context,
-                                          dark: MyntColors.textSecondaryDark,
+                                          dark: MyntColors.textPrimary,
                                           light: Colors.black,
                                         ),
                                         backgroundColor: Colors.transparent,

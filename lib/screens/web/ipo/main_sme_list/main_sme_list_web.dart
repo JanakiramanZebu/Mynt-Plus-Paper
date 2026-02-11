@@ -475,7 +475,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
             padding: padding ??
@@ -534,7 +534,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
             padding: const EdgeInsets.only(
@@ -729,7 +729,7 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

@@ -685,8 +685,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                             style: MyntWebTextStyles.titlesub(
                               
                               context,
-                              color: MyntColors.textSecondary,
-                              darkColor: MyntColors.textSecondaryDark,
+                             color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -930,7 +931,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                               context,
                                               fontWeight: MyntFonts.semiBold,
                                              color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                           ),
                                         ),
@@ -1020,7 +1021,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                     _handleWebResendOtp(); // Use new web resend OTP
                                                 },
                                                 child: Text("Resend OTP", style: MyntWebTextStyles.caption(context, color: resolveThemeColor(context,
-                                                    dark: MyntColors.secondary,
+                                                    dark: MyntColors.secondaryDark,
                                                     light: MyntColors.secondary), fontWeight: FontWeight.bold)),
                                               )
                                             // Generate TOTP button when in TOTP mode
@@ -1031,7 +1032,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                                         _handleGenerateTotpFlow(); // Start Generate TOTP flow
                                                     },
                                                     child: Text("Generate TOTP", style: MyntWebTextStyles.caption(context,  color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary), fontWeight: MyntFonts.semiBold)),
                                                   )
                                                 : null
@@ -1090,10 +1091,11 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      : () => _handleWebOtpVerify(auth.otpCtrl.text), // Use new web OTP verify
                                  style: ElevatedButton.styleFrom(
                                    backgroundColor: resolveThemeColor(context,
-                                       dark: MyntColors.primaryDark,
+                                       dark: MyntColors.secondary,
                                        light: MyntColors.primary),
-                                   disabledBackgroundColor:
-                                       MyntColors.primary.withOpacity(0.6),
+                                   disabledBackgroundColor: resolveThemeColor(context,
+                                       dark: MyntColors.secondary.withOpacity(0.6),
+                                       light: MyntColors.primary.withOpacity(0.6)),
                                    shape: RoundedRectangleBorder(
                                        borderRadius: BorderRadius.circular(6)),
                                    elevation: 0,
@@ -1134,7 +1136,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                             context,
                                             fontWeight: MyntFonts.bold,
                                             color: resolveThemeColor(context,
-                                                dark: MyntColors.secondary,
+                                                dark: MyntColors.secondaryDark,
                                                 light: MyntColors.secondary),
                                           ),
                                         );
@@ -1156,13 +1158,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                             context,
                                             fontWeight: MyntFonts.bold,
                                             color: resolveThemeColor(context,
-                                                dark: MyntColors.secondary,
+                                                dark: MyntColors.secondaryDark,
                                                 light: MyntColors.secondary),
                                           ),
                                         ),
                                         const SizedBox(width: 4),
                                         Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary)),
                                       ],
                                     ),
@@ -1224,11 +1226,11 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                      : _handleForgotPasswordSubmit,
                                  style: ElevatedButton.styleFrom(
                                    backgroundColor: resolveThemeColor(context,
-                                       dark: MyntColors.primaryDark,
+                                       dark: MyntColors.secondary,
                                        light: MyntColors.primary),
                                    disabledBackgroundColor:
                                        resolveThemeColor(context,
-                                           dark: MyntColors.primaryDark.withOpacity( 0.6),
+                                           dark: MyntColors.secondary.withOpacity( 0.6),
                                            light: MyntColors.primary.withOpacity(0.6)),
                                    shape: RoundedRectangleBorder(
                                        borderRadius: BorderRadius.circular(6)),
@@ -1265,7 +1267,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                       context,
                                       fontWeight: MyntFonts.bold,
                                       color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                     ),
                                  ),
@@ -1531,7 +1533,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     context,
                                     fontWeight: MyntFonts.bold,
                                     color: resolveThemeColor(context,
-                                        dark: MyntColors.secondary,
+                                        dark: MyntColors.secondaryDark,
                                         light: MyntColors.secondary),
                                   ),
                                 ),
@@ -1758,11 +1760,11 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     : _handleWebLogin, // Use new web login flow
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: resolveThemeColor(context,
-                                      dark: MyntColors.primaryDark,
+                                      dark: MyntColors.secondary,
                                       light: MyntColors.primary),
                                   disabledBackgroundColor:
                                       resolveThemeColor(context,
-                                          dark: MyntColors.primaryDark.withOpacity(0.6),
+                                          dark: MyntColors.secondary.withOpacity(0.6),
                                           light: MyntColors.primary.withOpacity(0.6)),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(6)),
@@ -1806,7 +1808,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                         context,
                                         fontWeight: MyntFonts.bold,
                                        color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                       ),
                                     ),
@@ -1830,7 +1832,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                         context,
                                         fontWeight: MyntFonts.bold,
                                         color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                       ),
                                     ),
@@ -1851,13 +1853,13 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                             context,
                                             fontWeight: MyntFonts.bold,
                                             color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                           ),
                                         ),
                                         const SizedBox(width: 4),
                                         Icon(Icons.qr_code_scanner, size: 20, color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary)),
                                       ],
                                     ),
@@ -1894,7 +1896,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                              context,
                                              fontWeight: MyntFonts.bold,
                                           color: resolveThemeColor(context,
-                                            dark: MyntColors.secondary,
+                                            dark: MyntColors.secondaryDark,
                                             light: MyntColors.secondary),
                                            ))
                                      ],
@@ -1933,8 +1935,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                   "SEBI Registration No: INZ000174634 | NSE : 13179 | BSE : 6550 | MCX : 55730 | CDSL : 12080400 | AMFI ARN : 113118 | Research Analyst : INH200006044",
                                   style: MyntWebTextStyles.para(
                                     context,
-                                    color: MyntColors.textSecondary,
-                                    darkColor: MyntColors.textSecondaryDark,
+                                    color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
                                   ).copyWith(height: 1.5),
                                   textAlign: TextAlign.center,
                                 ),

@@ -357,7 +357,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(assets.noDatafound,
+            SvgPicture.asset(assets.documentIcon,
                 color: const Color(0xff777777), width: 48, height: 48),
             const SizedBox(height: 8),
             Text(
@@ -375,7 +375,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: resolveThemeColor(
                   context,
-                  dark: MyntColors.primaryDark,
+                  dark: MyntColors.secondary,
                   light: MyntColors.primary,
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -449,8 +449,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SvgPicture.asset(
-                assets.noDatafound,
-                color: const Color(0xff777777),
+                assets.documentIcon,
                 width: 48,
                 height: 48,
               ),

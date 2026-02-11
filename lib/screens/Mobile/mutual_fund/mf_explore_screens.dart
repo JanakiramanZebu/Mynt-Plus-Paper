@@ -216,7 +216,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: isActive ? colors.colorBlue : Colors.transparent,
+            color: isActive ? theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary : Colors.transparent,
             width: 2,
           ),
         ),
@@ -227,7 +227,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
           context,
           fontWeight: MyntFonts.medium,
           color: isActive
-              ? MyntColors.primary
+              ? theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary
               : theme.isDarkMode
                   ? MyntColors.textSecondaryDark
                   : MyntColors.textSecondary,

@@ -638,7 +638,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Ask", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: MyntColors.tertiary)),
+                          Text("Ask", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.tertiary))),
                           Text("Quantity", style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium, color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary))),
                         ],
                       ),
@@ -684,10 +684,10 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 barRadius: const Radius.circular(4.0),
                 backgroundColor: (scripInfo.totBuyQtyPer.toStringAsFixed(2) == "0.00" && scripInfo.totSellQtyPer.toStringAsFixed(2) == "0.00")
                     ? resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)
-                    : resolveThemeColor(context, dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                    : resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                 percent: scripInfo.totBuyQtyPerChng,
                 padding: const EdgeInsets.symmetric(horizontal: 0),
-                progressColor: MyntColors.primary,
+                progressColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               ),
               const SizedBox(height: 16),
             ],
@@ -875,7 +875,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                               //       // border: Border.all(
                               //       //     color: theme.isDarkMode
                               //       //         ? WebDarkColors.divider
-                              //       //         : WebColors.divider),
+                              //       //         : MyntColors.divider),
                               //       ),
                               //   child: Row(
                               //     mainAxisAlignment: MainAxisAlignment.start,
@@ -1034,7 +1034,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                             ),
                                             color: theme.isDarkMode
                                                 ? WebDarkColors.background
-                                                : WebColors.background,
+                                                : MyntColors.background,
                                             boxShadow: _hasScrolled
                                                 ? [
                                                     BoxShadow(
@@ -1141,7 +1141,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                                                                             color: theme.isDarkMode
                                                                                 ? WebDarkColors
                                                                                     .primary
-                                                                                : WebColors
+                                                                                : MyntColors
                                                                                     .primary,
                                                                             borderRadius:
                                                                                 BorderRadius.circular(
@@ -2842,7 +2842,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       //   child: LinearPercentIndicator(
       //     lineHeight: 20.0,
       //     backgroundColor:
-      //         !theme.isDarkMode ? WebColors.surface : WebDarkColors.surface,
+      //         !theme.isDarkMode ? MyntColors.surface : WebDarkColors.surface,
       //     percent: barPercentage,
       //     padding: const EdgeInsets.symmetric(horizontal: 0),
       //     progressColor: color.withOpacity(.2),
@@ -2860,8 +2860,8 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                   fontWeight: MyntFonts.medium,
                   color: resolveThemeColor(
                     context,
-                    dark: WebColors.tertiary,
-                    light: WebColors.tertiary,
+                    dark: MyntColors.lossDark,
+                    light: MyntColors.tertiary,
                   )),
             ),
             Text(
@@ -2889,7 +2889,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       // LinearPercentIndicator(
       //   lineHeight: 20.0,
       //   backgroundColor:
-      //       !theme.isDarkMode ? WebColors.surface : WebDarkColors.surface,
+      //       !theme.isDarkMode ? MyntColors.surface : WebDarkColors.surface,
       //   percent: barPercentage,
       //   padding: const EdgeInsets.symmetric(horizontal: 0),
       //   progressColor: color.withOpacity(.2),
@@ -3582,7 +3582,7 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
                 style: MyntWebTextStyles.body(context,
                     fontWeight: MyntFonts.medium,
                     color: resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
+                        dark: MyntColors.textPrimaryDark,
                         light: MyntColors.textSecondary)),
               ),
               Text(

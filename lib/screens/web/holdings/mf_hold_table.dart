@@ -256,8 +256,9 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
               padding: cellPadding,
               color: isRowHovered
                   ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
-                      light: MyntColors.primary.withValues(alpha: 0.08))
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
                   : null,
               alignment: alignRight ? Alignment.topRight : null,
               child: cachedChild,
@@ -688,7 +689,7 @@ class _MfTableExampleState extends ConsumerState<MfTableExample> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

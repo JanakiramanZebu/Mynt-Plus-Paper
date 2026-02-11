@@ -76,7 +76,8 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
               .toList();
 
       return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      // color: isDarkMode ? Colors.black : Colors.white,
+      color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Container(
@@ -300,7 +301,7 @@ class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5),
+      color: isDarkMode ? MyntColors.cardDark : MyntColors.listItemBg,
       child: Row(
         children: [
           Expanded(

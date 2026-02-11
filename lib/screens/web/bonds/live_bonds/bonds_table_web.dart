@@ -202,7 +202,7 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
               padding: cellPadding,
               color: isRowHovered
                   ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
+                      dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                       light: MyntColors.primary.withValues(alpha: 0.08))
                   : null,
               alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft, // Changed to centerRight/Left for better vertical alignment
@@ -237,7 +237,7 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
     // Header Background Color Fix as requested
      final headerBgColor = resolveThemeColor(
       context,
-      dark: const Color(0xff0D0D0D), // Dark header bg
+      dark: MyntColors.cardDark, // Dark header bg
       light: const Color(0xffF9FAFB), // Light header bg from image
     );
 
@@ -441,7 +441,7 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

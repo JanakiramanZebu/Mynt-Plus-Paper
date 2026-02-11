@@ -169,7 +169,7 @@ class _PositionGroupTableState extends ConsumerState<PositionGroupTable> {
                   light: const Color(0x8F121212).withValues(alpha: 0.03));
             } else if (isRowHovered) {
               backgroundColor = resolveThemeColor(context,
-                  dark: MyntColors.primary.withValues(alpha: 0.08),
+                  dark: MyntColors.primaryDark.withValues(alpha: 0.08),
                   light: MyntColors.primary.withValues(alpha: 0.08));
             }
 

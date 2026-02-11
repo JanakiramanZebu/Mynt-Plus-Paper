@@ -388,7 +388,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 crossAxisCount: columns,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                mainAxisExtent: 100, // Fixed height - allows space for wrapped percentage
+                mainAxisExtent: 115, // Fixed height - matches equity stats
               ),
               children: [
                 _buildStatCard(
@@ -870,7 +870,7 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         style: ElevatedButton.styleFrom(
           backgroundColor: resolveThemeColor(
             context,
-            dark: MyntColors.primaryDark,
+            dark: MyntColors.secondary,
             light: MyntColors.primary,
           ),
           foregroundColor: Colors.white,

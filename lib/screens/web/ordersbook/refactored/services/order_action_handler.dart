@@ -510,7 +510,9 @@ class OrderActionHandler {
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: NewColors.MyntColors.tertiary,
+                            backgroundColor: resolveThemeColor(context,
+                                dark: NewColors.MyntColors.errorDark,
+                                light: NewColors.MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -749,7 +751,9 @@ class OrderActionHandler {
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: NewColors.MyntColors.tertiary,
+                            backgroundColor: resolveThemeColor(context,
+                                dark: NewColors.MyntColors.errorDark,
+                                light: NewColors.MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),

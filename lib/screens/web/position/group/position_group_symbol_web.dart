@@ -528,7 +528,9 @@ class GroupTileHeader extends ConsumerWidget {
                     tooltip: 'Delete Group',
                     onTap: () => _showDeleteGroupDialog(context, ref),
                     iconSize: 14,
-                    iconColor: MyntColors.error,
+                    iconColor: resolveThemeColor(context,
+                        dark: MyntColors.errorDark,
+                        light: MyntColors.error),
                   ),
                   const SizedBox(width: 4),
                 ],
@@ -762,7 +764,7 @@ class _HeaderExitButton extends ConsumerWidget {
               style: MyntWebTextStyles.body(
                 context,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.lossDark, light: MyntColors.loss),
+                    dark: MyntColors.errorDark, light: MyntColors.loss),
                 fontWeight: MyntFonts.semiBold,
               ),
             ),
@@ -1614,7 +1616,7 @@ class _DeleteGroupDialogState extends State<DeleteGroupDialog> {
                             isLoading: _isDeleting,
                             backgroundColor: resolveThemeColor(
                               context,
-                              dark: MyntColors.tertiary,
+                              dark: MyntColors.errorDark,
                               light: MyntColors.tertiary,
                             ),
                             onPressed: _isDeleting ? null : _handleDelete,
@@ -2358,7 +2360,7 @@ class _ExitAllGroupDialogState extends State<ExitAllGroupDialog> {
                             isLoading: _isExiting,
                             backgroundColor: resolveThemeColor(
                               context,
-                              dark: MyntColors.primaryDark,
+                              dark: MyntColors.secondary,
                               light: MyntColors.primary,
                             ),
                             onPressed: _isExiting

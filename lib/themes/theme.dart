@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-
-// Dark theme options
+import '../res/mynt_web_color_styles.dart';
 
 class MyThemes {
   static final darkTheme = ThemeData(
     useMaterial3: false,
-    scaffoldBackgroundColor: Colors.black,
-    bottomAppBarTheme: const BottomAppBarThemeData(color: Colors.black),
-    primaryColor: Colors.black,
-    appBarTheme: const AppBarTheme(
-      shadowColor: Color(0xffECEFF3),
+    scaffoldBackgroundColor: MyntColors.backgroundColorDark, // #0D1117
+    bottomAppBarTheme: BottomAppBarThemeData(color: MyntColors.backgroundColorDark),
+    primaryColor: MyntColors.primaryDark, // #58A6FF
+    appBarTheme: AppBarTheme(
+      shadowColor: MyntColors.dividerDark,
       centerTitle: false,
-      backgroundColor: Colors.black,
-      iconTheme: IconThemeData(color: Colors.white),
+      backgroundColor: MyntColors.backgroundColorDark, // #0D1117
+      iconTheme: IconThemeData(color: MyntColors.textPrimaryDark),
     ),
     bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: const Color(0xffB5C0CF).withOpacity(.15),
-        dragHandleColor: Colors.white),
-    iconTheme: const IconThemeData(color: Colors.white),
-    dialogTheme:
-        DialogThemeData(backgroundColor: const Color(0xffB5C0CF).withOpacity(.15)),
+        backgroundColor: MyntColors.cardDark, // #161B22
+        dragHandleColor: MyntColors.textSecondaryDark),
+    iconTheme: IconThemeData(color: MyntColors.textPrimaryDark),
+    dialogTheme: DialogThemeData(backgroundColor: MyntColors.cardDark),
+    dividerColor: MyntColors.dividerDark, // #30363D
+    cardColor: MyntColors.cardDark, // #161B22
   );
 
 // Light theme options
@@ -41,21 +41,22 @@ class MyThemes {
   );
 
   static final darkThemebanner = ThemeData(
-    scaffoldBackgroundColor: Colors.black,
-    bottomAppBarTheme: const BottomAppBarThemeData(color: Colors.black),
-    primaryColor: Colors.black,
-    appBarTheme: const AppBarTheme(
-      shadowColor: Color(0xffECEFF3),
+    scaffoldBackgroundColor: MyntColors.backgroundColorDark, // #0D1117
+    bottomAppBarTheme: BottomAppBarThemeData(color: MyntColors.backgroundColorDark),
+    primaryColor: MyntColors.primaryDark, // #58A6FF
+    appBarTheme: AppBarTheme(
+      shadowColor: MyntColors.dividerDark,
       centerTitle: false,
-      backgroundColor: Colors.black,
-      iconTheme: IconThemeData(color: Colors.white),
+      backgroundColor: MyntColors.backgroundColorDark,
+      iconTheme: IconThemeData(color: MyntColors.textPrimaryDark),
     ),
     bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: const Color(0xffB5C0CF).withOpacity(.15),
-        dragHandleColor: Colors.white),
-    iconTheme: const IconThemeData(color: Colors.white),
-    dialogTheme:
-        DialogThemeData(backgroundColor: const Color(0xffB5C0CF).withOpacity(.15)),
+        backgroundColor: MyntColors.cardDark, // #161B22
+        dragHandleColor: MyntColors.textSecondaryDark),
+    iconTheme: IconThemeData(color: MyntColors.textPrimaryDark),
+    dialogTheme: DialogThemeData(backgroundColor: MyntColors.cardDark),
+    dividerColor: MyntColors.dividerDark,
+    cardColor: MyntColors.cardDark,
   );
 
 // Light theme options

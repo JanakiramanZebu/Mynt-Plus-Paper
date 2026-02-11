@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart' show MyntColors, MyntFonts;
-import 'package:mynt_plus/res/web_colors.dart';
 import '../../../../provider/thems.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
@@ -80,10 +79,25 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
       final theme = ref.watch(themeProvider);
       final isDarkMode = theme.isDarkMode;
 
+      // Chart colors using MyntColors (matching SIP calculator)
+      final principalColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
+      final gainsColor = resolveThemeColor(
+        context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textPrimary,
+      );
+      final totalColor = resolveThemeColor(
+        context,
+        dark: MyntColors.profitDark,
+        light: MyntColors.profit,
+      );
+
       return Scaffold(
-        backgroundColor: isDarkMode
-            ? colors.kColorDarkThemeBackground
-            : colors.kColorlightThemeBackground,
+        backgroundColor: resolveThemeColor(
+          context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor,
+        ),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: AppBar(
@@ -91,13 +105,22 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
+            backgroundColor: resolveThemeColor(
+              context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor,
+            ),
             leading: widget.onBack != null
                 ? IconButton(
                     onPressed: widget.onBack,
                     icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 15,
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
                     ),
                   )
                 : const CustomBackBtn(),
@@ -110,9 +133,11 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
               child: Divider(
                 height: 1,
                 thickness: 1,
-                color: isDarkMode
-                    ? colors.textSecondaryDark.withValues(alpha: 0.2)
-                    : colors.textSecondaryLight.withValues(alpha: 0.2),
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.dividerDark,
+                  light: MyntColors.divider,
+                ),
               ),
             ),
           ),
@@ -123,20 +148,16 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDarkMode ? colors.secondaryDark : const Color.fromARGB(255, 255, 255, 255),
+                color: resolveThemeColor(
+                  context,
+                  dark: Colors.transparent,
+                  light: MyntColors.card,
+                ),
                 borderRadius: BorderRadius.circular(16),
-                // border: Border.all(
-                //   color: isDarkMode
-                //       ? Colors.white.withOpacity(0.2)
-                //       : Colors.black.withOpacity(0.1),
-                //   width: 1,
-                // ),
               ),
               child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // const SizedBox(height: 32),
 
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,8 +171,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                       "Use the CAGR tool to see how much your investments have grown over time.",
                       style: MyntWebTextStyles.bodySmall(
                         context,
-                        darkColor: Colors.white70,
-                        lightColor: Colors.grey[600],
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
                       ).copyWith(fontSize: 13),
                       maxLines: 2,
                     ),
@@ -173,7 +194,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                     // Right side - Estimation
                     Expanded(
                       flex: 1,
-                      child: _buildEstimationSection(isDarkMode, theme),
+                      child: _buildEstimationSection(
+                        isDarkMode, theme,
+                        principalColor: principalColor,
+                        gainsColor: gainsColor,
+                        totalColor: totalColor,
+                      ),
                     ),
                   ],
                 ),
@@ -216,7 +242,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                     style: MyntWebTextStyles.title(
                       context,
                       fontWeight: MyntFonts.medium,
-                      color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                     ),
                   ),
                    SizedBox(
@@ -243,7 +269,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                    "Yr",
                                    style: MyntWebTextStyles.bodySmall(
                                      context,
-                                     color: Colors.grey,
+                                     color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                                    ),
                                  ),
                                ),
@@ -258,9 +284,8 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
               _buildCustomSlider(
                 value: _tenureYears,
                 min: 1,
-                max: 30, 
+                max: 30,
                 divisions: 29,
-                isDarkMode: isDarkMode,
                 onChanged: (value) {
                   setState(() {
                     _tenureYears = value;
@@ -274,7 +299,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
       ],
     );
   }
-  
+
   Widget _buildTextFieldWithLabel({
     required String label,
     required TextEditingController controller,
@@ -288,14 +313,14 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
           style: MyntWebTextStyles.title(
             context,
             fontWeight: MyntFonts.medium,
-            color: isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
+            color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
           ),
         ),
         const SizedBox(height: 8),
         MyntTextField(
           controller: controller,
           height: 48,
-          backgroundColor: isDarkMode ? colors.searchBgDark : const Color(0xffF5F7FA),
+          backgroundColor: resolveThemeColor(context, dark: MyntColors.cardDark, light: const Color(0xffF5F7FA)),
           borderRadius: 8,
           leadingWidget: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -306,9 +331,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                   "₹",
                   style: MyntWebTextStyles.bodyMedium(
                     context,
-                    color: isDarkMode
-                        ? MyntColors.textSecondaryDark
-                        : MyntColors.textSecondary,
+                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                   ),
                 ),
               ],
@@ -330,15 +353,18 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
     required double max,
     required int divisions,
     required ValueChanged<double> onChanged,
-    required bool isDarkMode,
   }) {
     return SliderTheme(
       data: SliderThemeData(
         trackHeight: 6.0,
-        activeTrackColor: WebColors.primaryLight.withOpacity(0.5),
-        inactiveTrackColor: Colors.grey.withOpacity(0.2),
-        thumbColor: WebColors.primary,
-        overlayColor: WebColors.primary.withOpacity(0.1),
+        activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary.withOpacity(0.5)),
+        inactiveTrackColor: resolveThemeColor(
+          context,
+          dark: MyntColors.dividerDark,
+          light: MyntColors.divider,
+        ),
+        thumbColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+        overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark.withOpacity(0.1), light: MyntColors.primary.withOpacity(0.1)),
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
         trackShape: const RectangularSliderTrackShape(),
@@ -353,18 +379,24 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
     );
   }
 
-  Widget _buildEstimationSection(bool isDarkMode, ThemesProvider theme) {
+  Widget _buildEstimationSection(
+    bool isDarkMode,
+    ThemesProvider theme, {
+    required Color principalColor,
+    required Color gainsColor,
+    required Color totalColor,
+  }) {
       final double principal = double.tryParse(_principalCtrl.text) ?? 0.0;
       final double finalAmount = double.tryParse(_finalAmountCtrl.text) ?? 0.0;
-      
+
       double gains = 0;
       if (finalAmount > principal) {
         gains = finalAmount - principal;
       }
-      
+
       final List<ChartData> chartData = [
-          ChartData('Invested', principal, const Color(0xff1C1C1C)), // Black
-          ChartData('Gain', gains, const Color(0xff015FEC)), // Blue
+          ChartData('Invested', principal, principalColor),
+          ChartData('Gain', gains, gainsColor),
       ];
 
       return Column(
@@ -395,7 +427,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                   "CAGR",
                                   style: MyntWebTextStyles.bodySmall(
                                     context,
-                                    color: Colors.grey,
+                                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                                   ),
                                 ),
                                 Text(
@@ -403,7 +435,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                                   style: MyntWebTextStyles.head(
                                     context,
                                     fontWeight: FontWeight.bold,
-                                    color: isDarkMode ? Colors.white : Colors.black87,
+                                    color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                                   ).copyWith(fontSize: 20),
                                 ),
                               ],
@@ -411,12 +443,12 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                           )
                         ],
                         series: <CircularSeries>[
-                          // Outer Ring (Total Amount - Green)
+                          // Outer Ring (Total Amount)
                           DoughnutSeries<ChartData, String>(
                             radius: '100%',
                             innerRadius: '92%',
                             dataSource: [
-                              ChartData('Total', 1, const Color(0xff6eb94b))
+                              ChartData('Total', 1, totalColor)
                             ],
                             pointColorMapper: (ChartData data, _) => data.color,
                             xValueMapper: (ChartData data, _) => data.x,
@@ -441,7 +473,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                 ),
               ),
                  const SizedBox(width: 40),
-                 
+
                  // Legend
                  Expanded(
                    flex: 6,
@@ -451,23 +483,19 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
                        _buildLegendItem(
                          "Initial Investment",
                          principal.toInt(),
-                         const Color(0xff1C1C1C),
-                         isDarkMode,
+                         principalColor,
                        ),
                        const SizedBox(height: 24),
                        _buildLegendItem(
                          "Wealth Gain",
                          gains.toInt(),
-                         const Color(0xff015FEC),
-                         isDarkMode,
+                         gainsColor,
                        ),
                        const SizedBox(height: 24),
                        _buildLegendItem(
                          "Maturity Value",
                          finalAmount.toInt(),
-                         Colors.green,
-                         isDarkMode,
-                         isTotal: true,
+                         totalColor,
                        ),
                      ],
                    ),
@@ -478,8 +506,7 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
       );
   }
 
-  Widget _buildLegendItem(
-      String label, int value, Color color, bool isDarkMode, {bool isTotal = false}) {
+  Widget _buildLegendItem(String label, int value, Color color) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -499,18 +526,18 @@ class _MFCAGRCALState extends State<MFCAGRCAL> {
               label,
               style: MyntWebTextStyles.bodyMedium(
                 context,
-                darkColor: Colors.white70,
-                lightColor: Colors.grey[600],
+                darkColor: MyntColors.textSecondaryDark,
+                lightColor: MyntColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              "₹ ${value.toString()}", // Simple formatting for now, ideally match SIP's number formatting
+              "₹ ${value.toString()}",
                style: MyntWebTextStyles.head(
                  context,
                  fontWeight: FontWeight.bold,
-                 darkColor: Colors.white,
-                 lightColor: Colors.black87,
+                 darkColor: MyntColors.textPrimaryDark,
+                 lightColor: MyntColors.textPrimary,
                ),
             ),
           ],

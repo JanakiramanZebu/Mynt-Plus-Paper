@@ -323,7 +323,12 @@ class _UpcomingIpoState extends ConsumerState<UpcomingIpo> {
         child: GestureDetector(
           onTap: onTap,
           child: Container(
-            color: Colors.transparent,
+            color: rowIsHovered
+                ? resolveThemeColor(context,
+                    dark: MyntColors.primaryDark,
+                    light: MyntColors.primary,
+                  ).withValues(alpha: 0.08)
+                : Colors.transparent,
             padding:
                 const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             width: double.infinity,

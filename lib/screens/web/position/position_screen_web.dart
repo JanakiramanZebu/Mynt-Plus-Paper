@@ -512,7 +512,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: resolveThemeColor(
                         context,
-                        dark: MyntColors.primaryDark,
+                        dark: MyntColors.secondary,
                         light: MyntColors.primary,
                       ),
                       foregroundColor: Colors.white,
@@ -584,7 +584,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: resolveThemeColor(
                           context,
-                          dark: MyntColors.primaryDark,
+                          dark: MyntColors.secondary,
                           light: MyntColors.primary,
                         ),
                         foregroundColor: Colors.white,
@@ -2342,8 +2342,8 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             decoration: BoxDecoration(
               color: resolveThemeColor(
                 context,
-                dark: const Color(0xFF1E1E1E),
-                light: Colors.white,
+                dark: MyntColors.dialogDark,
+                light: MyntColors.dialog,
               ),
               borderRadius: BorderRadius.circular(12),
             ),

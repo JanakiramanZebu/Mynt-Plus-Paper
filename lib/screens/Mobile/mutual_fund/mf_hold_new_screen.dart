@@ -262,11 +262,12 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        // color: theme.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+        color: theme.isDarkMode ? MyntColors.cardDark : Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color:
-              theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+              theme.isDarkMode ? MyntColors.transparent : MyntColors.divider,
           width: 1,
         ),
       ),
@@ -473,8 +474,10 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                                     final isHovered = hoveredIndex == index || _popoverRowIndex == index;
                                     return Container(
                                       color: isHovered
-                                          ? MyntColors.primary
-                                              .withValues(alpha: 0.08)
+                                          ? resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary,
+                                            ).withValues(alpha: 0.08)
                                           : Colors.transparent,
                                       child: shadcn.Table(
                                         key: ValueKey('table_row_$index'),
@@ -816,8 +819,9 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                   alignRight ? Alignment.centerRight : Alignment.centerLeft,
               color: isRowHovered
                   ? resolveThemeColor(context,
-                      dark: MyntColors.primary.withValues(alpha: 0.08),
-                      light: MyntColors.primary.withValues(alpha: 0.08))
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
                   : null,
               child: child,
             ),
@@ -1117,7 +1121,9 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                 borderRadius: BorderRadius.circular(4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey,
+                    color: isDarkMode(  context)
+                        ? Colors.transparent
+                        : Colors.grey,
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
@@ -1127,7 +1133,7 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
                 Icons.more_vert,
                 size: 18,
                 color: theme.isDarkMode
-                    ? MyntColors.textPrimaryDark
+                    ? MyntColors.textPrimary
                     : MyntColors.textPrimary,
               ),
             ),

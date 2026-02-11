@@ -50,7 +50,7 @@ class _mfholdsinlepage extends State<mfholdsinlepage>
 
       return Scaffold(
         backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            theme.isDarkMode ? MyntColors.backgroundColorDark : colors.colorWhite,
         body: Column(
           children: [
             // Header with close button and title

@@ -201,8 +201,8 @@ class MyntLoader extends StatelessWidget {
     final loaderStrokeWidth = _getStrokeWidth();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    // Use Colors.blue for branded loaders (with logo), MyntColors.primary for others
-    final loaderColor = color ?? (showLogo ? Colors.blue : MyntColors.primary);
+    // Use theme-aware primary color; branded loaders keep Colors.blue
+    final loaderColor = color ?? (showLogo ? Colors.blue : (isDarkMode ? MyntColors.primaryDark : MyntColors.primary));
 
     Widget loader;
 
@@ -313,7 +313,7 @@ class MyntLoaderOverlay extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final bgColor = overlayColor ??
-        (isDarkMode ? Colors.black : Colors.white).withValues(alpha: overlayOpacity);
+        (isDarkMode ? MyntColors.backgroundColorDark : Colors.white).withValues(alpha: overlayOpacity);
 
     return Stack(
       children: [
@@ -371,7 +371,7 @@ class MyntLoaderSemiOverlay extends StatelessWidget {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: (isDarkMode ? Colors.black : Colors.white)
+              color: (isDarkMode ? MyntColors.backgroundColorDark : Colors.white)
                   .withValues(alpha: overlayOpacity),
               child: Center(
                 child: MyntLoader.simple(

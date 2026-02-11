@@ -980,7 +980,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: MyntColors.primary),
+                  borderSide: BorderSide(color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)),
                 ),
               ),
               onChanged: (value) {
@@ -1051,7 +1051,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: MyntColors.primary),
+                    borderSide: BorderSide(color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)),
                   ),
                 ),
               ),
@@ -1340,11 +1340,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? resolveThemeColor(context, dark: MyntColors.primary.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
+                          ? resolveThemeColor(context, dark: MyntColors.primaryDark.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
                           : Colors.transparent,
                       border: Border.all(
                         color: isSelected
-                            ? resolveThemeColor(context, dark: MyntColors.primary, light: MyntColors.primary)
+                            ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                             : resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider),
                       ),
                       borderRadius: BorderRadius.circular(6),
@@ -1355,7 +1355,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                       style: MyntWebTextStyles.para(context,
                         fontWeight: MyntFonts.medium,
                         color: isSelected
-                            ? MyntColors.primary
+                            ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                             : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                       ),
                     ),
@@ -1372,11 +1372,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? resolveThemeColor(context, dark: MyntColors.primary.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
+                            ? resolveThemeColor(context, dark: MyntColors.primaryDark.withValues(alpha: 0.1), light: const Color(0xFFEFF4FF))
                             : Colors.transparent,
                         border: Border.all(
                           color: isSelected
-                              ? resolveThemeColor(context, dark: MyntColors.primary, light: MyntColors.primary)
+                              ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                               : resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider),
                         ),
                         borderRadius: BorderRadius.circular(6),
@@ -1415,7 +1415,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected
-                      ? MyntColors.primary
+                      ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                       : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
                   width: 1.5,
                 ),
@@ -1425,9 +1425,9 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                       child: Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: MyntColors.primary,
+                          color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                         ),
                       ),
                     )
@@ -1506,7 +1506,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 height: 22,
                 decoration: BoxDecoration(
                   color: value
-                      ? MyntColors.primary
+                      ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
                       : resolveThemeColor(context,
                           dark: MyntColors.dividerDark,
                           light: MyntColors.divider),
@@ -1795,11 +1795,11 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
       children: [
         TabBar(
           controller: _tabController,
-          labelColor: MyntColors.primary,
+          labelColor: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary,
           unselectedLabelColor: resolveThemeColor(context,
               dark: MyntColors.textPrimaryDark,
               light: MyntColors.textPrimary),
-          indicatorColor: MyntColors.primary,
+          indicatorColor: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary,
           labelStyle: MyntWebTextStyles.bodySmall(context,
               fontWeight: MyntFonts.semiBold),
           unselectedLabelStyle: MyntWebTextStyles.bodySmall(context,

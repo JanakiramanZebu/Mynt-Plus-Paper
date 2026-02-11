@@ -727,7 +727,10 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                 alignment: cellAlignment,
                 decoration: BoxDecoration(
                   color: isHovered
-                      ? MyntColors.primary.withValues(alpha: 0.08)
+                      ? resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary,
+                        ).withValues(alpha: 0.08)
                       : Colors.transparent,
                 ),
                 child: child,
@@ -973,7 +976,10 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 color: isHovered
-                    ? MyntColors.primary.withValues(alpha: 0.08)
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary,
+                    ).withValues(alpha: 0.08)
                     : Colors.transparent,
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -1096,13 +1102,13 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
               setState(() {});
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: MyntColors.textWhite,
                 borderRadius: BorderRadius.circular(4),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey,
+                    color:  resolveThemeColor(context, dark: MyntColors.transparent,light: MyntColors.divider),
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
@@ -1112,7 +1118,7 @@ class _MfOrderBookScreen extends ConsumerState<MfOrderBookScreen>
                 Icons.more_vert,
                 size: 18,
                 color: theme.isDarkMode
-                    ? MyntColors.textPrimaryDark
+                    ? MyntColors.textPrimary
                     : MyntColors.textPrimary,
               ),
             ),

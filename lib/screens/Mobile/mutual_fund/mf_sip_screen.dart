@@ -935,8 +935,9 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
                 padding: cellPadding,
                 color: isHovered
                     ? resolveThemeColor(context,
-                        dark: MyntColors.primary.withValues(alpha: 0.08),
-                        light: MyntColors.primary.withValues(alpha: 0.08))
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ).withValues(alpha: 0.08)
                     : null,
                 alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                 child: cachedChild, // Use the cached child
@@ -1398,7 +1399,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey, light: Colors.grey),
+                      dark: Colors.transparent, light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -1408,7 +1409,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+                  dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
             ),
           ),
@@ -1489,7 +1490,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey, light: Colors.grey),
+                      dark: Colors.transparent, light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -1499,7 +1500,7 @@ class _MFSipdetScreenState extends ConsumerState<MFSipdetScreen>
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+                  dark: MyntColors.textPrimary,
                   light: MyntColors.textPrimary),
             ),
           ),

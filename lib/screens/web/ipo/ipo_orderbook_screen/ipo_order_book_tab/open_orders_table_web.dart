@@ -124,8 +124,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                     child: Container(
                       color: resolveThemeColor(
                         context,
-                        dark: MyntColors.primaryDark.withOpacity(0.05),
-                        light: MyntColors.primary.withOpacity(0.05),
+                        dark: MyntColors.cardDark,
+                        light: MyntColors.listItemBg,
                       ),
                       child: shadcn.Table(
                         columnWidths: columnWidths,
@@ -547,7 +547,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

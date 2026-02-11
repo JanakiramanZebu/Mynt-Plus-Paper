@@ -905,7 +905,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           style: MyntWebTextStyles.body(
             context,
             color: theme.isDarkMode
-                ? MyntColors.textSecondaryDark
+                ? MyntColors.textPrimaryDark
                 : MyntColors.textSecondary,
             fontWeight: MyntFonts.medium,
           ),
@@ -938,7 +938,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           style: MyntWebTextStyles.body(
             context,
             color: theme.isDarkMode
-                ? MyntColors.textSecondaryDark
+                ? MyntColors.textPrimaryDark
                 : MyntColors.textSecondary,
             fontWeight: MyntFonts.medium,
           ),

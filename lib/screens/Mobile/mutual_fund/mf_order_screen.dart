@@ -121,7 +121,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: isDark ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: isDark ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -176,10 +176,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
+        color: isDark ? MyntColors.dialogDark : MyntColors.backgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: isDark ? colors.darkColorDivider : colors.colorDivider,
+            color: isDark ? MyntColors.dividerDark : MyntColors.divider,
             width: 0.5,
           ),
         ),
@@ -264,7 +264,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
             width: 50,
             height: 28,
             decoration: BoxDecoration(
-              color: isSIP ? MyntColors.primary : const Color(0xFFE0E0E0),
+              color: isSIP ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : const Color(0xFFE0E0E0),
               borderRadius: BorderRadius.circular(14),
             ),
             child: AnimatedAlign(
@@ -392,7 +392,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
               style: MyntWebTextStyles.bodyMedium(
                 context,
                 fontWeight: MyntFonts.medium,
-                color: MyntColors.primary,
+                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
               ),
             ),
           ),
@@ -494,7 +494,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
-                              ? MyntColors.primary
+                              ? isDark ? MyntColors.primaryDark : MyntColors.primary
                               : Colors.transparent,
                           width: 1.5,
                         ),
@@ -544,7 +544,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                                   style: MyntWebTextStyles.para(
                                     context,
                                     fontWeight: MyntFonts.medium,
-                                    color: MyntColors.primary,
+                                    color:  isDark ? MyntColors.primaryDark : MyntColors.primary,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -574,7 +574,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                             const SizedBox(width: 12),
                             Icon(
                               Icons.check_circle,
-                              color: MyntColors.primary,
+                              color: isDark ? MyntColors.primaryDark : MyntColors.primary,
                               size: 24,
                             ),
                           ],
@@ -716,13 +716,13 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
                   style: MyntWebTextStyles.bodyMedium(
                 context,
                 fontWeight: MyntFonts.medium,
-                color: MyntColors.primary,
+                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               ),
               ),
               const SizedBox(width: 4),
               Icon(
                 Icons.keyboard_arrow_down,
-                color: MyntColors.primary,
+                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                 size: 20,
               ),
             ],
@@ -739,10 +739,10 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
+        color: isDark ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
         border: Border(
           top: BorderSide(
-            color: isDark ? colors.darkColorDivider : colors.colorDivider,
+            color: isDark ? MyntColors.dividerDark : MyntColors.divider,
             width: 0.5,
           ),
         ),
@@ -755,8 +755,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreen> {
           child: ElevatedButton(
             onPressed: mfOrder.investloader ? null : () => _handlePayment(mfOrder),
             style: ElevatedButton.styleFrom(
-              backgroundColor: MyntColors.primary,
-              disabledBackgroundColor: MyntColors.primary.withOpacity(0.5),
+              backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+              disabledBackgroundColor: resolveThemeColor(context, dark:  MyntColors.secondary.withOpacity(0.5), light: MyntColors.primary.withOpacity(0.5)),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -1203,7 +1203,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
             style: ElevatedButton.styleFrom(
               elevation: 0,
               minimumSize: const Size(0, 45),
-              backgroundColor: MyntColors.primary,
+              backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -1231,7 +1231,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
       bgColor = const Color(0xFFE0E0E0);
       textColor = const Color(0xFFBDBDBD);
     } else if (isSelected) {
-      bgColor = MyntColors.primary;
+      bgColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
       textColor = colors.colorWhite;
     } else {
       bgColor = const Color(0xffF1F3F8);

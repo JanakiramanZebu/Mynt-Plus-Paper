@@ -452,7 +452,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            color: shadcn.Theme.of(context).colorScheme.card,
+            color: isDarkMode(context) ? MyntColors.dashboardCarColor : shadcn.Theme.of(context).colorScheme.card,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: resolveThemeColor(context,
@@ -1115,7 +1115,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
       width: width,
       height: 400,
       decoration: BoxDecoration(
-        color: shadcn.Theme.of(context).colorScheme.card,
+        color: isDarkMode(context) ? MyntColors.dashboardCarColor : shadcn.Theme.of(context).colorScheme.card,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: resolveThemeColor(context,
@@ -1612,7 +1612,9 @@ class _DashboardIndexCardState extends ConsumerState<_DashboardIndexCard> {
               decoration: BoxDecoration(
                 color: _isHovered
                     ? shadcn.Theme.of(context).colorScheme.muted
-                    : shadcn.Theme.of(context).colorScheme.card,
+                    : resolveThemeColor(context,
+                        dark: MyntColors.dashboardCarColor,
+                        light: shadcn.Theme.of(context).colorScheme.card),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Column(
@@ -2086,7 +2088,11 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
               decoration: BoxDecoration(
                 color: isHovered
-                    ? shadcn.Theme.of(context).colorScheme.muted
+                    // ? shadcn.Theme.of(context).colorScheme.muted
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: shadcn.Theme.of(context).colorScheme.muted,
+                    ).withValues(alpha: 0.08)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(4),
               ),

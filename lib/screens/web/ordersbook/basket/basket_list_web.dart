@@ -258,8 +258,8 @@ class _BasketListState extends ConsumerState<BasketList> {
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: Colors.white.withValues(alpha: 0.04),
-              light: Colors.black.withValues(alpha: 0.03),
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
             ),
           ),
           child: Row(
@@ -522,7 +522,7 @@ class _BasketListState extends ConsumerState<BasketList> {
           boxShadow: [
             BoxShadow(
               color: resolveThemeColor(context,
-                  dark: Colors.grey,
+                  dark: Colors.transparent,
                   light: Colors.grey),
               blurRadius: 2,
               offset: const Offset(0, 1),
@@ -641,7 +641,7 @@ class _BasketListState extends ConsumerState<BasketList> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
@@ -685,7 +685,7 @@ class _BasketListState extends ConsumerState<BasketList> {
       return Icon(
         _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
         size: 16,
-        color: theme.isDarkMode ? MyntColors.primary : MyntColors.primary,
+        color: theme.isDarkMode ? MyntColors.secondary : MyntColors.primary,
       );
     } else {
       return Icon(
@@ -984,7 +984,7 @@ class _BasketListState extends ConsumerState<BasketList> {
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: MyntColors.tertiary,
+                            backgroundColor: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -1093,7 +1093,7 @@ class _BasketListState extends ConsumerState<BasketList> {
               Container(
                 decoration: BoxDecoration(
                   color: theme.isDarkMode
-                      ? MyntColors.primaryDark
+                      ? MyntColors.secondary
                       : WebColors.primary,
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -1259,7 +1259,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             Color? backgroundColor;
             if (isRowHovered) {
               backgroundColor = resolveThemeColor(context,
-                  dark: styles.MyntColors.primary.withOpacity(0.08),
+                  dark: styles.MyntColors.primaryDark.withOpacity(0.08),
                   light: styles.MyntColors.primary.withOpacity(0.08));
             }
 
@@ -1312,8 +1312,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: Colors.white.withValues(alpha: 0.04),
-              light: Colors.black.withValues(alpha: 0.03),
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
             ),
           ),
           child: Row(
@@ -1569,7 +1569,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                       style: WebTextStyles.symbolList(
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? MyntColors.textPrimary
+                                            ? MyntColors.textPrimaryDark
                                             : WebColors.textPrimary,
                                       ),
                                     ),
@@ -1607,7 +1607,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                         '${scrip.exch}',
                                         style: WebTextStyles.exchText(
                                             isDarkTheme: theme.isDarkMode,
-                                            color: WebColors.textSecondary),
+                                            color: theme.isDarkMode
+                                                ? WebDarkColors.textSecondary
+                                                : WebColors.textSecondary),
                                       ),
                                     ),
                                     // Buy/Sell buttons for Basket mode - shown next to symbol
@@ -1640,8 +1642,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: WebColors.primary
-                                                        .withOpacity(0.1),
+                                                    color: theme.isDarkMode ? MyntColors.secondary : MyntColors.primary.withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             4),
@@ -1656,7 +1657,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                         WebTextStyles.buttonSm(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
-                                                      color: WebColors.primary,
+                                                      color: theme.isDarkMode ? MyntColors.textWhite : MyntColors.primary,
                                                       fontWeight:
                                                           WebFonts.semiBold,
                                                     ),
@@ -1681,8 +1682,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: WebColors.tertiary
-                                                        .withOpacity(0.1),
+                                                    color: theme.isDarkMode ? MyntColors.errorDark : MyntColors.tertiary.withOpacity(0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             4),
@@ -1697,7 +1697,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                                         WebTextStyles.buttonSm(
                                                       isDarkTheme:
                                                           theme.isDarkMode,
-                                                      color: WebColors.tertiary,
+                                                      color: theme.isDarkMode ? MyntColors.textWhite : MyntColors.tertiary,
                                                       fontWeight:
                                                           WebFonts.semiBold,
                                                     ),
@@ -2000,7 +2000,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                       height: 36,
                       decoration: BoxDecoration(
                         color: theme.isDarkMode
-                            ? WebDarkColors.surface
+                            ? MyntColors.inputBgDark
                             : const Color(0xfff5f5f5),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -2454,8 +2454,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: theme.isDarkMode
-                                    ? WebDarkColors.primary
-                                    : WebColors.primary,
+                                    ? MyntColors.secondary
+                                    : MyntColors.primary,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5)),
                                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -2977,7 +2977,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: colors.colorBlack, light: colors.colorWhite),
+                  dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -3057,7 +3057,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: styles.MyntColors.tertiary,
+                            backgroundColor: resolveThemeColor(context,
+                                dark: styles.MyntColors.errorDark,
+                                light: styles.MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -3107,7 +3109,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: colors.colorBlack, light: colors.colorWhite),
+                  dark: MyntColors.backgroundColorDark, light: colors.colorWhite),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -3203,7 +3205,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                           onPressed: () =>
                               Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: styles.MyntColors.tertiary,
+                            backgroundColor: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -3343,7 +3345,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
           boxShadow: [
             BoxShadow(
               color: resolveThemeColor(context,
-                  dark: Colors.grey, light: Colors.grey),
+                  dark: Colors.transparent, light: Colors.grey),
               blurRadius: 2,
               offset: const Offset(0, 1),
             ),

@@ -231,7 +231,7 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen>
                                     light: MyntColors.listItemBg),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: MyntColors.primary,
+                                  color: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary,
                                   width: 1,
                                 ),
                               ),
@@ -415,13 +415,13 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: (statusColor ?? MyntColors.profit).withValues(alpha: 0.15),
+              color: (statusColor ?? (isDarkMode(context) ? MyntColors.profitDark : MyntColors.profit)).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               value,
               style: MyntWebTextStyles.para(context,
-                  color: statusColor ?? MyntColors.profit,
+                  color: statusColor ?? (isDarkMode(context) ? MyntColors.profitDark : MyntColors.profit),
                   fontWeight: MyntFonts.medium),
             ),
           )

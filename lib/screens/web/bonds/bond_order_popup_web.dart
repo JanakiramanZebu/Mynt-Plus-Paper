@@ -105,7 +105,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
         maxHeight: screenHeight * 0.85,
       ),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        color: isDark ? MyntColors.dialogDark : MyntColors.dialog,
         borderRadius: BorderRadius.circular(isVerySmallScreen ? 8 : 12),
       ),
       child: Column(
@@ -168,7 +168,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
                 'Insufficient balance, Add fund ₹${shortfall.toStringAsFixed(2)}',
                 style: MyntWebTextStyles.para(
                   context,
-                  color: MyntColors.error,
+                  color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error),
                 ),
               ),
             ),
@@ -326,8 +326,8 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
       textAlign: TextAlign.left,
       height: fieldHeight,
       borderRadius: 8,
-      backgroundColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F7FA),
-      borderColor: MyntColors.primary,
+      backgroundColor: isDark ? MyntColors.transparent : const Color(0xFFF5F7FA),
+      borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
       textStyle: isSmallScreen
           ? MyntWebTextStyles.body(
               context,
@@ -357,7 +357,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             alignment: Alignment.center,
             child: Icon(
               Icons.remove_circle_outline,
-              color: MyntColors.primary,
+              color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               size: iconSize,
             ),
           ),
@@ -379,7 +379,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
             alignment: Alignment.center,
             child: Icon(
               Icons.add_circle_outline,
-              color: MyntColors.primary,
+              color:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               size: iconSize,
             ),
           ),
@@ -446,7 +446,7 @@ class _BondOrderPopupWebState extends ConsumerState<BondOrderPopupWeb> {
                   _placeOrder();
                 },
           style: ElevatedButton.styleFrom(
-            backgroundColor: MyntColors.primary,
+            backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
             foregroundColor: Colors.white,
             elevation: 0,
             padding: EdgeInsets.symmetric(

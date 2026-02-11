@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/res.dart';
 
 class CustomTextFormField extends StatelessWidget {
@@ -74,17 +76,17 @@ class CustomTextFormField extends StatelessWidget {
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
             enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: colors.colorBlue),
+                borderSide: BorderSide(color: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary),
                 borderRadius: BorderRadius.circular(5)),
             disabledBorder: InputBorder.none,
             focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: colors.colorBlue),
+                borderSide: BorderSide(color: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary),
                 borderRadius: BorderRadius.circular(5)),
             errorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: colors.colorBlue),
+                borderSide: BorderSide(color: isDarkMode(context) ? MyntColors.errorDark : MyntColors.error),
                 borderRadius: BorderRadius.circular(5)),
             focusedErrorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: colors.colorBlue),
+                borderSide: BorderSide(color: isDarkMode(context) ? MyntColors.errorDark : MyntColors.error),
                 borderRadius: BorderRadius.circular(5)),
             border: OutlineInputBorder(
                 borderSide: BorderSide.none,

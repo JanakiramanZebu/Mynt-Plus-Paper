@@ -299,8 +299,8 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: Colors.white.withValues(alpha: 0.04),
-              light: Colors.black.withValues(alpha: 0.03),
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
             ),
           ),
           child: Row(
@@ -1058,7 +1058,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
           boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
@@ -1230,7 +1230,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey,
+                      dark: Colors.transparent,
                       light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),

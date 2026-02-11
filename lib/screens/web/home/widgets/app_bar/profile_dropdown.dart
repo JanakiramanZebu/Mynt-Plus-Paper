@@ -631,7 +631,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: isTickerVisible
-                    ? MyntColors.primary
+                    ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
                     : Colors.grey.withValues(alpha: 0.3),
               ),
               child: Stack(

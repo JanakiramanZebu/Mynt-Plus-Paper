@@ -36,7 +36,8 @@ class MFAllocation extends ConsumerWidget {
     final hasHoldings = mfData.holdings != null && mfData.holdings!.isNotEmpty;
 
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      // color: isDarkMode ? Colors.black : Colors.white,
+      color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
         child: Column(
@@ -344,7 +345,7 @@ class MFAllocation extends ConsumerWidget {
                   showMoreSectors ? "Show Less" : "Show More",
                   style: MyntWebTextStyles.body(
                     context,
-                    color: MyntColors.primary,
+                    color: isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -483,7 +484,7 @@ class MFAllocation extends ConsumerWidget {
                   showMoreHoldings ? "Show Less" : "Show More",
                   style: MyntWebTextStyles.body(
                     context,
-                    color: MyntColors.primary,
+                    color: isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

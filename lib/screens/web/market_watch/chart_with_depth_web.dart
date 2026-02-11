@@ -492,7 +492,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 size: MyntButtonSize.small,
                                 backgroundColor: resolveThemeColor(
                                     context,
-                                    dark: MyntColors.primary,
+                                    dark: MyntColors.secondary,
                                     light: MyntColors.primary),
                                 textColor: Colors.white,
                                 onPressed: () async {
@@ -510,7 +510,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 size: MyntButtonSize.small,
                                 backgroundColor: resolveThemeColor(
                                     context,
-                                    dark: MyntColors.tertiary,
+                                    dark: MyntColors.errorDark,
                                     light: MyntColors.tertiary),
                                 textColor: Colors.white,
                                 onPressed: () async {
@@ -664,7 +664,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 8),
                         decoration: BoxDecoration(
-                          color: shadcn.Theme.of(context).colorScheme.card,
+                          color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: shadcn.Theme.of(context).colorScheme.card),
                           border: Border(
                             bottom: BorderSide(
                               color: resolveThemeColor(
@@ -908,7 +908,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                         : Icons.shopping_basket_outlined,
                                     size: 20,
                                     color: _isBasketMode
-                                        ? MyntColors.primary
+                                        ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
                                         : resolveThemeColor(
                                             context,
                                             dark: MyntColors.iconDark,

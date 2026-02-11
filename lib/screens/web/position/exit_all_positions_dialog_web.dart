@@ -258,7 +258,7 @@ class _ExitAllPositionsDialogWebState
                               isLoading: _isLoading,
                               backgroundColor: resolveThemeColor(
                                 context,
-                                dark: MyntColors.primaryDark,
+                                dark: MyntColors.secondary,
                                 light: MyntColors.primary,
                               ),
                               onPressed:

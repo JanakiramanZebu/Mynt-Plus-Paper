@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../provider/thems.dart';
 import '../../../res/web_colors.dart';
 import 'ipo_explore_screens_web.dart';
@@ -35,7 +36,7 @@ class _IPOmainScreenState extends State<IPOScreen> {
             child: Container(
               width: double.infinity,
               height: double.infinity,
-              color: theme.isDarkMode ? WebDarkColors.background : Colors.white,
+              color: theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
               child: IpoExploreScreens(
                 theme: theme,
                 initialTabIndex: widget.initialTabIndex,

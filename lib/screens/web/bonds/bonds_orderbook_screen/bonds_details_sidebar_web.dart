@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/models/bonds_model/bonds_order_book_model.dart';
 import 'package:intl/intl.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
@@ -25,7 +26,7 @@ class BondsDetailsSidebarWeb extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
+        color: isDark ? MyntColors.backgroundColorDark : colors.colorWhite,
         border: Border(
           left: BorderSide(
             color: isDark ? colors.darkColorDivider : colors.colorDivider,
@@ -183,7 +184,7 @@ class BondsDetailsSidebarWeb extends ConsumerWidget {
   Widget _buildHeaderCell(BuildContext context, String text, {double? width, int? flex, bool alignRight = false}) {
     Widget child = Text(
       text,
-      style: MyntWebTextStyles.caption(context, color: WebColors.textSecondary),
+      style: MyntWebTextStyles.caption(context, color: MyntColors.textSecondary),
       textAlign: alignRight ? TextAlign.right : TextAlign.left,
     );
 

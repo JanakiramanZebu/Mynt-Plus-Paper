@@ -882,7 +882,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           "CALLS",
                           style: MyntWebTextStyles.body(context,
                               fontWeight: MyntFonts.medium,
-                              color: Colors.black),
+                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
                         ),
                       ],
                     ),
@@ -929,7 +929,7 @@ class _ColumnHeaders extends ConsumerWidget {
                       "STRIKES",
                       style: MyntWebTextStyles.body(context,
                           fontWeight: MyntFonts.medium,
-                          color: Colors.black),
+                          color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
                     ),
                   ),
                   // PUTS header
@@ -942,7 +942,7 @@ class _ColumnHeaders extends ConsumerWidget {
                           "PUTS",
                           style: MyntWebTextStyles.body(context,
                               fontWeight: MyntFonts.medium,
-                              color: Colors.black),
+                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
                         ),
                       ],
                     ),
@@ -1528,7 +1528,7 @@ class _LtpCenterLine extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: resolveThemeColor(
                       context,
-                      dark: MyntColors.primaryDark,
+                      dark: MyntColors.secondary,
                       light: MyntColors.primary,
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -1536,7 +1536,7 @@ class _LtpCenterLine extends ConsumerWidget {
                       BoxShadow(
                         color: resolveThemeColor(
                           context,
-                          dark: MyntColors.primaryDark,
+                          dark: MyntColors.secondary,
                           light: MyntColors.primary,
                         ).withValues(alpha: 0.3),
                         blurRadius: 8,

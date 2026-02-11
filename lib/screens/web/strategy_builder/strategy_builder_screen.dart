@@ -101,7 +101,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     final isSmallScreen = screenWidth < 900;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+      backgroundColor: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       appBar: _buildAppBar(context, provider, isDark),
       body: Stack(
         children: [
@@ -230,9 +230,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   // Strategy tabs
                   TabBar(
                     controller: _strategyTabController,
-                    labelColor: MyntColors.primary,
+                    labelColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     unselectedLabelColor: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                    indicatorColor: MyntColors.primary,
+                    indicatorColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     labelStyle: MyntWebTextStyles.bodySmall(
                       context,
                       fontWeight: MyntFonts.medium,
@@ -283,7 +283,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             children: [
               _buildMetricItemSmall(context, 'MAX PROFIT', provider.metrics.maxProfit, MyntColors.profit, isDark),
               const SizedBox(width: 12),
-              _buildMetricItemSmall(context, 'MAX LOSS', provider.metrics.maxLoss, MyntColors.loss, isDark),
+              _buildMetricItemSmall(context, 'MAX LOSS', provider.metrics.maxLoss, isDark ? MyntColors.lossDark : MyntColors.loss, isDark),
             ],
           ),
           const SizedBox(height: 8),
@@ -294,7 +294,11 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 context,
                 'NET PREMIUM',
                 provider.netPremium.abs().toStringAsFixed(2),
-                provider.netPremium >= 0 ? MyntColors.profit : MyntColors.loss,
+                provider.netPremium > 0
+                    ? (isDark ? MyntColors.profitDark : MyntColors.profit)
+                    : provider.netPremium < 0
+                        ? (isDark ? MyntColors.errorDark : MyntColors.loss)
+                        : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                 isDark,
               ),
               const SizedBox(width: 12),
@@ -368,7 +372,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
-              color: valueColor ?? (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+              color: valueColor ?? (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
               fontWeight: MyntFonts.semiBold,
             ),
           ),
@@ -386,7 +390,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       leading: IconButton(
         icon: Icon(
           Icons.arrow_back,
-          color: isDark ? MyntColors.textWhite : MyntColors.textBlack,
+          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
         ),
         onPressed: () => Navigator.of(context).pop(),
       ),
@@ -398,7 +402,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               overflow: TextOverflow.ellipsis,
               style: MyntWebTextStyles.title(
                 context,
-                darkColor: MyntColors.textWhite,
+                darkColor: MyntColors.textPrimaryDark,
                 lightColor: MyntColors.textBlack,
                 fontWeight: MyntFonts.bold,
               ),
@@ -422,7 +426,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                       overflow: TextOverflow.ellipsis,
                       style: MyntWebTextStyles.body(
                         context,
-                        darkColor: MyntColors.textWhite,
+                        darkColor: MyntColors.textPrimaryDark,
                         lightColor: MyntColors.textBlack,
                         fontWeight: MyntFonts.medium,
                       ),
@@ -463,7 +467,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 dropdownColor: isDark ? MyntColors.dividerDark : MyntColors.backgroundColor,
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                 ),
                 items: provider.expiryDates
@@ -648,7 +652,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     'Clear',
                     style: MyntWebTextStyles.bodySmall(
                       context,
-                      darkColor: MyntColors.textWhite,
+                      darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textBlack,
                     ),
                   ),
@@ -673,7 +677,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   'Add',
                   style: MyntWebTextStyles.bodySmall(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                   ),
                 ),
@@ -705,7 +709,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                       result['displayName'] ?? result['tsym'] ?? '',
                       style: MyntWebTextStyles.bodySmall(
                         context,
-                        darkColor: MyntColors.textWhite,
+                        darkColor: MyntColors.textPrimaryDark,
                         lightColor: MyntColors.textBlack,
                       ),
                     ),
@@ -768,7 +772,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                           watchedProvider.selectedSymbol,
                           style: MyntWebTextStyles.body(
                             context,
-                            darkColor: MyntColors.textWhite,
+                            darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                             fontWeight: MyntFonts.semiBold,
                           ),
@@ -808,7 +812,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                               dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                               style: MyntWebTextStyles.bodySmall(
                                 context,
-                                darkColor: MyntColors.textWhite,
+                                darkColor: MyntColors.textPrimaryDark,
                                 lightColor: MyntColors.textBlack,
                               ),
                               icon: Icon(
@@ -849,7 +853,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                               dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                               style: MyntWebTextStyles.bodySmall(
                                 context,
-                                darkColor: MyntColors.textWhite,
+                                darkColor: MyntColors.textPrimaryDark,
                                 lightColor: MyntColors.textBlack,
                               ),
                               icon: Icon(
@@ -1042,7 +1046,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                           _calculateTotalOI(watchedProvider, 'CE'),
                           style: MyntWebTextStyles.bodySmall(
                             context,
-                            darkColor: MyntColors.textWhite,
+                            darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                             fontWeight: MyntFonts.medium,
                           ),
@@ -1059,7 +1063,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                           _calculateTotalOI(watchedProvider, 'PE'),
                           style: MyntWebTextStyles.bodySmall(
                             context,
-                            darkColor: MyntColors.textWhite,
+                            darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                             fontWeight: MyntFonts.medium,
                           ),
@@ -1128,7 +1132,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                       'Save Strategy',
                       style: MyntWebTextStyles.body(
                         context,
-                        darkColor: Colors.white,
+                        darkColor: MyntColors.textPrimaryDark,
                         lightColor: Colors.black,
                       ).copyWith(fontSize: 16, fontWeight: FontWeight.w600), // Fixed fontSize lint
                     ),
@@ -1175,7 +1179,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                         ),
                         style: MyntWebTextStyles.bodySmall(
                           context,
-                          darkColor: Colors.white,
+                          darkColor: MyntColors.textPrimaryDark,
                           lightColor: Colors.black,
                         ),
                       ),
@@ -1420,7 +1424,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 textAlign: TextAlign.center,
                 style: MyntWebTextStyles.body(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                   fontWeight: isATM ? MyntFonts.bold : MyntFonts.medium,
                 ),
@@ -1491,7 +1495,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               option.tsym ?? 'Select Action',
               style: MyntWebTextStyles.bodySmall(
                 context,
-                darkColor: MyntColors.textWhite,
+                darkColor: MyntColors.textPrimaryDark,
                 lightColor: MyntColors.textBlack,
                 fontWeight: MyntFonts.semiBold,
               ),
@@ -1578,7 +1582,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 'Create your Strategy',
                 style: MyntWebTextStyles.body(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                 ),
               ),
@@ -1603,7 +1607,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
         DataColumn(
           label: Checkbox(
             value: provider.isAllSelected,
-            activeColor: MyntColors.primary,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
             onChanged: (value) => provider.toggleAllCheckboxes(value ?? false, context),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
@@ -1745,7 +1751,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
         DataCell(
           Checkbox(
             value: item.checkbox,
-            activeColor: MyntColors.primary,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
             onChanged: (_) => provider.toggleCheckbox(index, context),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
@@ -1758,15 +1766,15 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: item.buySell == 'BUY'
-                    ? MyntColors.primary.withOpacity(0.15)
-                    : MyntColors.loss.withOpacity(0.15),
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withOpacity(0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 item.buySell == 'BUY' ? 'B' : 'S',
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  color: item.buySell == 'BUY' ? MyntColors.primary : MyntColors.loss,
+                  color: item.buySell == 'BUY' ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                   fontWeight: MyntFonts.bold,
                 ).copyWith(fontSize: 12),
               ),
@@ -1778,6 +1786,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           PopupMenuButton<String>(
             tooltip: '',
             offset: const Offset(0, 30),
+            splashRadius: isDark ? 0 : null,
+            color: isDark ? MyntColors.cardDark : null,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -1794,7 +1804,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     _formatExpiry(item.expdate),
                     style: MyntWebTextStyles.bodySmall(
                       context,
-                      darkColor: MyntColors.textWhite,
+                      darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textBlack,
                     ).copyWith(fontSize: 12),
                   ),
@@ -1825,6 +1835,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             tooltip: '',
             offset: const Offset(0, 30),
             constraints: const BoxConstraints(maxHeight: 300),
+            splashRadius: isDark ? 0 : null,
+            color: isDark ? MyntColors.cardDark : null,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -1841,7 +1853,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     item.strprc,
                     style: MyntWebTextStyles.bodySmall(
                       context,
-                      darkColor: MyntColors.textWhite,
+                      darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textBlack,
                     ).copyWith(fontSize: 12),
                   ),
@@ -1874,15 +1886,15 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: item.optt == 'CE'
-                    ? MyntColors.primary.withOpacity(0.15)
-                    : MyntColors.loss.withOpacity(0.15),
+                    ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withOpacity(0.15)
+                    : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 item.optt,
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  color: item.optt == 'CE' ? MyntColors.primary : MyntColors.loss,
+                  color: item.optt == 'CE' ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss),
                   fontWeight: MyntFonts.bold,
                 ).copyWith(fontSize: 12),
               ),
@@ -1906,7 +1918,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   textAlign: TextAlign.center,
                   style: MyntWebTextStyles.bodySmall(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                     fontWeight: MyntFonts.medium,
                   ).copyWith(fontSize: 12),
@@ -1946,7 +1958,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             item.ltp.toStringAsFixed(2),
             style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
             ).copyWith(fontSize: 12),
           ),
@@ -1988,7 +2000,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 'Lot Multiplier',
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                   fontWeight: MyntFonts.medium,
                 ),
@@ -2058,7 +2070,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   'Save',
                   style: MyntWebTextStyles.bodySmall(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                   ),
                 ),
@@ -2135,7 +2147,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isActive
-                        ? MyntColors.primary
+                        ? (isDark ? MyntColors.secondary : MyntColors.primary)
                         : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
                   ),
                 ),
@@ -2171,7 +2183,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                         context,
                         color: isActive
                             ? Colors.white
-                            : (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+                            : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                         fontWeight: MyntFonts.medium,
                       ),
                     ),
@@ -2231,13 +2243,17 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             Row(
               children: [
                 _buildMetricItem(context, 'MAX PROFIT', provider.metrics.maxProfit, MyntColors.profit, isDark),
-                _buildMetricItem(context, 'MAX LOSS', provider.metrics.maxLoss, MyntColors.loss, isDark),
+                _buildMetricItem(context, 'MAX LOSS', provider.metrics.maxLoss, isDark ? MyntColors.errorDark : MyntColors.loss, isDark),
                 _buildMetricItem(
                   context,
                   'NET PREMIUM',
                   // Show absolute value - color indicates if it's credit (green) or debit (red)
                   provider.netPremium.abs().toStringAsFixed(2),
-                  provider.netPremium >= 0 ? MyntColors.profit : MyntColors.loss,
+                  provider.netPremium > 0
+                      ? (isDark ? MyntColors.profitDark : MyntColors.profit)
+                      : provider.netPremium < 0
+                          ? (isDark ? MyntColors.errorDark : MyntColors.loss)
+                          : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                   isDark,
                 ),
                 _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
@@ -2295,7 +2311,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
-              color: valueColor ?? (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+              color: valueColor ?? (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
               fontWeight: MyntFonts.medium,
             ).copyWith(fontSize: 14),
           ),
@@ -2321,7 +2337,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     ).copyWith(fontSize: 11);
     final valueStyle = MyntWebTextStyles.bodySmall(
       context,
-      darkColor: MyntColors.textWhite,
+      darkColor: MyntColors.textPrimaryDark,
       lightColor: MyntColors.textBlack,
       fontWeight: MyntFonts.semiBold,
     ).copyWith(fontSize: 13);
@@ -2747,7 +2763,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     PlotBand(
                       start: 0,
                       end: 0,
-                      borderColor: isDark ? MyntColors.textWhite : MyntColors.textBlack,
+                      borderColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
                       borderWidth: 1,
                     ),
                   ],
@@ -2833,7 +2849,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                         width: 10,
                         shape: DataMarkerType.circle,
                         borderWidth: 2,
-                        borderColor: isDark ? MyntColors.textWhite : MyntColors.textBlack,
+                        borderColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
                       ),
                       animationDuration: 0,
                       name: 'Target Marker',
@@ -3150,10 +3166,14 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       );
     }
 
-    return SingleChildScrollView(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+      return SingleChildScrollView(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: DataTable(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: DataTable(
           columnSpacing: 16,
           headingRowHeight: 40,
           dataRowMinHeight: 40,
@@ -3242,15 +3262,15 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: item.buySell == 'BUY'
-                              ? MyntColors.primary.withOpacity(0.15)
-                              : MyntColors.loss.withOpacity(0.15),
+                              ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withOpacity(0.15)
+                              : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withOpacity(0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           item.buySell == 'BUY' ? 'B' : 'S',
                           style: MyntWebTextStyles.caption(
                             context,
-                            color: item.buySell == 'BUY' ? MyntColors.primary : MyntColors.loss,
+                            color: item.buySell == 'BUY' ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                             fontWeight: MyntFonts.bold,
                           ),
                         ),
@@ -3261,7 +3281,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                           '${item.ordlot} x ${item.tsym}',
                           style: MyntWebTextStyles.bodySmall(
                             context,
-                            darkColor: MyntColors.textWhite,
+                            darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -3272,23 +3292,23 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ),
                 DataCell(Text(
                   item.iv?.toStringAsFixed(2) ?? '--',
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   item.delta?.toStringAsFixed(4) ?? '--',
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   item.theta?.toStringAsFixed(4) ?? '--',
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   item.gamma?.toStringAsFixed(4) ?? '--',
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   item.vega?.toStringAsFixed(4) ?? '--',
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
               ],
             );
@@ -3301,7 +3321,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   'Total',
                   style: MyntWebTextStyles.bodySmall(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                     fontWeight: MyntFonts.bold,
                   ),
@@ -3310,25 +3330,28 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               const DataCell(Text('--')),
               DataCell(Text(
                 provider.greeksTotal('delta').toStringAsFixed(4),
-                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
               )),
               DataCell(Text(
                 provider.greeksTotal('theta').toStringAsFixed(4),
-                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
               )),
               DataCell(Text(
                 provider.greeksTotal('gamma').toStringAsFixed(4),
-                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
               )),
               DataCell(Text(
                 provider.greeksTotal('vega').toStringAsFixed(4),
-                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
               )),
             ],
           ),
         ],
       ),
       ),
+      ),
+    );
+      },
     );
   }
 
@@ -3360,7 +3383,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
 
     final valueStyle = MyntWebTextStyles.bodySmall(
       context,
-      darkColor: MyntColors.textWhite,
+      darkColor: MyntColors.textPrimaryDark,
       lightColor: MyntColors.textBlack,
       fontWeight: MyntFonts.semiBold,
     ).copyWith(fontSize: 13);
@@ -3727,13 +3750,17 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             children: [
               _buildMetricItemNarrow(context, 'MAX PROFIT', provider.metrics.maxProfit, MyntColors.profit, isDark),
               const SizedBox(width: 8),
-              _buildMetricItemNarrow(context, 'MAX LOSS', provider.metrics.maxLoss, MyntColors.loss, isDark),
+              _buildMetricItemNarrow(context, 'MAX LOSS', provider.metrics.maxLoss, isDark ? MyntColors.errorDark : MyntColors.loss, isDark),
               const SizedBox(width: 8),
               _buildMetricItemNarrow(
                 context,
                 'NET PREMIUM',
                 provider.netPremium.abs().toStringAsFixed(2),
-                provider.netPremium >= 0 ? MyntColors.profit : MyntColors.loss,
+                provider.netPremium > 0
+                    ? (isDark ? MyntColors.profitDark : MyntColors.profit)
+                    : provider.netPremium < 0
+                        ? (isDark ? MyntColors.errorDark : MyntColors.loss)
+                        : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                 isDark,
               ),
               const SizedBox(width: 8),
@@ -3805,7 +3832,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
-              color: valueColor ?? (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+              color: valueColor ?? (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
               fontWeight: MyntFonts.semiBold,
             ).copyWith(fontSize: 14),
             overflow: TextOverflow.ellipsis,
@@ -3824,7 +3851,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         Expanded(
           flex: 2,
           child: Container(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
             child: Column(
               children: [
                 // Search bar (hidden in analyze mode) or analyze header
@@ -3850,15 +3877,15 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           Expanded(
             flex: 1,
             child: Container(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
               child: Column(
                 children: [
                   // Strategy tabs
                   TabBar(
                     controller: _strategyTabController,
-                    labelColor: MyntColors.primary,
+                    labelColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     unselectedLabelColor: isDark ? Colors.grey : Colors.grey[600],
-                    indicatorColor: MyntColors.primary,
+                    indicatorColor:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     labelStyle: MyntWebTextStyles.bodySmall(
                       context,
                       fontWeight: MyntFonts.medium,
@@ -3907,14 +3934,14 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: MyntColors.primary.withValues(alpha: 0.1),
+                color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 'Spot: ${provider.spotPrice.toStringAsFixed(2)}',
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  color: MyntColors.primary,
+                  color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                   fontWeight: MyntFonts.medium,
                 ),
               ),
@@ -3958,7 +3985,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     : null,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  minimumSize: const Size(70, 36),
+                  minimumSize: const Size(70, 45),
                   side: BorderSide(
                     color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
                   ),
@@ -3970,7 +3997,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   'Add',
                   style: MyntWebTextStyles.bodySmall(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                   ),
                 ),
@@ -3983,7 +4010,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               constraints: const BoxConstraints(maxHeight: 200),
               margin: const EdgeInsets.only(top: 4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
@@ -4008,7 +4035,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                       result['displayName'] ?? result['tsym'] ?? '',
                       style: MyntWebTextStyles.bodySmall(
                         context,
-                        darkColor: MyntColors.textWhite,
+                        darkColor: MyntColors.textPrimaryDark,
                         lightColor: MyntColors.textBlack,
                       ),
                     ),
@@ -4050,7 +4077,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: isDark ? MyntColors.searchBgDark : Colors.white,
+        backgroundColor: isDark ? MyntColors.dialogDark : MyntColors.dialog,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: SizedBox(
           width: 340,
@@ -4068,7 +4095,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                       'Save Strategy',
                       style: MyntWebTextStyles.body(
                         context,
-                        darkColor: Colors.white,
+                        darkColor: MyntColors.textPrimaryDark,
                         lightColor: Colors.black,
                       ).copyWith(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
@@ -4093,10 +4120,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF2F4F7),
+                        color: isDark ? MyntColors.transparent : const Color(0xFFF2F4F7),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
-                          color: const Color(0xFF2962FF),
+                          color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                           width: 1,
                         ),
                       ),
@@ -4115,7 +4142,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                         ),
                         style: MyntWebTextStyles.bodySmall(
                           context,
-                          darkColor: Colors.white,
+                          darkColor: MyntColors.textPrimaryDark,
                           lightColor: Colors.black,
                         ),
                       ),
@@ -4134,7 +4161,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0037B7),
+                          backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
@@ -4176,7 +4203,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             return Align(
               alignment: Alignment.centerLeft,
               child: Material(
-                color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+                color: isDark ? MyntColors.overlayBgDark: Colors.white,
                 elevation: 16,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
@@ -4198,7 +4225,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               watchedProvider.selectedSymbol,
                               style: MyntWebTextStyles.body(
                                 context,
-                                darkColor: MyntColors.textWhite,
+                                darkColor: MyntColors.textPrimaryDark,
                                 lightColor: MyntColors.textBlack,
                                 fontWeight: MyntFonts.semiBold,
                               ),
@@ -4209,14 +4236,14 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: MyntColors.primary.withValues(alpha: 0.1),
+                                  color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   watchedProvider.spotPrice.toStringAsFixed(2),
                                   style: MyntWebTextStyles.bodySmall(
                                     context,
-                                    color: MyntColors.primary,
+                                    color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                                     fontWeight: MyntFonts.semiBold,
                                   ),
                                 ),
@@ -4227,17 +4254,17 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               height: 32,
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+                                color: isDark ? MyntColors.cardHoverDark : MyntColors.cardHover,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: watchedProvider.selectedExpiry.isEmpty || !watchedProvider.expiryDates.contains(watchedProvider.selectedExpiry) ? null : watchedProvider.selectedExpiry,
                                   hint: Text(watchedProvider.selectedExpiry.isNotEmpty ? watchedProvider.selectedExpiry : 'Expiry'),
-                                  dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                                  dropdownColor: isDark ? MyntColors.cardHoverDark : MyntColors.cardHover,
                                   isDense: true,
                                   icon: Icon(Icons.keyboard_arrow_down, size: 16, color: isDark ? Colors.grey : Colors.black54),
-                                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                                   items: watchedProvider.expiryDates.map((expiry) {
                                     final daysText = watchedProvider.selectedExpiry == expiry ? ' ${watchedProvider.daysToExpiry}(D)' : '';
                                     return DropdownMenuItem(value: expiry, child: Text('$expiry$daysText'));
@@ -4254,16 +4281,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               height: 32,
                               padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+                                color: isDark ? MyntColors.cardHoverDark : MyntColors.cardHover,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<int>(
                                   value: watchedProvider.selectedStrikeCount,
-                                  dropdownColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                                   dropdownColor: isDark ? MyntColors.cardHoverDark : MyntColors.cardHover,
                                   isDense: true,
                                   icon: Icon(Icons.keyboard_arrow_down, size: 16, color: isDark ? Colors.grey : Colors.black54),
-                                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                                   items: [10, 15, 20, 25].map((count) => DropdownMenuItem(value: count, child: Text('$count Strike'))).toList(),
                                   onChanged: watchedProvider.isLoading ? null : (value) {
                                     if (value != null) {
@@ -4299,11 +4326,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('<', style: TextStyle(color: MyntColors.profit, fontWeight: FontWeight.bold)),
+                                    Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 4),
-                                    Text('>', style: TextStyle(color: MyntColors.profit, fontWeight: FontWeight.bold)),
+                                    Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 8),
-                                    Text('Call', style: MyntWebTextStyles.bodySmall(context, color: MyntColors.profit, fontWeight: MyntFonts.semiBold)),
+                                    Text('Call', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: MyntFonts.semiBold)),
                                   ],
                                 ),
                               ),
@@ -4314,11 +4341,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('<', style: TextStyle(color: MyntColors.loss, fontWeight: FontWeight.bold)),
+                                    Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 4),
-                                    Text('>', style: TextStyle(color: MyntColors.loss, fontWeight: FontWeight.bold)),
+                                    Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
                                     const SizedBox(width: 8),
-                                    Text('Put', style: MyntWebTextStyles.bodySmall(context, color: MyntColors.loss, fontWeight: MyntFonts.semiBold)),
+                                    Text('Put', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: MyntFonts.semiBold)),
                                   ],
                                 ),
                               ),
@@ -4334,11 +4361,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                           ),
                           child: Row(
                             children: [
-                              Expanded(child: Text('OI(ch)', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color: Colors.grey))),
-                              Expanded(child: Text('LTP', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color: Colors.grey))),
-                              SizedBox(width: 80, child: Text('STRIKES', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color: Colors.grey, fontWeight: MyntFonts.bold))),
-                              Expanded(child: Text('LTP', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color: Colors.grey))),
-                              Expanded(child: Text('OI(ch)', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color: Colors.grey))),
+                              Expanded(child: Text('OI(ch)', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color:resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textBlack)))),
+                              Expanded(child: Text('LTP', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color:resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textBlack)))),
+                              SizedBox(width: 80, child: Text('STRIKES', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color:resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textBlack), fontWeight: MyntFonts.bold))),
+                              Expanded(child: Text('LTP', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color:resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textBlack)))),
+                              Expanded(child: Text('OI(ch)', textAlign: TextAlign.center, style: MyntWebTextStyles.caption(context, color:resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textBlack)))),
                             ],
                           ),
                         ),
@@ -4359,7 +4386,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                             children: [
                               Text(
                                 _calculateTotalOI(watchedProvider, 'CE'),
-                                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium),
+                                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium),
                               ),
                               Text(
                                 'PCR: ${_calculatePCR(watchedProvider)}',
@@ -4367,7 +4394,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               ),
                               Text(
                                 _calculateTotalOI(watchedProvider, 'PE'),
-                                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium),
+                                style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium),
                               ),
                             ],
                           ),
@@ -4588,7 +4615,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   row.strikePrice,
                   style: MyntWebTextStyles.body(
                     context,
-                    darkColor: MyntColors.textWhite,
+                    darkColor: MyntColors.textPrimaryDark,
                     lightColor: MyntColors.textBlack,
                     fontWeight: row.isATM ? MyntFonts.bold : MyntFonts.medium,
                   ),
@@ -4634,42 +4661,42 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     }
 
     final changeColor = perChange.startsWith("-") 
-        ? MyntColors.loss 
-        : (perChange == "0.00" ? Colors.grey : MyntColors.profit);
+        ?resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss) 
+        : (perChange == "0.00" ? Colors.grey : resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit));
         
     final oiChangeColor = oiPerChng.startsWith("-") 
-        ? MyntColors.loss 
-        : (oiPerChng == "0.00" ? Colors.grey : MyntColors.profit);
+        ?resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss) 
+        : (oiPerChng == "0.00" ? Colors.grey : resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit));
 
     // Hover mechanism with Square Buttons
     return HoverActionsWrapper(
       actionsAlignment: isCall ? Alignment.centerRight : Alignment.centerLeft,
-      actionsPadding: const EdgeInsets.symmetric(horizontal: 4),
+      actionsPadding: const EdgeInsets.symmetric(horizontal: 2),
       actionsBuilder: (ctx) => [
         // Buy Button
         InkWell(
           onTap: () => provider.addToBasket(option, 'BUY', context),
           child: Container(
-            width: 28,
-            height: 28,
+            width: 25,
+            height: 25,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: MyntColors.primary,
+              color: isDark ? MyntColors.secondary : MyntColors.primary,
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Text('B', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
           ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 2),
         // Sell Button
         InkWell(
           onTap: () => provider.addToBasket(option, 'SELL', context),
           child: Container(
-            width: 28,
-            height: 28,
+            width: 25,
+            height: 25,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: MyntColors.loss,
+              color: isDark ? MyntColors.lossDark : MyntColors.loss,
               borderRadius: BorderRadius.circular(4),
             ),
             child: const Text('S', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
@@ -4708,7 +4735,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           mainValue,
           style: MyntWebTextStyles.bodySmall(
             context,
-            darkColor: MyntColors.textWhite,
+            darkColor: MyntColors.textPrimaryDark,
             lightColor: MyntColors.textBlack,
             fontWeight: MyntFonts.medium,
           ),
@@ -4763,7 +4790,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 'Create your Strategy',
                 style: MyntWebTextStyles.body(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                 ),
               ),
@@ -4790,83 +4817,85 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             value: provider.isAllSelected,
             onChanged: (value) => provider.toggleAllCheckboxes(value ?? false, context),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            activeColor: MyntColors.primary,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
           ),
         ),
         DataColumn(
           label: Text(
             'B/S',
-            style: MyntWebTextStyles.caption(
+            style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.regular,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'Expiry',
-            style: MyntWebTextStyles.caption(
+            style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'Strike',
-            style: MyntWebTextStyles.caption(
+           style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'CE/PE',
-            style: MyntWebTextStyles.caption(
+            style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'Lots',
-            style: MyntWebTextStyles.caption(
+           style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'Entry Price',
-            style: MyntWebTextStyles.caption(
+           style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
         DataColumn(
           label: Text(
             'LTP',
-            style: MyntWebTextStyles.caption(
+           style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.bold,
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ),
@@ -4932,7 +4961,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             value: item.checkbox,
             onChanged: (_) => provider.toggleCheckbox(index, context),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            activeColor: MyntColors.primary,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
           ),
         ),
         // Buy/Sell toggle
@@ -4943,15 +4974,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: item.buySell == 'BUY'
-                    ? MyntColors.primary.withOpacity(0.15)
-                    : MyntColors.loss.withOpacity(0.15),
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withOpacity(0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 item.buySell == 'BUY' ? 'B' : 'S',
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  color: item.buySell == 'BUY' ? MyntColors.primary : MyntColors.loss,
+                  color: item.buySell == 'BUY' ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) 
+                  : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                   fontWeight: MyntFonts.bold,
                 ).copyWith(fontSize: 12),
               ),
@@ -5029,15 +5061,15 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: item.optt == 'CE'
-                    ? MyntColors.primary.withOpacity(0.15)
-                    : MyntColors.loss.withOpacity(0.15),
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withOpacity(0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 item.optt,
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  color: item.optt == 'CE' ? MyntColors.primary : MyntColors.loss,
+                  color: item.optt == 'CE' ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                   fontWeight: MyntFonts.bold,
                 ).copyWith(fontSize: 12),
               ),
@@ -5095,7 +5127,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             item.ltp.toStringAsFixed(2),
             style: MyntWebTextStyles.bodySmall(
               context,
-              darkColor: MyntColors.textWhite,
+              darkColor: MyntColors.textPrimaryDark,
               lightColor: MyntColors.textBlack,
             ).copyWith(fontSize: 12),
           ),
@@ -5103,7 +5135,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         // Delete Action
         DataCell(
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: MyntColors.loss, size: 20),
+            icon:  Icon(Icons.delete_outline, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), size: 20),
             onPressed: () => provider.removeFromBasket(index, context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -5142,7 +5174,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               'Clear',
               style: MyntWebTextStyles.bodySmall(
                 context,
-                darkColor: MyntColors.textWhite,
+                darkColor: MyntColors.textPrimaryDark,
                 lightColor: MyntColors.textBlack,
               ),
             ),
@@ -5166,7 +5198,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 'Save',
                 style: MyntWebTextStyles.bodySmall(
                   context,
-                  darkColor: MyntColors.textWhite,
+                  darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textBlack,
                 ),
               ),
@@ -5176,7 +5208,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ElevatedButton(
             onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: MyntColors.primary,
+              backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               minimumSize: const Size(100, 36),
               shape: RoundedRectangleBorder(
@@ -5236,12 +5268,12 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? const Color.fromARGB(255, 255, 255, 255)
-                      : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
+                      ? (isDark ? MyntColors.card : MyntColors.cardHover)
+                      : (isDark ? MyntColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isActive
-                        ? MyntColors.primary
+                        ? (isDark ? MyntColors.primaryDark : MyntColors.primary)
                         : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
                   ),
                 ),
@@ -5274,7 +5306,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                         context,
                         color: isActive
                             ? const Color.fromARGB(255, 0, 0, 0)
-                            : (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+                            : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                         fontWeight: MyntFonts.medium,
                       ),
                     ),
@@ -5291,10 +5323,12 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   Widget _buildRightPanel(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+        color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
+        borderRadius: BorderRadius.circular(0),
+        border: Border(
+          left: BorderSide(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+          ),
         ),
       ),
       child: Column(
@@ -5325,14 +5359,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         children: [
           Row(
             children: [
-              _buildMetricItem(context, 'MAX PROFIT', provider.metrics.maxProfit, MyntColors.profit, isDark),
-              _buildMetricItem(context, 'MAX LOSS', provider.metrics.maxLoss, MyntColors.loss, isDark),
+              _buildMetricItem(context, 'MAX PROFIT', provider.metrics.maxProfit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
+              _buildMetricItem(context, 'MAX LOSS', provider.metrics.maxLoss, isDark ? MyntColors.lossDark : MyntColors.loss, isDark),
               _buildMetricItem(
                 context,
                 'NET PREMIUM',
                 // Show absolute value - color indicates if it's credit (green) or debit (red)
                 provider.netPremium.abs().toStringAsFixed(2),
-                provider.netPremium >= 0 ? MyntColors.profit : MyntColors.loss,
+                provider.netPremium > 0
+                    ? (isDark ? MyntColors.profitDark : MyntColors.profit)
+                    : provider.netPremium < 0
+                        ? (isDark ? MyntColors.lossDark : MyntColors.loss)
+                        : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                 isDark,
               ),
               _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
@@ -5389,7 +5427,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
-              color: valueColor ?? (isDark ? MyntColors.textWhite : MyntColors.textBlack),
+              color: valueColor ?? (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
               fontWeight: MyntFonts.medium,
             ).copyWith(fontSize: 14),
           ),
@@ -5410,12 +5448,12 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     ).copyWith(fontSize: 11);
     final resetStyle = MyntWebTextStyles.caption(
       context,
-      color: MyntColors.primary,
+      color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
       fontWeight: MyntFonts.bold,
     ).copyWith(fontSize: 11);
     final valueStyle = MyntWebTextStyles.bodySmall(
       context,
-      darkColor: MyntColors.textWhite,
+      darkColor: MyntColors.textPrimaryDark,
       lightColor: MyntColors.textBlack,
       fontWeight: MyntFonts.semiBold,
     ).copyWith(fontSize: 13);
@@ -5495,7 +5533,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isActive ? MyntColors.primary : Colors.transparent,
+              color: isActive ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : Colors.transparent,
               width: 2,
             ),
           ),
@@ -5504,7 +5542,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           label,
           style: MyntWebTextStyles.bodySmall(
             context,
-            color: isActive ? MyntColors.primary : Colors.grey,
+            color: isActive ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : Colors.grey,
             fontWeight: MyntFonts.medium,
           ),
         ),
@@ -5841,7 +5879,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     PlotBand(
                       start: 0,
                       end: 0,
-                      borderColor: isDark ? Colors.white : Colors.black,
+                      borderColor: isDark ? MyntColors.textPrimaryDark : Colors.black,
                       borderWidth: 1,
                     ),
                   ],
@@ -5927,7 +5965,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                         width: 10,
                         shape: DataMarkerType.circle,
                         borderWidth: 2,
-                        borderColor: isDark ? MyntColors.textWhite : MyntColors.textBlack,
+                        borderColor: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
                       ),
                       animationDuration: 0,
                       name: 'Target Marker',
@@ -6244,11 +6282,15 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       );
     }
 
-    return SingleChildScrollView(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+      return SingleChildScrollView(
       padding: const EdgeInsets.all(12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Container(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth - 24),
+          child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
             borderRadius: BorderRadius.circular(4),
@@ -6297,7 +6339,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                           item.buySell == 'BUY' ? 'B' : 'S',
                           style: MyntWebTextStyles.bodySmall(
                             context,
-                            color: item.buySell == 'BUY' ? MyntColors.primary : MyntColors.loss,
+                            color: item.buySell == 'BUY' ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                             fontWeight: MyntFonts.bold,
                           ),
                         ),
@@ -6306,7 +6348,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                           '${item.ordlot} x ${item.tsym}',
                           style: MyntWebTextStyles.bodySmall(
                             context,
-                            darkColor: MyntColors.textWhite,
+                            darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -6316,23 +6358,23 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   ),
                   DataCell(Text(
                     item.iv?.toStringAsFixed(2) ?? '--',
-                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                   )),
                   DataCell(Text(
                     item.delta?.toStringAsFixed(4) ?? '--',
-                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                   )),
                   DataCell(Text(
                     item.theta?.toStringAsFixed(4) ?? '--',
-                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                   )),
                   DataCell(Text(
                     item.gamma?.toStringAsFixed(4) ?? '--',
-                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                   )),
                   DataCell(Text(
                     item.vega?.toStringAsFixed(4) ?? '--',
-                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                    style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                   )),
                 ],
               );
@@ -6345,7 +6387,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     'Total',
                     style: MyntWebTextStyles.bodySmall(
                       context,
-                      darkColor: MyntColors.textWhite,
+                      darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textBlack,
                       fontWeight: MyntFonts.bold,
                     ),
@@ -6354,19 +6396,19 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 const DataCell(Text('')),
                 DataCell(Text(
                   provider.greeksTotal('delta').toStringAsFixed(4),
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   provider.greeksTotal('theta').toStringAsFixed(4),
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   provider.greeksTotal('gamma').toStringAsFixed(4),
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
                 DataCell(Text(
                   provider.greeksTotal('vega').toStringAsFixed(4),
-                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textWhite, lightColor: MyntColors.textBlack),
+                  style: MyntWebTextStyles.bodySmall(context, darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack),
                 )),
               ],
             ),
@@ -6374,6 +6416,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         ),
       ),
       ),
+      ),
+    );
+      },
     );
   }
 
@@ -6399,13 +6444,13 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
     final resetStyle = MyntWebTextStyles.caption(
       context,
-      color: MyntColors.primary,
+      color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
       fontWeight: MyntFonts.bold,
     ).copyWith(fontSize: 11);
 
     final valueStyle = MyntWebTextStyles.bodySmall(
       context,
-      darkColor: MyntColors.textWhite,
+      darkColor: MyntColors.textPrimaryDark,
       lightColor: MyntColors.textBlack,
       fontWeight: MyntFonts.semiBold,
     ).copyWith(fontSize: 13);
@@ -6494,10 +6539,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           SliderTheme(
             data: SliderThemeData(
               trackHeight: 3,
-              activeTrackColor: MyntColors.primary,
+              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               inactiveTrackColor: Colors.grey[300],
-              thumbColor: MyntColors.primary,
-              overlayColor: MyntColors.primary.withValues(alpha: 0.1),
+              thumbColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
               thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
               overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
             ),

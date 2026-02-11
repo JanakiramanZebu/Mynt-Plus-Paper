@@ -527,7 +527,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                                 child: Text(
                                   'Regenerate',
                                   style: MyntWebTextStyles.para(context,
-                                      color: MyntColors.primary,
+                                      color: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary,
                                       fontWeight: MyntFonts.semiBold),
                                 ),
                               ),
@@ -543,7 +543,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
                             light: MyntColors.listItemBg),
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
-                          color: MyntColors.primary,
+                          color: isDarkMode(context) ? MyntColors.primaryDark : MyntColors.primary,
                           width: 1,
                         ),
                       ),
@@ -659,7 +659,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
               child: ElevatedButton(
                 onPressed: apiData == null ? null : _submitForm,
                 style: ElevatedButton.styleFrom(
-                backgroundColor: MyntColors.primary,
+                backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                 foregroundColor: MyntColors.backgroundColor,
                 // padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(

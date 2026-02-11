@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/order_provider.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/web_colors.dart';
-import '../../../../res/global_font_web.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
 
 class CreateBasket extends ConsumerStatefulWidget {
@@ -139,9 +139,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark,
+                    light: MyntColors.divider),
               ),
             ),
           ),
@@ -150,11 +150,11 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
             children: [
               Text(
                 widget.isEdit ? 'Edit Basket' : 'New Basket',
-                style: WebTextStyles.dialogTitle(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
+                style: MyntWebTextStyles.title(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -175,9 +175,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                     child: Icon(
                       Icons.close,
                       size: 20,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.iconSecondary
-                          : WebColors.iconSecondary,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.iconDark,
+                          light: MyntColors.icon),
                     ),
                   ),
                 ),
@@ -196,11 +196,11 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                   // Basket Name Label
                   Text(
                     "Basket Name",
-                    style: WebTextStyles.formLabel(
-                      isDarkTheme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? WebDarkColors.textPrimary
-                          : WebColors.textPrimary,
+                    style: MyntWebTextStyles.bodyMedium(
+                      context,
+                      fontWeight: MyntFonts.medium,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -208,9 +208,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                   SizedBox(
                     height: 40,
                     child: CustomTextFormField(
-                      fillColor: theme.isDarkMode
-                          ? WebDarkColors.backgroundTertiary
-                          : WebColors.backgroundTertiary,
+                      fillColor: resolveThemeColor(context,
+                          dark: MyntColors.inputBgDark,
+                          light: MyntColors.inputBg),
                       onChanged: (value) {
                         setState(() {
                           if (textCtrl.text.trim().isNotEmpty) {
@@ -221,18 +221,17 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                         });
                       },
                       hintText: "Enter basket name",
-                      hintStyle: WebTextStyles.helperText(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textSecondary
-                            : WebColors.textSecondary,
+                      hintStyle: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
                       ),
                       keyboardType: TextInputType.text,
-                      style: WebTextStyles.formInput(
-                        isDarkTheme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? WebDarkColors.textPrimary
-                            : WebColors.textPrimary,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
                       ),
                       textCtrl: textCtrl,
                       textAlign: TextAlign.start,
@@ -249,9 +248,11 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                     const SizedBox(height: 8),
                     Text(
                       errorText!,
-                      style: WebTextStyles.helperText(
-                        isDarkTheme: theme.isDarkMode,
-                        color: WebDarkColors.error,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.lossDark,
+                            light: MyntColors.loss),
                       ),
                     ),
                   ],
@@ -262,9 +263,9 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                     child: Container(
                       height: 40,
                       decoration: BoxDecoration(
-                        color: theme.isDarkMode
-                            ? WebDarkColors.primary
-                            : WebColors.primary,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.secondary,
+                            light: MyntColors.primary),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Material(
@@ -291,9 +292,12 @@ class _CreateBasketState extends ConsumerState<CreateBasket> {
                                     widget.isEdit
                                         ? 'Update Basket'
                                         : 'Create Basket',
-                                    style: WebTextStyles.buttonMd(
-                                      isDarkTheme: theme.isDarkMode,
-                                      color: Colors.white,
+                                    style: MyntWebTextStyles.bodyMedium(
+                                      context,
+                                      fontWeight: MyntFonts.semiBold,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textWhite,
+                                          light: MyntColors.textWhite),
                                     ),
                                   ),
                           ),

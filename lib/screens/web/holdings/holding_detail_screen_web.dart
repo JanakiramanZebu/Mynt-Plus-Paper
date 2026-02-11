@@ -368,7 +368,7 @@ class _HoldingDetailScreenWebState
               onPressed: _isProcessingSell ? () {} : _handleSell,
               isFullWidth: true,
               textColor: resolveThemeColor(context,
-                  dark: MyntColors.primaryDark, light: MyntColors.primary),
+                  dark: MyntColors.textWhite, light: MyntColors.primary),
             ),
           ),
         ),

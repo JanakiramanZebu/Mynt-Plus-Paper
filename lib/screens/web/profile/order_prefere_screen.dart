@@ -10,6 +10,7 @@ import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/shocase_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
@@ -202,7 +203,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           borderRadius: BorderRadius.circular(4),
                                           side: orderType == orderTypes[index]
                                               ? BorderSide(
-                                                  color: colors.primaryLight,
+                                                  color: theme.isDarkMode
+                                                      ? MyntColors.primaryDark
+                                                      : MyntColors.primary,
                                                   width: 1,
                                                 )
                                               : BorderSide.none,
@@ -264,7 +267,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           side: priceType ==
                                                   priceTypes[index]['type']
                                               ? BorderSide(
-                                                  color: colors.primaryLight,
+                                                  color: theme.isDarkMode
+                                                      ? MyntColors.primaryDark
+                                                      : MyntColors.primary,
                                                   width: 1,
                                                 )
                                               : BorderSide.none,
@@ -332,7 +337,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                                 BorderRadius.circular(4),
                                             side: isSelected
                                                 ? BorderSide(
-                                                    color: colors.primaryLight,
+                                                    color: theme.isDarkMode
+                                                        ? MyntColors.primaryDark
+                                                        : MyntColors.primary,
                                                     width: 1,
                                                   )
                                                 : BorderSide.none,
@@ -454,12 +461,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                               return const Color(0xff666666);
                             }
                             return theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight;
+                                ? MyntColors.primaryDark
+                                : MyntColors.primary;
                           }),
                           activeColor: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary,
                           value: OrdQtyPref.mktqty,
                           groupValue: QtyPrefer,
                           onChanged: (OrdQtyPref? value) {
@@ -487,12 +494,12 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                               return const Color(0xff666666);
                             }
                             return theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight;
+                                ? MyntColors.primaryDark
+                                : MyntColors.primary;
                           }),
                           activeColor: theme.isDarkMode
-                              ? colors.colorWhite
-                              : const Color(0xff666666),
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary,
                           value: OrdQtyPref.mktlot,
                           groupValue: QtyPrefer,
                           onChanged: (OrdQtyPref? value) {
@@ -607,7 +614,9 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                                           side: expriceType ==
                                                   expriceTypes[index]['type']
                                               ? BorderSide(
-                                                  color: colors.primaryLight,
+                                                  color: theme.isDarkMode
+                                                      ? MyntColors.primaryDark
+                                                      : MyntColors.primary,
                                                   width: 1,
                                                 )
                                               : BorderSide.none,
@@ -645,8 +654,8 @@ class _OrderPreference extends ConsumerState<OrderPreference> {
                             elevation: 0,
                             shadowColor: Colors.transparent,
                             backgroundColor: theme.isDarkMode
-                                ? colors.primaryDark
-                                : colors.primaryLight,
+                                ? MyntColors.primaryDark
+                                : MyntColors.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             )),

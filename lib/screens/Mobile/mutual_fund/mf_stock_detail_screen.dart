@@ -140,7 +140,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
       final isDark = theme.isDarkMode;
 
       return Scaffold(
-        backgroundColor: isDark ? colors.colorBlack : colors.colorWhite,
+        // backgroundColor: isDark ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: isDark ? MyntColors.backgroundColorDark :MyntColors.backgroundColor,
         body: Stack(
           children: [
             Column(
@@ -212,7 +213,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? colors.colorBlack : colors.colorWhite,
+        // color: isDark ? colors.colorBlack : colors.colorWhite,
+        color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
         border: Border(
           bottom: BorderSide(
             color: isDark ? colors.darkColorDivider : colors.colorDivider,
@@ -249,10 +251,10 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
               child: TabBar(
               controller: _tabController,
               isScrollable: true,
-              labelColor: isDark ? WebColors.primary : WebColors.primary,
+              labelColor: isDark ? MyntColors.primaryDark : MyntColors.primary,
               unselectedLabelColor: isDark
-                  ? WebColors.textSecondaryDark
-                  : WebColors.textSecondary,
+                  ? MyntColors.textSecondaryDark
+                  : MyntColors.textSecondary,
               labelStyle: MyntWebTextStyles.body(
                 context,
                 fontWeight: FontWeight.w600,
@@ -261,7 +263,7 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                 context,
                 fontWeight: FontWeight.w400,
               ),
-              indicatorColor: WebColors.primary,
+              indicatorColor: isDark ? MyntColors.primaryDark : MyntColors.primary,
               indicatorWeight: 2,
               indicatorSize: TabBarIndicatorSize.label,
               dividerColor: Colors.transparent,
@@ -287,8 +289,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     side: BorderSide(
                       color: (_isOneTimeLoading || _isSIPLoading)
-                          ? WebColors.primary.withValues(alpha: 0.5)
-                          : WebColors.primary,
+                          ? isDark ? MyntColors.primaryDark.withValues(alpha: 0.5) : MyntColors.primary.withValues(alpha: 0.5)
+                          : isDark ? MyntColors.primaryDark : MyntColors.primary,
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
@@ -310,8 +312,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                           style: MyntWebTextStyles.body(
                             context,
                             color: _isSIPLoading
-                                ? MyntColors.primary.withValues(alpha: 0.5)
-                                : MyntColors.primary,
+                                ? isDark ? MyntColors.primaryDark.withValues(alpha: 0.5) : MyntColors.primary.withValues(alpha: 0.5)
+                                : isDark ? MyntColors.primaryDark : MyntColors.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -329,8 +331,8 @@ class _MFStockDetailScreenState extends State<MFStockDetailScreen>
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     backgroundColor: (_isOneTimeLoading || _isSIPLoading)
-                        ? WebColors.primary.withValues(alpha: 0.5)
-                        : WebColors.primary,
+                        ? resolveThemeColor(context, dark: MyntColors.secondary.withValues(alpha: 0.5), light: MyntColors.primary.withValues(alpha: 0.5))
+                        : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),

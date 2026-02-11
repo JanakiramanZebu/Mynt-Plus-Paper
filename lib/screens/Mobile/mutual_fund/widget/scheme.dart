@@ -33,7 +33,8 @@ class MFSchemeInfo extends ConsumerWidget {
         schemeObjective.isNotEmpty ? schemeObjective : overview;
 
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      // color: isDarkMode ? Colors.black : Colors.white,
+      color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
@@ -89,12 +90,12 @@ class MFSchemeInfo extends ConsumerWidget {
                           trimExpandedText: ' Read less',
                           moreStyle: MyntWebTextStyles.para(
                             context,
-                            color: MyntColors.primary,
+                            color: isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                             fontWeight: FontWeight.w500,
                           ),
                           lessStyle: MyntWebTextStyles.para(
                             context,
-                            color: MyntColors.primary,
+                            color: isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

@@ -395,8 +395,9 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
                 padding: cellPadding,
                 color: isRowHovered
                     ? resolveThemeColor(context,
-                        dark: MyntColors.primary.withValues(alpha: 0.08),
-                        light: MyntColors.primary.withValues(alpha: 0.08))
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary,
+                      ).withValues(alpha: 0.08)
                     : null,
                 alignment: alignRight ? Alignment.topRight : null,
                 child: child,
@@ -977,7 +978,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
               boxShadow: [
                 BoxShadow(
                   color: resolveThemeColor(context,
-                      dark: Colors.grey, light: Colors.grey),
+                      dark: Colors.transparent, light: Colors.grey),
                   blurRadius: 2,
                   offset: const Offset(0, 1),
                 ),
@@ -987,7 +988,7 @@ class _SaveTaxesScreenState extends ConsumerState<SaveTaxesScreen>
               Icons.more_vert,
               size: 18,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
+                  dark: MyntColors.textBlack,
                   light: MyntColors.textPrimary),
             ),
           ),

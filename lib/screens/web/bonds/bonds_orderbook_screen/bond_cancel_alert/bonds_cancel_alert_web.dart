@@ -87,7 +87,9 @@ class BondCancelAlertWeb extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: () => _handleCancelOrder(context, ref, bondcancel, closeSidebar),
                   style: ElevatedButton.styleFrom(
-                     backgroundColor: MyntColors.tertiary,
+                     backgroundColor: isDark
+                         ? MyntColors.errorDark
+                         : MyntColors.tertiary,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),

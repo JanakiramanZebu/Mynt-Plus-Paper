@@ -847,7 +847,11 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                         const SizedBox(width: 6),
                         Text(
                           'Add Symbol',
-                          style: MyntWebTextStyles.body(context),
+                          style: MyntWebTextStyles.body(context,
+                            color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimary,
+                              light: MyntColors.textPrimary),
+                          ),
                         ),
                       ],
                     ),
@@ -1795,7 +1799,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                                 isFullWidth: true,
                                 backgroundColor: resolveThemeColor(
                                   context,
-                                  dark: MyntColors.tertiary,
+                                  dark: MyntColors.errorDark,
                                   light: MyntColors.tertiary,
                                 ),
                                 onPressed: () async {
