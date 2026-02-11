@@ -16,7 +16,7 @@ import '../../../res/res.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import 'over_view/financial_web.dart';
 import 'over_view/chart_web.dart';
-import 'over_view/price_comparision_web.dart';
+import 'over_view/peers_table_web.dart';
 
 class PriceData {
   final DateTime date;
@@ -31,7 +31,7 @@ class PriceData {
 }
 
 class EventData {
-  final DateTime date;
+  final DateTime date; 
   final String type;
   final String title;
   final String description;
@@ -77,7 +77,6 @@ class NewFundamentalScreen extends ConsumerStatefulWidget {
 class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
   List<PriceData> priceData = [];
   List<EventData> eventData = [];
-  bool _hasScrolled = false;
   bool _isLoadingNewData = true; // Initialize as true to prevent "No Data" flash
 
   // Chart tooltip state (like benchmark_backtest.dart)
@@ -679,23 +678,33 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
               builder: (context, ref, child) {
                 final marketWatch = ref.watch(marketWatchProvider);
 
-                return NotificationListener<ScrollNotification>(
-                      onNotification: (scrollNotification) {
-                        if (scrollNotification is ScrollUpdateNotification) {
-                          setState(() {
-                            _hasScrolled = scrollNotification.metrics.pixels > 0;
-                          });
-                        }
-                        return true;
-                      },
+                return Column(
+                  children: [
+                    // Fixed Header Section with static border
+                    Container(
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                          dark: MyntColors.backgroundColorDark,
+                          light: MyntColors.backgroundColor),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.dividerDark,
+                                light: MyntColors.divider),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      child: _buildHeaderSection(theme, marketWatch),
+                    ),
+                    // Scrollable content
+                    Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Header Section
-                            _buildHeaderSection(theme, marketWatch),
-                            const SizedBox(height: 24),
 
                             // Chart & Key Indicators Section - Side by Side (Responsive)
                             LayoutBuilder(
@@ -1156,32 +1165,15 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             const SizedBox(height: 24),
 
                             // Peers Section - Half Width
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                final availableWidth = constraints.maxWidth;
-                                const double kSpacing = 16.0;
-                                final halfWidth = (availableWidth - kSpacing) / 2;
-
-                                return Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Peers Section (50%)
-                                    SizedBox(
-                                      width: halfWidth,
-                                      child: _buildPeersTab(marketWatch, theme),
-                                    ),
-                                    const SizedBox(width: kSpacing),
-                                    // Empty space (50%) - can be used for future content
-                                    SizedBox(width: halfWidth),
-                                  ],
-                                );
-                              },
-                            ),
+                            // Peers Section (Full Width)
+                            _buildPeersTab(marketWatch, theme),
                             const SizedBox(height: 16),
                           ],
                         ),
                       ),
-                    );
+                    ),
+                  ],
+                );
               },
             ),
           ),
@@ -1243,7 +1235,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
       children: [
         // Symbol (like in scrip_depth_info.dart)
         Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1252,13 +1244,14 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                 children: [
                   Text(
                     "${widget.wlValue.symbol.replaceAll("-EQ", "").toUpperCase()}${widget.wlValue.expDate} ${widget.wlValue.option}",
-                    style: MyntWebTextStyles.head(
+                    style: MyntWebTextStyles.title(
                       context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     marketWatch.fundamentalData?.fundamental?.isNotEmpty ==
                             true
@@ -1268,10 +1261,11 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                             widget.wlValue.symbol.toUpperCase()
                         : marketWatch.scripInfoModel?.cname ??
                             widget.wlValue.symbol.toUpperCase(),
-                    style: MyntWebTextStyles.bodySmall(
+                    style: MyntWebTextStyles.para(
                       context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
                     ),
                   ),
                 ],
@@ -1282,7 +1276,7 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                   children: [
                     Text(
                       "${widget.depthData.lp != "null" ? widget.depthData.lp ?? widget.depthData.c ?? 0.00 : '0.00'}",
-                      style: MyntWebTextStyles.head(
+                      style: MyntWebTextStyles.body(
                         context,
                         darkColor: (widget.depthData.chng == "null" ||
                                     widget.depthData.chng == null) ||
@@ -1300,17 +1294,19 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
                                     widget.depthData.pc!.startsWith("-")
                                 ? MyntColors.loss
                                 : MyntColors.profit,
+                                fontWeight: MyntFonts.medium,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
             
                     // Price Change and Percentage
                     Text(
                       "${(double.tryParse(widget.depthData.chng ?? '0.00') ?? 0.00).toStringAsFixed(2)} (${(double.tryParse(widget.depthData.pc ?? '0.00') ?? 0.00).toStringAsFixed(2)}%)",
-                      style: MyntWebTextStyles.bodySmall(
+                      style: MyntWebTextStyles.para(
                         context,
                         darkColor: MyntColors.textSecondaryDark,
                         lightColor: MyntColors.textSecondary,
+                        fontWeight: MyntFonts.medium,
                       ),
                     ),
                     // const SizedBox(height: 8),
@@ -1792,7 +1788,26 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
             width: 1,
           ),
         ),
-        child: const PriceComparisonWeb(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Peers Comparison",
+              style: MyntWebTextStyles.title(
+                context,
+                color: resolveThemeColor(
+                  context,
+                  dark: MyntColors.textPrimaryDark,
+                  light: MyntColors.textPrimary,
+                ),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Use new table widget - no fixed height, let it expand
+            const PeersTableWeb(),
+          ],
+        ),
       );
     } else {
       return Container(
@@ -2856,20 +2871,8 @@ class _NewFundamentalScreenState extends ConsumerState<NewFundamentalScreen> {
 
   Widget _buildLoadingIndicator(ThemesProvider theme) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          MyntLoader.simple(),
-          const SizedBox(height: 16),
-          Text(
-            "Loading stock data...",
-            style: MyntWebTextStyles.para(
-              context,
-              darkColor: colors.textSecondaryDark,
-              lightColor: colors.textSecondaryLight,
-            ),
-          ),
-        ],
+      child: MyntLoader.branded(
+        size: MyntLoaderSize.xl,
       ),
     );
   }

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/web_colors.dart';
-import 'package:mynt_plus/res/global_font_web.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart' hide WebColors;
 
-/// Navigation drawer for mobile/tablet responsive view
+/// Navigation drawer content for mobile/tablet responsive view.
+/// Used inside shadcn openDrawer() - no Material Drawer wrapper needed.
 class NavigationDrawerWeb extends StatelessWidget {
   final bool isDarkMode;
   final String clientId;
+  final String userName;
   final bool Function(String screenName)? isScreenActive;
   final VoidCallback onDashboardTap;
   final VoidCallback onPositionsTap;
@@ -21,11 +24,13 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback? onBondsTap;
   final VoidCallback? onOptionZTap;
   final VoidCallback? onOptionFlashTap;
+  final VoidCallback? onClose;
 
   const NavigationDrawerWeb({
     super.key,
     required this.isDarkMode,
     required this.clientId,
+    this.userName = '',
     this.isScreenActive,
     required this.onDashboardTap,
     required this.onPositionsTap,
@@ -39,22 +44,39 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.onBondsTap,
     this.onOptionZTap,
     this.onOptionFlashTap,
+    this.onClose,
   });
+
+  /// Display name: use userName if available, fallback to clientId
+  String get _displayName =>
+      userName.isNotEmpty ? userName : clientId;
+
+  /// First letter for avatar: prefer userName, fallback to clientId
+  String get _displayInitial {
+    final source = userName.isNotEmpty ? userName : clientId;
+    return source.isNotEmpty ? source[0].toUpperCase() : 'U';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isDarkMode ? WebDarkColors.surface : Colors.white;
-    final textColor = isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
-    final dividerColor = isDarkMode ? WebDarkColors.divider : WebColors.divider;
+    final backgroundColor = resolveThemeColor(context,
+        dark: MyntColors.backgroundColorDark,
+        light: MyntColors.backgroundColor);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary);
+    final dividerColor = resolveThemeColor(context,
+        dark: MyntColors.dividerDark,
+        light: MyntColors.divider);
 
-    return Drawer(
-      backgroundColor: backgroundColor,
+    return Container(
+      color: backgroundColor,
       child: SafeArea(
         child: Column(
           children: [
             // Header with logo
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.only(left: 20, right: 8, top: 10, bottom: 10),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: dividerColor.withValues(alpha: 0.3)),
@@ -62,16 +84,26 @@ class NavigationDrawerWeb extends StatelessWidget {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SvgPicture.asset(
-                    assets.appLogoIcon,
-                    width: 80,
-                    height: 32,
-                    fit: BoxFit.contain,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: SvgPicture.asset(
+                      assets.appLogoIcon,
+                      width: 80,
+                      height: 32,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: textColor),
-                    onPressed: () => Navigator.of(context).pop(),
+                  SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: IconButton(
+                      icon: Icon(shadcn.LucideIcons.x, color: textColor, size: 16),
+                      onPressed: onClose,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
                   ),
                 ],
               ),
@@ -82,145 +114,94 @@ class NavigationDrawerWeb extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
+                  // Home
                   _buildDrawerItem(
                     context: context,
                     title: 'Home',
-                    icon: Icons.home_outlined,
+                    icon: shadcn.RadixIcons.home,
                     screenName: 'dashboard',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onDashboardTap();
-                    },
+                    onTap: onDashboardTap,
                   ),
-                  if (onMutualFundTap != null)
-                    _buildDrawerItem(
-                      context: context,
-                      title: 'Mutual Fund',
-                      icon: Icons.pie_chart_outline,
-                      screenName: 'mutualFund',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onMutualFundTap!();
-                      },
-                    ),
+
+                  // TRADE section
+                  _buildSectionHeader(context, 'TRADE'),
                   _buildDrawerItem(
                     context: context,
-                    title: 'IPO',
-                    icon: Icons.new_releases_outlined,
-                    screenName: 'ipo',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onIPOTap();
-                    },
+                    title: 'Positions',
+                    icon: shadcn.LucideIcons.chartCandlestick,
+                    screenName: 'positions',
+                    onTap: onPositionsTap,
                   ),
-                  if (onBondsTap != null)
-                    _buildDrawerItem(
-                      context: context,
-                      title: 'Bonds',
-                      icon: Icons.account_balance_outlined,
-                      screenName: 'bond',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onBondsTap!();
-                      },
-                    ),
+                  _buildDrawerItem(
+                    context: context,
+                    title: 'Holdings',
+                    icon: shadcn.LucideIcons.briefcase,
+                    screenName: 'holdings',
+                    onTap: onHoldingsTap,
+                  ),
+                  _buildDrawerItem(
+                    context: context,
+                    title: 'Orders',
+                    icon: shadcn.BootstrapIcons.receipt,
+                    screenName: 'orderBook',
+                    onTap: onOrderBookTap,
+                  ),
+                  _buildDrawerItem(
+                    context: context,
+                    title: 'Funds',
+                    icon: shadcn.LucideIcons.wallet,
+                    screenName: 'funds',
+                    onTap: onFundsTap,
+                  ),
                   if (onOptionZTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'OptionZ',
-                      icon: Icons.analytics_outlined,
+                      icon: shadcn.LucideIcons.chartBar,
                       screenName: 'tradeAction',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onOptionZTap!();
-                      },
+                      onTap: onOptionZTap!,
                     ),
                   if (onOptionFlashTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'Option Flash',
-                      icon: Icons.flash_on_outlined,
+                      icon: shadcn.BootstrapIcons.lightning,
                       screenName: 'optionFlash',
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        onOptionFlashTap!();
-                      },
+                      onTap: onOptionFlashTap!,
                     ),
 
-                  Divider(color: dividerColor.withValues(alpha: 0.3), height: 24),
-
+                  // INVEST section
+                  _buildSectionHeader(context, 'INVEST'),
+                  if (onMutualFundTap != null)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Mutual Fund',
+                      icon: shadcn.BootstrapIcons.cashCoin,
+                      screenName: 'mutualFund',
+                      onTap: onMutualFundTap!,
+                    ),
                   _buildDrawerItem(
                     context: context,
-                    title: 'Positions',
-                    icon: Icons.trending_up_outlined,
-                    screenName: 'positions',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onPositionsTap();
-                    },
+                    title: 'IPO',
+                    icon: shadcn.BootstrapIcons.suitcaseLg,
+                    screenName: 'ipo',
+                    onTap: onIPOTap,
                   ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Holdings',
-                    icon: Icons.account_balance_wallet_outlined,
-                    screenName: 'holdings',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onHoldingsTap();
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Orders',
-                    icon: Icons.receipt_long_outlined,
-                    screenName: 'orderBook',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onOrderBookTap();
-                    },
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Funds',
-                    icon: Icons.account_balance_outlined,
-                    screenName: 'funds',
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      onFundsTap();
-                    },
-                  ),
-
-                  Divider(color: dividerColor.withValues(alpha: 0.3), height: 24),
-
-                  // // Swap panels option
-                  // _buildDrawerActionItem(
-                  //   context: context,
-                  //   title: 'Swap Panels',
-                  //   icon: Icons.swap_horiz_outlined,
-                  //   onTap: () {
-                  //     Navigator.of(context).pop();
-                  //     onSwapPanels();
-                  //   },
-                  // ),
-
-                  // // Theme toggle
-                  // if (onThemeToggle != null)
-                  //   _buildDrawerActionItem(
-                  //     context: context,
-                  //     title: isDarkMode ? 'Light Mode' : 'Dark Mode',
-                  //     icon: isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                  //     onTap: () {
-                  //       Navigator.of(context).pop();
-                  //       onThemeToggle!();
-                  //     },
-                  //   ),
+                  if (onBondsTap != null)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Bonds',
+                      icon: shadcn.LucideIcons.receiptText,
+                      screenName: 'bond',
+                      onTap: onBondsTap!,
+                    ),
                 ],
               ),
             ),
 
-            // Footer with client ID
+            // Footer with user name
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: dividerColor.withValues(alpha: 0.3)),
@@ -229,16 +210,14 @@ class NavigationDrawerWeb extends StatelessWidget {
               child: Row(
                 children: [
                   CircleAvatar(
-                    radius: 18,
-                    backgroundColor: isDarkMode
-                        ? WebDarkColors.primary.withValues(alpha: 0.2)
-                        : WebColors.primary.withValues(alpha: 0.1),
+                    radius: 20,
+                    backgroundColor: MyntColors.primary.withValues(alpha: isDarkMode ? 0.2 : 0.1),
                     child: Text(
-                      clientId.isNotEmpty ? clientId[0].toUpperCase() : 'U',
-                      style: WebTextStyles.sub(
-                        isDarkTheme: isDarkMode,
-                        color: isDarkMode ? WebDarkColors.primary : WebColors.primary,
-                        fontWeight: WebFonts.bold,
+                      _displayInitial,
+                      style: MyntWebTextStyles.hero(
+                        context,
+                        color: MyntColors.primary,
+                        fontWeight: MyntFonts.semiBold,
                       ),
                     ),
                   ),
@@ -248,20 +227,24 @@ class NavigationDrawerWeb extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Client ID',
-                          style: WebTextStyles.caption(
-                            isDarkTheme: isDarkMode,
-                            color: isDarkMode
-                                ? WebDarkColors.textSecondary
-                                : WebColors.textSecondary,
+                          _displayName,
+                          style: MyntWebTextStyles.body(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary),
+                            fontWeight: MyntFonts.semiBold,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           clientId,
-                          style: WebTextStyles.sub(
-                            isDarkTheme: isDarkMode,
-                            color: textColor,
-                            fontWeight: WebFonts.semiBold,
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
                           ),
                         ),
                       ],
@@ -276,6 +259,22 @@ class NavigationDrawerWeb extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 4),
+      child: Text(
+        title,
+        style: MyntWebTextStyles.caption(
+          context,
+          color: resolveThemeColor(context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.textSecondary),
+          fontWeight: MyntFonts.semiBold,
+        ),
+      ),
+    );
+  }
+
   Widget _buildDrawerItem({
     required BuildContext context,
     required String title,
@@ -283,66 +282,45 @@ class NavigationDrawerWeb extends StatelessWidget {
     required String screenName,
     required VoidCallback onTap,
   }) {
-    // Check if this screen is currently active using the callback
     final isActive = isScreenActive?.call(screenName) ?? false;
 
-    final activeColor = isDarkMode ? WebDarkColors.primary : WebColors.primary;
-    final textColor = isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
-    final hoverColor = isDarkMode
-        ? WebDarkColors.primary.withValues(alpha: 0.1)
-        : WebColors.primary.withValues(alpha: 0.1);
+    final activeColor = MyntColors.primary;
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary);
+    final hoverColor = MyntColors.primary.withValues(alpha: 0.08);
 
-    return Material(
-      color: isActive ? hoverColor : Colors.transparent,
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isActive ? activeColor : textColor.withValues(alpha: 0.7),
-          size: 22,
-        ),
-        title: Text(
-          title,
-          style: WebTextStyles.sub(
-            isDarkTheme: isDarkMode,
-            color: isActive ? activeColor : textColor,
-            fontWeight: isActive ? WebFonts.bold : WebFonts.medium,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: isActive ? hoverColor : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isActive ? activeColor : textColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  title,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: isActive ? activeColor : textColor,
+                    fontWeight: isActive ? MyntFonts.bold : MyntFonts.medium,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(0),
-        ),
-        selectedTileColor: hoverColor,
-        selected: isActive,
       ),
-    );
-  }
-
-  Widget _buildDrawerActionItem({
-    required BuildContext context,
-    required String title,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    final textColor = isDarkMode ? WebDarkColors.textPrimary : WebColors.textPrimary;
-
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: textColor.withValues(alpha: 0.7),
-        size: 22,
-      ),
-      title: Text(
-        title,
-        style: WebTextStyles.sub(
-          isDarkTheme: isDarkMode,
-          color: textColor,
-          fontWeight: WebFonts.medium,
-        ),
-      ),
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
     );
   }
 }

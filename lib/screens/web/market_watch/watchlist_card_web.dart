@@ -323,7 +323,7 @@ class _WatchlistCardWebState extends ConsumerState<WatchlistCardWeb> {
                                             fontWeight: MyntFonts.medium,
                                             color: resolveThemeColor(
                                               context,
-                                              dark: MyntColors.textPrimaryDark,
+                                              dark: MyntColors.textPrimary ,
                                               light: MyntColors.textPrimary,
                                             ),
                                           ),

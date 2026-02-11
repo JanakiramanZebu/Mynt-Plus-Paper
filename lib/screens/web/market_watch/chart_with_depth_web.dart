@@ -686,7 +686,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                 Text(
                                   "${(depthData?.symname ?? depthData?.symbol ?? depthData?.tsym ?? widget.wlValue.symbol).replaceAll('-EQ', '').toUpperCase()}${depthData?.expDate ?? widget.wlValue.expDate} ${depthData?.option ?? widget.wlValue.option} ",
                                   overflow: TextOverflow.ellipsis,
-                                  style: MyntWebTextStyles.symbol(
+                                  style: MyntWebTextStyles.title(
                                     context,
                                     fontWeight: MyntFonts.medium,
                                     darkColor: MyntColors.textPrimaryDark,
@@ -728,7 +728,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                       children: [
                                         Text(
                                           ltpStr,
-                                          style: MyntWebTextStyles.price(
+                                          style: MyntWebTextStyles.body(
                                             context,
                                             fontWeight: MyntFonts.medium,
                                             color: isUp
@@ -743,7 +743,7 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                                         const SizedBox(width: 8),
                                         Text(
                                           "$chStr ($pcStr%)",
-                                          style: MyntWebTextStyles.priceChange(
+                                          style: MyntWebTextStyles.para(
                                             context,
                                             fontWeight: MyntFonts.medium,
                                             darkColor:

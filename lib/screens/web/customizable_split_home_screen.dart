@@ -883,15 +883,6 @@ class _CustomizableSplitHomeScreenState
         }
 
         final theme = ref.watch(themeProvider);
-        final screenWidth = MediaQuery.of(context).size.width;
-        final showDrawer = screenWidth < _mobileBreakpoint;
-
-        // Get client ID for drawer
-        final userProfile = ref.read(userProfileProvider);
-        final userDetail = userProfile.userDetailModel;
-        final clientDetail = userProfile.clientDetailModel;
-        final Preferences pref = locator<Preferences>();
-        final clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
 
         return Scaffold(
           key: _scaffoldKey,
@@ -907,36 +898,6 @@ class _CustomizableSplitHomeScreenState
               );
             },
           ),
-          drawer: showDrawer
-              ? NavigationDrawerWeb(
-                  isDarkMode: theme.isDarkMode,
-                  clientId: clientId,
-                  isScreenActive: (screenName) => _isScreenActiveInAnyPanel(screenName),
-                  onDashboardTap: _handleDashboardTap,
-                  onPositionsTap: _handlePositionsTap,
-                  onHoldingsTap: () => _handleHoldingsTap(),
-                  onOrderBookTap: _handleOrderBookTap,
-                  onFundsTap: () => _handleFundsTap(),
-                  onIPOTap: _handleIPOTap,
-                  onSwapPanels: _handleSwapPanels,
-                  onMutualFundTap: _handleMutualFundTap,
-                  onBondsTap: _handleBondTap,
-                  onOptionZTap: _handleOptionZTap,
-                  onOptionFlashTap: () {
-                    final optionFlash = ref.read(optionFlashProvider);
-                    if (optionFlash.isVisible) {
-                      optionFlash.closePanel();
-                    } else {
-                      optionFlash.showPanel(context);
-                    }
-                  },
-                  onThemeToggle: () {
-                    ref.read(themeProvider.notifier).toggleTheme(
-                      themeMod: theme.isDarkMode ? 'Light' : 'Dark',
-                    );
-                  },
-                )
-              : null,
           body: _buildNewLayout(theme),
         );
       },
@@ -1181,6 +1142,96 @@ class _CustomizableSplitHomeScreenState
     );
   }
 
+  /// Open navigation drawer using shadcn drawer
+  void _openShadcnDrawer(BuildContext context) {
+    final theme = ref.read(themeProvider);
+    final userProfile = ref.read(userProfileProvider);
+    final userDetail = userProfile.userDetailModel;
+    final clientDetail = userProfile.clientDetailModel;
+    final Preferences pref = locator<Preferences>();
+    final clientId = userDetail?.actid ?? clientDetail?.actid ?? pref.clientId ?? '';
+    final userName = userDetail?.uname ?? '';
+
+    shadcn.openDrawer(
+      context: context,
+      position: shadcn.OverlayPosition.left,
+      transformBackdrop: false,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      draggable: true,
+      showDragHandle: false,
+      builder: (drawerContext) {
+        return SizedBox(
+          width: 300,
+          child: NavigationDrawerWeb(
+          isDarkMode: theme.isDarkMode,
+          clientId: clientId,
+          userName: userName,
+          isScreenActive: (screenName) => _isScreenActiveInAnyPanel(screenName),
+          onDashboardTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleDashboardTap();
+          },
+          onPositionsTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handlePositionsTap();
+          },
+          onHoldingsTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleHoldingsTap();
+          },
+          onOrderBookTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleOrderBookTap();
+          },
+          onFundsTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleFundsTap();
+          },
+          onIPOTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleIPOTap();
+          },
+          onSwapPanels: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleSwapPanels();
+          },
+          onMutualFundTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleMutualFundTap();
+          },
+          onBondsTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleBondTap();
+          },
+          onOptionZTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleOptionZTap();
+          },
+          onOptionFlashTap: () {
+            shadcn.closeDrawer(drawerContext);
+            final optionFlash = ref.read(optionFlashProvider);
+            if (optionFlash.isVisible) {
+              optionFlash.closePanel();
+            } else {
+              optionFlash.showPanel(context);
+            }
+          },
+          onThemeToggle: () {
+            shadcn.closeDrawer(drawerContext);
+            ref.read(themeProvider.notifier).toggleTheme(
+              themeMod: theme.isDarkMode ? 'Light' : 'Dark',
+            );
+          },
+          onClose: () {
+            shadcn.closeDrawer(drawerContext);
+          },
+        ),
+        );
+      },
+    );
+  }
+
   /// Build app bar for right side only
   Widget _buildRightSideAppBar(bool isDarkMode) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -1221,20 +1272,25 @@ class _CustomizableSplitHomeScreenState
             if (showHamburger)
               Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.menu,
-                    color: isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary,
-                    size: 24,
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () {
+                      _openShadcnDrawer(context);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        Icons.menu,
+                        color: isDarkMode
+                            ? WebDarkColors.textPrimary
+                            : WebColors.textPrimary,
+                        size: 22,
+                      ),
+                    ),
                   ),
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                  tooltip: 'Menu',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
               ),
 
@@ -1790,7 +1846,7 @@ class _CustomizableSplitHomeScreenState
     final isActive = optionFlash.isVisible;
 
     return _HoverableNavItem(
-      title: 'Flash',
+      title: ' Option Flash',
       isActive: isActive,
       onTap: () {
         if (optionFlash.isVisible) {
