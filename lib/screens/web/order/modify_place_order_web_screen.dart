@@ -532,157 +532,26 @@ class _ModifyPlaceOrderScreenState
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Green "B" Button
-                                  Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          isBuy = true;
-                                        });
-                                        marginUpdate();
-                                      },
-                                      borderRadius: BorderRadius.circular(5),
-                                      child: Container(
-                                        width: 20,
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                          color: MyntColors.primary,
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'B',
-                                            style: WebTextStyles.para(
-                                              isDarkTheme: theme.isDarkMode,
-                                              color: Colors.white,
-                                              fontWeight: WebFonts.medium,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Toggle Switch
-                                  MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          isBuy = !isBuy;
-                                        });
-                                        marginUpdate();
-                                      },
-                                      child: Container(
-                                        width: 42,
-                                        height: 22,
-                                        decoration: BoxDecoration(
-                                          color: resolveThemeColor(context,
-                                              dark: MyntColors.backgroundColorDark,
-                                              light: MyntColors.backgroundColor),
-                                          border: Border.all(
-                                            color: isBuy
-                                                ? resolveThemeColor(context,
-                                                    dark: MyntColors.primaryDark,
-                                                    light: MyntColors.primary)
-                                                : resolveThemeColor(context,
-                                                    dark: MyntColors.tertiary,
-                                                    light: MyntColors.tertiary),
-                                          ),
-                                          borderRadius: BorderRadius.circular(11),
-                                        ),
-                                        child: Stack(
-                                          children: [
-                                            AnimatedPositioned(
-                                              duration:
-                                                  const Duration(milliseconds: 200),
-                                              curve: Curves.easeInOut,
-                                              left: isBuy ? 2 : 24,
-                                              top: 2,
-                                              child: Container(
-                                                width: 16,
-                                                height: 16,
-                                                decoration: BoxDecoration(
-                                                  color: isBuy
-                                                      ? resolveThemeColor(context,
-                                                          dark: MyntColors.primaryDark,
-                                                          light: MyntColors.primary)
-                                                      : resolveThemeColor(context,
-                                                          dark: MyntColors.tertiary,
-                                                          light: MyntColors.tertiary),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Red "S" Button
-                                  Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          isBuy = false;
-                                        });
-                                        marginUpdate();
-                                      },
-                                      borderRadius: BorderRadius.circular(5),
-                                      child: Container(
-                                        width: 20,
-                                        height: 20,
-                                        decoration: BoxDecoration(
-                                          color: MyntColors.tertiary,
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'S',
-                                            style: WebTextStyles.para(
-                                              isDarkTheme: theme.isDarkMode,
-                                              color: Colors.white,
-                                              fontWeight: WebFonts.medium,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 12),
-                              Material(
-                                color: Colors.transparent,
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: () {
-                                    closeNotifier?.onClose();
-                                  },
-                                  borderRadius: BorderRadius.circular(5),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4.0),
-                                    child: Icon(
-                                      Icons.close,
-                                      color: resolveThemeColor(context,
-                                          dark: MyntColors.textSecondaryDark,
-                                          light: MyntColors.textSecondary),
-                                      size: 18,
-                                    ),
-                                  ),
+                          Material(
+                            color: Colors.transparent,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                closeNotifier?.onClose();
+                              },
+                              borderRadius: BorderRadius.circular(5),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Icon(
+                                  Icons.close,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                  size: 18,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
