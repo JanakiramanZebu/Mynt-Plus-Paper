@@ -23,7 +23,7 @@ import '../sharedWidget/custom_text_form_field.dart';
 import '../utils/no_emoji_inputformatter.dart';
 import 'Mobile/bonds/bonds_main_screen.dart';
 import 'Mobile/stocks/explore/stocks/stock_screens.dart';
-import 'Mobile/mutual_fund/mf_explore_screens.dart';
+import 'web/mutual_fund/mf_explore_screens_web.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -566,7 +566,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                     // Stocks - no child tabs
                                     const StockScreen(),
                                     // Mutual Fund - with child tabs
-                                    MFExploreScreens(
+                                    MFExploreScreensWeb(
                                       theme: ref.watch(themeProvider),
                                       onBoundaryReached: _onChildTabBoundaryReached,
                                     ),

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:readmore/readmore.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import '../../../../models/mf_model/mf_factsheet_graph.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
-import '../../../../res/global_state_text.dart';
+import '../../../../sharedWidget/functions.dart';
 
 class MFPerformance extends ConsumerWidget {
   final MutualFundList mfStockData;
@@ -16,7 +19,7 @@ class MFPerformance extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
     final mfProvide = ref.watch(mfProvider);
     final factSheetData = mfProvide.factSheetDataModel?.data;
-
+    
     // Early return if essential data is missing
     if (factSheetData == null) {
       return const SizedBox();
@@ -53,10 +56,13 @@ class MFPerformance extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 20),
-          TextWidget.headText(
-            text: "Riskometer",
-            theme: isDarkMode,
-            fw: 1,
+          Text(
+            "Riskometer",
+            style: textStyle(
+              isDarkMode ? colors.colorWhite : colors.colorBlack,
+              18,
+              FontWeight.w600
+            )
           ),
 
           Padding(
@@ -83,18 +89,14 @@ class MFPerformance extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidget.subText(
-                        text: "RISK METER",
-                        theme: isDarkMode,
-                        fw: 0,
-                        color: const Color(0xff999999),
+                      Text(
+                        "RISK METER",
+                        style: textStyle(const Color(0xff999999), 14, FontWeight.w500),
                       ),
                       const SizedBox(height: 4),
-                      TextWidget.titleText(
-                        text: riskText,
-                        theme: isDarkMode,
-                        fw: 0,
-                        color: colors.colorBlack,
+                      Text(
+                        riskText,
+                        style: textStyle(colors.colorBlack, 16, FontWeight.w500),
                       ),
                     ],
                   ),
@@ -117,16 +119,17 @@ class MFPerformance extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                TextWidget.captionText(
-                    text: title1,
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: const Color(0xff666666)),
+                Text(title1,
+                    style: textStyle(
+                        const Color(0xff666666), 10, FontWeight.w400)),
                 const SizedBox(height: 4),
-                TextWidget.subText(
-                    text: value1,
-                    theme: theme.isDarkMode,
-                    fw: 1),
+                Text(value1,
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
                 const SizedBox(height: 2),
                 Divider(
                     color: theme.isDarkMode
@@ -138,16 +141,16 @@ class MFPerformance extends ConsumerWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                TextWidget.captionText(
-                    text: title2,
-                    theme: theme.isDarkMode,
-                    fw: 3,
-                    color: const Color(0xff666666)),
+                Text(title2,
+                    style: textStyle(
+                        const Color(0xff666666), 10, FontWeight.w400)),
                 const SizedBox(height: 4),
-                TextWidget.subText(
-                  text: value2,
-                  theme: theme.isDarkMode,
-                  fw: 1,
+                Text(
+                  value2,
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Divider(

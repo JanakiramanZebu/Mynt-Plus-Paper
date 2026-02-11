@@ -1,16 +1,24 @@
 import 'dart:async';
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/screens/web/ordersbook/mf/redeem_bottom_sheet_web.dart';
-import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/provider/index_list_provider.dart';
+import 'package:mynt_plus/provider/portfolio_provider.dart';
+import 'package:mynt_plus/provider/stocks_provider.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
+import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../res/mynt_web_text_styles.dart';
-import '../../../res/mynt_web_color_styles.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
+import '../../../sharedWidget/list_divider.dart';
+import '../portfolio_screens/holdings/filter_scrip_bottom_sheet.dart';
+import 'mf_filter_bottom_sheet.dart';
 import 'mf_hold_singlepage.dart';
 
 class MfHoldNewScreen extends ConsumerStatefulWidget {
@@ -20,147 +28,67 @@ class MfHoldNewScreen extends ConsumerStatefulWidget {
   ConsumerState<MfHoldNewScreen> createState() => _MfHoldNewScreenState();
 }
 
-class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
-  // int? _hoveredRowIndex; // Commented out in original, now enabling it
-  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
-  int? _sortColumnIndex;
-  bool _sortAscending = true;
-
-  // Popover state management for 3-dot dropdown menu
-  shadcn.PopoverController? _activePopoverController;
-  int? _popoverRowIndex;
-  bool _isHoveringDropdown = false;
-  Timer? _popoverCloseTimer;
-
-  // Scroll controllers
-  final ScrollController _verticalScrollController = ScrollController();
-  final ScrollController _horizontalScrollController = ScrollController();
+class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool _isScrollingUp = false;
 
   @override
   void initState() {
     super.initState();
-    // Auto-load data when screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(mfProvider).fetchmfholdingnew();
-    });
-    // Listen to hover changes for popover management
-    _hoveredRowIndex.addListener(_onHoverChanged);
-  }
-
-  void _onHoverChanged() {
-    if (_activePopoverController != null) {
-      final currentHover = _hoveredRowIndex.value;
-      if (currentHover == _popoverRowIndex) {
-        _cancelPopoverCloseTimer();
-        return;
-      }
-      if (_isHoveringDropdown) {
-        _cancelPopoverCloseTimer();
-        return;
-      }
-      _startPopoverCloseTimer();
-    }
-  }
-
-  void _startPopoverCloseTimer() {
-    _cancelPopoverCloseTimer();
-    _popoverCloseTimer = Timer(const Duration(milliseconds: 150), () {
-      if (!_isHoveringDropdown && _hoveredRowIndex.value != _popoverRowIndex) {
-        _closePopover();
-      }
-    });
-  }
-
-  void _cancelPopoverCloseTimer() {
-    _popoverCloseTimer?.cancel();
-    _popoverCloseTimer = null;
-  }
-
-  void _closePopover() {
-    _cancelPopoverCloseTimer();
-    try {
-      _activePopoverController?.close();
-    } catch (_) {}
-    final needsRebuild = _activePopoverController != null || _popoverRowIndex != null;
-    _activePopoverController = null;
-    _popoverRowIndex = null;
-    _isHoveringDropdown = false;
-    if (needsRebuild && mounted) {
-      setState(() {});
-    }
+    
+    // Initialize scroll controller
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+    
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Initialize fade animation
+    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
-    _cancelPopoverCloseTimer();
-    _hoveredRowIndex.removeListener(_onHoverChanged);
-    _verticalScrollController.dispose();
-    _horizontalScrollController.dispose();
-    _hoveredRowIndex.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
-  // Helper method to get appropriate text style for table cells
-  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
-    return MyntWebTextStyles.tableCell(
-      context,
-      color: color,
-      darkColor: color ?? MyntColors.textPrimaryDark,
-      lightColor: color ?? MyntColors.textPrimary,
-      fontWeight: MyntFonts.medium,
-    );
-  }
-
-  // Helper method for header text style
-  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
-    return MyntWebTextStyles.tableHeader(
-      context,
-      color: color,
-      darkColor: color ?? MyntColors.textSecondaryDark,
-      lightColor: color ?? MyntColors.textSecondary,
-      fontWeight: MyntFonts.semiBold,
-    );
-  }
-
-  // Helper method to get theme-aware colors for positive/negative/neutral values
-  Color _getCellColor(
-      double value, BuildContext context, ThemesProvider theme) {
-    if (value > 0) {
-      return theme.isDarkMode ? MyntColors.profitDark : MyntColors.profit;
+  // Scroll listener to detect scroll direction and animate
+  void _onScroll() {
+    final currentOffset = _scrollController.offset;
+    // Keep Returns card visible when scrolled past initial position, never hide when scrolling down
+    bool shouldShowReturnsCard = false;
+    
+    if (currentOffset > 10) {
+      // Once scrolled past initial position, always show Returns card
+      // It stays visible whether scrolling up or down
+      shouldShowReturnsCard = true;
+    } else {
+      // At top (offset <= 10), show normal stats (hide Returns card)
+      shouldShowReturnsCard = false;
     }
-    if (value < 0) {
-      return theme.isDarkMode ? MyntColors.lossDark : MyntColors.loss;
+    
+    if (shouldShowReturnsCard != _isScrollingUp) {
+      _isScrollingUp = shouldShowReturnsCard;
+      if (_isScrollingUp) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+      // Trigger rebuild to show/hide Returns card and summary section
+      if (mounted) {
+        setState(() {});
+      }
     }
-    return theme.isDarkMode
-        ? MyntColors.textSecondaryDark
-        : MyntColors.textSecondary;
-  }
-
-  // Helper method to build colored text for P&L values with percentage (stacked)
-  Widget _buildPnLWithPercentage(
-      String pnlValue, String percentValue, ThemesProvider theme) {
-    final numValue = double.tryParse(pnlValue) ?? 0.0;
-    final color = _getCellColor(numValue, context, theme);
-    final baseStyle = _getTextStyle(context, color: color);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(pnlValue, textAlign: TextAlign.end, style: baseStyle),
-        Text(
-          '$percentValue%',
-          textAlign: TextAlign.end,
-          style: baseStyle.copyWith(
-            fontSize: 10,
-            color: theme.isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textPrimary,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -169,1094 +97,928 @@ class _MfHoldNewScreenState extends ConsumerState<MfHoldNewScreen> {
     final mfData = ref.watch(mfProvider);
     final showSearch = mfData.showMfHoldingSearch;
     final searchText = mfData.mfHoldingSearchController.text;
+    final showAllMf = mfData.showAllMfHoldings;
 
-    // Get the appropriate list based on search state
+    // Get the appropriate list based on search state and toggle
     final items = showSearch && searchText.isNotEmpty
         ? (mfData.mfHoldingSearchItems ?? [])
-        : (mfData.mfholdingnew?.data ?? []);
+        : showAllMf
+            ? (mfData.allMfHoldings?.data ?? [])
+            : (mfData.mfholdingnew?.data ?? []);
 
-    // Check if user has any holdings data at all (kept for reference or remove if strictly unused, but for now just fix the compilation error)
-    // final hasHoldingsData = mfData.mfholdingnew?.data != null && mfData.mfholdingnew!.data!.isNotEmpty;
+    // Get summary data based on toggle
+    final summaryData = showAllMf
+        ? mfData.allMfHoldings?.summary
+        : mfData.mfholdingnew?.summary;
 
-    return Scaffold(
-      // backgroundColor: theme.isDarkMode
-      //     ? const Color(0xFF121212)
-      //     : const Color(0xFFF5F5F5),
-      body: MyntLoaderOverlay(
-        isLoading: mfData.holdstatload ?? false,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await mfData.fetchmfholdingnew();
+    // Check if user has any holdings data at all
+    // If loading "All MF" for the first time, don't show "No data" yet - wait for fetch to complete
+    final isLoadingAllMf = showAllMf && (mfData.holdstatload ?? false) && mfData.allMfHoldings == null;
+    final hasHoldingsData = showAllMf
+        ? (mfData.allMfHoldings?.data != null && mfData.allMfHoldings!.data!.isNotEmpty)
+        : (mfData.mfholdingnew?.data != null && mfData.mfholdingnew!.data!.isNotEmpty);
+
+    // Don't show "No data" if we're currently loading All MF data for the first time
+    if(!hasHoldingsData && !isLoadingAllMf) {
+      return Center(
+        child: NoDataFound(
+          title: "No MF Holdings Found",
+          subtitle: "There's nothing here yet. Buy some MF to see them here.",
+          onSecondary: () {
+              ref.read(indexListProvider).setDashboardTab(1);
+            ref.read(indexListProvider).bottomMenu(0, context);
           },
-          child: Column(
-            children: [
-              // Summary Cards - Horizontal row of 3 cards
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    // Invested Card
-                    Expanded(
-                      child: _buildSummaryCard(
-                        context,
-                        "Invested",
-                        _formatValue(mfData.mfholdingnew?.summary?.invested),
-                        theme,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Current Value Card
-                    Expanded(
-                      child: _buildSummaryCard(
-                        context,
-                        "Current Value",
-                        mfData.mfholdingnew?.summary?.currentValue ?? "0.00",
-                        theme,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Profit/Loss Card
-                    Expanded(
-                      child: _buildSummaryCard(
-                        context,
-                        "Profit/Loss",
-                        _formatValue(
-                            mfData.mfholdingnew?.summary?.absReturnValue),
-                        theme,
-                        valueColor: _getColorBasedOnValue(
-                          mfData.mfholdingnew?.summary?.absReturnValue,
-                          theme,
-                        ),
-                        percentage: _formatValue(mfData
-                            .mfholdingnew?.summary?.absReturnPercent
-                            ?.toString()),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Table
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildTableContent(context, theme, mfData, items),
-                ),
-              ),
-            ],
-          ),
+          secondaryEnabled: ref.read(indexListProvider).selectedBtmIndx != 0 ? true : false,
+          secondaryLabel: "Buy MF",
         ),
-      ),
-    );
-  }
-
-  // Build summary card widget
-  Widget _buildSummaryCard(
-    BuildContext context,
-    String title,
-    String value,
-    ThemesProvider theme, {
-    Color? valueColor,
-    String? percentage,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        // color: theme.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
-        color: theme.isDarkMode ? MyntColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color:
-              theme.isDarkMode ? MyntColors.transparent : MyntColors.divider,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: theme.isDarkMode
-                  ? MyntColors.textPrimaryDark
-                  : MyntColors.textPrimary,
-              fontWeight: MyntFonts.medium,
-            ),
-          ),
-          const SizedBox(height: 1),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Flexible(
-                child: Text(
-                  value,
-                  style: MyntWebTextStyles.head(
-                    context,
-                    color: valueColor,
-                    fontWeight: MyntFonts.medium,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (percentage != null) ...[
-                const SizedBox(width: 6),
-                Text(
-                  '($percentage%)',
-                  style: MyntWebTextStyles.bodySmall(
-                    context,
-                    color: valueColor,
-                    fontWeight: MyntFonts.medium,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build table content using shadcn table
-  Widget _buildTableContent(
-    BuildContext context,
-    ThemesProvider theme,
-    MFProvider mfData,
-    List items,
-  ) {
-    // Sort items if sort is active
-    final sortedItems =
-        _sortColumnIndex != null ? _getSortedItems(items) : items;
-
-    return shadcn.OutlinedContainer(
-      backgroundColor: Colors.transparent,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Calculate minimum widths dynamically based on actual content
-          final minWidths = _calculateMinWidths(sortedItems, context);
-
-          // Available width
-          final availableWidth = constraints.maxWidth;
-
-          // Step 1: Start with minimum widths
-          final columnWidths = <int, double>{};
-          for (int i = 0; i < 7; i++) {
-            columnWidths[i] = minWidths[i] ?? 100.0;
-          }
-
-          // Step 2: Calculate total minimum width needed
-          final totalMinWidth = columnWidths.values
-              .fold<double>(0.0, (sum, width) => sum + width);
-
-          // Step 3: If there's extra space, distribute it proportionally
-          if (totalMinWidth < availableWidth) {
-            final extraSpace = availableWidth - totalMinWidth;
-
-            // Define growth factors
-            const instrumentGrowthFactor = 2.0;
-            const numericGrowthFactor = 1.0;
-
-            final growthFactors = <int, double>{};
-            double totalGrowthFactor = 0.0;
-
-            for (int i = 0; i < 7; i++) {
-              if (i == 0) {
-                // Fund Name column
-                growthFactors[i] = instrumentGrowthFactor;
-                totalGrowthFactor += instrumentGrowthFactor;
-              } else {
-                // Numeric columns
-                growthFactors[i] = numericGrowthFactor;
-                totalGrowthFactor += numericGrowthFactor;
-              }
-            }
-
-            // Distribute extra space proportionally
-            if (totalGrowthFactor > 0) {
-              for (int i = 0; i < 7; i++) {
-                if (growthFactors[i]! > 0) {
-                  final extraForThisColumn =
-                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
-                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
-                }
-              }
-            }
-          }
-
-          // Calculate total required width
-          final totalRequiredWidth = columnWidths.values
-              .fold<double>(0.0, (sum, width) => sum + width);
-
-          // If total width exceeds available width, enable horizontal scrolling
-          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
-
-          // Build table content
-          Widget buildTableContent() {
-            return Column(
-              children: [
-                // Fixed Header
-                shadcn.Table(
-                  columnWidths: {
-                    0: shadcn.FixedTableSize(columnWidths[0]!),
-                    1: shadcn.FixedTableSize(columnWidths[1]!),
-                    2: shadcn.FixedTableSize(columnWidths[2]!),
-                    3: shadcn.FixedTableSize(columnWidths[3]!),
-                    4: shadcn.FixedTableSize(columnWidths[4]!),
-                    5: shadcn.FixedTableSize(columnWidths[5]!),
-                    6: shadcn.FixedTableSize(columnWidths[6]!),
+      );
+    }
+    
+    return TransparentLoaderScreen(
+      isLoading: mfData.holdstatload ?? false,
+      child:  RefreshIndicator(
+                  onRefresh: () async {
+                    // Refresh logic here if needed
                   },
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
-                  rows: [
-                    shadcn.TableHeader(
-                      cells: [
-                        buildHeaderCell('Fund Name', 0),
-                        buildHeaderCell('Units', 1, true),
-                        buildHeaderCell('Avg NAV', 2, true),
-                        buildHeaderCell('Current NAV', 3, true),
-                        buildHeaderCell('Invested', 4, true),
-                        buildHeaderCell('Current Value', 5, true),
-                        buildHeaderCell('P&L', 6, true),
-                      ],
-                    ),
-                  ],
-                ),
-
-                // Scrollable Body (List of Rows with Hover Overlay)
-                Expanded(
-                  child: sortedItems.isEmpty
-                      ? LayoutBuilder(
-                          builder: (context, constraints) =>
-                              SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight,
-                              ),
-                              child: Center(
-                                child: NoDataFound(
-                                  title: (mfData.mfholdingnew?.data != null &&
-                                          mfData.mfholdingnew!.data!.isNotEmpty)
-                                      ? "No results found"
-                                      : "There's nothing here yet.",
-                                  subtitle: (mfData.mfholdingnew?.data !=
-                                              null &&
-                                          mfData.mfholdingnew!.data!.isNotEmpty)
-                                      ? "Try adjusting your search"
-                                      : "Buy some funds to see them here.",
-                                  primaryEnabled: false,
-                                  secondaryEnabled: false,
+                  child: Stack(
+                    children: [
+                      // Scrollable content
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            controller: _scrollController,
+                            physics: const ClampingScrollPhysics(),
+                            child: GestureDetector(
+                              onTap: () => FocusScope.of(context).unfocus(),
+                              behavior: HitTestBehavior.opaque,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight > 0 
+                                      ? constraints.maxHeight + 1 
+                                      : double.infinity,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    
+                                    // Summary container - hide when scrolling up
+                                    if (!_isScrollingUp)
+                                      Container(
+                            padding: const EdgeInsets.only(left: 16, right: 16, top: 0, bottom: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Invested amount column
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Invested",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: _getSummaryValue(summaryData, 'invested'),
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                
+                                    // Returns column
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Returns",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            TextWidget.subText(
+                                                text: _getSummaryValue(summaryData, 'absReturnValue'),
+                                                color: _getColorBasedOnValue(
+                                                  _getSummaryValue(summaryData, 'absReturnValue'),
+                                                  theme,
+                                                ),
+                                                theme: theme.isDarkMode,
+                                                fw: 0),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Current Value",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: _getSummaryValue(summaryData, 'currentValue'),
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        TextWidget.subText(
+                                          text: "Percentage",
+                                          color: theme.isDarkMode
+                                              ? colors.textSecondaryDark
+                                              : colors.textSecondaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        TextWidget.subText(
+                                          text: "${_getSummaryValue(summaryData, 'absReturnPercent')}%",
+                                          color: _getColorBasedOnValue(
+                                            _getSummaryValue(summaryData, 'absReturnPercent'),
+                                                theme,
+                                          ),
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                
+                          // Search and sort container (hidden when search is active)
+                          if (!showSearch)
+                            Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, right: 16, top: 5, bottom: 8),
+                                child: Column(
+                                  children: [
+                                    SizedBox(
+                                      height: 40,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                                        decoration: BoxDecoration(
+                                         color: theme.isDarkMode
+                        ? colors.searchBgDark
+                        : colors.searchBg,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 10),
+                                              child: Row(
+                                                children: [
+                                                  // Search icon that shows search container when clicked
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                      splashColor: theme.isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors.splashColorLight,
+                                                      highlightColor: theme.isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors.highlightLight,
+                                                      onTap: () {
+                                                        Future.delayed(
+                                                            const Duration(milliseconds: 150),
+                                                            () async {
+                                                          mfData.setMfHoldingSearch(true);
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: SvgPicture.asset(
+                                                          assets.searchIcon,
+                                                         color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                                          width: 20,
+                                                          fit: BoxFit.scaleDown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Material(
+                                                    color: Colors.transparent,
+                                                    shape: const CircleBorder(),
+                                                    clipBehavior: Clip.hardEdge,
+                                                    child: InkWell(
+                                                      customBorder: const CircleBorder(),
+                                                      splashColor: theme.isDarkMode
+                                                          ? colors.splashColorDark
+                                                          : colors.splashColorLight,
+                                                      highlightColor: theme.isDarkMode
+                                                          ? colors.highlightDark
+                                                          : colors.highlightLight,
+                                                      onTap: () async {
+                                                        Future.delayed(
+                                                            const Duration(milliseconds: 150),
+                                                            () async {
+                                                          await showModalBottomSheet(
+                                                            useSafeArea: true,
+                                                            isScrollControlled: true,
+                                                            shape: const RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius.vertical(
+                                                                      top: Radius.circular(16)),
+                                                            ),
+                                                            context: context,
+                                                            builder: (context) =>
+                                                                const MFFilterBottomSheet(),
+                                                          );
+                                                        });
+                                                      },
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: SvgPicture.asset(
+                                                          assets.filterLinesDark,
+                                                          width: 18,
+                                                      color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                                          fit: BoxFit.scaleDown,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            // mfData.allMfHoldings != null && mfData.allMfHoldings!.data!.isNotEmpty ?
+                                            // Row(
+                                            //   children: [
+                                            //     Material(
+                                            //       color: Colors.transparent,
+                                            //       shape: const RoundedRectangleBorder(),
+                                            //       clipBehavior: Clip.hardEdge,
+                                            //       child: InkWell(
+                                            //         customBorder: const RoundedRectangleBorder(),
+                                            //         splashColor: theme.isDarkMode
+                                            //             ? colors.splashColorDark
+                                            //             : colors.splashColorLight,
+                                            //         highlightColor: theme.isDarkMode
+                                            //             ? colors.highlightDark
+                                            //             : colors.highlightLight,
+                                            //         onTap: () {
+                                            //           Future.delayed(
+                                            //               const Duration(milliseconds: 150),
+                                            //               () {
+                                                        // mfData.toggleMfHoldingsView();
+                                            //           });
+                                            //         },
+                                            //         child: Padding(
+                                            //           padding: const EdgeInsets.symmetric(
+                                            //               horizontal: 10, vertical: 5),
+                                            //           child: TextWidget.subText(
+                                            //             text: showAllMf ? "My MF" : "All MF",
+                                            //             theme: false,
+                                            //             color: theme.isDarkMode
+                                            //                 ? colors.secondaryDark
+                                            //                 : colors.secondaryLight,
+                                            //             fw: 2,
+                                            //           ),
+                                            //         ),
+                                            //       ),
+                                            //     ),
+                                            //   ],
+                                            // )
+                                            // : SizedBox(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )),
+                
+                          // Search container (shown conditionally when search icon is clicked)
+                          if (showSearch && !_isScrollingUp)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                              child: SizedBox(
+                                height: 40,
+                                child: TextFormField(
+                                  autofocus: true,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  controller: mfData.mfHoldingSearchController,
+                                 style: TextWidget.textStyle(
+                                          fontSize: 16,
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          theme: theme.isDarkMode,
+                                          fw: 0,
+                                        ),
+                                  keyboardType: TextInputType.text,
+                                  decoration: InputDecoration(
+                                    hintText: "Search",
+                                   hintStyle: TextWidget.textStyle(
+                                            fontSize: 14,
+                                            theme: theme.isDarkMode,
+                                           color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                          fw: 0,
+                                          ),
+                                    fillColor: theme.isDarkMode ? colors.searchBgDark : colors.searchBg,
+                                    filled: true,
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: SvgPicture.asset(
+                                        assets.searchIcon,
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                        width: 20,
+                                        fit: BoxFit.scaleDown,
+                                      ),
+                                    ),
+                                    suffixIcon: Material(
+                                      color: Colors.transparent,
+                                      shape: const CircleBorder(),
+                                      clipBehavior: Clip.hardEdge,
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        splashColor: theme.isDarkMode
+                                            ? colors.splashColorDark
+                                            : colors.splashColorLight,
+                                        highlightColor: theme.isDarkMode
+                                            ? colors.highlightDark
+                                            : colors.highlightLight,
+                                        onTap: () {
+                                          mfData.clearMfHoldingSearch();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SvgPicture.asset(
+                                            assets.removeIcon,
+                                            fit: BoxFit.scaleDown,
+                                            color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                            width: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    disabledBorder: InputBorder.none,
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                                    border: OutlineInputBorder(
+                                      borderSide: BorderSide.none,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    // Keep search active even when text is empty
+                                    // Only perform search when there's text
+                                    if (value.isNotEmpty) {
+                                      mfData.mfHoldingSearch(value, context);
+                                    } else {
+                                      // Clear search results but keep search container open
+                                      mfData.mfHoldingSearch("", context);
+                                    }
+                                  },
                                 ),
                               ),
                             ),
-                          ),
-                        )
-                      : RawScrollbar(
-                          controller: _verticalScrollController,
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          trackColor: Colors.grey.withValues(alpha: 0.1),
-                          thumbColor: Colors.grey.withValues(alpha: 0.3),
-                          thickness: 6,
-                          radius: const Radius.circular(3),
-                          interactive: true,
-                          child: ListView.builder(
-                            controller: _verticalScrollController,
-                            itemCount: sortedItems.length,
-                            itemBuilder: (context, index) {
-                              final item = sortedItems[index];
-                              return MouseRegion(
-                                onEnter: (_) => _hoveredRowIndex.value = index,
-                                onExit: (_) => _hoveredRowIndex.value = null,
-                                child: ValueListenableBuilder<int?>(
-                                  valueListenable: _hoveredRowIndex,
-                                  builder: (context, hoveredIndex, child) {
-                                    final isHovered = hoveredIndex == index || _popoverRowIndex == index;
-                                    return Container(
-                                      color: isHovered
-                                          ? resolveThemeColor(context,
-                                              dark: MyntColors.primaryDark,
-                                              light: MyntColors.primary,
-                                            ).withValues(alpha: 0.08)
-                                          : Colors.transparent,
-                                      child: shadcn.Table(
-                                        key: ValueKey('table_row_$index'),
-                                        columnWidths: {
-                                          0: shadcn.FixedTableSize(
-                                              columnWidths[0]!),
-                                          1: shadcn.FixedTableSize(
-                                              columnWidths[1]!),
-                                          2: shadcn.FixedTableSize(
-                                              columnWidths[2]!),
-                                          3: shadcn.FixedTableSize(
-                                              columnWidths[3]!),
-                                          4: shadcn.FixedTableSize(
-                                              columnWidths[4]!),
-                                          5: shadcn.FixedTableSize(
-                                              columnWidths[5]!),
-                                          6: shadcn.FixedTableSize(
-                                              columnWidths[6]!),
-                                        },
-                                        defaultRowHeight:
-                                            const shadcn.FixedTableSize(50),
-                                        rows: [
-                                          shadcn.TableRow(
-                                            cells: [
-                                              // Instrument with action button on hover
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 0,
-                                                child: ValueListenableBuilder<
-                                                    int?>(
-                                                  valueListenable:
-                                                      _hoveredRowIndex,
-                                                  builder: (context,
-                                                      hoveredIndex, _) {
-                                                    final isRowHovered =
-                                                        hoveredIndex == index;
-                                                    final avgQty =
-                                                        double.tryParse(
-                                                                item.avgQty ??
-                                                                    '0') ??
-                                                            0.0;
-
-                                                    return GestureDetector(
-                                                      onTap: () =>
-                                                          _showHoldingDetail(
-                                                              mfData, item),
-                                                      behavior: HitTestBehavior
-                                                          .opaque,
-                                                      child: Row(
-                                                        children: [
-                                                          // Fund name - uses Expanded to properly truncate
-                                                          Expanded(
-                                                            child: Tooltip(
-                                                              message: item.name ??
-                                                                  'Unknown Fund',
-                                                              child: Text(
-                                                                item.name ??
-                                                                    "Unknown Fund",
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                maxLines: 1,
-                                                                softWrap: false,
-                                                                style:
-                                                                    _getTextStyle(
-                                                                        context),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          // 3-dot dropdown menu - inline on the right
-                                                          if (isRowHovered ||
-                                                              _popoverRowIndex ==
-                                                                  index) ...[
-                                                            const SizedBox(
-                                                                width: 8),
-                                                            _buildOptionsMenuButton(
-                                                              item: item,
-                                                              rowIndex: index,
-                                                              mfData: mfData,
-                                                              hasUnits:
-                                                                  avgQty > 0,
-                                                            ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              // Qty
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 1,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      (double.tryParse(
-                                                                  item.avgQty ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(4),
-                                                      style: _getTextStyle(
-                                                          context),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              // Avg NAV
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 2,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      (double.tryParse(
-                                                                  item.avgNav ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(4),
-                                                      style: _getTextStyle(
-                                                          context),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              // NAV
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 3,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      (double.tryParse(
-                                                                  item.curNav ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(4),
-                                                      style: _getTextStyle(
-                                                          context),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              // Invested
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 4,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      (double.tryParse(
-                                                                  item.investedValue ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(2),
-                                                      style: _getTextStyle(
-                                                          context),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              // Current Value
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 5,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: Text(
-                                                      (double.tryParse(
-                                                                  item.currentValue ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(2),
-                                                      style: _getTextStyle(
-                                                          context),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              // P&L with percentage
-                                              buildCellWithHover(
-                                                rowIndex: index,
-                                                columnIndex: 6,
-                                                alignRight: true,
-                                                child: GestureDetector(
-                                                  onTap: () =>
-                                                      _showHoldingDetail(
-                                                          mfData, item),
-                                                  behavior:
-                                                      HitTestBehavior.opaque,
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.centerRight,
-                                                    child: _buildPnLWithPercentage(
-                                                      (double.tryParse(
-                                                                  item.profitLoss ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(2),
-                                                      (double.tryParse(
-                                                                  item.changeprofitLoss
-                                                                      ?.toString() ??
-                                                                      '0') ??
-                                                              0.0)
-                                                          .toStringAsFixed(2),
-                                                      theme,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
+                
+                                    // Show appropriate UI based on data state
+                                    _buildListContent(context, theme.isDarkMode, mfData, showSearch, searchText, items, theme, showAllMf),
+                                  ],
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      // Fixed Returns card overlaying the content
+                      if (_isScrollingUp && hasHoldingsData)
+                        Positioned(
+                          top: -1,
+                          left: 0,
+                          right: 0,
+                          child: _buildReturnsCard(theme, mfData, summaryData),
                         ),
+                    ],
+                  ),
                 ),
-              ],
-            );
-          }
+      // ),
+    );
+  }
 
-          // Horizontal scroll wrapper (if needed)
-          if (needsHorizontalScroll) {
-            return RawScrollbar(
-              controller: _horizontalScrollController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              trackColor: Colors.grey.withValues(alpha: 0.1),
-              thumbColor: Colors.grey.withValues(alpha: 0.3),
-              thickness: 6,
-              radius: const Radius.circular(3),
-              interactive: true,
-              child: SingleChildScrollView(
-                controller: _horizontalScrollController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: totalRequiredWidth,
-                  child: buildTableContent(),
-                ),
+  // Returns card - fixed at the top with glassy UI
+  Widget _buildReturnsCard(ThemesProvider theme, MFProvider mfData, dynamic summaryData) {
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            // Translucent background to give glassy feel (same as watchlist)
+            color: theme.isDarkMode
+                ? colors.colorBlack
+                : colors.colorWhite,
+            // Subtle gradient to enhance the frosted look (same as watchlist)
+            // gradient: LinearGradient(
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            //   colors: [
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.02)
+            //         : Colors.white.withOpacity(0.06),
+            //     theme.isDarkMode
+            //         ? Colors.white.withOpacity(0.01)
+            //         : Colors.white.withOpacity(0.03),
+            //   ],
+            // ),
+            // Keep the bottom border as before (same as watchlist)
+            border: Border(
+              bottom: BorderSide(
+                color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
               ),
-            );
-          }
-
-          return buildTableContent();
-        },
-      ),
-    );
-  }
-
-  // Build cell with hover
-  shadcn.TableCell buildCellWithHover({
-    required Widget child,
-    required int rowIndex,
-    required int columnIndex,
-    bool alignRight = false,
-    VoidCallback? onTap,
-  }) {
-    final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 6;
-
-    EdgeInsets cellPadding;
-    if (isFirstColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(16, 8, 4, 8);
-    } else if (isLastColumn) {
-      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
-    } else {
-      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
-    }
-
-    return shadcn.TableCell(
-      theme: const shadcn.TableCellTheme(
-        border: shadcn.WidgetStatePropertyAll(
-          shadcn.Border(
-            top: shadcn.BorderSide.none,
-            bottom: shadcn.BorderSide.none,
-            left: shadcn.BorderSide.none,
-            right: shadcn.BorderSide.none,
-          ),
-        ),
-      ),
-      child: ValueListenableBuilder<int?>(
-        valueListenable: _hoveredRowIndex,
-        builder: (context, hoveredIndex, _) {
-          // Also highlight when popover is open for this row
-          final isRowHovered = hoveredIndex == rowIndex || _popoverRowIndex == rowIndex;
-          return GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              padding: cellPadding,
-              alignment:
-                  alignRight ? Alignment.centerRight : Alignment.centerLeft,
-              color: isRowHovered
-                  ? resolveThemeColor(context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary,
-                    ).withValues(alpha: 0.08)
-                  : null,
-              child: child,
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Build header cell
-  shadcn.TableCell buildHeaderCell(String label, int columnIndex,
-      [bool alignRight = false]) {
-    final isFirstColumn = columnIndex == 0;
-    final isLastColumn = columnIndex == 6;
-
-    EdgeInsets headerPadding;
-    if (isFirstColumn) {
-      headerPadding = const EdgeInsets.fromLTRB(16, 6, 8, 6);
-    } else if (isLastColumn) {
-      headerPadding = const EdgeInsets.fromLTRB(8, 6, 16, 6);
-    } else {
-      headerPadding = const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
-    }
-
-    return shadcn.TableCell(
-      theme: const shadcn.TableCellTheme(
-        border: shadcn.WidgetStatePropertyAll(
-          shadcn.Border(
-            top: shadcn.BorderSide.none,
-            bottom: shadcn.BorderSide.none,
-            left: shadcn.BorderSide.none,
-            right: shadcn.BorderSide.none,
           ),
-        ),
-      ),
-      child: InkWell(
-        onTap: () => _onSort(columnIndex),
-        child: Container(
-          padding: headerPadding,
-          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
           child: Row(
-            mainAxisAlignment:
-                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (alignRight && _sortColumnIndex == columnIndex)
-                Icon(
-                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                  size: 16,
-                  color: MyntColors.textSecondaryDark,
-                ),
-              if (alignRight && _sortColumnIndex == columnIndex)
-                const SizedBox(width: 4),
-              Text(
-                label,
-                style: _getHeaderStyle(context),
-              ),
-              if (!alignRight && _sortColumnIndex == columnIndex)
-                const SizedBox(width: 4),
-              if (!alignRight && _sortColumnIndex == columnIndex)
-                Icon(
-                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                  size: 16,
-                  color: MyntColors.textSecondaryDark,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _onSort(int columnIndex) {
-    setState(() {
-      if (_sortColumnIndex == columnIndex) {
-        _sortAscending = !_sortAscending;
-      } else {
-        _sortColumnIndex = columnIndex;
-        _sortAscending = true;
-      }
-    });
-  }
-
-  // Calculate minimum column widths
-  Map<int, double> _calculateMinWidths(List items, BuildContext context) {
-    final textStyle = const TextStyle(fontSize: 14);
-    const padding = 24.0;
-    const sortIconWidth = 24.0;
-
-    final headers = [
-      'Fund Name',
-      'Units',
-      'Avg NAV',
-      'Current NAV',
-      'Invested',
-      'Current Value',
-      'P&L',
-    ];
-
-    final minWidths = <int, double>{};
-
-    for (int col = 0; col < headers.length; col++) {
-      double maxWidth =
-          _measureTextWidth(headers[col], textStyle) + sortIconWidth;
-
-      for (final item in items.take(5)) {
-        String cellText = '';
-        switch (col) {
-          case 0:
-            cellText = item.name ?? 'N/A';
-            break;
-          case 1:
-            cellText =
-                (double.tryParse(item.avgQty ?? '0') ?? 0.0).toStringAsFixed(4);
-            break;
-          case 2:
-            cellText =
-                (double.tryParse(item.avgNav ?? '0') ?? 0.0).toStringAsFixed(4);
-            break;
-          case 3:
-            cellText =
-                (double.tryParse(item.curNav ?? '0') ?? 0.0).toStringAsFixed(4);
-            break;
-          case 4:
-            cellText = (double.tryParse(item.investedValue ?? '0') ?? 0.0)
-                .toStringAsFixed(2);
-            break;
-          case 5:
-            cellText = (double.tryParse(item.currentValue ?? '0') ?? 0.0)
-                .toStringAsFixed(2);
-            break;
-          case 6:
-            // P&L (with percentage - measure longest)
-            final pnl = (double.tryParse(item.profitLoss ?? '0') ?? 0.0)
-                .toStringAsFixed(2);
-            final pct = (double.tryParse(item.changeprofitLoss?.toString() ?? '0') ?? 0.0)
-                .toStringAsFixed(2);
-            final pnlWidth = _measureTextWidth(pnl, textStyle);
-            final pctWidth =
-                _measureTextWidth('$pct%', textStyle.copyWith(fontSize: 10));
-            cellText = pnlWidth > pctWidth ? pnl : '$pct%';
-            break;
-        }
-
-        final cellWidth = _measureTextWidth(cellText, textStyle);
-        if (cellWidth > maxWidth) {
-          maxWidth = cellWidth;
-        }
-      }
-
-      // For Fund Name column, ensure minimum width to prevent excessive truncation
-      if (headers[col] == 'Fund Name') {
-        const minFundNameWidth = 150.0;
-        maxWidth = maxWidth < minFundNameWidth ? minFundNameWidth : maxWidth;
-      }
-
-      minWidths[col] = maxWidth + padding;
-    }
-
-    return minWidths;
-  }
-
-  double _measureTextWidth(String text, TextStyle style) {
-    final textPainter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    );
-    textPainter.layout();
-    return textPainter.width;
-  }
-
-  List _getSortedItems(List items) {
-    if (_sortColumnIndex == null) return items;
-
-    final sorted = List.from(items);
-    sorted.sort((a, b) {
-      int comparison = 0;
-
-      switch (_sortColumnIndex!) {
-        case 0: // Fund Name
-          comparison = (a.name ?? '').compareTo(b.name ?? '');
-          break;
-        case 1: // Units
-          comparison = (double.tryParse(a.avgQty ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.avgQty ?? '0') ?? 0.0);
-          break;
-        case 2: // Avg NAV
-          comparison = (double.tryParse(a.avgNav ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.avgNav ?? '0') ?? 0.0);
-          break;
-        case 3: // Current NAV
-          comparison = (double.tryParse(a.curNav ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.curNav ?? '0') ?? 0.0);
-          break;
-        case 4: // Invested
-          comparison = (double.tryParse(a.investedValue ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.investedValue ?? '0') ?? 0.0);
-          break;
-        case 5: // Current Value
-          comparison = (double.tryParse(a.currentValue ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.currentValue ?? '0') ?? 0.0);
-          break;
-        case 6: // P&L (sorts by P&L value, not percentage)
-          comparison = (double.tryParse(a.profitLoss ?? '0') ?? 0.0)
-              .compareTo(double.tryParse(b.profitLoss ?? '0') ?? 0.0);
-          break;
-      }
-
-      return _sortAscending ? comparison : -comparison;
-    });
-
-    return sorted;
-  }
-
-  // Build 3-dot options menu button with dropdown
-  Widget _buildOptionsMenuButton({
-    required dynamic item,
-    required int rowIndex,
-    required MFProvider mfData,
-    required bool hasUnits,
-  }) {
-    final theme = ref.watch(themeProvider);
-
-    return Builder(
-      builder: (buttonContext) {
-        return MouseRegion(
-          onEnter: (_) {
-            _isHoveringDropdown = true;
-            _cancelPopoverCloseTimer();
-          },
-          onExit: (_) {
-            _isHoveringDropdown = false;
-            _startPopoverCloseTimer();
-          },
-          child: GestureDetector(
-            onTap: () {
-              // Close any existing popover first
-              if (_activePopoverController != null) {
-                _closePopover();
-              }
-
-              // Create new controller and show popover
-              final controller = shadcn.PopoverController();
-              _activePopoverController = controller;
-              _popoverRowIndex = rowIndex;
-
-              // Build menu items
-              final List<shadcn.MenuItem> menuItems = [
-                if (hasUnits)
-                  _buildMenuButton(
-                    icon: Icons.money_off_outlined,
-                    label: 'Redeem',
-                    onPressed: () {
-                      _closePopover();
-                      _handleRedeem(mfData, item);
-                    },
-                    theme: theme,
-                  ),
-                _buildMenuButton(
-                  icon: Icons.info_outline,
-                  label: 'Details',
-                  onPressed: () {
-                    _closePopover();
-                    _showHoldingDetail(mfData, item);
-                  },
-                  theme: theme,
-                ),
-              ];
-
-              controller.show(
-                context: buttonContext,
-                builder: (popoverContext) {
-                  return MouseRegion(
-                    onEnter: (_) {
-                      _isHoveringDropdown = true;
-                      _cancelPopoverCloseTimer();
-                    },
-                    onExit: (_) {
-                      _isHoveringDropdown = false;
-                      _startPopoverCloseTimer();
-                    },
-                    child: shadcn.DropdownMenu(
-                      children: menuItems,
-                    ),
-                  );
-                },
-                alignment: Alignment.topRight,
-                offset: const Offset(0, 4),
-              );
-
-              setState(() {});
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: MyntColors.textWhite,
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDarkMode(  context)
-                        ? Colors.transparent
-                        : Colors.grey,
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.more_vert,
-                size: 18,
+              // Returns label on the left
+              TextWidget.subText(
+                text: "Returns",
+                theme: false,
                 color: theme.isDarkMode
-                    ? MyntColors.textPrimary
-                    : MyntColors.textPrimary,
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+                fw: 0,
               ),
-            ),
+              // Returns value on the right with animation
+              Opacity(
+                opacity: 1.0 - _fadeAnimation.value * 0.3,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextWidget.subText(
+                      text: "${_getSummaryValue(summaryData, 'absReturnPercent')}%",
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        _getSummaryValue(summaryData, 'absReturnPercent'),
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                    const SizedBox(width: 4),
+                    TextWidget.headText(
+                      text: _getSummaryValue(summaryData, 'absReturnValue'),
+                      theme: false,
+                      color: _getColorBasedOnValue(
+                        _getSummaryValue(summaryData, 'absReturnValue'),
+                        theme,
+                      ),
+                      fw: 0,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  // Build individual menu button
-  shadcn.MenuItem _buildMenuButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required ThemesProvider theme,
-  }) {
-    return shadcn.MenuButton(
-      leading: Icon(
-        icon,
-        size: 20,
-        color: theme.isDarkMode
-            ? MyntColors.textPrimaryDark
-            : MyntColors.textPrimary,
-      ),
-      onPressed: (context) => onPressed(),
-      child: SizedBox(
-        width: 120,
-        height: 36,
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.isDarkMode
-                  ? MyntColors.textPrimaryDark
-                  : MyntColors.textPrimary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget _buildListContent(BuildContext context, bool isDarkMode, MFProvider mfData, bool showSearch, String searchText, List items, ThemesProvider theme, bool showAllMf) {
+    // Show "No Data Found" when search is active with text and no results
+    if (showSearch && searchText.isNotEmpty && items.isEmpty) {
+      return const SizedBox(
+        height: 400,
+        child: Center(child: NoDataFound(
+          title: "No Results Found",
+          subtitle: "Try searching with different keywords",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        )),
+      );
+    }
 
-  // Handler: Redeem mutual fund
-  Future<void> _handleRedeem(MFProvider mfData, dynamic holding) async {
-    // Set the holding data for redemption using the ISIN
-    mfData.fetchmfholdsingpage(holding.iSIN ?? '');
-    // Call the redeem evaluation function
-    mfData.recdemevalu();
-    // Show mobile redeem dialog
-    showDialog(
-      context: context,
-      builder: (context) => RedemptionBottomSheetWeb(
-        // holdingData: holding,
-        // theme: ref.read(themeProvider),
-      ),
-    );
-  }
+    // If items is empty but we're here, it means we have holdings data but search/filter resulted in empty
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-  void _showHoldingDetail(MFProvider mfData, dynamic item) {
-    if (item.iSIN != null) {
-      mfData.fetchmfholdsingpage("${item.iSIN}");
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemBuilder: (BuildContext context, int idx) {
+        final index = idx ~/ 2;
 
-      // Show as right side panel
-      showGeneralDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierLabel: 'Dismiss',
-        barrierColor: Colors.transparent,
-        transitionDuration: const Duration(milliseconds: 300),
-        pageBuilder: (dialogContext, animation, secondaryAnimation) {
-          return Align(
-            alignment: Alignment.centerRight,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                width: MediaQuery.of(dialogContext).size.width * 0.25,
-                height: MediaQuery.of(dialogContext).size.height,
-                decoration: BoxDecoration(
-                  color: Theme.of(dialogContext).scaffoldBackgroundColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 10,
-                      offset: const Offset(-2, 0),
+        // Return divider for odd indices
+        if (idx.isOdd) {
+          return const ListDivider();
+        }
+
+        final item = items[index];
+        if (item == null) return const SizedBox();
+
+        return InkWell(
+          onTap: () {
+            if (item.iSIN != null) {
+              // Fetch data first - pass showAllMf flag to search in correct data source
+              mfData.fetchmfholdsingpage("${item.iSIN}", isAllMf: showAllMf);
+
+              // Show modal with data
+              showModalBottomSheet(
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                isDismissible: true,
+                enableDrag: false,
+                useSafeArea: true,
+                context: context,
+                builder: (context) => Container(
+                    padding: EdgeInsets.only(
+                      bottom:
+                          MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: mfholdsinlepage(isAllMf: showAllMf)),
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name + NAV
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      child: TextWidget.subText(
+                        // align: TextAlign.start,
+                        text: _getItemValue(item, 'name', isAllMf: showAllMf),
+                        color: isDarkMode
+                            ? colors.textPrimaryDark
+                            : colors.textPrimaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        theme: isDarkMode,
+                        fw: 0,
+                      ),
+                    ),
+
+                    Row(
+                      children: [
+                        TextWidget.titleText(
+                            align: TextAlign.start,
+                            text: _getItemValue(item, 'profitLoss', isAllMf: showAllMf),
+                            color: _getColorBasedOnValue(
+                                _getItemValue(item, 'profitLoss', isAllMf: showAllMf), theme),
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: isDarkMode,
+                            fw: 0),
+                      ],
+                    )
+
+                    // NAVV
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Exchange badge
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //   children: [
+                //     TextWidget.paraText(
+                //         align: TextAlign.start,
+                //         text: "NSE",
+                //         color: theme.isDarkMode
+                //             ? colors.textSecondaryDark
+                //             : colors.textSecondaryLight,
+                //         textOverflow: TextOverflow.ellipsis,
+                //         theme: theme.isDarkMode,
+                //         fw: 3),
+                //   ],
+                // ),
+
+                // const SizedBox(height: 4),
+
+                // Divider(
+                //   height: 12,
+                //   thickness: 0.4,
+                //   color: theme.isDarkMode
+                //       ? colors.darkColorDivider
+                //       : colors.colorDivider,
+                // ),
+
+                // const SizedBox(height: 4),
+
+                // Units + Gain/Loss
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text: "UNITS ",
+                            color: isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text:
+                                "${_getItemValue(item, 'avgQty', isAllMf: showAllMf)} @ ${_getItemValue(item, 'avgNav', isAllMf: showAllMf)}",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            align: TextAlign.start,
+                            text:
+                                "(${_getItemValue(item, 'changeprofitLoss', isAllMf: showAllMf)}%)",
+                            color: _getColorBasedOnValue(
+                                _getItemValue(item, 'changeprofitLoss', isAllMf: showAllMf), theme),
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
                     ),
                   ],
                 ),
-                child: const mfholdsinlepage(),
-              ),
+
+                const SizedBox(height: 8),
+
+                // Invested + Current
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: "INV ",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: _getItemValue(item, 'investedValue', isAllMf: showAllMf),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: " NAV ",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                        TextWidget.paraText(
+                            // align: TextAlign.start,
+                            text: _getItemValue(item, 'curNav', isAllMf: showAllMf),
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textSecondaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                      ],
+                    ),
+                    // Row(
+                    //   children: [
+                    //     TextWidget.paraText(
+                    //         // align: TextAlign.start,
+                    //         text:  "Cur: ",
+                    //         color: theme.isDarkMode
+                    //             ? colors.textSecondaryDark
+                    //             : colors.textSecondaryLight,
+                    //         textOverflow: TextOverflow.ellipsis,
+                    //         theme: theme.isDarkMode,
+                    //         fw: 3),
+                    //     TextWidget.paraText(
+                    //         // align: TextAlign.start,
+                    //         text:
+                    //              "₹${item.currentValue ?? "0.00"}",
+                    //         color: theme.isDarkMode
+                    //             ? colors.textSecondaryDark
+                    //             : colors.textSecondaryLight,
+                    //         textOverflow: TextOverflow.ellipsis,
+                    //         theme: theme.isDarkMode,
+                    //         fw: 3),
+
+                    //   ],
+                    // ),
+                  ],
+                ),
+
+                // const SizedBox(height: 16),
+              ],
             ),
-          );
-        },
-        transitionBuilder:
-            (dialogContext, animation, secondaryAnimation, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            )),
-            child: child,
-          );
-        },
-      );
-    }
+          ),
+        );
+      },
+      itemCount: items.length * 2 - 1,
+    );
   }
 
+  // Helper method to check if data is empty or has an error
+  // bool _isEmptyOrErrorState(MFProvider mfData) {
+  //   return mfData.mfholdingnew?.stat == "Not Ok" ||
+  //       mfData.mfholdingnew?.msg == "No Data Found";
+  // }
+
+  // Helper method to safely format values
   String _formatValue(String? value) {
     return (value == null || value.isEmpty) ? "0.00" : value;
   }
 
+  // Helper method to get summary values from either summary type
+  String _getSummaryValue(dynamic summary, String field) {
+    if (summary == null) return "0.00";
+
+    try {
+      switch (field) {
+        case 'invested':
+          return summary.invested?.toString() ?? "0.00";
+        case 'currentValue':
+          return summary.currentValue?.toString() ?? "0.00";
+        case 'absReturnValue':
+          return summary.absReturnValue?.toString() ?? "0.00";
+        case 'absReturnPercent':
+          return summary.absReturnPercent?.toString() ?? "0.00";
+        default:
+          return "0.00";
+      }
+    } catch (e) {
+      return "0.00";
+    }
+  }
+
+  // Helper method to get item values from different data types
+  String _getItemValue(dynamic item, String field, {bool isAllMf = false}) {
+    if (item == null) return field == 'name' ? "Unknown Fund" : "0.00";
+
+    try {
+      switch (field) {
+        case 'name':
+          // AllMfModel uses sCRIPNAME, regular uses name
+          // Backend will send properly formatted names, so return as is
+          if (isAllMf) {
+            // For AllMfModel, check sCRIPNAME first
+            if (item.sCRIPNAME != null && item.sCRIPNAME.toString().trim().isNotEmpty) {
+              return item.sCRIPNAME.toString().trim();
+            }
+            // Fallback to name if sCRIPNAME is not available
+            if (item.name != null && item.name.toString().trim().isNotEmpty) {
+              return item.name.toString().trim();
+            }
+          } else {
+            // For regular model, check name first (My MF)
+            if (item.name != null && item.name.toString().trim().isNotEmpty) {
+              return item.name.toString().trim();
+            }
+            // Fallback to sCRIPNAME if name is not available
+            try {
+              if (item.sCRIPNAME != null && item.sCRIPNAME.toString().trim().isNotEmpty) {
+                return item.sCRIPNAME.toString().trim();
+              }
+            } catch (e) {
+              // sCRIPNAME doesn't exist on regular model, ignore
+            }
+          }
+          return "Unknown Fund";
+        case 'profitLoss':
+          return item.profitLoss?.toString() ?? "0.00";
+        case 'avgQty':
+          // AllMfModel uses totalUnits (double) or nSOHQTY (String), regular uses avgQty (String)
+          if (isAllMf) {
+            // For AllMfModel, check totalUnits first, then nSOHQTY
+            if (item.totalUnits != null) {
+              return item.totalUnits.toString();
+            }
+            if (item.nSOHQTY != null && item.nSOHQTY.toString().trim().isNotEmpty) {
+              return item.nSOHQTY.toString().trim();
+            }
+            // Fallback to avgQty if available
+            if (item.avgQty != null && item.avgQty.toString().trim().isNotEmpty) {
+              return item.avgQty.toString().trim();
+            }
+          } else {
+            // For regular model, check avgQty first
+            if (item.avgQty != null && item.avgQty.toString().trim().isNotEmpty) {
+              return item.avgQty.toString().trim();
+            }
+            // Fallback to totalUnits or nSOHQTY if available
+            try {
+              if (item.totalUnits != null) {
+                return item.totalUnits.toString();
+              }
+              if (item.nSOHQTY != null && item.nSOHQTY.toString().trim().isNotEmpty) {
+                return item.nSOHQTY.toString().trim();
+              }
+            } catch (e) {
+              // These properties don't exist on regular model, ignore
+            }
+          }
+          return "0";
+        case 'avgNav':
+          return item.avgNav?.toString() ?? "0.00";
+        case 'changeprofitLoss':
+          final value = item.changeprofitLoss;
+          if (value == null) return "0.00";
+          if (value is double) return value.toStringAsFixed(2);
+          return value.toString();
+        case 'investedValue':
+          return item.investedValue?.toString() ?? "0.00";
+        case 'curNav':
+          return item.curNav?.toString() ?? "0.00";
+        default:
+          return "0.00";
+      }
+    } catch (e) {
+      return field == 'name' ? "Unknown Fund" : "0.00";
+    }
+  }
+
+  // Helper method to determine color based on value
   Color _getColorBasedOnValue(String? valueStr, ThemesProvider theme) {
     final value = double.tryParse(valueStr ?? "0") ?? 0;
-    return value >= 0
-        ? theme.isDarkMode
-            ? colors.profitDark
-            : colors.profitLight
-        : theme.isDarkMode
-            ? colors.lossDark
-            : colors.lossLight;
+    return value >= 0 ? theme.isDarkMode ? colors.profitDark : colors.profitLight : theme.isDarkMode ? colors.lossDark : colors.lossLight;
   }
 }

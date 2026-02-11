@@ -10,13 +10,13 @@ import 'package:mynt_plus/models/marketwatch_model/market_watch_scrip_model.dart
 import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/bonds_provider.dart';
 import 'package:mynt_plus/provider/option_flash_provider.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_explore_screens.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_all_best_funds.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_explore_screens_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_all_best_funds_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_stock_detail_screen_web.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_top_category_list.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_top_category_list_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/cagr_calculator_screen_web.dart';
 import 'package:mynt_plus/screens/web/bonds/bonds_main_screen_web.dart';
 
 
@@ -78,7 +78,7 @@ import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 
-import '../Mobile/mutual_fund/mf_nfo_screen.dart';
+import 'mutual_fund/mf_nfo_screen_web.dart';
 import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
@@ -2038,7 +2038,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.funds:
         return _LazyFundScreen(initialAction: _fundsInitialAction);
       case ScreenType.mutualFund:
-        return MFExploreScreens(
+        return MFExploreScreensWeb(
           onNfoTap: () {
             // Show NFO screen in right panel (panel 2)
             _showScreenInRightPanel(ScreenType.mfNfo);
@@ -2060,7 +2060,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
       case ScreenType.mfNfo:
-        return MFNFOScreen(
+        return MFNFOScreenWeb(
           onBack: _goBackInRightPanel,
         );
       case ScreenType.bond:
@@ -2122,7 +2122,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.portfolioAnalysis:
         return const PortfolioDashboardScreen();
       case ScreenType.mfCollection:
-        return SaveTaxesScreen(
+        return SaveTaxesScreenWeb(
           title: _currentCollectionTitle ?? "Collection",
           subtitle: _currentCollectionSubtitle ?? "",
           icon: _currentCollectionIcon ?? "",
@@ -2130,7 +2130,7 @@ class _CustomizableSplitHomeScreenState
           onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.mfCategory:
-        return MFCategoryListScreen(
+        return MFCategoryListScreenWeb(
           title: _currentCategoryTitle ?? "Category",
           subtitle: _currentCategorySubtitle ?? "",
           icon: _currentCategoryIcon ?? "",
@@ -2138,16 +2138,16 @@ class _CustomizableSplitHomeScreenState
           onFundTap: (mfData) => showMfStockDetailInPanel(mfData),
         );
       case ScreenType.sipCalculator:
-        return MFSIPSCREEN(
+        return MFSIPSCREENWeb(
           onBack: _goBackInRightPanel,
         );
       case ScreenType.cagrCalculator:
-        return MFCAGRCAL(
+        return MFCAGRCALWeb(
           onBack: _goBackInRightPanel,
         );
       case ScreenType.mfStockDetail:
         if (_currentMfStockData != null) {
-          return MFStockDetailScreen(
+          return MFStockDetailScreenWeb(
             mfStockData: _currentMfStockData!,
             onBack: _goBackInRightPanel,
           );

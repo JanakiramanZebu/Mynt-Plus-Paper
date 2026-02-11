@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
+import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 import 'mf_sip_details_screen.dart';
 
@@ -35,20 +41,24 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
         leading: const CustomBackBtn(),
       ),
       body: SafeArea(
-        child: MyntLoaderOverlay(
-          isLoading: mfData.bestmfloader ?? false,
-          child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
-              ? const Center(child: NoDataFound(
-                secondaryEnabled: false,
-              ))
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: _buildSipOrderList(context, mfData, theme),
+        child: Stack(
+          children: [
+            TransparentLoaderScreen(
+              isLoading: mfData.bestmfloader ?? false,
+              child: mfData.mfnotlivesiporderlist?.data?.isEmpty ?? true
+                  ? const Center(child: NoDataFound(
+                    secondaryEnabled: false,
+                  ))
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: _buildSipOrderList(context, mfData, theme),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+            ),
+          ],
         ),
       ),
     );
@@ -57,7 +67,7 @@ class MFSipOrderHistoryScreen extends ConsumerWidget {
   Widget _buildSipOrderList(
       BuildContext context, dynamic mfData, dynamic theme) {
     return ListView.separated(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       padding: EdgeInsets.zero,
       shrinkWrap: true,
       separatorBuilder: (context, index) => const ListDivider(),

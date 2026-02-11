@@ -1,16 +1,20 @@
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import '../../../models/mf_model/mutual_fundmodel.dart';
+import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../sharedWidget/list_divider.dart';
 
 class MFCategoryListScreen extends ConsumerWidget {
@@ -39,7 +43,7 @@ class MFCategoryListScreen extends ConsumerWidget {
         leadingWidth: 41,
         centerTitle: false,
         titleSpacing: 6,
-        leading: const CustomBackBtn(),
+        leading: CustomBackBtn(),
         shadowColor: const Color(0xffECEFF3),
         title: TextWidget.titleText(
           text: title,
@@ -50,23 +54,18 @@ class MFCategoryListScreen extends ConsumerWidget {
           theme: theme.isDarkMode,
         ),
       ),
-      body: MyntLoaderOverlay(
-        isLoading: (mfData.bestmfloader ?? false) ||
-            mfData.categoryDataLoader ||
-            mfData.mfallcatnewlist == null ||
-            mfData.fundDetailLoader,
+      body: TransparentLoaderScreen(
+        isLoading: mfData.bestmfloader ?? false,
         child: mfData.catnewlist?.isEmpty ?? true
-            ? ((mfData.categoryDataLoader || mfData.mfallcatnewlist == null)
-                ? const SizedBox.shrink()
-                : const Center(child: NoDataFound(
-                    secondaryEnabled: false,
-                  )))
+            ? const Center(child: NoDataFound(
+              secondaryEnabled: false,
+            ))
             : Column(
                 children: [
                   _buildCategoryChips(context, ref, theme, title, mfData),
                   Expanded(
                     child: ListView.separated(
-                      physics: const ClampingScrollPhysics(),
+                      physics: ClampingScrollPhysics(),
                       shrinkWrap: true,
                       // padding: const EdgeInsets.all(8),
                       itemCount: sortedList?.length ?? 0,
@@ -140,6 +139,7 @@ class MFCategoryListScreen extends ConsumerWidget {
         },
         onTap: () async {
           try {
+            mfData.loaderfun();
             if (item.iSIN != null) {
               await mfData.fetchFactSheet(item.iSIN);
       
@@ -268,7 +268,7 @@ class MFCategoryListScreen extends ConsumerWidget {
                         },
                         child: Container(
                           padding:
-                              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(

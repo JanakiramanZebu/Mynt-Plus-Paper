@@ -4,6 +4,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 // import 'package:mynt_plus/models/fund_model_testing_copy/fund_direct_payment_model.dart';
@@ -130,13 +131,8 @@ class MfSipCancelalert extends ConsumerWidget {
           ),
         ],
       ),
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width >= 1100
-            ? MediaQuery.of(context).size.width * 0.30
-            : MediaQuery.of(context).size.width * 0.90,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      content: Column(
+        children: [
           // Conditional UI based on action type
           if (message == 'sip') ...[
             Align(
@@ -189,7 +185,6 @@ class MfSipCancelalert extends ConsumerWidget {
             ),
           ]
         ],
-      ),
       ),
       actions: [
         Row(
@@ -302,7 +297,7 @@ class MfSipCancelalert extends ConsumerWidget {
                 color: theme.isDarkMode
                     ? colors.darkGrey
                     : const Color(0xffF1F3F8),
-                borderRadius: const BorderRadius.all(Radius.circular(5)),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
               ),
             ),
             dropdownStyleData: DropdownStyleData(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_cancel_alert.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_cancel_alert_web.dart';
 import '../../../../models/mf_model/mf_order_det_model.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
@@ -171,7 +171,7 @@ class _MFOrderDetailScreenWebState
         await showDialog(
           context: context,
           builder: (BuildContext context) {
-            return MfCancelAlert(
+            return MfCancelAlertWeb(
               mfcancel: widget.mfOrderData,
               message: "order",
             );

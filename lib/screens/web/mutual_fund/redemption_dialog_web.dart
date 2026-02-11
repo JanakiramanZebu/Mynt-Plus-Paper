@@ -6,11 +6,11 @@ import '../../../provider/thems.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/res.dart';
 
-class RedemptionDialog extends ConsumerWidget {
+class RedemptionDialogWeb extends ConsumerWidget {
   final dynamic holdingData;
   final ThemesProvider theme;
 
-  const RedemptionDialog({
+  const RedemptionDialogWeb({
     super.key,
     required this.holdingData,
     required this.theme,

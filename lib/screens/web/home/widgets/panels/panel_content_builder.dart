@@ -21,7 +21,7 @@ import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/screens/Mobile/bonds/bonds_main_screen.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/ca_action/ca_action_buyback.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/pledge_unpledge_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_main_screen.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_main_screen_web.dart';
 
 import '../../../../../models/marketwatch_model/get_quotes.dart';
 
@@ -90,7 +90,7 @@ class PanelContentBuilder {
       case ScreenType.funds:
         return const LazyFundScreen();
       case ScreenType.mutualFund:
-        return const MfmainScreen();
+        return const MfmainScreenWeb();
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
       case ScreenType.bond:

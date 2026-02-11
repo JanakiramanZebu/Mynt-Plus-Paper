@@ -6,6 +6,7 @@ import '../../../provider/mf_provider.dart';
 import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
+import '../../../sharedWidget/functions.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../sharedWidget/list_divider.dart';
@@ -20,7 +21,7 @@ class MutualFundNewScreen extends ConsumerWidget {
     final theme = ref.watch(themeProvider);
 
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -315,7 +316,7 @@ class MutualFundNewScreen extends ConsumerWidget {
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(
@@ -544,7 +545,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 0),
+                      padding: EdgeInsets.only(bottom: 0),
                       child: TextWidget.paraText(
                           align: TextAlign.left,
                           text: "INVEST IN",
@@ -598,7 +599,7 @@ class MutualFundNewScreen extends ConsumerWidget {
                     textOverflow: TextOverflow.ellipsis,
                     theme: theme.isDarkMode,
                     fw: 3),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 Icon(
                   Icons.arrow_forward,
                   color: theme.isDarkMode

@@ -1,287 +1,156 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/res/mynt_web_color_styles.dart';
-
+import 'package:mynt_plus/screens/Mobile/authentication/password/forgot_pass_unblock_user.dart';
+import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import '../../../../provider/thems.dart';
-import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
+import '../../../provider/fund_provider.dart';
+import '../../../provider/mf_provider.dart';
+import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
 import '../../../sharedWidget/custom_back_btn.dart';
 
-
 class MFSIPSCREEN extends StatefulWidget {
-  final VoidCallback? onBack;
-  const MFSIPSCREEN({super.key, this.onBack});
+  const MFSIPSCREEN({super.key});
 
   @override
   State<MFSIPSCREEN> createState() => _MFSIPSCREENState();
 }
 
 class _MFSIPSCREENState extends State<MFSIPSCREEN> {
-  // Controllers
-  late TextEditingController _principalCtrl;
-  late TextEditingController _interestCtrl;
-  late TextEditingController _tenureCtrl;
+  double _interestRate = 10.0;
+  double _tenureYears = 12.0;
+  final TextEditingController _principalCtrl = TextEditingController(text: '25000');
 
-  // State variables matches the sliders
-  double _sliderPrincipalAmount = 10000.0;
-  double _sliderInterestRate = 10.0;
-  double _sliderTenureYears = 2.0;
-
-  // Calculation Results
   int _totalAmount = 0;
   int _investedAmount = 0;
   int _returns = 0;
 
+  double _sliderPrincipalAmount = 25000.0; // Match initial text controller value
+
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with default values
-    _principalCtrl =
-        TextEditingController(text: _sliderPrincipalAmount.round().toString());
-    _interestCtrl =
-        TextEditingController(text: _sliderInterestRate.round().toString());
-    _tenureCtrl =
-        TextEditingController(text: _sliderTenureYears.round().toString());
-
     calculateSIP();
   }
-
+  
   @override
   void dispose() {
     _principalCtrl.dispose();
-    _interestCtrl.dispose();
-    _tenureCtrl.dispose();
     super.dispose();
   }
 
   void calculateSIP() {
     try {
-      // Parse inputs
-      double principal = double.tryParse(_principalCtrl.text) ?? 0;
-      double rate = double.tryParse(_interestCtrl.text) ?? 0;
-      double tenure = double.tryParse(_tenureCtrl.text) ?? 0;
-
-      // Basic Validation
-       if (principal <= 0) {
-         setState(() {
+      int principal = int.tryParse(_principalCtrl.text) ?? 0;
+      
+      if (principal <= 0) {
+        setState(() {
           _totalAmount = 0;
           _investedAmount = 0;
           _returns = 0;
         });
         return;
       }
+      
+      if (principal >= 100000) {
+          error(context, "Please enter an amount below ₹1,00,000."
+        );
+        // Reset to a valid value
+        _principalCtrl.text = "99999";
+        principal = 99999;
+        _sliderPrincipalAmount = 99999;
+      }
+      
+      double interestRate = _interestRate / (100 * 12);
+      int tenureMonths = (_tenureYears * 12).toInt();
+      
+      if (interestRate > 0 && tenureMonths > 0 && principal <= pow(10, 9) &&
+          interestRate <= (50 / (100 * 12)) && tenureMonths <= 50 * 12) {
+        
+        double first = 1 + interestRate;
+        double second = pow(first, tenureMonths) - 1;
+        double third = second / interestRate;
+        double fourth = 1 + interestRate;
+        double cofinal = third * fourth;
+        double finalAmount = cofinal * principal;
 
-      // Calculation Logic
-      // Monthly Interest Rate
-      double monthlyRate = rate / (100 * 12);
-      // Total Months
-      int months = (tenure * 12).toInt();
-
-      if (monthlyRate > 0 && months > 0) {
-        // Formula: P * ({[1 + i]^n - 1} / i) * (1 + i)
-        // P = Amount, i = monthlyRate, n = months
-
-        double first = pow(1 + monthlyRate, months) - 1;
-        double second = first / monthlyRate;
-        double finalVal = principal * second * (1 + monthlyRate);
+        int estimatedReturn = (finalAmount - (principal * tenureMonths)).round();
 
         setState(() {
-          _totalAmount = finalVal.round();
-          _investedAmount = (principal * months).toInt();
-          _returns = (_totalAmount - _investedAmount);
+          _totalAmount = finalAmount.round();
+          _investedAmount = principal * tenureMonths;
+          _returns = estimatedReturn;
         });
       } else {
-         // Fallback if rate is 0 (just Principal * Months)
-         setState(() {
-            _investedAmount = (principal * months).toInt();
-            _totalAmount = _investedAmount;
-            _returns = 0;
+        setState(() {
+          _totalAmount = 0;
+          _investedAmount = 0;
+          _returns = 0;
         });
       }
-
     } catch (e) {
-      debugPrint("Calculation error: $e");
-    }
-  }
-
-  void _onPrincipalChanged(String value) {
-    if (value.isEmpty) return;
-    double? val = double.tryParse(value);
-    if (val != null) {
+      // Handle calculation errors
       setState(() {
-        _sliderPrincipalAmount = val.clamp(1, 1000000);
+        _totalAmount = 0;
+        _investedAmount = 0;
+        _returns = 0;
       });
-      calculateSIP();
+        error(context, "Calculation error: ${e.toString()}"
+      );
     }
-  }
-
-  void _onInterestChanged(String value) {
-     if (value.isEmpty) return;
-    double? val = double.tryParse(value);
-    if (val != null) {
-      setState(() {
-        _sliderInterestRate = val.clamp(1, 30);
-      });
-      calculateSIP();
-    }
-  }
-
-  void _onTenureChanged(String value) {
-     if (value.isEmpty) return;
-    double? val = double.tryParse(value);
-    if (val != null) {
-      setState(() {
-        _sliderTenureYears = val.clamp(1, 40);
-      });
-      calculateSIP();
-    }
-  }
-
-  String _formattingNumber(int number) {
-     RegExp reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-     return number.toString().replaceAllMapped(reg, (Match m) => '${m[1]},');
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      ref.watch(themeProvider);
-
-      // Chart colors using MyntColors
-      final principalColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
-      final interestColor = resolveThemeColor(
-        context,
-        dark: MyntColors.textSecondaryDark,
-        light: MyntColors.textPrimary,
-      );
-      final totalColor = resolveThemeColor(
-        context,
-        dark: MyntColors.profitDark,
-        light: MyntColors.profit,
-      );
+      final theme = ref.watch(themeProvider);
 
       final List<ChartData> donutChart = [
-        ChartData('Principal', _investedAmount.toDouble(), principalColor),
-        ChartData('Interest', _returns.toDouble(), interestColor),
+        ChartData('Returns', double.parse("${_returns}"), const Color(0xff015FEC)),
+        ChartData('Investment', double.parse("${_investedAmount}"), colors.colorBlack)
       ];
 
       return Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(50),
           child: AppBar(
             elevation: 0,
             leadingWidth: 41,
             centerTitle: false,
             titleSpacing: 6,
-            backgroundColor: resolveThemeColor(
-              context,
-              dark: MyntColors.backgroundColorDark,
-              light: MyntColors.backgroundColor,
-            ),
-            leading: widget.onBack != null
-                ? IconButton(
-                    onPressed: widget.onBack,
-                    icon: Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 18,
-                      color: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary,
-                      ),
-                    ),
-                  )
-                : const CustomBackBtn(),
-            title: Text(
-              "Calculator",
-              style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
-            ),
-
-             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.dividerDark,
-                  light: MyntColors.divider,
-                ),
-              ),
+            leading: const CustomBackBtn(),
+            title: TextWidget.titleText(
+              text: "SIP Calculator",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: double.infinity),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: resolveThemeColor(
-                context,
-                dark: Colors.transparent,
-                light: MyntColors.card,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+            child: SingleChildScrollView(
+              physics: ClampingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildChartSection(theme, donutChart),
+                  const SizedBox(height: 16),
+                  _buildPrincipalSection(theme),
+                  const SizedBox(height: 20),
+                  _buildInterestRateSection(theme),
+                  const SizedBox(height: 16),
+                  _buildTenureSection(theme),
+                  const SizedBox(height: 16),
+                  _buildResultsSection(theme),
+                  const SizedBox(height: 16),
+                ],
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "SIP Calculator",
-                      style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Want to see how your SIP adds up over time? This shows you the full picture - step by step.",
-                      style: MyntWebTextStyles.para(
-                        context,
-                        darkColor: MyntColors.textSecondaryDark,
-                        lightColor: MyntColors.textSecondary,
-                      ).copyWith(fontSize: 13),
-                      maxLines: 2,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Content Row
-                LayoutBuilder(builder: (context, constraints) {
-                  // Use column on small screens, row on large
-                  if (constraints.maxWidth < 700) {
-                    return Column(
-                      children: [
-                        _buildInputSection(context),
-                        const SizedBox(height: 40),
-                        _buildEstimationSection(donutChart, totalColor, principalColor, interestColor, context),
-                      ],
-                    );
-                  }
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 6,
-                        child: _buildInputSection(context),
-                      ),
-                      const SizedBox(width: 40),
-                       Expanded(
-                        flex: 6,
-                        child: _buildEstimationSection(donutChart, totalColor, principalColor, interestColor, context),
-                      ),
-                    ],
-                  );
-                }),
-              ],
             ),
           ),
         ),
@@ -289,318 +158,288 @@ class _MFSIPSCREENState extends State<MFSIPSCREEN> {
     });
   }
 
-  Widget _buildInputSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Principal Amount
-        Text("Principal Amount",
-            style: MyntWebTextStyles.title(context,
-                    fontWeight: FontWeight.w500)),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              flex: 6,
-              child: MyntTextField(
-                controller: _principalCtrl,
-                placeholder: '10000',
-                leadingIcon: assets.ruppeIcon,
-                leadingIconHoverEffect: false,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                   FilteringTextInputFormatter.digitsOnly
-                 ],
-                onChanged: _onPrincipalChanged,
-              ),
+  Widget _buildChartSection(ThemesProvider theme, List<ChartData> donutChart) {
+    return Container(
+      padding: EdgeInsets.zero,
+      margin: EdgeInsets.zero,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: const Color(0xff6eb94b), 
+          width: 12
+        )
+      ),
+      height: 230,
+      child: SfCircularChart(
+        margin: EdgeInsets.zero, 
+        series: [
+          DoughnutSeries<ChartData, String>(
+            radius: "96",
+            dataSource: donutChart,
+            pointColorMapper: (ChartData data, _) => data.color,
+            dataLabelMapper: (ChartData data, _) => 
+              data.y > 0 ? "${(data.y / (_totalAmount > 0 ? _totalAmount : 1) * 100).toStringAsFixed(1)}%" : "0%",
+            xValueMapper: (ChartData data, _) => data.x,
+            yValueMapper: (ChartData data, _) => data.y,
+            dataLabelSettings: DataLabelSettings(
+              isVisible: true,
+              textStyle: textStyle(
+                !theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                12,
+                FontWeight.w600
+              )
             ),
-            const Spacer(flex: 6),
-          ],
-        ),
-
-        const SizedBox(height: 32),
-
-        // Interest Rate
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Interest Rate (p.a.)",
-                style: MyntWebTextStyles.title(context,
-                    fontWeight: FontWeight.w500)),
-             SizedBox(
-               width: 100,
-               child: Stack(
-                 children: [
-                   MyntTextField(
-                     controller: _interestCtrl,
-                     placeholder: '10',
-                     textAlign: TextAlign.center,
-                     keyboardType: TextInputType.number,
-                     onChanged: _onInterestChanged,
-                   ),
-                   Positioned(
-                     right: 12,
-                     top: 0,
-                     bottom: 0,
-                     child: Center(
-                       child: IgnorePointer(
-                         child: Text(
-                           "%",
-                           style: MyntWebTextStyles.bodySmall(
-                             context,
-                             color: resolveThemeColor(
-                               context,
-                               dark: MyntColors.textSecondaryDark,
-                               light: MyntColors.textSecondary,
-                             ),
-                           ),
-                         ),
-                       ),
-                     ),
-                   ),
-                 ],
-               ),
-             )
-          ],
-        ),
-        const SizedBox(height: 4),
-        _buildCustomSlider(
-          context: context,
-          value: _sliderInterestRate,
-          min: 1,
-          max: 30,
-          divisions: 290,
-          onChanged: (val) {
-            setState(() {
-              _sliderInterestRate = val;
-              _interestCtrl.text =
-                  val.toStringAsFixed(0);
-            });
-            calculateSIP();
-          },
-        ),
-
-        const SizedBox(height: 32),
-
-        // Tenure Period
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-             Text("Tenure period",
-                style: MyntWebTextStyles.title(context,
-                    fontWeight: FontWeight.w500)),
-             SizedBox(
-               width: 100,
-               child: Stack(
-                 children: [
-                   MyntTextField(
-                     controller: _tenureCtrl,
-                     placeholder: '2',
-                     textAlign: TextAlign.center,
-                     keyboardType: TextInputType.number,
-                     onChanged: _onTenureChanged,
-                   ),
-                   Positioned(
-                     right: 12,
-                     top: 0,
-                     bottom: 0,
-                     child: Center(
-                       child: IgnorePointer(
-                         child: Text(
-                           "Yr",
-                           style: MyntWebTextStyles.bodySmall(
-                             context,
-                             color: resolveThemeColor(
-                               context,
-                               dark: MyntColors.textSecondaryDark,
-                               light: MyntColors.textSecondary,
-                             ),
-                           ),
-                         ),
-                       ),
-                     ),
-                   ),
-                 ],
-               ),
-             )
-          ],
-        ),
-        const SizedBox(height: 4),
-        _buildCustomSlider(
-          context: context,
-          value: _sliderTenureYears,
-          min: 1,
-          max: 40,
-          divisions: 39,
-          onChanged: (val) {
-            setState(() {
-              _sliderTenureYears = val;
-              _tenureCtrl.text = val.toStringAsFixed(0);
-            });
-            calculateSIP();
-          },
-        ),
-      ],
+            innerRadius: "70%"
+          )
+        ]
+      )
     );
   }
 
-  Widget _buildCustomSlider({
-    required BuildContext context,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required ValueChanged<double> onChanged,
-  }) {
-    return SliderTheme(
-      data: SliderThemeData(
-        trackHeight: 6.0,
-        activeTrackColor:  resolveThemeColor(context, dark: MyntColors.primaryDark,light: MyntColors.primary.withOpacity(0.5)),
-        inactiveTrackColor: resolveThemeColor(
-          context,
-          dark: MyntColors.dividerDark,
-          light: MyntColors.divider,
-        ),
-        thumbColor:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-        overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark.withOpacity(0.1),light: MyntColors.primary.withOpacity(0.1)),
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
-        trackShape: const RectangularSliderTrackShape(),
-      ),
-      child: Slider(
-        value: value.clamp(min, max),
-        min: min,
-        max: max,
-        divisions: divisions > 0 ? divisions : null,
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildEstimationSection(
-    List<ChartData> data,
-    Color totalColor,
-    Color principalColor,
-    Color interestColor,
-    BuildContext context,
-  ) {
+  Widget _buildPrincipalSection(ThemesProvider theme) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Estimation",
-          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 20),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-             // Chart
-            SizedBox(
-              width: 300,
-              height: 300,
-              child: SfCircularChart(
-                margin: EdgeInsets.zero,
-                series: <CircularSeries>[
-                  // Outer Ring (Total Amount - Green)
-                  DoughnutSeries<ChartData, String>(
-                    radius: '100%',
-                    innerRadius: '92%',
-                    dataSource: [
-                      ChartData('Total', 1, totalColor)
-                    ],
-                    pointColorMapper: (ChartData data, _) => data.color,
-                    xValueMapper: (ChartData data, _) => data.x,
-                    yValueMapper: (ChartData data, _) => data.y,
-                    strokeWidth: 0,
-                  ),
-                  // Inner Ring (Principal vs Interest)
-                  DoughnutSeries<ChartData, String>(
-                    radius: '82%',
-                    innerRadius: '68%',
-                    dataSource: data,
-                    pointColorMapper: (ChartData data, _) => data.color,
-                    xValueMapper: (ChartData data, _) => data.x,
-                    yValueMapper: (ChartData data, _) => data.y,
-                    cornerStyle: CornerStyle.bothFlat,
-                    strokeWidth: 0,
-                  ),
-                ],
-              ),
+            TextWidget.subText(
+              text: "Principal Amount",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
-             const SizedBox(width: 40),
-            // Legend
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildLegendItem(
-                    "Principal Amount",
-                    _investedAmount,
-                    principalColor,
-                    context,
-                  ),
-                  const SizedBox(height: 24),
-                  _buildLegendItem(
-                    "Total Interest",
-                    _returns,
-                    interestColor,
-                    context,
-                  ),
-                   const SizedBox(height: 24),
-                   _buildLegendItem(
-                    "Total Amount",
-                    _totalAmount,
-                    totalColor,
-                    context,
-                  ),
-                ],
+            Container(
+              width: 150,
+              height: 40,
+              child: CustomTextFormField(
+                textAlign: TextAlign.start,
+                fillColor: theme.isDarkMode
+                    ? colors.darkGrey
+                    : const Color(0xffF1F3F8),
+                      style: TextWidget.textStyle(
+                                    fontSize: 16,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    theme: theme.isDarkMode,
+                                    fw: 0,
+                                  ),
+                hintText: '10000',
+                 hintStyle: TextWidget.textStyle(
+                                      fontSize: 14,
+                                      theme: theme.isDarkMode,
+                                     color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
+                                fw: 0,
+                                    ),
+                textCtrl: _principalCtrl,
+                onChanged: (value) {
+                  if (value.isNotEmpty) {
+                    final parsedValue = double.tryParse(value);
+                    if (parsedValue != null) {
+                      setState(() {
+                        _sliderPrincipalAmount = parsedValue.clamp(1, 100000);
+                      });
+                    }
+                  }
+                  calculateSIP();
+                },
+               
+                prefixIcon: SvgPicture.asset(
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                  assets.ruppeIcon,
+                  fit: BoxFit.scaleDown,
+                ),
               ),
             )
           ],
         ),
+        const SizedBox(height: 6),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4.0,
+            activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            overlayColor: const Color(0xFFCCCCCC),
+            thumbShape: const RoundSliderThumbShape(
+              enabledThumbRadius: 8.0,
+            ),
+            overlayShape: const RoundSliderOverlayShape(
+              overlayRadius: 0.0,
+            ),
+          ),
+          child: Slider(
+            value: _sliderPrincipalAmount,
+            min: 1,
+            max: 100000,
+            divisions: 100000,
+            label: _sliderPrincipalAmount.round().toString(),
+            onChanged: (value) {
+              setState(() {
+                _sliderPrincipalAmount = value;
+                _principalCtrl.text = value.round().toString();
+              });
+              calculateSIP();
+            },
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildLegendItem(
-      String label, int value, Color color, BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildInterestRateSection(ThemesProvider theme) {
+    return Column(
       children: [
-        Container(
-          width: 4,
-          height: 38,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: MyntWebTextStyles.bodyMedium(
-                context,
-                darkColor: MyntColors.textSecondaryDark,
-                lightColor: MyntColors.textSecondary,
-              ),
+            TextWidget.subText(
+              text: "Interest Rate (p.a.)",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 1,
             ),
-            const SizedBox(height: 4),
-            Text(
-              "\u20B9 ${_formattingNumber(value)}",
-               style: MyntWebTextStyles.head(
-                 context,
-                 fontWeight: FontWeight.bold,
-                 darkColor: MyntColors.textPrimaryDark,
-                 lightColor: MyntColors.textPrimary,
-               ),
+            TextWidget.subText(
+              text: "${_interestRate.toStringAsFixed(0)}%",
+              color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 0,
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4.0,
+           activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            overlayColor: const Color(0xFFCCCCCC),
+            thumbShape: const RoundSliderThumbShape(
+              enabledThumbRadius: 8.0,
+            ),
+            overlayShape: const RoundSliderOverlayShape(
+              overlayRadius: 0.0,
+            ),
+          ),
+          child: Slider(
+            value: _interestRate.clamp(1, 20),
+            min: 1,
+            max: 20,
+            divisions: 19,
+            label: "${_interestRate.toStringAsFixed(0)}%",
+            onChanged: (value) {
+              setState(() => _interestRate = value);
+              calculateSIP();
+            },
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildTenureSection(ThemesProvider theme) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextWidget.subText(
+              text: "Tenure Period (Years)",
+             color :   theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 1,
+            ),
+            TextWidget.subText(
+              text: "${_tenureYears.toStringAsFixed(0)} Yr",
+              color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+              theme: theme.isDarkMode,
+              fw: 0,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4.0,
+           activeTrackColor:  theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            inactiveTrackColor: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.3) :   colors.textSecondaryLight.withOpacity(0.1),
+            thumbColor: theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+            overlayColor: const Color(0xFFCCCCCC),
+            thumbShape: const RoundSliderThumbShape(
+              enabledThumbRadius: 8.0,
+            ),
+            overlayShape: const RoundSliderOverlayShape(
+              overlayRadius: 0.0,
+            ),
+          ),
+          child: Slider(
+            value: _tenureYears.clamp(1, 50),
+            min: 1,
+            max: 50,
+            divisions: 49,
+            label: "${_tenureYears.toStringAsFixed(0)} years",
+            onChanged: (value) {
+              setState(() => _tenureYears = value);
+              calculateSIP();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsSection(ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextWidget.subText(
+          text: "Estimation",
+          color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+          theme: theme.isDarkMode,
+          fw :1
+          
+        ),
+        const SizedBox(height: 16),
+        resultRow("Principal Amount", _investedAmount, const Color(0xff015FEC), theme),
+        resultRow("Total Interest", _returns, const Color.fromARGB(255, 114, 192, 169), theme),
+        resultRow("Total Amount", _totalAmount, const Color(0xff6eb94b), theme),
+      ],
+    );
+  }
+
+  Widget resultRow(String label, int value, Color iconColor, ThemesProvider theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.circle,
+                color: iconColor,
+                size: 14
+              ),
+              const SizedBox(width: 4),
+              TextWidget.subText(
+                text: label,
+                color:  theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                theme: false,
+                fw: 0,
+              ),
+            ],
+          ),
+          TextWidget.subText(
+            text: "₹ ${value.toStringAsFixed(0)}",
+            color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+            theme: false, 
+            fw: 0,
+          ),
+        ],
+      ),
     );
   }
 }

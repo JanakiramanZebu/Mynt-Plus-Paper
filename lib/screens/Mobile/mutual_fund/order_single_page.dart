@@ -1,15 +1,32 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mynt_plus/locator/constant.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/ipo_time_line.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 
+import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
+import '../../../provider/transcation_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../res/mynt_web_color_styles.dart';
-import '../../../res/mynt_web_text_styles.dart';
-import 'mf_cancel_alert.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
+import '../../../sharedWidget/custom_exch_badge.dart';
+// import '../../sharedWidget/loader_ui.dart';
+import '../../../sharedWidget/loader_ui.dart';
+import '../mutual_fund_old/cancle_xsip_resone.dart';
+// import '../mutual_fund_old/mf_order_filter_sheet.dart';
+import '../portfolio_screens/mfHoldings/mf_holding_screen.dart';
+import '../mutual_fund/mf_cancel_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
+import 'mf_order_bottomsheet.dart';
+import 'mf_processing_screen.dart';
 
 class mforderdetscreen extends StatefulWidget {
   const mforderdetscreen({super.key});
@@ -31,128 +48,262 @@ class _mforderdetscreen extends State<mforderdetscreen>
     "MODIFY REJECTED",
     "PAYMENT REJECTED"
   };
-  @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, child) {
-      final theme = ref.watch(themeProvider);
-      final mfdata = ref.watch(mfProvider);
+    return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.88,
+        // minChildSize: 0.05,
+        maxChildSize: 0.88,
+        builder: (context, scrollController) {
+          return Consumer(builder: (context, ref, child) {
+            final theme = ref.watch(themeProvider);
+            final mfdata = ref.watch(mfProvider);
 
-      // Check if order data is null
-      final hasData = mfdata.mforderdet?.data != null;
 
-      if (!hasData) {
-        return const Center(child: NoDataFound(
-          secondaryEnabled: false,
-        ));
-      }
+            // Check if order data is null
+            final hasData = mfdata.mforderdet?.data != null;
 
-      return SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-            borderRadius: BorderRadius.circular(0),
-            border: Border(
-              top: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-              left: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-              right: BorderSide(
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark.withOpacity(0.5)
-                    : colors.colorWhite,
-              ),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header section
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16, bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Order Details",
-                          style: MyntWebTextStyles.title(
-                            context,
-                            color: theme.isDarkMode
-                                ? MyntColors.textPrimaryDark
-                                : MyntColors.textPrimary,
-                            fontWeight: MyntFonts.semiBold,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          icon: Icon(
-                            Icons.close,
-                            color: theme.isDarkMode
-                                ? MyntColors.iconDark
-                                : MyntColors.icon,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
-                          width: 1,
+            if(!hasData){
+              return const Center(child: NoDataFound(
+                secondaryEnabled: false,
+              ));
+            }
+
+            return SafeArea(
+              child: Scaffold(
+                backgroundColor: theme.isDarkMode ? colors.colorBlack : Colors.transparent,
+                body: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SingleChildScrollView(
+                        physics: ClampingScrollPhysics(),
+                        controller: scrollController,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const CustomDragHandler(),
+                            _buildOrderHeader(theme, mfdata),
+                            const SizedBox(height: 18),
+                            if (mfdata.mforderdet?.data![0].status ==
+                                    'PAYMENT NOT INITIATED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'MODIFIED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'CANCEL ERROR' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'MODIFY REJECTED' ||
+                                mfdata.mforderdet?.data![0].status ==
+                                    'PAYMENT REJECTED')
+                              ElevatedButton(
+                                onPressed: () async {
+                                  ref.read(fundProvider).fetchFunds(context);
+                                  ref
+                                      .read(transcationProvider)
+                                      .initialdata(context);
+                                  mfdata.fetchUpiDetail('', context);
+                        
+                                              final isUpi =
+                                                  mfdata.paymentName == 'UPI';
+                                              final isNetBanking =
+                                                  mfdata.paymentName ==
+                                                      'NET BANKING';
+                                              final isUpiValid = isUpi
+                                                  ? mfdata.upiError == ''
+                                                  : true;
+                        
+                                              // mfdata.isValidUpiId(widget.data);
+                                              // await mfdata.fetchUpiDetail('repop' , context);
+                        
+                                              // Navigator.pop(context);
+                        
+                                  // Set loading state immediately when button is pressed
+                                  Navigator.pop(context);
+                                  _showBottomSheet(
+                                      context,
+                                      MfOrderBottomsheet(
+                                        data: mfdata.mforderdet?.data![0],
+                                        condval: 'reinitiatefromportfolio',
+                                      ));
+                                  // await mfdata.upipaymenttrigger(
+                                  //   context,
+                                  //   mfdata.mforderdet?.data![0].orderId,
+                                  //   mfdata.mforderdet?.data![0].orderVal,
+                                  //   mfdata.mforderdet?.data![0].accVPA,
+                                  //   mfdata.mforderdet?.data![0].paymentType,
+                                  // );
+                        
+                                  // if (mfdata.upiApiresponse != null &&
+                                  //     mfdata.upiApiresponse?.stat == "Ok") {
+                        
+                                  //     // showModalBottomSheet(
+                                  //     //   context: context,
+                                  //     //   isScrollControlled: true,
+                                  //     //   isDismissible: false,
+                                  //     //   enableDrag: false,
+                                  //     //   shape: const RoundedRectangleBorder(
+                                  //     //     borderRadius: BorderRadius.vertical(
+                                  //     //       top: Radius.circular(15),
+                                  //     //     ),
+                                  //     //   ),
+                                  //     //   builder: (context) => WillPopScope(
+                                  //     //     onWillPop: () async =>
+                                  //     //         mfdata.ispaymentcalled != true,
+                                  //     //     child: MfUPIProcessingScreen(
+                                  //     //       data: mfdata.mforderdet?.data![0].orderId,
+                                  //     //     ),
+                                  //     //   ),
+                                  //     // );
+                                  //   } else {
+                                  //     showModalBottomSheet(
+                                  //       context: context,
+                                  //       isScrollControlled: true,
+                                  //       isDismissible: false,
+                                  //       enableDrag: false,
+                                  //       shape: const RoundedRectangleBorder(
+                                  //         borderRadius: BorderRadius.vertical(
+                                  //           top: Radius.circular(15),
+                                  //         ),
+                                  //       ),
+                                  //       builder: (context) => WillPopScope(
+                                  //         onWillPop: () async =>
+                                  //             mfdata.ispaymentcalled != true,
+                                  //         child: MfPaymentRespAlert(
+                                  //           upiData: mfdata.upiApiresponse?.emsg == '' ? mfdata.upiApiresponse!.data!.toJson() : mfdata.upiApiresponse!.toJson() ,
+                                  //           conditionval : 'reinitiateerror'
+                                  //         ),
+                                  //       ),
+                                  //     );
+                                  //   }
+                                  // else if (isNetBanking) {
+                                  //   final url = Uri.parse(
+                                  //     'https://v3.mynt.in/mfapi${mfdata.upiApiresponse!.file!}',
+                                  //   );
+                                  //   //  mfdata.IsPaymentCalled(false);
+                                  //   // Navigator.pop(context);
+                        
+                                  //   // Navigate to a new screen showing InAppWebView
+                                  //   Navigator.of(context).push(
+                                  //     MaterialPageRoute(
+                                  //       builder: (context) => Scaffold(
+                                  //         appBar: AppBar(
+                                  //           title:
+                                  //               const Text("Net Banking"),
+                                  //           leading: IconButton(
+                                  //             icon: const Icon(
+                                  //                 Icons.arrow_back_ios_new),
+                                  //             onPressed: () {
+                                  //               Navigator.pop(context);
+                                  //               mfdata.threeSecondTimer
+                                  //                   ?.cancel();
+                                  //               mfdata.autoPopTimer
+                                  //                   ?.cancel();
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //         body: WillPopScope(
+                                  //           onWillPop: () async {
+                                  //             Navigator.pop(context);
+                                  //             mfdata.threeSecondTimer
+                                  //                 ?.cancel();
+                                  //             mfdata.autoPopTimer?.cancel();
+                                  //             // print("objectobjectobjectobjectobjectobjectobjectobject");
+                                  //             return true;
+                                  //           },
+                                  //           child: InAppWebView(
+                                  //             initialUrlRequest: URLRequest(
+                                  //               url: WebUri(url.toString()),
+                                  //             ),
+                                  //             initialOptions:
+                                  //                 InAppWebViewGroupOptions(
+                                  //               crossPlatform:
+                                  //                   InAppWebViewOptions(),
+                                  //             ),
+                                  //             onWebViewCreated:
+                                  //                 (InAppWebViewController
+                                  //                     controller) {
+                                  //               ConstantName
+                                  //                       .webViewController =
+                                  //                   controller;
+                                  //             },
+                                  //             onProgressChanged:
+                                  //                 (InAppWebViewController
+                                  //                         controller,
+                                  //                     int progress) {
+                                  //               // Optional: add loading logic or progress indicator
+                                  //             },
+                                  //           ),
+                                  //         ),
+                                  //       ),
+                                  //     ),
+                                  //   );
+                                  // }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 0,
+                                   backgroundColor: theme.isDarkMode
+                                                  ? colors.textSecondaryDark
+                                                      .withOpacity(0.6)
+                                                  : colors.btnBg,
+                                              // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                                              side: theme.isDarkMode
+                                                  ? null
+                                                  : BorderSide(
+                                                      color:
+                                                          colors.primaryLight,
+                                                      width: 1,
+                                                    ),
+                                              minimumSize: Size(double.infinity,
+                                                  45), // height: 48
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                ),
+                                child: TextWidget.subText(
+                                    align: TextAlign.right,
+                                    text: "Re-Initiate Payment",
+                                    color: theme.isDarkMode
+                                                    ? colors.colorWhite
+                                                    : colors.primaryLight,
+                                  
+                                    theme: theme.isDarkMode,
+                                    fw: 2),
+                              ),
+                            const SizedBox(height: 18),
+                            _buildCancelButton(theme, mfdata, context),
+                            const SizedBox(height: 24),
+                            _buildDetailsSection(theme, mfdata),
+                            const SizedBox(height: 20),
+                            if (mfdata.mforderdet?.data![0].status !=
+                                "PLACED") ...[
+                              TextWidget.subText(
+                                  align: TextAlign.right,
+                                  text: "Reason",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
+                              const SizedBox(height: 8),
+                              TextWidget.subText(
+                                  align: TextAlign.start,
+                                  text:
+                                      "${mfdata.mforderdet?.data![0].remarks ?? "No remarks available"}",
+                                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  maxLines: 3,
+                                  fw: 0),
+                            ],
+                          ],
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildOrderHeader(theme, mfdata),
-                  const SizedBox(height: 18),
-                  _buildCancelButton(theme, mfdata, context),
-                  const SizedBox(height: 24),
-                  _buildDetailsSection(theme, mfdata),
-                  const SizedBox(height: 20),
-                  if (mfdata.mforderdet?.data![0].status != "PLACED") ...[
-                    Text(
-                        "Reason",
-                        style: MyntWebTextStyles.body(
-                        context,
-                        color: theme.isDarkMode
-                            ? MyntColors.textSecondaryDark
-                            : MyntColors.textSecondary,
-                        ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                        mfdata.mforderdet?.data![0].remarks ??
-                            "No remarks available",
-                        style: MyntWebTextStyles.body(
-                        context,
-                        color: theme.isDarkMode
-                            ? MyntColors.errorDark
-                            : MyntColors.loss,
-                        ),
-                        maxLines: 3,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    });
+                    ) ,
+                    )
+                 
+            );
+          });
+        });
   }
 
   String _getStatusText(String? status) {
@@ -184,18 +335,17 @@ class _mforderdetscreen extends State<mforderdetscreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                  mfdata.mforderdet?.data?[0].name ??
+                              TextWidget.titleText(
+                                  align: TextAlign.start,
+                                  text: mfdata.mforderdet?.data?[0].name ??
                                       "Unknown Scheme",
-                                  style: MyntWebTextStyles.title(
-                                  context,
                                   color: theme.isDarkMode
-                                      ? MyntColors.textPrimaryDark
-                                      : MyntColors.textPrimary,
-                                  ),
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
                                   maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                              ),
+                                  theme: theme.isDarkMode,
+                                  fw: 1),
                             ],
                           ),
                         ),
@@ -217,45 +367,56 @@ class _mforderdetscreen extends State<mforderdetscreen>
             decoration: BoxDecoration(
               color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
                   ? theme.isDarkMode
-                      ? MyntColors.profitDark.withOpacity(0.1)
-                      : MyntColors.profit.withOpacity(0.1)
+                      ? colors.profitDark.withOpacity(0.1)
+                      : colors.profitLight.withOpacity(0.1)
                   : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                           mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                           mfdata.mforderdet?.data?[0].status ==
                               "PAYMENT DECLINED"
                       ? theme.isDarkMode
-                          ? MyntColors.lossDark.withOpacity(0.1)
-                          : MyntColors.loss.withOpacity(0.1)
+                          ? colors.lossDark.withOpacity(0.1)
+                          : colors.lossLight.withOpacity(0.1)
                       : mfdata.mforderdet?.data?[0].status ==
                               inProgressStatuses
                                   .contains(mfdata.mforderdet?.data?[0].status)
-                          ? MyntColors.pending.withOpacity(0.1)
-                          : MyntColors.pending.withOpacity(0.1), // default fallback
+                          ? colors.pending.withOpacity(0.1)
+                          : colors.pending.withOpacity(0.1), // default fallback
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(
-                _getListStatusText(mfdata.mforderdet?.data?[0].status),
-                style: MyntWebTextStyles.para(
-                context,
+            child: TextWidget.paraText(
+                text: _getListStatusText(mfdata.mforderdet?.data?[0].status),
+                theme: false,
                 color: mfdata.mforderdet?.data?[0].status == "ALLOCATED"
                     ? theme.isDarkMode
-                        ? MyntColors.profitDark
-                        : MyntColors.profit
+                        ? colors.profitDark
+                        : colors.profitLight
                     : mfdata.mforderdet?.data?[0].status == "REJECTED" ||
                             mfdata.mforderdet?.data?[0].status == "CANCELLED" ||
                             mfdata.mforderdet?.data?[0].status ==
                                 "PAYMENT DECLINED"
                         ? theme.isDarkMode
-                            ? MyntColors.lossDark
-                            : MyntColors.loss
+                            ? colors.lossDark
+                            : colors.lossLight
                         : mfdata.mforderdet?.data?[0].status ==
                                 inProgressStatuses.contains(
                                     mfdata.mforderdet?.data?[0].status)
-                            ? MyntColors.pending
-                            : MyntColors.pending,
-                ),
-            ),
+                            ? colors.pending
+                            : colors.pending,
+                            fw: 0),
           ),
+
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 4.0),
+          //   child: TextWidget.paraText(
+          //       align: TextAlign.right,
+          //       text: _getStatusLabel(mfdata.mforderdet?.data?[0].status),
+          //       color: theme.isDarkMode
+          //           ? colors.textPrimaryDark
+          //           : colors.textPrimaryLight,
+          //       textOverflow: TextOverflow.ellipsis,
+          //       theme: theme.isDarkMode,
+          //       fw: 3),
+          // )
         ],
       ),
     ]);
@@ -293,7 +454,7 @@ class _mforderdetscreen extends State<mforderdetscreen>
             theme),
 
         rowOfInfoData("Amount",
-            double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00', theme),
+            "${double.tryParse(mfdata.mforderdet?.data?[0].orderVal?.toString() ?? '0')?.toStringAsFixed(2) ?? '0.00'}", theme),
 
         // rowOfInfoData(
         //     "Units", "${mfdata.mforderdet?.data?[0].units ?? "0.00"}", theme),
@@ -346,24 +507,29 @@ class _mforderdetscreen extends State<mforderdetscreen>
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark.withOpacity(0.6)
-                          : MyntColors.primary,
+                          ? colors.textSecondaryDark.withOpacity(0.6)
+                          : colors.btnBg,
                       // foregroundColor: const Color.fromARGB(255, 0, 0, 0),
                       side: theme.isDarkMode
                           ? null
                           : BorderSide(
-                              color: MyntColors.primary,
+                              color: colors.primaryLight,
                               width: 1,
                             ),
-                minimumSize: const Size(double.infinity, 40), // height: 48
+                minimumSize: Size(double.infinity, 40), // height: 48
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              child: Text(
-                          "Cancel Order",
-                          style: MyntWebTextStyles.buttonXl(context, color: Colors.white)
-                      ),
+              child: TextWidget.subText(
+                  align: TextAlign.right,
+                  text: "Cancel Order",
+                   color: theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.primaryLight,
+                  textOverflow: TextOverflow.ellipsis,
+                  theme: theme.isDarkMode,
+                  fw: 2),
             ),
           ),
         ),
@@ -371,48 +537,54 @@ class _mforderdetscreen extends State<mforderdetscreen>
     );
   }
 
-  Widget rowOfInfoData(String title1, String value1, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              title1,
-              style: MyntWebTextStyles.body(
-                context,
+  Column rowOfInfoData(String title1, String value1, ThemesProvider theme) {
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          TextWidget.subText(
+              align: TextAlign.right,
+              text: title1,
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 0),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.5,
+            child: TextWidget.subText(
+                align: TextAlign.right,
+                text: value1,
                 color: theme.isDarkMode
-                    ? MyntColors.textSecondaryDark
-                    : MyntColors.textSecondary,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                theme: theme.isDarkMode,
+                fw: 0),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value1,
-              style: MyntWebTextStyles.body(
-                context,
-                color: theme.isDarkMode
-                    ? MyntColors.textPrimaryDark
-                    : MyntColors.textPrimary,
-                fontWeight: MyntFonts.medium,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
-        ],
-      ),
+        ]),
+        const SizedBox(height: 8),
+        Divider(
+          thickness: 0,
+          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+        )
+      ],
     );
   }
+}
+
+_showBottomSheet(BuildContext context, Widget bottomSheet) {
+  showModalBottomSheet(
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      useSafeArea: true,
+      isDismissible: true,
+      backgroundColor: Colors.white,
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: bottomSheet));
 }

@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
 import 'package:mynt_plus/sharedWidget/custom_text_form_field.dart';
-import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
+import 'package:mynt_plus/sharedWidget/loader_ui.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
+import 'package:mynt_plus/utils/no_emoji_inputformatter.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../res/global_state_text.dart';
@@ -16,7 +17,6 @@ import '../../../routes/route_names.dart';
  
  
 import '../../../sharedWidget/list_divider.dart';
-import '../../../utils/no_emoji_inputformatter.dart';
 import 'mf_stock_detail_screen.dart';
 
 class MfCommonSearch extends ConsumerStatefulWidget {
@@ -211,7 +211,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
               ),
             ),
           ),
-          body: MyntLoaderOverlay(
+          body: TransparentLoaderScreen(
             isLoading: mfData.bestmfloader ?? false,
             child: Column(
               children: [
@@ -223,7 +223,7 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             // padding: const EdgeInsets.symmetric(horizontal: 8),
                             separatorBuilder: (context, index) =>
                                 const ListDivider(),
-                            physics: const ClampingScrollPhysics(),
+                            physics: ClampingScrollPhysics(),
                             itemCount: mfData.mutualFundsearchdata!.length,
                             itemBuilder: (BuildContext context, int index) {
                               final fund = mfData.mutualFundsearchdata![index];
@@ -478,8 +478,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                             },
                           ),
                       )
-                      : const Expanded(
-                        child: Center(
+                      : Expanded(
+                        child: const Center(
                             child: NoDataFound(
                               title: "No Results Found",
                               subtitle: "Try searching with different keywords",
@@ -489,8 +489,8 @@ class _MfCommonSearchState extends ConsumerState<MfCommonSearch> {
                           ),
                       )
                 ] else ...[
-                  const Expanded(
-                    child: Center(
+                  Expanded(
+                    child: const Center(
                       child: NoDataFound(
                         title: "No Results Found",
                         subtitle: "Try searching with different keywords",

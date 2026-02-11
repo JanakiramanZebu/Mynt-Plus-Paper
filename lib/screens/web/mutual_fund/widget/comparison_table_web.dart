@@ -9,15 +9,15 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../sharedWidget/no_data_found_web.dart';
 
-class MFComparisonTable extends ConsumerStatefulWidget {
+class MFComparisonTableWeb extends ConsumerStatefulWidget {
   final MutualFundList mfStockData;
-  const MFComparisonTable({super.key, required this.mfStockData});
+  const MFComparisonTableWeb({super.key, required this.mfStockData});
 
   @override
-  ConsumerState<MFComparisonTable> createState() => _MFComparisonTableState();
+  ConsumerState<MFComparisonTableWeb> createState() => _MFComparisonTableWebState();
 }
 
-class _MFComparisonTableState extends ConsumerState<MFComparisonTable> {
+class _MFComparisonTableWebState extends ConsumerState<MFComparisonTableWeb> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   int _selectedYearIndex = 0;

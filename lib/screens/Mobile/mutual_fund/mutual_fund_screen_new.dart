@@ -3,33 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import '../../../provider/mf_provider.dart';
+import '../../../res/global_state_text.dart';
 import '../../../res/res.dart';
-import '../../../res/mynt_web_text_styles.dart';
-import '../../../res/mynt_web_color_styles.dart';
 import '../../../routes/route_names.dart';
+import '../../../sharedWidget/functions.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../sharedWidget/list_divider.dart';
 
 class MutualFundNewScreen extends ConsumerStatefulWidget {
   final TabController tabController;
-  final VoidCallback?
-      onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
-  final Function(String title, String subtitle, String icon)?
-      onCollectionTap; // Callback when collection is tapped
-  final Function(String title, String subtitle, String icon)?
-      onCategoryTap; // Callback when category is tapped
-  final VoidCallback? onSipCalculatorTap;
-  final VoidCallback? onCagrCalculatorTap;
-
-  const MutualFundNewScreen({
-    super.key,
-    required this.tabController,
-    this.onNfoTap,
-    this.onCollectionTap,
-    this.onCategoryTap,
-    this.onSipCalculatorTap,
-    this.onCagrCalculatorTap,
-  });
+  const MutualFundNewScreen({super.key, required this.tabController});
 
   @override
   ConsumerState<MutualFundNewScreen> createState() =>
@@ -39,12 +23,13 @@ class MutualFundNewScreen extends ConsumerStatefulWidget {
 class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-
+    
     // Add listener to update state when tab changes
     _tabController.addListener(() {
       setState(() {
@@ -59,14 +44,18 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
     super.dispose();
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final mfData = ref.watch(mfProvider);
     final theme = ref.watch(themeProvider);
-    final isSelected = _tabController.index;
+  final isSelected = _tabController.index;
+    
+
 
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -199,387 +188,93 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           //   ),
           // ),
 
-          // NFO Card in half-width layout (cols 6)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: nfoCard(context, mfData, theme),
-                ),
-                const SizedBox(width: 32),
-                const Expanded(child: SizedBox()), // Empty column for balance
-              ],
-            ),
-          ),
+          nfoCard(context, mfData, theme),
+          // buildSlidingPanelContent(mfData.bestMFListStaticnew, mfData, theme),
+          // const SizedBox(height: 16),
 
-          // Two-column layout for Collections and Categories
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left column - Collections
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Collections Header
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          "Collections",
-                          style: MyntWebTextStyles.body(
-                            context,
-                            color: theme.isDarkMode
-                                ? MyntColors.textSecondaryDark
-                                : MyntColors.textSecondary,
-                            fontWeight: MyntFonts.medium,
-                          ),
-                        ),
-                      ),
-                      // Collections List
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? Colors.transparent
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : const Color(0xFFECEDEE),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: mfData.bestMFListStaticnew
-                              .asMap()
-                              .entries
-                              .map((entry) {
-                            final index = entry.key;
-                            final item = entry.value;
-                            return Column(
-                              children: [
-                                _buildCollectionRow(
-                                  icon: item['image'] ??
-                                      'assets/explore/default.svg',
-                                  title: item['title'] ?? '',
-                                  subtitle: item['subtitle'] ?? '',
-                                  theme: theme,
-                                  context: context,
-                                  onTap: () {
-                                    // Navigate immediately - title is passed as argument
-                                    // No need to call changetitle() which triggers unnecessary rebuild
-                                    if (widget.onCollectionTap != null) {
-                                      widget.onCollectionTap!(
-                                        item['title'] ?? '',
-                                        item['subtitle'] ?? '',
-                                        item['image'] ??
-                                            'assets/explore/default.svg',
-                                      );
-                                    } else {
-                                      Navigator.pushNamed(
-                                        context,
-                                        Routes.bestMfScreen,
-                                        arguments: item['title'],
-                                      );
-                                    }
-                                  },
-                                ),
-                                if (index !=
-                                    mfData.bestMFListStaticnew.length - 1)
-                                  Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.3)
-                                        : const Color(0xFFECEDEE),
-                                  ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
+          Container(
+            padding: const EdgeInsets.only(left: 8, right: 8,  bottom: 8),
+            height: 35,
+            child: TabBar(
+              // physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController, 
+              tabAlignment: TabAlignment.start,
+              isScrollable: true,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorColor: colors.colorWhite,
+              indicator: BoxDecoration(
+                color: theme.isDarkMode ? colors.searchBgDark : const Color(0xffF1F3F8),
+                          borderRadius: BorderRadius.circular(5),
+              ),
+              unselectedLabelColor:  theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+               labelStyle: TextWidget.textStyle(
+                            fontSize: 14, theme: false, fw: 2, color:theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight),
+               unselectedLabelStyle: TextWidget.textStyle(
+                            fontSize: 14,
+                            theme: false,
+                            color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                            fw: 2,
+                            
+                            letterSpacing: -0.28),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+            tabs: const [
+                Tab(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 0, bottom: 0),
+                    child: Text("Collections"),
                   ),
                 ),
-
-                const SizedBox(width: 32),
-
-                // Right column - Categories
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Categories Header
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          "Categories",
-                          style: MyntWebTextStyles.body(
-                            context,
-                            color: theme.isDarkMode
-                                ? MyntColors.textSecondaryDark
-                                : MyntColors.textSecondary,
-                            fontWeight: MyntFonts.medium,
-                          ),
-                        ),
-                      ),
-                      // Categories List
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? Colors.transparent
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : const Color(0xFFECEDEE),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: mfData.mFCategoryTypesStatic
-                              .asMap()
-                              .entries
-                              .map((entry) {
-                            final index = entry.key;
-                            final item = entry.value;
-                            return Column(
-                              children: [
-                                _buildCategoryRow(
-                                  icon: item['dataIcon'] ?? '',
-                                  title: item['title'] ?? '',
-                                  subtitle: item['description'] ?? '',
-                                  theme: theme,
-                                  context: context,
-                                  onTap: () {
-                                    final chips = item['sub'] as List<dynamic>?;
-                                    if (chips?.isNotEmpty ?? false) {
-                                      final firstChip =
-                                          chips?[0]?.toString() ?? "";
-                                      mfData.fetchcatdatanew(
-                                          item['title'], firstChip);
-                                      mfData.changetitle(firstChip);
-                                      if (widget.onCategoryTap != null) {
-                                        widget.onCategoryTap!(
-                                          item['title'] ?? '',
-                                          item['description'] ?? '',
-                                          item['dataIcon'] ?? '',
-                                        );
-                                      } else {
-                                        Navigator.pushNamed(
-                                            context, Routes.mfCategoryList,
-                                            arguments: item['title']);
-                                      }
-                                    }
-                                  },
-                                ),
-                                if (index !=
-                                    mfData.mFCategoryTypesStatic.length - 1)
-                                  Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withOpacity(0.3)
-                                        : const Color(0xFFECEDEE),
-                                  ),
-                              ],
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
+                Tab(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: 0, bottom: 0),
+                    child: Text("Categories"),
                   ),
                 ),
               ],
             ),
           ),
 
+          // Tab Bar View
+          SizedBox(
+            height: 450 ,
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: [
+                buildCollectionsTab(mfData, theme),
+                buildCategoriesTab(mfData, theme),
+              ],
+            ),
+          ),
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Calculator',
-                        style: MyntWebTextStyles.title(
-                          context,
-                          color: theme.isDarkMode
-                              ? MyntColors.textPrimaryDark
-                              : MyntColors.textPrimary,
-                          fontWeight: MyntFonts.semiBold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: theme.isDarkMode
-                              ? Colors.transparent
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: theme.isDarkMode
-                                ? colors.textSecondaryDark
-                                : const Color(0xFFECEDEE),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            sipcaltor(context, mfData, theme),
-                            Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: theme.isDarkMode
-                                  ? colors.textSecondaryDark.withOpacity(0.3)
-                                  : const Color(0xFFECEDEE),
-                            ),
-                            cargrcalss(context, mfData, theme),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 32),
-                const Expanded(
-                    child:
-                        SizedBox()), // Empty column to match the 2-column layout spacing
+                TextWidget.titleText(
+                    // align: TextAlign.right,
+                    text: 'Calculator',
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 1),
+                const SizedBox(height: 10),
+                sipcaltor(context, mfData, theme),
+                ListDivider(),
+                cargrcalss(context, mfData, theme),
+                ListDivider(),
               ],
             ),
           ),
           // const SizedBox(height: 80),
         ],
-      ),
-    );
-  }
-
-  // Collection item row widget
-  Widget _buildCollectionRow({
-    required String icon,
-    required String title,
-    required String subtitle,
-    required ThemesProvider theme,
-    required VoidCallback onTap,
-    required BuildContext context,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      // borderRadius: BorderRadius.circular(10), // Removed as it is inside a card
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SvgPicture.asset(
-              icon,
-              height: 24,
-              width: 24,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textPrimaryDark
-                          : MyntColors.textPrimary,
-                      fontWeight: MyntFonts.medium,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: MyntWebTextStyles.para(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Category item row widget
-  Widget _buildCategoryRow({
-    required String icon,
-    required String title,
-    required String subtitle,
-    required ThemesProvider theme,
-    required VoidCallback onTap,
-    required BuildContext context,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      // borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (icon.isNotEmpty)
-              Image.asset(
-                icon,
-                height: 24,
-                width: 24,
-              ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textPrimaryDark
-                          : MyntColors.textPrimary,
-                      fontWeight: MyntFonts.medium,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: MyntWebTextStyles.para(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -630,33 +325,33 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Collections",
-                    textAlign: TextAlign.right,
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textPrimaryDark
-                          : MyntColors.textPrimary,
-                      fontWeight: MyntFonts.semiBold,
-                    ),
-                    overflow: TextOverflow.ellipsis),
+                TextWidget.titleText(
+                    align: TextAlign.right,
+                    text: "Collections",
+                    color: theme.isDarkMode
+                        ? colors.textPrimaryDark
+                        : colors.textPrimaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 1),
                 const SizedBox(height: 10),
-                Text("Find the right mutual fund across these asset classes",
-                    textAlign: TextAlign.right,
-                    style: MyntWebTextStyles.para(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
-                    ),
-                    overflow: TextOverflow.ellipsis),
+                TextWidget.paraText(
+                    align: TextAlign.right,
+                    text:
+                        "Find the right mutual fund across these asset classes",
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark
+                        : colors.textSecondaryLight,
+                    textOverflow: TextOverflow.ellipsis,
+                    theme: theme.isDarkMode,
+                    fw: 3),
               ],
             ),
           ),
 
           // const SizedBox(height: 24),
           SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
+            physics: ClampingScrollPhysics(),
             child: Column(
               children: [
                 Builder(
@@ -684,8 +379,8 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                             }
 
                             return InkWell(
-                              onTap: () {
-                                // Navigate immediately - title is passed as argument
+                              onTap: () async {
+                                mfData.changetitle(bestMFList[index]['title']);
                                 Navigator.pushNamed(
                                   context,
                                   Routes.bestMfScreen,
@@ -702,27 +397,23 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                                   height: 40,
                                   width: 40,
                                 ),
-                                title: Text(
-                                  bestMFList[index]['title'] ?? '',
-                                  style: MyntWebTextStyles.body(
-                                    context,
-                                    color: theme.isDarkMode
-                                        ? MyntColors.textPrimaryDark
-                                        : MyntColors.textPrimary,
-                                    fontWeight: MyntFonts.medium,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                title: TextWidget.subText(
+                                  text: bestMFList[index]['title'] ?? '',
+                                  color: theme.isDarkMode
+                                      ? colors.textPrimaryDark
+                                      : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
                                 ),
-                                subtitle: Text(
-                                  "${bestMFList[index]['subtitle'] ?? ''}",
-                                  style: MyntWebTextStyles.para(
-                                    context,
-                                    color: theme.isDarkMode
-                                        ? MyntColors.textSecondaryDark
-                                        : MyntColors.textSecondary,
-                                  ),
+                                subtitle: TextWidget.paraText(
+                                  text:
+                                      "${bestMFList[index]['subtitle'] ?? ''}",
+                                  color: theme.isDarkMode
+                                      ? colors.textSecondaryDark
+                                      : colors.textSecondaryLight,
                                   maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
                                 ),
                               ),
                             );
@@ -765,16 +456,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           final firstChip = chips?[0]?.toString() ?? "";
           mfData.fetchcatdatanew(title, firstChip);
           mfData.changetitle(firstChip);
-          if (widget.onCategoryTap != null) {
-            widget.onCategoryTap!(
-              title,
-              description ?? '',
-              dataIcon,
-            ); // Pass the main category title
-          } else {
-            Navigator.pushNamed(context, Routes.mfCategoryList,
-                arguments: title);
-          }
+          Navigator.pushNamed(context, Routes.mfCategoryList, arguments: title);
         }
       },
       child: ListTile(
@@ -786,51 +468,47 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 30,
           height: 30,
         ),
-        title: Text(
-          title,
-          style: MyntWebTextStyles.body(
-            context,
-            color: theme.isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textPrimary,
-            fontWeight: MyntFonts.medium,
-          ),
-          overflow: TextOverflow.ellipsis,
+        title: TextWidget.subText(
+          // align: TextAlign.right,
+          text: title,
+          color: theme.isDarkMode
+              ? colors.textPrimaryDark
+              : colors.textPrimaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 0,
         ),
         subtitle: Container(
           margin: EdgeInsets.only(
             right: MediaQuery.of(context).size.width * 0.1,
           ),
-          child: Text(
-              description ?? '',
-              style: MyntWebTextStyles.para(
-                context,
-                color: theme.isDarkMode
-                    ? MyntColors.textSecondaryDark
-                    : MyntColors.textSecondary,
-              ),
-              overflow: TextOverflow.ellipsis),
+          child: TextWidget.paraText(
+              // align: TextAlign.right,
+              text: description ?? '',
+              color: theme.isDarkMode
+                  ? colors.textSecondaryDark
+                  : colors.textSecondaryLight,
+              textOverflow: TextOverflow.ellipsis,
+              theme: theme.isDarkMode,
+              fw: 0),
         ),
       ),
     );
   }
 
   Widget nfoCard(BuildContext context, MFProvider mf, ThemesProvider theme) {
-    return InkWell(
+    return GestureDetector(
       onTap: () async {
-        // If callback is provided (web), use it to open in panel 2
-        if (widget.onNfoTap != null) {
-          widget.onNfoTap!();
-        } else {
-          Navigator.pushNamed(context, Routes.mfnfoscreen);
-        }
+        Navigator.pushNamed(context, Routes.mfnfoscreen);
       },
-      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(16.0),
+        margin: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: theme.isDarkMode ? Colors.transparent : Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          color: theme.isDarkMode
+              ? const Color.fromARGB(255, 0, 0, 0)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(5.0),
           border: Border.all(
             color: theme.isDarkMode
                 ? colors.textSecondaryDark
@@ -838,44 +516,94 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
             width: 1,
           ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SvgPicture.asset(
-              'assets/explore/gift.svg',
-              width: 25,
-              height: 25,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "New Fund Offerings",
-                    style: MyntWebTextStyles.body(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textPrimaryDark
-                          : MyntColors.textPrimary,
-                      fontWeight: MyntFonts.medium,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 0),
+                      child: TextWidget.paraText(
+                          align: TextAlign.left,
+                          text: "INVEST IN",
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          textOverflow: TextOverflow.ellipsis,
+                          theme: theme.isDarkMode,
+                          fw: 0),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Invest in new funds at launch price",
-                    style: MyntWebTextStyles.para(
-                      context,
-                      color: theme.isDarkMode
-                          ? MyntColors.textSecondaryDark
-                          : MyntColors.textSecondary,
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextWidget.subText(
+                            align: TextAlign.left,
+                            text: "New Fund Offerings",
+                            color: theme.isDarkMode
+                                ? colors.textSecondaryDark
+                                : colors.textPrimaryLight,
+                            textOverflow: TextOverflow.ellipsis,
+                            theme: theme.isDarkMode,
+                            fw: 0),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.arrow_forward,
+                          color: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          size: 18,
+                        ),
+                      ],
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                  ],
+                ),
+                SvgPicture.asset(
+                  'assets/explore/gift.svg',
+                  width: 38,
+                  height: 34,
+                ),
+              ],
             ),
+            // const SizedBox(height: 10),
+            // TextWidget.paraText(
+            //     align: TextAlign.left,
+            //     text:
+            //         "A new fund offer (NFO) is the first subscription for any new fund by an investment company.",
+            //     color: theme.isDarkMode
+            //         ? colors.textSecondaryDark
+            //         : colors.textSecondaryLight,
+            //     maxLines: 2,
+            //     textOverflow: TextOverflow.ellipsis,
+            //     theme: theme.isDarkMode,
+            //     fw: 3),
+            // const SizedBox(height: 12),
+            // Row(
+            //   children: [
+            //     TextWidget.paraText(
+            //         align: TextAlign.left,
+            //         text: "See all NFOs",
+            //         color: theme.isDarkMode
+            //             ? colors.primaryDark
+            //             : colors.primaryLight,
+            //         textOverflow: TextOverflow.ellipsis,
+            //         theme: theme.isDarkMode,
+            //         fw: 3),
+            //     SizedBox(width: 4),
+            //     Icon(
+            //       Icons.arrow_forward,
+            //       color: theme.isDarkMode
+            //           ? colors.primaryDark
+            //           : colors.primaryLight,
+            //       size: 16,
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
@@ -885,11 +613,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   Widget sipcaltor(BuildContext context, MFProvider mf, ThemesProvider theme) {
     return InkWell(
       onTap: () async {
-        if (widget.onSipCalculatorTap != null) {
-          widget.onSipCalculatorTap!();
-        } else {
-          Navigator.pushNamed(context, Routes.mfsipcalscreen);
-        }
+        Navigator.pushNamed(context, Routes.mfsipcalscreen);
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -900,16 +624,15 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 25,
           height: 25,
         ),
-        title: Text(
-          "SIP Calculator",
-          style: MyntWebTextStyles.body(
-            context,
-            color: theme.isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textSecondary,
-            fontWeight: MyntFonts.medium,
-          ),
-          overflow: TextOverflow.ellipsis,
+        title: TextWidget.subText(
+          // align: TextAlign.right,
+          text: "SIP Calculator",
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -918,11 +641,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
   Widget cargrcalss(BuildContext context, MFProvider mf, ThemesProvider theme) {
     return InkWell(
       onTap: () async {
-        if (widget.onCagrCalculatorTap != null) {
-          widget.onCagrCalculatorTap!();
-        } else {
-          Navigator.pushNamed(context, Routes.mfcagrcalss);
-        }
+        Navigator.pushNamed(context, Routes.mfcagrcalss);
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -933,16 +652,15 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
           width: 25,
           height: 25,
         ),
-        title: Text(
-          "CAGR Calculator",
-          style: MyntWebTextStyles.body(
-            context,
-            color: theme.isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textSecondary,
-            fontWeight: MyntFonts.medium,
-          ),
-          overflow: TextOverflow.ellipsis,
+        title: TextWidget.subText(
+          // align: TextAlign.right,
+          text: "CAGR Calculator",
+          color: theme.isDarkMode
+              ? colors.textSecondaryDark
+              : colors.textSecondaryLight,
+          textOverflow: TextOverflow.ellipsis,
+          theme: theme.isDarkMode,
+          fw: 0,
         ),
       ),
     );
@@ -990,32 +708,23 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       separatorBuilder: (_, __) => const ListDivider(),
-                      itemCount: mfData.bestMFListStaticnew.length,
+                      itemCount: mfData.bestMFListStaticnew?.length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
-                        if (index >= mfData.bestMFListStaticnew.length) {
+                        if (mfData.bestMFListStaticnew == null ||
+                            index >= mfData.bestMFListStaticnew.length) {
                           return const SizedBox.shrink();
                         }
 
                         return InkWell(
-                          onTap: () {
-                            final title =
-                                mfData.bestMFListStaticnew[index]['title'];
-                            // Navigate immediately - title is passed as argument
-                            if (widget.onCollectionTap != null) {
-                              widget.onCollectionTap!(
-                                title,
-                                mfData.bestMFListStaticnew[index]['subtitle'] ??
-                                    '',
-                                mfData.bestMFListStaticnew[index]['image'] ??
-                                    'assets/explore/default.svg',
-                              );
-                            } else {
-                              Navigator.pushNamed(
-                                context,
-                                Routes.bestMfScreen,
-                                arguments: title,
-                              );
-                            }
+                          onTap: () async {
+                            mfData.changetitle(
+                                mfData.bestMFListStaticnew[index]['title']);
+                            Navigator.pushNamed(
+                              context,
+                              Routes.bestMfScreen,
+                              arguments: mfData.bestMFListStaticnew[index]
+                                  ['title'],
+                            );
                           },
                           child: ListTile(
                             minLeadingWidth: 25,
@@ -1028,28 +737,27 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                               height: 30,
                               width: 30,
                             ),
-                            title: Text(
-                              mfData.bestMFListStaticnew[index]['title'] ?? '',
-                              style: MyntWebTextStyles.body(
-                                context,
-                                color: theme.isDarkMode
-                                    ? MyntColors.textPrimaryDark
-                                    : MyntColors.textPrimary,
-                                fontWeight: MyntFonts.medium,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            title: TextWidget.subText(
+                              text: mfData.bestMFListStaticnew[index]
+                                      ['title'] ??
+                                  '',
+                              color: theme.isDarkMode
+                                  ? colors.textPrimaryDark
+                                  : colors.textPrimaryLight,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 0,
                             ),
-                            subtitle: Text(
-                              "${mfData.bestMFListStaticnew[index]['subtitle'] ?? ''}",
-                              style: MyntWebTextStyles.para(
-                                context,
-                                color: theme.isDarkMode
-                                    ? MyntColors.textSecondaryDark
-                                    : MyntColors.textSecondary,
-                                fontWeight: MyntFonts.medium,
-                              ),
+                            subtitle: TextWidget.paraText(
+                              text:
+                                  "${mfData.bestMFListStaticnew[index]['subtitle'] ?? ''}",
+                              color: theme.isDarkMode
+                                  ? colors.textSecondaryDark
+                                  : colors.textSecondaryLight,
                               maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              textOverflow: TextOverflow.ellipsis,
+                              theme: theme.isDarkMode,
+                              fw: 0,
                             ),
                           ),
                         );
@@ -1067,7 +775,7 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
 
   Widget buildCategoriesTab(MFProvider mfData, ThemesProvider theme) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: ClampingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1095,12 +803,14 @@ class _MutualFundNewScreenState extends ConsumerState<MutualFundNewScreen>
                   title: mfData.mFCategoryTypesStatic[index]['title'],
                   description: mfData.mFCategoryTypesStatic[index]
                       ['description'],
+                      
                   chips: mfData.mFCategoryTypesStatic[index]['sub'],
                   mfData: mfData,
                   theme: theme);
             },
             itemCount: mfData.mFCategoryTypesStatic.length,
           ),
+          
         ],
       ),
     );

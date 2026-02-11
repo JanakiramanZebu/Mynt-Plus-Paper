@@ -8,14 +8,14 @@ import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 
-class MFSearchPopup extends ConsumerStatefulWidget {
-  const MFSearchPopup({super.key});
+class MFSearchPopupWeb extends ConsumerStatefulWidget {
+  const MFSearchPopupWeb({super.key});
 
   @override
-  ConsumerState<MFSearchPopup> createState() => _MFSearchPopupState();
+  ConsumerState<MFSearchPopupWeb> createState() => _MFSearchPopupWebState();
 }
 
-class _MFSearchPopupState extends ConsumerState<MFSearchPopup> {
+class _MFSearchPopupWebState extends ConsumerState<MFSearchPopupWeb> {
   final TextEditingController _searchController = TextEditingController();
 
   @override

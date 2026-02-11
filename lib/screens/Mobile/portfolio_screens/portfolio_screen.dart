@@ -2,7 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
-import '../mutual_fund/mf_hold_new_screen.dart';
+import '../../web/mutual_fund/mf_hold_new_screen_web.dart';
 import '../../../provider/ledger_provider.dart';
 import '../../../provider/portfolio_provider.dart';
 import '../../../provider/order_provider.dart';
@@ -308,7 +308,7 @@ class _PortfolioScreenState extends ConsumerState<PortfolioScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                  _buildTabBar(context, ref),
-                  const Expanded(child: MfHoldNewScreen()),
+                  const Expanded(child: MfHoldNewScreenWeb()),
                 ],
               ),
               PositionScreen(listofPosition: portfolio.allPostionList),

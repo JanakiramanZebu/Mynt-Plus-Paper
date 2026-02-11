@@ -1,45 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:flutter_riverpod/all.dart';
-// import 'package:google_fonts/google_fonts.dart';
-import 'package:mynt_plus/models/mf_model/mutual_fundmodel.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_order_book_screen.dart';
 // import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import '../../../../provider/auth_provider.dart';
-import '../../../../res/res.dart';
-import '../../../../sharedWidget/mynt_loader.dart';
-import '../../../../res/mynt_web_color_styles.dart';
-import '../../../../res/mynt_web_text_styles.dart';
+import '../../../provider/auth_provider.dart';
+import '../../../res/res.dart';
+import '../../../sharedWidget/loader_ui.dart';
 // import '../../provider/mf_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/portfolio_provider.dart';
+import '../../../res/global_state_text.dart';
 import 'mf_sip_screen.dart';
-import 'mutual_fund_screen_new.dart';
 import 'mf_watchlist.dart';
-
+import 'mutual_fund_screen_new.dart';
 
 class MFExploreScreens extends ConsumerStatefulWidget {
-  final ThemesProvider? theme;
+  final ThemesProvider theme;
   final Function(bool)? onBoundaryReached; // Callback for boundary detection
-  final VoidCallback? onNfoTap; // Callback when NFO card is tapped (for web panel navigation)
-  final Function(String title, String subtitle, String icon)? onCollectionTap; // Callback when collection is tapped
-  final Function(String title, String subtitle, String icon)? onCategoryTap; // Callback when category is tapped
-  final VoidCallback? onSipCalculatorTap;
-  final VoidCallback? onCagrCalculatorTap;
-  final Function(MutualFundList mfData)? onFundTap; // Callback when fund is tapped (for web panel navigation)
-
-  const MFExploreScreens({
-    super.key,
-    this.theme,
-    this.onBoundaryReached,
-    this.onNfoTap,
-    this.onCollectionTap,
-    this.onCategoryTap,
-    this.onSipCalculatorTap,
-    this.onCagrCalculatorTap,
-    this.onFundTap,
-  });
+  const MFExploreScreens({super.key, required this.theme, this.onBoundaryReached});
 
   @override
   ConsumerState<MFExploreScreens> createState() => _ExploreScreensState();
@@ -132,7 +113,7 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
     final mfData = ref.watch(mfProvider);
     final portfolio = ref.watch(portfolioProvider);
 
-    return MyntLoaderOverlay(
+    return TransparentLoaderScreen(
       isLoading: explore.loading,
       child: GestureDetector(
         onTap: () {
@@ -144,39 +125,50 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
             // const SizedBox(height: 150),
             // const CustomDragHandler(),
             Padding(
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top, bottom: MediaQuery.of(context).padding.bottom),
               child: Container(
                 width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.only(top: 8),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: theme.isDarkMode
                           ? colors.darkColorDivider
                           : colors.colorDivider,
-                      width: 1,
+                      width: 0,
                     ),
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: List.generate(
-                    tablistitems.length,
-                    (tab) => Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () {
-                          setState(() {
-                            selectedTab = tab;
-                          });
-                          _tabController.animateTo(tab);
-                          if (_tabController.index != tab) {
-                            _tabController.index = tab;
-                          }
-                        },
-                        child: _tabConstruct(
-                            tablistitems[tab]['title'].toString(), theme, tab),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: List.generate(
+                      tablistitems.length,
+                      (tab) => Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.black.withOpacity(0.05),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(0.01)
+                              : Colors.black.withOpacity(0.01),
+                          onTap: () {
+                            setState(() {
+                              selectedTab = tab;
+                            });
+                            _tabController.animateTo(tab);
+                            // Also update the page controller to jump directly
+                            if (_tabController.index != tab) {
+                              _tabController.index = tab;
+                            }
+                            portfolio.showHoldMFSearch(false);
+                            portfolio.clearHoldMFSearch();
+                          },
+                          child: _tabConstruct(
+                              tablistitems[tab]['title'].toString(), theme, tab),
+                        ),
                       ),
                     ),
                   ),
@@ -187,20 +179,15 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
                          Expanded(
                child: _CustomTabBarView(
                  controller: _tabController,
-                 onBoundaryReached: widget.onBoundaryReached,
-                  children: [
-                    MutualFundNewScreen(
-                      tabController: _tabController,
-                      onNfoTap: widget.onNfoTap,
-                      onCollectionTap: widget.onCollectionTap,
-                      onCategoryTap: widget.onCategoryTap,
-                      onSipCalculatorTap: widget.onSipCalculatorTap,
-                      onCagrCalculatorTap: widget.onCagrCalculatorTap,
-                    ),
-                   MFWatchlistScreen(onFundTap: widget.onFundTap),
+                 children: [
+                   MutualFundNewScreen(
+                     tabController: _tabController,
+                   ),
+                   const MFWatchlistScreen(),
                    const MfOrderBookScreen(),
                    const MFSipdetScreen()
                  ],
+                 onBoundaryReached: widget.onBoundaryReached,
                ),
              ),
           ],
@@ -211,28 +198,41 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
 
   Widget _tabConstruct(String title, ThemesProvider theme, int tab) {
     final isActive = selectedTab == tab;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isActive ? theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary : Colors.transparent,
-            width: 2,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: MediaQuery.of(context).size.width * 0.25,
+          // width: 100,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: TextWidget.subText(
+            text: title,
+            color: isActive
+                ? theme.isDarkMode
+                    ? colors.secondaryDark
+                    : colors.secondaryLight
+                : theme.isDarkMode
+                    ? colors.textSecondaryDark
+                    : colors.textSecondaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            theme: theme.isDarkMode,
+            fw: isActive ? 2 : 2,
           ),
         ),
-      ),
-      child: Text(
-        title,
-        style: MyntWebTextStyles.body(
-          context,
-          fontWeight: MyntFonts.medium,
-          color: isActive
-              ? theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary
-              : theme.isDarkMode
-                  ? MyntColors.textSecondaryDark
-                  : MyntColors.textSecondary,
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          height: 2,
+          width: isActive ? 82 : 0,
+          margin: const EdgeInsets.only(top: 1),
+          decoration: BoxDecoration(
+            color: colors.colorBlue,
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -249,8 +249,8 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         backgroundColor: theme.isDarkMode
             ? tab == mfData.activeTab
-                ? MyntColors.searchBgDark
-                : const Color.fromARGB(255, 255, 255, 255).withValues(alpha: .15)
+                ? colors.colorbluegrey
+                : const Color.fromARGB(255, 255, 255, 255).withOpacity(.15)
             : tab == mfData.activeTab
                 ? const Color(0xff000000)
                 : const Color.fromARGB(255, 255, 255, 255),
@@ -277,9 +277,9 @@ class _ExploreScreensState extends ConsumerState<MFExploreScreens>
   }
 
   TextStyle textStyle(Color color, double fontSize, fWeight) {
-    return webText(
-          context,
-          weight: fWeight, color: color, size: fontSize);
+    return GoogleFonts.inter(
+        textStyle:
+            TextStyle(fontWeight: fWeight, color: color, fontSize: fontSize));
   }
 }
 
@@ -391,24 +391,19 @@ class _CustomTabBarViewState extends State<_CustomTabBarView> {
         // Minimum distance for edge swipe
         const minDistance = 50.0;
 
-        // Use addPostFrameCallback to prevent state changes during mouse device updates
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-
-          // Right swipe from first tab (Explore) -> notify parent to go to previous tab (Stocks)
-          if (deltaX > minDistance && currentPage == 0) {
-            if (widget.onBoundaryReached != null) {
-              widget.onBoundaryReached!(true); // true = previous tab (Stocks)
-            }
+        // Right swipe from first tab (Explore) -> notify parent to go to previous tab (Stocks)
+        if (deltaX > minDistance && currentPage == 0) {
+          if (widget.onBoundaryReached != null) {
+            widget.onBoundaryReached!(true); // true = previous tab (Stocks)
           }
+        }
 
-          // Left swipe from last tab (SIP) -> notify parent to go to next tab (IPO)
-          if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
-            if (widget.onBoundaryReached != null) {
-              widget.onBoundaryReached!(false); // false = next tab (IPO)
-            }
+        // Left swipe from last tab (SIP) -> notify parent to go to next tab (IPO)
+        if (deltaX < -minDistance && currentPage == widget.children.length - 1) {
+          if (widget.onBoundaryReached != null) {
+            widget.onBoundaryReached!(false); // false = next tab (IPO)
           }
-        });
+        }
       },
       onPointerCancel: (PointerCancelEvent event) {
         _isTracking = false;

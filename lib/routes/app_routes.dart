@@ -8,11 +8,12 @@ import 'package:mynt_plus/screens/Mobile/bonds/bonds_common_search_screen.dart';
 import 'package:mynt_plus/screens/Mobile/algo/algo_strategytlist.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart';
 // import 'package:mynt_plus/screens/ipo/ipo_common_search_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_hold_singlepage.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/mf_sip_details_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/order_single_page.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/redeem_new_bottomsheet.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/cagr_calculator_screen_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_hold_singlepage_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_sip_details_screen_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/mf_sip_details_screen_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/order_single_page_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/redeem_new_bottomsheet_web.dart';
 import 'package:mynt_plus/screens/Mobile/order_screen/order_confirmation_screen.dart';
 import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.dart';
 import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
@@ -72,14 +73,14 @@ import '../screens/Mobile/market_watch/option_chain/option_chain_ss.dart';
 import '../screens/Mobile/market_watch/search_screen.dart';
 import '../screens/Mobile/market_watch/set_alert_screen_new.dart';
 import '../screens/Mobile/market_watch/future_screen_new.dart';
-import '../screens/Mobile/mutual_fund/mf_nfo_screen.dart';
-import '../screens/Mobile/mutual_fund/mf_top_category_list.dart';
-import '../screens/Mobile/mutual_fund/mf_all_best_funds.dart';
-import '../screens/Mobile/mutual_fund/common_search_screen.dart';
-import '../screens/Mobile/mutual_fund/mf_order_book_screen.dart';
-import '../screens/Mobile/mutual_fund/mf_main_screen.dart';
-import '../screens/Mobile/mutual_fund/mf_order_screen.dart';
-import '../screens/Mobile/mutual_fund/mf_stock_detail_screen.dart';
+import '../screens/web/mutual_fund/mf_nfo_screen_web.dart';
+import '../screens/web/mutual_fund/mf_top_category_list_web.dart';
+import '../screens/web/mutual_fund/mf_all_best_funds_web.dart';
+import '../screens/web/mutual_fund/common_search_screen_web.dart';
+import '../screens/web/mutual_fund/mf_order_book_screen_web.dart';
+import '../screens/web/mutual_fund/mf_main_screen_web.dart';
+import '../screens/web/mutual_fund/mf_order_screen_web.dart';
+import '../screens/web/mutual_fund/mf_stock_detail_screen_web.dart';
 import '../screens/Mobile/order_book/basket/basket_list.dart';
 import '../screens/Mobile/order_book/exit_order_screen.dart';
 import '../screens/Mobile/order_book/gtt_order_detail.dart';
@@ -138,7 +139,7 @@ import '../screens/web/strategy_builder/strategy_builder_screen.dart';
 import '../sharedWidget/internet_widget.dart';
 import 'route_names.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../screens/Mobile/mutual_fund/sip_calculator_screen.dart';
+import '../screens/web/mutual_fund/sip_calculator_screen_web.dart';
 import '../screens/Mobile/profile_screen/fund_screen/withdraw/withdraw_screen.dart';
 import '../provider/transcation_provider.dart';
 import '../provider/thems.dart';
@@ -898,23 +899,23 @@ class AppRoutes {
         );
       case Routes.mfmainscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MfmainScreen(),
+          pageBuilder: (_, __, ___) => const MfmainScreenWeb(),
           beginOffset: const Offset(0.0, 1.0),
         );
       case Routes.mfCategoryList:
         return _createRoute(
-          pageBuilder: (_, __, ___) => MFCategoryListScreen(title: args),
+          pageBuilder: (_, __, ___) => MFCategoryListScreenWeb(title: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfnfoscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MFNFOScreen(),
+          pageBuilder: (_, __, ___) => const MFNFOScreenWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mfsipcalscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MFSIPSCREEN(),
+          pageBuilder: (_, __, ___) => const MFSIPSCREENWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.brokerCalculator:
@@ -939,17 +940,17 @@ class AppRoutes {
           );
       case Routes.mfcagrcalss:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MFCAGRCAL(),
+          pageBuilder: (_, __, ___) => const MFCAGRCALWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfOrderbookscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MfOrderBookScreen(),
+          pageBuilder: (_, __, ___) => const MfOrderBookScreenWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.mfSipdetScren:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const mfSipdetScren(data: {}),
+          pageBuilder: (_, __, ___) => const mfSipdetScrenWeb(data: {}),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -961,19 +962,19 @@ class AppRoutes {
 
       case Routes.mfholdsinlepage:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const mfholdsinlepage(),
+          pageBuilder: (_, __, ___) => const mfholdsinlepageWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mforderdetscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const mforderdetscreen(),
+          pageBuilder: (_, __, ___) => const mforderdetscreenWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.redeemNewBottomSheet:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const RedemptionBottomScreenNew(),
+          pageBuilder: (_, __, ___) => const RedemptionBottomScreenNewWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
@@ -1015,7 +1016,7 @@ class AppRoutes {
         );
       case Routes.mfsearchscreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => const MfCommonSearch(),
+          pageBuilder: (_, __, ___) => const MfCommonSearchWeb(),
           beginOffset: const Offset(-1.0, 0.0),
         );
       // case Routes.mfWatchlist:
@@ -1025,13 +1026,13 @@ class AppRoutes {
       //   );
       case Routes.mfStockDetail:
         return _createRoute(
-          pageBuilder: (_, __, ___) => MFStockDetailScreen(mfStockData: args),
+          pageBuilder: (_, __, ___) => MFStockDetailScreenWeb(mfStockData: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 
       case Routes.mforderScreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => MFOrderScreen(mfData: args),
+          pageBuilder: (_, __, ___) => MFOrderScreenWeb(mfData: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
       case Routes.sipDetails:
@@ -1061,7 +1062,7 @@ class AppRoutes {
 
       case Routes.bestMfScreen:
         return _createRoute(
-          pageBuilder: (_, __, ___) => SaveTaxesScreen(title: args),
+          pageBuilder: (_, __, ___) => SaveTaxesScreenWeb(title: args),
           beginOffset: const Offset(-1.0, 0.0),
         );
 

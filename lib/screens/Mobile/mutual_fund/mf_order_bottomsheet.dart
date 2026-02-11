@@ -1,21 +1,31 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../res/res.dart';
-import '../../../res/mynt_web_text_styles.dart';
-import '../../../../sharedWidget/cust_text_formfield.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
+import '../../../res/res.dart';
+import '../../../sharedWidget/cust_text_formfield.dart';
+import '../../../provider/fund_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/transcation_provider.dart';
-// import '../../../sharedWidget/custom_drag_handler.dart';
+import '../../../routes/route_names.dart';
+import '../../../sharedWidget/custom_drag_handler.dart';
 import '../../../sharedWidget/fund_function.dart';
 import '../../../sharedWidget/list_divider.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
 import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
+import '../profile_screen/fund_screen/upi_id_screens/upi_id_cancel_alert.dart';
 import 'mandate_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../res/assets.dart';
 import 'mf_processing_screen.dart';
 
 class MfOrderBottomsheet extends StatefulWidget {
@@ -133,35 +143,32 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
           },
           child: SafeArea(
             child: Container(
-              width: screenWidth * 0.2,
-               decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-                  borderRadius: BorderRadius.circular(16),
-            
-                   border: Border(
-                                    top: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    left: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                    right: BorderSide(
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                              .withOpacity(0.5)
-                                          : colors.colorWhite,
-                                    ),
-                                  ),
-                  
+              decoration: BoxDecoration(
+                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
+                border: Border(
+                  top: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  left: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                  right: BorderSide(
+                    color: theme.isDarkMode
+                        ? colors.textSecondaryDark.withOpacity(0.5)
+                        : colors.colorWhite,
+                  ),
+                ),
+              ),
               child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                physics: ClampingScrollPhysics(),
                 padding: EdgeInsets.only(
                   top: 22.0,
                   bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
@@ -170,13 +177,29 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                 ),
                 child: Stack(
                   children: [
+                    if (mfOrder.upiApiresponse != null &&
+                        mfOrder.upiApiresponse?.stat == "Ok" &&
+                        (mfOrder.paymentName == "UPI" ||
+                            mfOrder.paymentName == "NET BANKING") &&
+                        mfOrder.ispaymentcalled == true) ...[
+                      SizedBox(
+                        height: screenheight * 0.24,
+                        child: MfUPIProcessingScreen(
+                          data: widget.condval == 'reinitiatefromportfolio'
+                              ? widget.data.orderId
+                              : mfOrder.mfPlaceOrderResponces!.orderId,
+                        ),
+                      ),
+                    ] else ...[
                       mfOrder.investloader
                           ? Positioned(
                               child: SizedBox(
                               height: screenheight * 0.5,
                               width: screenWidth,
                               child: Material(
-                                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                color: theme.isDarkMode
+                                    ? colors.colorBlack
+                                    : colors.colorWhite,
                                 child: Theme(
                                   data: Theme.of(context),
                                   child: Center(
@@ -184,23 +207,28 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 650),
-                                          transitionBuilder: (child, animation) =>
-                                              ScaleTransition(
-                                                  scale: animation, child: child),
+                                          duration: Duration(milliseconds: 650),
+                                          transitionBuilder:
+                                              (child, animation) =>
+                                                  ScaleTransition(
+                                                      scale: animation,
+                                                      child: child),
                                           child: mfOrder.loadingMessage ==
                                                   "Order Initiated"
-                                              ?  Icon(
+                                              ? Icon(
                                                   Icons.check_circle,
-                                                  key: const ValueKey("verified"),
+                                                  key: ValueKey("verified"),
                                                   size: 50,
-                                                  color: theme.isDarkMode ? colors.profitDark : colors.profitLight,
+                                                  color: theme.isDarkMode
+                                                      ? colors.profitDark
+                                                      : colors.profitLight,
                                                 )
                                               : SizedBox(
-                                                  key: const ValueKey("loading"),
+                                                  key: ValueKey("loading"),
                                                   height: 25,
                                                   width: 25,
-                                                  child: CircularProgressIndicator(
+                                                  child:
+                                                      CircularProgressIndicator(
                                                     strokeWidth: 3.0,
                                                     valueColor:
                                                         AlwaysStoppedAnimation<
@@ -215,14 +243,13 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 ),
                                         ),
                                         const SizedBox(height: 16),
-                                        Text(
-                                          mfOrder.loadingMessage ?? "",
-                                          style: MyntWebTextStyles.bodySmall(
-                                            context,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                          ),
+                                        TextWidget.subText(
+                                          text: mfOrder.loadingMessage ?? "",
+                                          theme: theme.isDarkMode,
+                                          color: theme.isDarkMode
+                                              ? colors.textPrimaryDark
+                                              : colors.textPrimaryLight,
+                                          fw: 0,
                                         ),
                                       ],
                                     ),
@@ -235,14 +262,13 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 if (mfOrder.mfOrderTpye == "SIP") ...[
-                                  Text(
-                                    "Auto Pay (Mandate)",
-                                    style: MyntWebTextStyles.title(
-                                      context,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                    ),
+                                  TextWidget.titleText(
+                                    text: "Auto Pay (Mandate)",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 1,
                                   ),
                                   const SizedBox(height: 16),
                                   // Show mandate selection if mandates exist, otherwise show create mandate button
@@ -252,37 +278,33 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     InkWell(
                                       onTap: () {
                                         // Navigate to mandate selection screen
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) => Dialog(
-                                            insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                            child: SizedBox(
-                                              width: MediaQuery.of(context).size.width >= 1100
-                                                  ? MediaQuery.of(context).size.width * 0.30
-                                                  : MediaQuery.of(context).size.width >= 800
-                                                      ? MediaQuery.of(context).size.width * 0.50
-                                                      : MediaQuery.of(context).size.width * 0.9,
-                                              child: MandateSelectionScreen(
-                                                currentMandateId: mfOrder.mandateId,
-                                                onMandateSelected: (String mandateId) {
-                                                  mfOrder.chngMandate(mandateId);
-                                                  Navigator.pop(context);
-                                                },
-                                              ),
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                MandateSelectionScreen(
+                                              currentMandateId:
+                                                  mfOrder.mandateId,
+                                              onMandateSelected:
+                                                  (String mandateId) {
+                                                mfOrder.chngMandate(mandateId);
+                                                Navigator.pop(context);
+                                              },
                                             ),
                                           ),
                                         );
                                       },
                                       child: Container(
-                                        width: MediaQuery.of(context).size.width,
+                                        width:
+                                            MediaQuery.of(context).size.width,
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16, vertical: 12),
                                         decoration: BoxDecoration(
                                           color: theme.isDarkMode
                                               ? colors.darkGrey
-                                              : const Color(0xffF1F3F8),
-                                          borderRadius: BorderRadius.circular(5),
+                                              : Color(0xffF1F3F8),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
                                           border: Border.all(
                                             color: theme.isDarkMode
                                                 ? colors.primaryDark
@@ -299,35 +321,38 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 children: [
                                                   Row(
                                                     children: [
-                                                      Text(
-                                                        _getSelectedMandateAmount(mfOrder),
-                                                        style: MyntWebTextStyles.bodySmall(
-                                                          context,
-                                                          color: theme.isDarkMode
-                                                              ? colors.textPrimaryDark
-                                                              : colors.textPrimaryLight,
-                                                        ),
+                                                      TextWidget.subText(
+                                                        text:
+                                                            "${_getSelectedMandateAmount(mfOrder)}",
+                                                        theme: theme.isDarkMode,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        fw: 0,
                                                       ),
-                                                      const SizedBox(
+                                                      SizedBox(
                                                         width: 4,
                                                       ),
                                                       _getSelectedMandateStatus(
                                                           mfOrder),
                                                     ],
                                                   ),
-              
-                                                  const SizedBox(
+
+                                                  SizedBox(
                                                     height: 4,
                                                   ),
-              
-                                                  Text(
-                                                    _getSelectedMandateBankName(mfOrder),
-                                                    style: MyntWebTextStyles.bodySmall(
-                                                      context,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
-                                                    ),
+
+                                                  TextWidget.subText(
+                                                    text:
+                                                        "${_getSelectedMandateBankName(mfOrder)}",
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 3,
                                                   ),
                                                   // const SizedBox(height: 4),
                                                   // TextWidget.paraText(
@@ -343,7 +368,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                             Icon(
                                               Icons.arrow_forward_ios,
                                               size: 16,
-                                             color: theme.isDarkMode
+                                              color: theme.isDarkMode
                                                   ? colors.textSecondaryDark
                                                   : colors.textSecondaryLight,
                                             ),
@@ -354,18 +379,21 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                     // Error message below mandate selection
                                     if (mfOrder.mandateStatus != "APPROVED" &&
                                         mfOrder.mandateId.isNotEmpty &&
-                                        _getMandateErrorMessage(mfOrder).isNotEmpty)
+                                        _getMandateErrorMessage(mfOrder)
+                                            .isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Row(
                                           children: [
                                             Expanded(
-                                              child: Text(
-                                                _getMandateErrorMessage(mfOrder),
-                                                style: MyntWebTextStyles.caption(
-                                                  context,
-                                                  color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                                                ),
+                                              child: TextWidget.captionText(
+                                                text: _getMandateErrorMessage(
+                                                    mfOrder),
+                                                theme: theme.isDarkMode,
+                                                color: theme.isDarkMode
+                                                    ? colors.lossDark
+                                                    : colors.lossLight,
+                                                fw: 0,
                                               ),
                                             ),
                                           ],
@@ -377,20 +405,12 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       width: double.infinity,
                                       child: ElevatedButton(
                                         onPressed: () {
-                                          showDialog(
+                                          showModalBottomSheet(
                                             context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
                                             builder: (BuildContext context) {
-                                              return Dialog(
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                child: SizedBox(
-                                                  width: MediaQuery.of(context).size.width >= 1100
-                                                      ? MediaQuery.of(context).size.width * 0.30
-                                                      : MediaQuery.of(context).size.width >= 800
-                                                          ? MediaQuery.of(context).size.width * 0.50
-                                                          : MediaQuery.of(context).size.width * 0.9,
-                                                  child: const CreateMandateDialogue()
-                                                ),
-                                              );
+                                              return const CreateMandateDialogue();
                                             },
                                           );
                                         },
@@ -400,19 +420,19 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                               ? colors.primaryLight
                                               : colors.primaryDark,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           padding: const EdgeInsets.symmetric(
                                               vertical: 12),
                                         ),
-                                        child: Text(
-                                          "Create New Mandate",
-                                          style: MyntWebTextStyles.bodySmall(
-                                            context,
-                                            color: !theme.isDarkMode
-                                                ? colors.colorWhite
-                                                : colors.colorBlack,
-                                          ),
+                                        child: TextWidget.subText(
+                                          text: "Create New Mandate",
+                                          theme: !theme.isDarkMode,
+                                          color: !theme.isDarkMode
+                                              ? colors.colorWhite
+                                              : colors.colorBlack,
+                                          fw: 0,
                                         ),
                                       ),
                                     ),
@@ -444,19 +464,18 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                 ],
                                 if (mfOrder.mfOrderTpye != "SIP") ...[
                                   const SizedBox(height: 14),
-              
-                                  Text(
-                                    "Pay With",
-                                    style: MyntWebTextStyles.title(
-                                      context,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                    ),
+
+                                  TextWidget.titleText(
+                                    text: "Pay With",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 1,
                                   ),
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     child: Column(
                                       children: [
                                         Column(
@@ -464,9 +483,11 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                             const ListDivider(),
                                             InkWell(
                                               onTap: () async {
-                                                await Future.delayed(const Duration(
-                                                    milliseconds: 150));
-                                                showBottomSheetbank(fund, theme);
+                                                await Future.delayed(
+                                                    const Duration(
+                                                        milliseconds: 150));
+                                                showBottomSheetbank(
+                                                    fund, theme);
                                               },
                                               child: ListTile(
                                                 contentPadding:
@@ -475,29 +496,33 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 ),
                                                 // minVerticalPadding: 16,
                                                 title: Padding(
-                                                  padding: const EdgeInsets.only(
-                                                      bottom: 4),
-                                                  child: Text(
-                                                    fund.bankname,
-                                                    style: MyntWebTextStyles.bodySmall(
-                                                      context,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textPrimaryDark
-                                                          : colors.textPrimaryLight,
-                                                    ),
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 4),
+                                                  child: TextWidget.subText(
+                                                    text: fund.bankname,
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? colors.textPrimaryDark
+                                                        : colors
+                                                            .textPrimaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 subtitle: Padding(
                                                   padding:
-                                                      const EdgeInsets.only(top: 4),
-                                                  child: Text(
-                                                    hideAccountNumber(fund.accno),
-                                                    style: MyntWebTextStyles.para(
-                                                      context,
-                                                      color: theme.isDarkMode
-                                                          ? colors.textSecondaryDark
-                                                          : colors.textSecondaryLight,
-                                                    ),
+                                                      const EdgeInsets.only(
+                                                          top: 4),
+                                                  child: TextWidget.paraText(
+                                                    text: hideAccountNumber(
+                                                        fund.accno),
+                                                    theme: theme.isDarkMode,
+                                                    color: theme.isDarkMode
+                                                        ? colors
+                                                            .textSecondaryDark
+                                                        : colors
+                                                            .textSecondaryLight,
+                                                    fw: 0,
                                                   ),
                                                 ),
                                                 trailing: Material(
@@ -507,30 +532,39 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                   child: InkWell(
                                                     customBorder:
                                                         const CircleBorder(),
-                                                    splashColor: theme.isDarkMode
+                                                    splashColor: theme
+                                                            .isDarkMode
                                                         ? colors.splashColorDark
-                                                        : colors.splashColorLight,
-                                                    highlightColor: theme.isDarkMode
+                                                        : colors
+                                                            .splashColorLight,
+                                                    highlightColor: theme
+                                                            .isDarkMode
                                                         ? colors.highlightDark
                                                         : colors.highlightLight,
                                                     onTap: () async {
                                                       // Add delay for visual feedback
                                                       await Future.delayed(
                                                           const Duration(
-                                                              milliseconds: 150));
-              
+                                                              milliseconds:
+                                                                  150));
+
                                                       await showBottomSheetbank(
                                                           fund, theme);
                                                     },
-                                                    child: SizedBox(
+                                                    child: Container(
                                                       height: 32,
                                                       width: 32,
-                                                      child:  Center(
-                                                        child: Icon(Icons.more_vert,
-                                                            size: 22,
-                                                            color: theme.isDarkMode
-                                                                ? colors.textSecondaryDark
-                                                                : colors.textSecondaryLight,),
+                                                      child: Center(
+                                                        child: Icon(
+                                                          Icons.more_vert,
+                                                          size: 22,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textSecondaryDark
+                                                              : colors
+                                                                  .textSecondaryLight,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -543,23 +577,22 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                       ],
                                     ),
                                   ),
-              
-                                  Text(
-                                    "Payment method",
-                                    style: MyntWebTextStyles.bodyMedium(
-                                      context,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fontWeight: MyntFonts.medium,
-                                    ),
+
+                                  TextWidget.subText(
+                                    text: "Payment method",
+                                    theme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? colors.textPrimaryDark
+                                        : colors.textPrimaryLight,
+                                    fw: 1,
                                   ),
                                   const SizedBox(height: 16),
                                   const ListDivider(),
                                   ListView.separated(
                                     padding: const EdgeInsets.all(0),
                                     shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
                                     itemCount: mfOrder.paymentMethod.length,
                                     separatorBuilder: (context, index) =>
                                         const ListDivider(),
@@ -570,9 +603,9 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           paymentMethodName == "UPI"
                                               ? 'assets/icon/paymentIcon/upi.svg'
                                               : 'assets/icon/netbanking_icon.svg';
-                                      bool isSelected =
-                                          mfOrder.paymentName == paymentMethodName;
-              
+                                      bool isSelected = mfOrder.paymentName ==
+                                          paymentMethodName;
+
                                       return Container(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 6, vertical: 16),
@@ -580,8 +613,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           children: [
                                             InkWell(
                                               onTap: () {
-                                                mfOrder
-                                                    .chngPayName(paymentMethodName);
+                                                mfOrder.chngPayName(
+                                                    paymentMethodName);
                                               },
                                               child: Row(
                                                 children: [
@@ -589,9 +622,13 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     paymentMethodImage,
                                                     width: 40,
                                                     height: 40,
-                                                    color: index == 1 ? theme.isDarkMode
-                                                        ? colors.textSecondaryDark
-                                                        : colors.textSecondaryLight : null,
+                                                    color: index == 1
+                                                        ? theme.isDarkMode
+                                                            ? colors
+                                                                .textSecondaryDark
+                                                            : colors
+                                                                .textSecondaryLight
+                                                        : null,
                                                   ),
                                                   const SizedBox(width: 20),
                                                   Expanded(
@@ -600,22 +637,28 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        Text(
-                                                          paymentMethodName == "UPI"
+                                                        TextWidget.subText(
+                                                          text: paymentMethodName ==
+                                                                  "UPI"
                                                               ? "UPI ID"
                                                               : "Net Banking",
-                                                          style: MyntWebTextStyles.bodySmall(
-                                                            context,
-                                                            color: theme.isDarkMode
-                                                                ? colors.textPrimaryDark
-                                                                : colors.textPrimaryLight,
-                                                          ),
+                                                          theme:
+                                                              theme.isDarkMode,
+                                                          color: theme
+                                                                  .isDarkMode
+                                                              ? colors
+                                                                  .textPrimaryDark
+                                                              : colors
+                                                                  .textPrimaryLight,
+                                                          fw: 0,
                                                         ),
                                                         if (isSelected)
                                                           Icon(
                                                             Icons.check_circle,
-                                                            color: theme.isDarkMode
-                                                                ? colors.primaryDark
+                                                            color: theme
+                                                                    .isDarkMode
+                                                                ? colors
+                                                                    .primaryDark
                                                                 : colors
                                                                     .primaryLight,
                                                             size: 20,
@@ -642,27 +685,42 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 children: [
                                                   const SizedBox(height: 8),
                                                   SizedBox(
-                                                    width: MediaQuery.of(context)
-                                                            .size
-                                                            .width *
-                                                        0.8,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.8,
                                                     child: CustomTextFormField(
-                                                      textAlign: TextAlign.start,
-                                                      fillColor: theme.isDarkMode ? colors.darkGrey : colors.btnBg,
+                                                      textAlign:
+                                                          TextAlign.start,
+                                                      fillColor:
+                                                          theme.isDarkMode
+                                                              ? colors.darkGrey
+                                                              : colors.btnBg,
                                                       hintText: 'Enter UPI ID',
-                                                      
-                                                     hintStyle: webText(
-                                        context,
-                                        size: 14,
-                                        color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                      ),
-                                                      style: webText(
-                                        context,
-                                        size: 16,
-                                        color: theme.isDarkMode
-                                            ? colors.textPrimaryDark
-                                            : colors.textPrimaryLight,
-                                      ),
+                                                      hintStyle:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 14,
+                                                        theme: theme.isDarkMode,
+                                                        color: (theme.isDarkMode
+                                                                ? colors
+                                                                    .textSecondaryDark
+                                                                : colors
+                                                                    .textSecondaryLight)
+                                                            .withOpacity(0.4),
+                                                        fw: 0,
+                                                      ),
+                                                      style:
+                                                          TextWidget.textStyle(
+                                                        fontSize: 16,
+                                                        color: theme.isDarkMode
+                                                            ? colors
+                                                                .textPrimaryDark
+                                                            : colors
+                                                                .textPrimaryLight,
+                                                        theme: theme.isDarkMode,
+                                                        fw: 0,
+                                                      ),
                                                       textCtrl: mfOrder.upiId,
                                                       onChanged: (value) {
                                                         mfOrder.isValidUpiId(
@@ -671,19 +729,20 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                       },
                                                     ),
                                                   ),
-                                                  // Only show error when there's actually an error
-                                                  if (mfOrder.upiError != null && mfOrder.upiError!.isNotEmpty)
+                                                  // if (mfOrder.upiError != null)
                                                   Padding(
-                                                    padding: const EdgeInsets.only(
-                                                        top: 10),
-                                                    child: Text(
-                                                      "${mfOrder.upiError}",
-                                                      style: MyntWebTextStyles.caption(
-                                                        context,
-                                                        color: theme.isDarkMode
-                                                            ? colors.lossDark
-                                                            : colors.lossLight,
-                                                      ),
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            top: 10),
+                                                    child:
+                                                        TextWidget.captionText(
+                                                      text:
+                                                          "${mfOrder.upiError}",
+                                                      theme: theme.isDarkMode,
+                                                      color: theme.isDarkMode
+                                                          ? colors.lossDark
+                                                          : colors.lossLight,
+                                                      fw: 0,
                                                     ),
                                                   ),
                                                 ],
@@ -751,7 +810,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                   //     },
                                   //   ),
                                   // ),
-              
+
                                   // Conditional UPI section
                                 ],
                                 // Show Setup-SIP button only when mandates exist and are approved
@@ -770,62 +829,79 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                           final isUpi =
                                               mfOrder.paymentName == 'UPI';
                                           final isNetBanking =
-                                              mfOrder.paymentName == 'NET BANKING';
-                                          final isUpiValid =
-                                              isUpi ? mfOrder.upiError == '' : true;
-              
+                                              mfOrder.paymentName ==
+                                                  'NET BANKING';
+                                          final isUpiValid = isUpi
+                                              ? mfOrder.upiError == ''
+                                              : true;
+
                                           mfOrder.isValidUpiId(
-                                              widget.data, // Use the correct value
+                                              widget
+                                                  .data, // Use the correct value
                                               widget.condval.toString());
-              
+
                                           if ((isUpiValid &&
-                                                  mfOrder.upiId.text.isNotEmpty) ||
+                                                  mfOrder
+                                                      .upiId.text.isNotEmpty) ||
                                               isNetBanking) {
                                             // Show loading
                                             mfOrder.setInvestLoader(true);
                                             mfOrder.setLoadingMessage(
                                                 "Processing payment...");
                                             mfOrder.IsPaymentCalled(true);
-              
+
                                             // Call UPI Payment trigger
                                             await mfOrder.upipaymenttrigger(
                                               context,
                                               widget.condval ==
                                                       'reinitiatefromportfolio'
                                                   ? widget.data.orderId
-                                                  : mfOrder.mfPlaceOrderResponces!
+                                                  : mfOrder
+                                                      .mfPlaceOrderResponces!
                                                       .orderId,
                                               widget.condval ==
                                                       'reinitiatefromportfolio'
                                                   ? widget.data.orderVal
-                                                  : mfOrder.mfPlaceOrderResponces!
+                                                  : mfOrder
+                                                      .mfPlaceOrderResponces!
                                                       .orderVal,
                                               mfOrder.upiId.text,
                                               mfOrder.paymentName,
                                             );
-              
+
                                             final upiResponse =
                                                 mfOrder.upiApiresponse;
-              
+
                                             if (upiResponse != null) {
                                               if (upiResponse.stat == "Ok") {
                                                 // ✅ Success Case
-                                                if (isUpi) {
-                                                  // UPI Success – close bottom sheet and show processing dialog
-                                                  Navigator.pop(context);
-                                                  showDialog(
-                                                    context: context,
-                                                    barrierDismissible: false,
-                                                    builder: (context) => MfUPIProcessingScreen(
-                                                      data: widget.condval == 'reinitiatefromportfolio'
-                                                          ? widget.data.orderId
-                                                          : mfOrder.mfPlaceOrderResponces!.orderId,
-                                                    ),
-                                                  );
-                                                } else if (isNetBanking) {
+                                                // if (isUpi) {
+                                                //   // UPI Success – show processing bottom sheet
+                                                //   showModalBottomSheet(
+                                                //     context: context,
+                                                //     isScrollControlled: true,
+                                                //     isDismissible: false,
+                                                //     enableDrag: false,
+                                                //     shape:
+                                                //         const RoundedRectangleBorder(
+                                                //       borderRadius:
+                                                //           BorderRadius.vertical(
+                                                //               top: Radius.circular(
+                                                //                   15)),
+                                                //     ),
+                                                //     builder: (context) =>
+                                                //         WillPopScope(
+                                                //       onWillPop: () async =>
+                                                //           !mfOrder.ispaymentcalled,
+                                                //       child: MfUPIProcessingScreen(
+                                                //           data: ''),
+                                                //     ),
+                                                //   );
+                                                // } else
+                                                if (isNetBanking) {
                                                   // Net Banking Success – open WebView
                                                   // Navigator.pop(context);
-              
+
                                                   final url = Uri.parse(
                                                       'https://v3.mynt.in/mfapi${upiResponse.file!}');
                                                   Navigator.of(context).push(
@@ -839,33 +915,32 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                             icon: const Icon(Icons
                                                                 .arrow_back_ios_new),
                                                             onPressed: () {
-                                                              Navigator.pop(
-                                                                  context);
-                                                              Navigator.pop(
-                                                                  context);
-                                                              mfOrder
-                                                                  .threeSecondTimer
-                                                                  ?.cancel();
-                                                              mfOrder.autoPopTimer
-                                                                  ?.cancel();
+                                                              // Cancel transaction and reset state
+                                                              mfOrder.cancelPaymentTransaction();
+                                                              // Store navigator reference BEFORE popping
+                                                              final navigator = Navigator.of(context);
+                                                              // Use popUntil to safely pop both routes
+                                                              int count = 0;
+                                                              navigator.popUntil((_) => count++ >= 2);
                                                             },
                                                           ),
                                                         ),
                                                         body: WillPopScope(
                                                           onWillPop: () async {
-                                                            Navigator.pop(context);
-                                                            Navigator.pop(context);
-                                                            mfOrder.threeSecondTimer
-                                                                ?.cancel();
-                                                            mfOrder.autoPopTimer
-                                                                ?.cancel();
-                                                            return true;
+                                                            // Cancel transaction and reset state
+                                                            mfOrder.cancelPaymentTransaction();
+                                                            // Store navigator reference BEFORE popping (context becomes invalid after pop)
+                                                            final navigator = Navigator.of(context);
+                                                            // Use popUntil to safely pop both routes
+                                                            int count = 0;
+                                                            navigator.popUntil((_) => count++ >= 2);
+                                                            return false;
                                                           },
                                                           child: InAppWebView(
                                                             initialUrlRequest:
                                                                 URLRequest(
-                                                                    url: WebUri(url
-                                                                        .toString())),
+                                                                    url: WebUri(
+                                                                        url.toString())),
                                                             initialOptions:
                                                                 InAppWebViewGroupOptions(
                                                               crossPlatform:
@@ -885,33 +960,38 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                 }
                                               } else {
                                                 // ❌ Failure Case – show error bottom sheet
-                                                showDialog(
+                                                showModalBottomSheet(
                                                   context: context,
-                                                  barrierDismissible: false,
+                                                  isScrollControlled: true,
+                                                  isDismissible: false,
+                                                  enableDrag: false,
+                                                  shape:
+                                                      const RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.vertical(
+                                                            top:
+                                                                Radius.circular(
+                                                                    15)),
+                                                  ),
                                                   builder: (context) =>
-                                                      Dialog(
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                                        child: SizedBox(
-                                                          width: MediaQuery.of(context).size.width >= 1100
-                                                              ? MediaQuery.of(context).size.width * 0.30
-                                                              : MediaQuery.of(context).size.width >= 800
-                                                                  ? MediaQuery.of(context).size.width * 0.50
-                                                                  : 420,
-                                                          child: WillPopScope(
-                                                            onWillPop: () async => !mfOrder.ispaymentcalled,
-                                                            child: MfPaymentRespAlert(
-                                                              upiData: upiResponse.data!.toJson(),
-                                                              conditionval: 'reinitiateerror',
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
+                                                      WillPopScope(
+                                                    onWillPop: () async =>
+                                                        !mfOrder
+                                                            .ispaymentcalled,
+                                                    child: MfPaymentRespAlert(
+                                                      upiData: upiResponse.data!
+                                                          .toJson(),
+                                                      conditionval:
+                                                          'reinitiateerror',
+                                                    ),
+                                                  ),
                                                 );
                                               }
                                             }
                                           }
                                         } else {
-                                          if (mfOrder.mandateStatus == "APPROVED") {
+                                          if (mfOrder.mandateStatus ==
+                                              "APPROVED") {
                                             // Set loading state immediately when button is pressed
                                             // mfOrder.setLoadingMessage(
                                             //     "Processing SIP order...");
@@ -928,28 +1008,29 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                                     ? "0"
                                                     : mfOrder.endDate,
                                                 mfOrder.mandateId);
-                                            if (mfOrder.xsipOrderResponces?.stat ==
+                                            if (mfOrder.xsipOrderResponces
+                                                        ?.stat ==
                                                     "Ok" ||
-                                                mfOrder.xsipOrderResponces?.stat ==
+                                                mfOrder.xsipOrderResponces
+                                                        ?.stat ==
                                                     "Not_Ok") {
-                                              showDialog(
+                                              showModalBottomSheet(
                                                 context: context,
-                                                barrierDismissible: false,
+                                                isScrollControlled: true,
+                                                enableDrag: false,
+                                                shape:
+                                                    const RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.vertical(
+                                                    top: Radius.circular(15),
+                                                  ),
+                                                ),
                                                 builder: (context) =>
-                                                    Dialog(
-                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                                      child: SizedBox(
-                                                        width: MediaQuery.of(context).size.width >= 1100
-                                                            ? MediaQuery.of(context).size.width * 0.30
-                                                            : MediaQuery.of(context).size.width >= 800
-                                                                ? MediaQuery.of(context).size.width * 0.50
-                                                                : 420,
-                                                        child: MfPaymentRespAlert(
-                                                          upiData: mfOrder.xsipOrderResponces?.toJson(),
-                                                          conditionval: ''
-                                                        ),
-                                                      ),
-                                                    ),
+                                                    MfPaymentRespAlert(
+                                                        upiData: mfOrder
+                                                            .xsipOrderResponces
+                                                            ?.toJson(),
+                                                        conditionval: ''),
                                               );
                                             }
                                           }
@@ -960,7 +1041,8 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                         side: BorderSide(
                                             color: colors.btnOutlinedBorder),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(5),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
                                         ),
                                         backgroundColor: colors.primaryDark,
                                         // mfOrder.mandateStatus == "APPROVED"
@@ -981,28 +1063,29 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
                                               width: 15,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2.0,
-                                                valueColor: AlwaysStoppedAnimation<
-                                                        Color>(
-                                                    Color.fromARGB(99, 48, 48, 48)),
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                            Color>(
+                                                        Color.fromARGB(
+                                                            99, 48, 48, 48)),
                                                 backgroundColor: Color.fromARGB(
                                                     255, 255, 255, 255),
                                               ),
                                             )
-                                          : Text(
-                                              mfOrder.mfOrderTpye == "SIP"
+                                          : TextWidget.subText(
+                                              text: mfOrder.mfOrderTpye == "SIP"
                                                   ? "Setup - SIP"
                                                   : "Pay - One Time",
-                                              style: MyntWebTextStyles.bodySmall(
-                                                context,
-                                                color: colors.colorWhite,
-                                                fontWeight: MyntFonts.semiBold,
-                                              ),
+                                              fw: 2,
+                                              theme: theme.isDarkMode,
+                                              color: colors.colorWhite,
                                             ),
                                     ),
                                   ),
                                 ]
                               ],
                             ),
+                    ],
                   ],
                 ),
               ),
@@ -1012,78 +1095,89 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
   }
 
   showBottomSheetbank(TranctionProvider fund, ThemesProvider theme) {
-    // Guard clause - don't show dialog if bank data is not available
-    if (fund.bankdetails == null || fund.bankdetails!.dATA == null || fund.bankdetails!.dATA!.isEmpty) {
-      return;
-    }
-
-    showDialog(
+    showModalBottomSheet(
+      enableDrag: false,
+      useSafeArea: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      backgroundColor: const Color(0xffffffff),
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.3,
-            decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(16),
-             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-             border: Border.all(color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : Colors.transparent),
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16, bottom: 10),
-                  child: Text(
-                    'Choose an bank:',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
-                    ),
-                  ),
+            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            border: Border(
+              top: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              left: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+              right: BorderSide(
+                color: theme.isDarkMode
+                    ? colors.textSecondaryDark.withOpacity(0.5)
+                    : colors.colorWhite,
+              ),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CustomDragHandler(),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, bottom: 10),
+                child: TextWidget.titleText(
+                  text: 'Choose an bank:',
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                  fw: 1,
                 ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: fund.bankdetails!.dATA!.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final bankData = fund.bankdetails!.dATA![index];
-                    final bankName = bankData[1]?.toString() ?? '';
-                    final accountNo = bankData[2]?.toString() ?? '';
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: fund.bankdetails!.dATA!.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return InkWell(
+                    onTap: () {
+                      fund.bankselection(index);
+                      fund.setAccountslist(
+                          fund.bankdetails!.dATA![index][2].toString());
 
-                    return InkWell(
-                      onTap: () {
-                        fund.bankselection(index);
-                        fund.setAccountslist(accountNo);
-
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 15),
-                        color: bankName == fund.bankname
-                            ? const Color(0xff999999).withOpacity(0.2)
-                            : Colors.transparent,
-                        child: Text(
-                          '$bankName-${hideAccountNumber(accountNo)}',
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                          ),
-                        ),
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 15),
+                      color: fund.bankdetails!.dATA![index][1] == fund.bankname
+                          ? const Color(0xff999999).withOpacity(0.2)
+                          : Colors.transparent,
+                      child: TextWidget.subText(
+                        text:
+                            '${fund.bankdetails!.dATA![index][1]}-${hideAccountNumber(fund.bankdetails!.dATA![index][2])}',
+                        theme: theme.isDarkMode,
+                        fw: 0,
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(
-                  height: 10,
-                )
-              ],
-            ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(
+                height: 10,
+              )
+            ],
           ),
         );
       },

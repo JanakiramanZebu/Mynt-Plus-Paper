@@ -4,12 +4,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../provider/mf_provider.dart';
-import '../../../../../provider/thems.dart';
-import '../../../../../res/res.dart';
-import '../../../../../res/mynt_web_text_styles.dart';
-import '../../../../../sharedWidget/payment_loader.dart';
-import '../../../../../sharedWidget/snack_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mynt_plus/provider/transcation_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import '../../../../provider/mf_provider.dart';
+import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
+import '../../../../res/res.dart';
+import '../../../../sharedWidget/custom_drag_handler.dart';
+import '../../../../sharedWidget/functions.dart';
+import '../../../../sharedWidget/payment_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import '../profile_screen/fund_screen/upi_id_screens/mf_payment_resp_alert.dart';
 
 class MfUPIProcessingScreen extends ConsumerStatefulWidget {
@@ -51,9 +57,15 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
           }
-          showDialog(
+          showModalBottomSheet(
             context: context,
-            barrierDismissible: false,
+            isScrollControlled: true,
+            enableDrag: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+            ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
               conditionval : mfProv.statusCheckUpi?.stat == 'Not_Ok' ? mfProv.statusCheckUpi?.remarks : '',
@@ -73,9 +85,15 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
 
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
-        showDialog(
+        showModalBottomSheet(
             context: context,
-            barrierDismissible: false,
+            isScrollControlled: true,
+            enableDrag: false,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(15),
+              ),
+            ),
             builder: (context) => MfPaymentRespAlert(
               upiData: mfProv.statusCheckUpi?.toJson(),
               conditionval : 'timeout'
@@ -112,70 +130,68 @@ class _MfUPIProcessingScreen extends ConsumerState<MfUPIProcessingScreen> {
     final mfprovider = ref.read(mfProvider);
 
     return PopScope(
-        canPop: true,
+        canPop: true, // Allows default back navigation
         onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
+          if (didPop) return; // If system handled back, do nothing
         },
-        child: Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 300),
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
-            decoration: BoxDecoration(
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Awaiting ${mfprovider.paymentName} confirmation',
-                  style: MyntWebTextStyles.title(
-                    context,
-                    darkColor: colors.textPrimaryDark,
-                    lightColor: colors.textPrimaryLight,
-                  ),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CustomDragHandler(),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.only(top: 10, bottom: 5),
+                alignment: Alignment.center,
+                child: TextWidget.subText(
+                  text: 'Awaiting ${mfprovider.paymentName} confirmation',
+                  theme: false,
+                  color: theme.isDarkMode
+                      ? colors.textPrimaryDark
+                      : colors.textPrimaryLight,
+                      fw: 0,
                 ),
-                const SizedBox(height: 24),
-                const ProgressiveDotsLoader(),
-                const SizedBox(height: 24),
-                Text(
-                  'This will take a few seconds.',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    darkColor: colors.textSecondaryDark,
-                    lightColor: colors.textSecondaryLight,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _triggerButtonAction,
-                    style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                      minimumSize: const Size(0, 48),
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+              ),
+              SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: Column(children: [
+                    // const ListDivider(),
+                    const SizedBox(height: 16),
+                    const ProgressiveDotsLoader(),
+                    const SizedBox(height: 16),
+        
+                    TextWidget.paraText(
+                      text: 'This will take a few seconds.',
+                      theme: false,
+                      color: theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight,
+                      fw: 0,
                     ),
-                    child: Text(
-                      "Cancel Transaction",
-                      style: MyntWebTextStyles.buttonMd(
-                        context,
-                        color: colors.colorWhite,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ));
+                  ])),
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: ElevatedButton(
+                        onPressed: _triggerButtonAction,
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          minimumSize: const Size(0, 45),
+                          backgroundColor: theme.isDarkMode
+                              ? colors.primaryDark
+                              : colors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                        ),
+                        child: TextWidget.subText(
+                            text: "Cancel Transaction",
+                            theme: false,
+                            color: colors.colorWhite,
+                            fw: 2))),
+              ),
+             
+            ]));
   }
 }

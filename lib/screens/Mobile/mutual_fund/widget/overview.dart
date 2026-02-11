@@ -1,27 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:readmore/readmore.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
 import '../../../../provider/mf_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/global_state_text.dart';
 import '../../../../res/res.dart';
-import '../../../../res/mynt_web_color_styles.dart';
-import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../sharedWidget/functions.dart';
 
 class MFOverview extends ConsumerWidget {
   final MutualFundList mfStockData;
-  final String? fundName;
-  final String? fundCategory;
-  final String? fundImage;
-
-  const MFOverview({
-    super.key,
-    required this.mfStockData,
-    this.fundName,
-    this.fundCategory,
-    this.fundImage,
-  });
+  const MFOverview({super.key, required this.mfStockData});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,467 +27,387 @@ class MFOverview extends ConsumerWidget {
     }
 
     final isDarkMode = theme.isDarkMode;
-    final List<NavGraphData> dataSource = navGraph?.data?.toList() ?? [];
+
+    // Create tooltip behavior for chart
+    final interactiveTooltip = InteractiveTooltip(
+      enable: true,
+      format: 'Nav : point.y',
+      borderColor: colors.colorBlue,
+      textStyle: const TextStyle(color: Colors.white),
+    );
+
+    // Safely create data source
+    final List<NavGraphData> dataSource =
+        mfProvide.singleloader == true ? [] : (navGraph?.data?.toList() ?? []);
 
     return Container(
-      // color: isDarkMode ? Colors.black : Colors.white,
-      color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        decoration: BoxDecoration(
-          // color: isDarkMode ? colors.colorBlack : Colors.white,
-          color: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-            width: 1,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header Section (Fund Name & Category + Stats + Description)
-            if (fundName != null) ...[
-              // Title row with fund info and stats
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                child: Row(
-                  children: [
-                    // Fund Icon
-                    if (fundImage != null && fundImage!.isNotEmpty)
-                      Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-                            width: 1,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.network(
-                            fundImage!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                              Icons.account_balance,
-                              color: isDarkMode ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    // Fund Name & Category
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "$fundName - ${fundCategory ?? 'Equity'}",
-                            style: MyntWebTextStyles.title(
-                              context,
-                              color: isDarkMode
-                                  ? MyntColors.textPrimaryDark
-                                  : MyntColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+        color: isDarkMode ? Colors.black : Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Fund Metrics
+              _buildFundMetrics(context, theme, mfProvide),
+              // NAV Chart
+              Container(
+                margin: const EdgeInsets.only(top: 14, bottom: 12),
+                height: 320,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  color: isDarkMode ? colors.colorBlack : Colors.white,
+                  border: Border.all(
+                    color: isDarkMode ? colors.colorBlack : Colors.transparent,
+                  ),
+                ),
+                child: SfCartesianChart(
+                  margin: const EdgeInsets.symmetric(horizontal: 0),
+                  backgroundColor:
+                      isDarkMode ? colors.colorBlack : Colors.white,
+                  borderWidth: 0,
+                  plotAreaBorderWidth: 0,
+                  primaryXAxis: CategoryAxis(
+                    isVisible: false,
+                    labelStyle: textStyle(
+                      isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      10,
+                      FontWeight.w500,
                     ),
-                    // Stats on right side of header
-                    Row(
-                      children: [
-                        _buildHeaderStat(context, isDarkMode, "NAV", "₹${factSheetData.currentNAV ?? '0'}"),
-                        const SizedBox(width: 48),
-                        _buildHeaderStat(context, isDarkMode, "AUM (Cr)", "₹${_formatAum(factSheetData.AUM)}"),
-                        const SizedBox(width: 48),
-                        _buildHeaderStat(context, isDarkMode, "Min. Inv", "₹${factSheetData.purchaseMinAmount ?? '0'}"),
-                        const SizedBox(width: 48),
-                        _buildHeaderStat(context, isDarkMode, "Expense", "${factSheetData.expenseRatio ?? '0'}%"),
-                      ],
+                    majorGridLines: const MajorGridLines(width: 0),
+                    axisLine: const AxisLine(width: 0),
+                  ),
+                  primaryYAxis: NumericAxis(
+                    isVisible: false,
+                    majorGridLines: const MajorGridLines(width: 0),
+                  ),
+                  trackballBehavior: TrackballBehavior(
+                    enable: true,
+                    activationMode: ActivationMode.singleTap,
+                    tooltipSettings: interactiveTooltip,
+                    tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
+                  ),
+                  series: <CartesianSeries<NavGraphData, String>>[
+                    AreaSeries<NavGraphData, String>(
+                      name: "Historical NAV",
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                          isDarkMode
+                              ? colors.colorBlack
+                              : Colors.white.withOpacity(1),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                      ),
+                      isVisibleInLegend: false,
+                      enableTooltip: true,
+                      borderColor: colors.colorBlue,
+                      borderWidth: 2,
+                      dataSource: dataSource,
+                      xValueMapper: (NavGraphData data, _) {
+                        if (data.navDate == null) return "";
+                        return data.navDate!.length > 14
+                            ? data.navDate!
+                                .substring(0, data.navDate!.length - 14)
+                            : data.navDate!;
+                      },
+                      yValueMapper: (NavGraphData data, _) => data.nav,
                     ),
                   ],
                 ),
               ),
-              // Full width Divider
-              Divider(
-                height: 0.5,
-                thickness: 0.5,
-                color: isDarkMode ? colors.darkColorDivider : colors.colorDivider,
-              ),
-              // Fund Description
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-                child: Text(
-                  _buildFundDescription(factSheetData, mfProvide),
-                  style: MyntWebTextStyles.para(
-                    context,
-                    color: isDarkMode
-                        ? MyntColors.textSecondaryDark
-                        : MyntColors.textSecondary,
-                  ).copyWith(height: 1.6),
-                ),
-              ),
-            ],
-            // Main content area
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+
+              const SizedBox(height: 22),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Left Side - Chart (60%)
-                  Expanded(
-                    flex: 6,
-                    child: _buildChartSection(context, isDarkMode, dataSource, mfProvide),
+                  TextWidget.titleText(
+                      align: TextAlign.right,
+                      text: "Trailing Returns (%)",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const SizedBox(width: 0),
+                  Icon(
+                    Icons.circle,
+                    size: 16,
+                    color: theme.isDarkMode ? colors.profitDark  : colors.profitLight,
                   ),
-                  // Right Side - Info Panel (40%)
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  TextWidget.paraText(
+                      align: TextAlign.start,
+                      text: "Benchmark",
+                      color: theme.isDarkMode
+                          ? colors.textPrimaryDark
+                          : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0),
                   Expanded(
-                    flex: 4,
-                    child: _buildStatsPanel(context, isDarkMode, factSheetData, mfProvide),
+                    child: TextWidget.paraText(
+                        align: TextAlign.start,
+                        text: "  (${factSheetData.benchmark ?? ""})",
+                        color: theme.isDarkMode
+                            ? colors.textSecondaryDark
+                            : colors.textSecondaryLight,
+                        textOverflow: TextOverflow.ellipsis,
+                        theme: theme.isDarkMode,
+                        fw: 0),
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+              const SizedBox(height: 16),
 
-  Widget _buildChartSection(
-    BuildContext context,
-    bool isDarkMode,
-    List<NavGraphData> dataSource,
-    MFProvider mfProvide,
-  ) {
-    final interactiveTooltip = InteractiveTooltip(
-      enable: true,
-      format: 'NAV : point.y',
-      borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark,light: MyntColors.primary),
-      textStyle: TextStyle(color: resolveThemeColor(context, dark: MyntColors.textPrimary, light: MyntColors.textPrimaryDark)),
-    );
+              // Returns Grid
+              if (mfProvide.mfReturnsGridview.isNotEmpty)
+                GridView.count(
+                  padding: EdgeInsets.zero,
+                  crossAxisCount: 3,
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 1.3,
+                  children: List.generate(mfProvide.mfReturnsGridview.length,
+                      (index) {
+                    final item = mfProvide.mfReturnsGridview[index];
+                    final value = item['value']?.toString() ?? "0";
+                    final isNegative = value.startsWith("-");
+                    final returnValue = item['return']?.toString() ?? "0";
+                    final isReturnNegative = returnValue.startsWith("-");
 
-    return SfCartesianChart(
-      margin: const EdgeInsets.all(12),
-      // backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
-      backgroundColor: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-      borderWidth: 0,
-      plotAreaBorderWidth: 0,
-      primaryXAxis: CategoryAxis(
-        isVisible: false,
-        majorGridLines: const MajorGridLines(width: 0),
-        axisLine: const AxisLine(width: 0),
-      ),
-      primaryYAxis: NumericAxis(
-        isVisible: true,
-        majorGridLines: MajorGridLines(
-          width: 0.5,
-          color: isDarkMode
-              ? colors.darkColorDivider.withValues(alpha: 0.3)
-              : colors.colorDivider.withValues(alpha: 0.5),
-          dashArray: const [4, 4],
-        ),
-        axisLine: const AxisLine(width: 0),
-        labelStyle: TextStyle(
-          fontSize: 11,
-          color: isDarkMode
-              ? MyntColors.textSecondaryDark
-              : MyntColors.textSecondary,
-        ),
-      ),
-      trackballBehavior: TrackballBehavior(
-        enable: true,
-        activationMode: ActivationMode.singleTap,
-        tooltipSettings: interactiveTooltip,
-        tooltipDisplayMode: TrackballDisplayMode.groupAllPoints,
-        lineColor: colors.colorBlue.withValues(alpha: 0.5),
-        lineWidth: 1,
-      ),
-      series: <CartesianSeries<NavGraphData, String>>[
-        AreaSeries<NavGraphData, String>(
-          name: "Historical NAV",
-          color: colors.colorBlue.withValues(alpha: 0.1),
-          borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-          borderWidth: 2,
-          dataSource: dataSource,
-          xValueMapper: (NavGraphData data, _) {
-            if (data.navDate == null) return "";
-            return _formatChartDate(data.navDate);
-          },
-          yValueMapper: (NavGraphData data, _) => data.nav,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsPanel(
-    BuildContext context,
-    bool isDarkMode,
-    dynamic factSheetData,
-    MFProvider mfProvide,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Returns Grid (3x2)
-          _buildReturnsGrid(context, isDarkMode, mfProvide, factSheetData),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderStat(BuildContext context, bool isDarkMode, String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: isDarkMode
-                ? MyntColors.textSecondaryDark
-                : MyntColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: MyntWebTextStyles.body(
-            context,
-            color: isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildReturnsGrid(BuildContext context, bool isDarkMode, MFProvider mfProvide, dynamic factSheetData) {
-    if (mfProvide.mfReturnsGridview.isEmpty) {
-      return const SizedBox();
-    }
-
-    final benchmark = factSheetData?.benchmark ?? 'Benchmark';
-    final returns = mfProvide.mfReturnsGridview.length > 6
-        ? mfProvide.mfReturnsGridview.sublist(0, 6)
-        : mfProvide.mfReturnsGridview;
-
-    // Split into 2 rows of 3
-    final firstRow = returns.length >= 3 ? returns.sublist(0, 3) : returns;
-    final secondRow = returns.length > 3 ? returns.sublist(3) : <dynamic>[];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Returns heading
-        Text(
-          "Trailing Returns (%)",
-          style: MyntWebTextStyles.bodyMedium(
-            context,
-            color: isDarkMode
-                ? MyntColors.textPrimaryDark
-                : MyntColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 8),
-        // Benchmark indicator
-        Row(
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: isDarkMode ? MyntColors.profitDark : MyntColors.profit,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                "Benchmark ($benchmark)",
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  color: isDarkMode
-                      ? MyntColors.textSecondaryDark
-                      : MyntColors.textSecondary,
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: isNegative
+                            ? isDarkMode
+                                ? colors.lossDark.withOpacity(0.1)
+                                : colors.lossLight.withOpacity(0.1)
+                            : isDarkMode
+                                ? colors.profitDark.withOpacity(0.1)
+                                : colors.profitLight.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 6, horizontal: 8),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  TextWidget.subText(
+                                      align: TextAlign.start,
+                                      text: "$value%",
+                                      color: isNegative
+                                          ? colors.darkred
+                                          : colors.ltpgreen,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 0),
+                                  const SizedBox(height: 3),
+                                  TextWidget.paraText(
+                                      align: TextAlign.start,
+                                      text: item['durName']?.toString() ?? "",
+                                      color: isDarkMode
+                                          ? colors.textSecondaryDark
+                                          : colors.textSecondaryLight,
+                                      textOverflow: TextOverflow.ellipsis,
+                                      theme: theme.isDarkMode,
+                                      fw: 0),
+                                  const SizedBox(height: 3),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            left: 0,
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: MediaQuery.of(context).size.width,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                  color: isReturnNegative
+                                      ? isDarkMode
+                                          ? colors.lossDark.withOpacity(0.5)
+                                          : colors.lossLight.withOpacity(0.3)
+                                      : isDarkMode
+                                          ? colors.profitDark.withOpacity(0.5)
+                                          : colors.profitLight.withOpacity(0.3),
+                                  borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(5))),
+                              child: TextWidget.paraText(
+                                  align: TextAlign.start,
+                                  text: "$returnValue%",
+                                  color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                                  textOverflow: TextOverflow.ellipsis,
+                                  theme: theme.isDarkMode,
+                                  fw: 0),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                )
+              else
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    child:   
+                    TextWidget.subText(
+                      text: "No returns data available",
+                      color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
+                      textOverflow: TextOverflow.ellipsis,
+                      theme: theme.isDarkMode,
+                      fw: 0,
+                    ),  
+                    
+                   
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // First row
-        Row(
-          children: firstRow.asMap().entries.map<Widget>((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final value = item['value']?.toString() ?? "0";
-            final benchmarkValue = item['return']?.toString() ?? "0";
-            final isNegative = value.startsWith("-");
-            final durName = item['durName']?.toString() ?? "";
-            return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(right: index < firstRow.length - 1 ? 12 : 0),
-                child: _buildReturnItem(context, isDarkMode, value, durName, isNegative, benchmarkValue),
-              ),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 12),
-        // Second row
-        if (secondRow.isNotEmpty)
-          Row(
-            children: secondRow.asMap().entries.map<Widget>((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final value = item['value']?.toString() ?? "0";
-              final benchmarkValue = item['return']?.toString() ?? "0";
-              final isNegative = value.startsWith("-");
-              final durName = item['durName']?.toString() ?? "";
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(right: index < secondRow.length - 1 ? 12 : 0),
-                  child: _buildReturnItem(context, isDarkMode, value, durName, isNegative, benchmarkValue),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildReturnItem(BuildContext context, bool isDarkMode, String value, String durName, bool isNegative, String benchmarkValue) {
-    // Background colors based on positive/negative - matching reference image
-    // Top card: More saturated color
-    final bgColor = isNegative
-        ? (isDarkMode ? const Color(0xFF3D2A2A) : const Color(0xFFFFD9D9))
-        : (isDarkMode ? const Color(0xFF2A3D2A) : const Color(0xFFD4F5D4));
-
-    // Bottom card: Much lighter, almost white with tint
-    final benchmarkBgColor = isNegative
-        ? (isDarkMode ? const Color(0xFF2D2222) : const Color(0xFFFFF0F0))
-        : (isDarkMode ? const Color(0xFF223322) : const Color(0xFFEAFAEA));
-
-    final textColor = isNegative
-        ? (isDarkMode ? MyntColors.lossDark : MyntColors.loss)
-        : (isDarkMode ? MyntColors.profitDark : MyntColors.profit);
-
-    return Column(
-      children: [
-        // Fund return card (top)
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(6),
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "$value%",
-                style: MyntWebTextStyles.body(
-                  context,
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                durName,
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  color: isDarkMode
-                      ? MyntColors.textSecondaryDark
-                      : MyntColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
             ],
           ),
-        ),
-        // Benchmark return card (bottom)
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: benchmarkBgColor,
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(6),
-              bottomRight: Radius.circular(6),
-            ),
-          ),
-          child: Text(
-            "$benchmarkValue%",
-            style: MyntWebTextStyles.bodySmall(
-              context,
-              color: isDarkMode
-                  ? MyntColors.textSecondaryDark
-                  : MyntColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
+        ));
+  }
+
+  Row rowOfInfoData(String title1, String value1, String title2, String value2,
+      String title3, String value3, ThemesProvider theme) {
+    return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(title1,
+                    style: textStyle(
+                        const Color(0xff666666), 10, FontWeight.w400)),
+                const SizedBox(height: 4),
+                Text(value1,
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
+                const SizedBox(height: 2),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
+              ])),
+          const SizedBox(width: 18),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(title2,
+                    style: textStyle(
+                        const Color(0xff666666), 10, FontWeight.w400)),
+                const SizedBox(height: 4),
+                Text(
+                  value2,
+                  style: textStyle(
+                      theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                      14,
+                      FontWeight.w600),
+                ),
+                const SizedBox(height: 2),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
+              ])),
+          const SizedBox(width: 18),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(title3,
+                    style: textStyle(
+                        const Color(0xff666666), 10, FontWeight.w400)),
+                const SizedBox(height: 4),
+                Text(value3,
+                    style: textStyle(
+                        theme.isDarkMode
+                            ? colors.colorWhite
+                            : colors.colorBlack,
+                        14,
+                        FontWeight.w600)),
+                const SizedBox(height: 2),
+                Divider(
+                    color: theme.isDarkMode
+                        ? colors.darkColorDivider
+                        : colors.colorDivider)
+              ]))
+        ]);
+  }
+
+  Widget _buildFundMetrics(
+      BuildContext context, ThemesProvider theme, MFProvider mfData) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildMetricColumn("Aum (cr)",
+            _formatAum(mfData.factSheetDataModel?.data?.AUM), theme),
+        _buildMetricColumn("NAV",
+            _formatValue(mfData.factSheetDataModel?.data?.currentNAV), theme),
+        _buildMetricColumn(
+            "Min. Inv",
+            _formatValue(mfData.factSheetDataModel?.data?.purchaseMinAmount),
+            theme),
+        _buildMetricColumn("5Yr CAGR",
+            _formatYearData(mfData.factSheetDataModel?.data?.fiveYear == "null" ? "0" : mfData.factSheetDataModel?.data?.fiveYear ?? "0"), theme),
       ],
     );
   }
 
-  String _buildFundDescription(dynamic factSheetData, MFProvider mfProvide) {
-    final fundManager = factSheetData.fundManager ?? 'N/A';
-    final launchDate = factSheetData.launchDate ?? 'N/A';
-    final currentNAV = factSheetData.currentNAV ?? '0';
-    final navDate = factSheetData.navDate ?? 'N/A';
-    final aum = _formatAum(factSheetData.AUM);
-    final minPurchase = factSheetData.purchaseMinAmount ?? '0';
-    final minSip = factSheetData.sipMinAmount ?? '0';
-    final expenseRatio = factSheetData.expenseRatio ?? '0';
-    final risk = factSheetData.risk ?? '0';
-    final benchmark = factSheetData.benchmark ?? 'N/A';
-
-    // Build returns string from mfReturnsGridview
-    String returnsStr = '';
-    if (mfProvide.mfReturnsGridview.isNotEmpty) {
-      final returnsList = mfProvide.mfReturnsGridview.map((item) {
-        final value = item['value']?.toString() ?? '0';
-        final durName = item['durName']?.toString() ?? '';
-        return '$value% for $durName';
-      }).toList();
-      if (returnsList.isNotEmpty) {
-        returnsStr = ' Returns are ${returnsList.join(', ')}.';
-      }
-    }
-
-    return 'The fund is managed by $fundManager. Launched on $launchDate, the fund has a current NAV of ₹$currentNAV as of $navDate. It has an AUM of ₹$aum Crores, with a minimum investment of ₹$minPurchase for purchase and ₹$minSip for SIP. The expense ratio is $expenseRatio% with a risk level of $risk. The benchmark is $benchmark.$returnsStr';
-  }
-
-  String _formatChartDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '';
-    try {
-      final parts = dateStr.split(' ')[0].split('-');
-      if (parts.length >= 3) {
-        // Return short format: DD/MM
-        return "${parts[2]}/${parts[1]}";
-      }
-      return dateStr.split(' ')[0];
-    } catch (e) {
-      return dateStr.split(' ')[0];
-    }
+  Widget _buildMetricColumn(String title, String value, ThemesProvider theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextWidget.subText(
+            text: title,
+            color: theme.isDarkMode
+                ? colors.textPrimaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 0),
+        const SizedBox(height: 6),
+        TextWidget.subText(
+            text: value,
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : colors.textPrimaryLight,
+            textOverflow: TextOverflow.ellipsis,
+            theme: theme.isDarkMode,
+            fw: 0),
+      ],
+    );
   }
 
   String _formatAum(String? aum) {
@@ -506,5 +417,14 @@ class MFOverview extends ConsumerWidget {
     } catch (e) {
       return "0.00";
     }
+  }
+
+  String _formatValue(String? value) {
+    return value?.isEmpty ?? true ? "0.00" : value!;
+  }
+
+  String _formatYearData(String? yearData) {
+    if (yearData == null || yearData.isEmpty) return "0.00";
+    return "$yearData%";
   }
 }

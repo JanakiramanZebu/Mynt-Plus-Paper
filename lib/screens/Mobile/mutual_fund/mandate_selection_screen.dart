@@ -6,17 +6,17 @@ import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/sharedWidget/list_divider.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
-import '../../../../provider/thems.dart';
+import '../../../provider/thems.dart';
 
 class MandateSelectionScreen extends StatefulWidget {
   final String? currentMandateId;
   final Function(String) onMandateSelected;
 
   const MandateSelectionScreen({
-    super.key,
+    Key? key,
     this.currentMandateId,
     required this.onMandateSelected,
-  });
+  }) : super(key: key);
 
   @override
   State<MandateSelectionScreen> createState() => _MandateSelectionScreenState();
@@ -112,7 +112,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                   child: mfOrder.mandateData != null &&
                           mfOrder.mandateData!.isNotEmpty
                       ? ListView.separated(
-                        physics: const ClampingScrollPhysics(),
+                        physics: ClampingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: mfOrder.mandateData!.length,
                           separatorBuilder: (context, index) =>
@@ -172,7 +172,7 @@ class _MandateSelectionScreenState extends State<MandateSelectionScreen> {
                                                 ),
                                               ),
                                               TextWidget.subText(
-                                                text: double.parse(mandate.amount ?? '0').toStringAsFixed(2),
+                                                text: "${double.parse(mandate.amount ?? '0').toStringAsFixed(2)}",
                                                 theme: theme.isDarkMode,
                                                  color: theme.isDarkMode
                                                     ? colors.textPrimaryDark

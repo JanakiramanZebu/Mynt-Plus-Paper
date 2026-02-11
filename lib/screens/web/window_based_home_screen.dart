@@ -48,18 +48,18 @@ import 'trade_action_screen_web.dart';
 import 'portfolio_analysis_web.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
 import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
-import '../Mobile/mutual_fund/mf_main_screen.dart';
-import '../Mobile/mutual_fund/mf_all_best_funds.dart';
-import '../Mobile/mutual_fund/mf_top_category_list.dart';
-import '../Mobile/mutual_fund/mf_nfo_screen.dart';
+import 'mutual_fund/mf_main_screen_web.dart';
+import 'mutual_fund/mf_all_best_funds_web.dart';
+import 'mutual_fund/mf_top_category_list_web.dart';
+import 'mutual_fund/mf_nfo_screen_web.dart';
 import 'ipo/ipo_main_screen_web.dart';
 import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/sip_calculator_screen.dart';
-import 'package:mynt_plus/screens/Mobile/mutual_fund/cagr_calculator_screen.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
+import 'package:mynt_plus/screens/web/mutual_fund/cagr_calculator_screen_web.dart';
 import 'customizable_split_home_screen.dart' show ScreenType;
 
 /// Window-based home screen using WindowNavigator from shadcn_flutter
@@ -381,11 +381,11 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.funds:
         return const _LazyFundScreen();
       case ScreenType.mutualFund:
-        return const MfmainScreen();
+        return const MfmainScreenWeb();
       case ScreenType.ipo:
         return const IPOScreen(isIpo: true);
       case ScreenType.mfNfo:
-        return const MFNFOScreen();
+        return const MFNFOScreenWeb();
       case ScreenType.bond:
         return const BondsScreen(isBonds: true);
       case ScreenType.scripDepthInfo:
@@ -429,13 +429,13 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
           key: const ValueKey('tradeAction'),
         );
       case ScreenType.mfCollection:
-        return const SaveTaxesScreen(title: "Collections");
+        return const SaveTaxesScreenWeb(title: "Collections");
       case ScreenType.mfCategory:
-        return const MFCategoryListScreen(title: "Categories");
+        return const MFCategoryListScreenWeb(title: "Categories");
       case ScreenType.sipCalculator:
-        return const MFSIPSCREEN();
+        return const MFSIPSCREENWeb();
       case ScreenType.cagrCalculator:
-        return const MFCAGRCAL();
+        return const MFCAGRCALWeb();
       case ScreenType.mfStockDetail:
         return const SizedBox.shrink();
       case ScreenType.notification:

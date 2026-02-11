@@ -1,11 +1,13 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
-import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
-import '../../../../sharedWidget/cust_text_formfield.dart';
+import 'package:mynt_plus/sharedWidget/functions.dart';
+import '../../../provider/thems.dart';
+import '../../../res/global_state_text.dart';
+import '../../../res/res.dart';
+import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../provider/mf_provider.dart';
 import '../mutual_fund_old/create_mandate_daialogue.dart';
 
@@ -32,7 +34,10 @@ class DropdownItem {
 class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     double screenheight = MediaQuery.of(context).size.height;
+    
+    double notional = 0.0;
 
     return Consumer(builder: (context, WidgetRef ref, _) {
       final theme = ref.read(themeProvider);
@@ -70,10 +75,11 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (mfOrder.mfOrderTpye == "SIP") ...[
-            TextWidget.titleText(
-                text: "Mandates",
-                theme: theme.isDarkMode,
-                fw: 1),
+            Text("Mandates",
+                style: textStyle(
+                    theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                    16,
+                    FontWeight.w600)),
             const SizedBox(height: 4),
             if (mfOrder.mandateData!.isNotEmpty) ...[
               DropdownButtonHideUnderline(
@@ -88,7 +94,7 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                     decoration: BoxDecoration(
                       color: theme.isDarkMode
                           ? colors.darkGrey
-                          : const Color(0xffF1F3F8),
+                          : Color(0xffF1F3F8),
                       borderRadius: const BorderRadius.all(Radius.circular(32)),
                     ),
                   ),
@@ -97,18 +103,16 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                           BoxDecoration(borderRadius: BorderRadius.circular(4)),
                       offset: const Offset(0, 1)),
                   isExpanded: true,
-                  style: TextWidget.textStyle(
-                      fontSize: 13,
-                      theme: theme.isDarkMode,
-                      fw: 0,
-                      color: theme.isDarkMode
+                  style: textStyle(
+                      theme.isDarkMode
                           ? colors.colorWhite
-                          : const Color(0XFF000000)),
-                  hint: TextWidget.subText(
-                    text: mfOrder.mandateId ?? "Select a Mandate",
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: const Color(0XFF000000),
+                          : const Color(0XFF000000),
+                      13,
+                      FontWeight.w500),
+                  hint: Text(
+                    mfOrder.mandateId ?? "Select a Mandate",
+                    style:
+                        textStyle(const Color(0XFF000000), 13, FontWeight.w500),
                   ),
                   items: mfOrder.mandateDividers(),
                   value: mfOrder
@@ -144,21 +148,25 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                         : colors.primaryDark,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5))),
-                child: TextWidget.subText(
-                    text: "Create mandate",
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: !theme.isDarkMode
-                        ? colors.colorWhite
-                        : colors.colorBlack)),
+                child: Text("Create mandate",
+                    style:  
+                        textStyle(
+                            !theme.isDarkMode
+                                ? colors.colorWhite
+                                : colors.colorBlack,
+                            14,
+                            FontWeight.w500))),
           ],
             if (mfOrder.mfOrderTpye != "SIP") ...[
             const SizedBox(height: 14),
 
-            TextWidget.titleText(
-              text: "Payment method",
-              theme: theme.isDarkMode,
-              fw: 1,
+            Text(
+              "Payment method",
+              style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                16,
+                FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 14),
             DropdownButtonHideUnderline(
@@ -183,17 +191,18 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                   customHeights: mfOrder.getCustItemsHeight(),
                 ),
                 isExpanded: true,
-                style: TextWidget.textStyle(
-                  fontSize: 13,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                  color: const Color.fromARGB(255, 0, 0, 0),
+                style: textStyle(
+                  const Color.fromARGB(255, 0, 0, 0),
+                  13,
+                  FontWeight.w500,
                 ),
-                hint: TextWidget.subText(
-                  text: mfOrder.paymentName,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                  color: const Color(0XFF000000),
+                hint: Text(
+                  mfOrder.paymentName,
+                  style: textStyle(
+                    const Color(0XFF000000),
+                    13,
+                    FontWeight.w500,
+                  ),
                 ),
                 items:
                     mfOrder.investloader == false ? mfOrder.addDividers() : [],
@@ -204,10 +213,13 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
               ),
             ),
             const SizedBox(height: 18),
-            TextWidget.titleText(
-              text: "Bank account ",
-              theme: theme.isDarkMode,
-              fw: 1,
+            Text(
+              "Bank account ",
+              style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                16,
+                FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             DropdownButtonHideUnderline(
@@ -233,21 +245,22 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                   offset: const Offset(0, 1),
                 ),
                 isExpanded: true,
-                style: TextWidget.textStyle(
-                  fontSize: 13,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                  color: theme.isDarkMode
+                style: textStyle(
+                  theme.isDarkMode
                       ? colors.colorWhite
                       : const Color(0XFF000000),
+                  13,
+                  FontWeight.w500,
                 ),
-                hint: TextWidget.subText(
-                  text: mfOrder.accNum,
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                  color: theme.isDarkMode
-                      ? colors.colorWhite
-                      : const Color(0XFF000000),
+                hint: Text(
+                  mfOrder.accNum,
+                  style: textStyle(
+                    theme.isDarkMode
+                        ? colors.colorWhite
+                        : const Color(0XFF000000),
+                    13,
+                    FontWeight.w500,
+                  ),
                 ),
                 items: mfOrder.addBankDividers(),
                 value: mfOrder.accNum,
@@ -261,10 +274,13 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
             // Conditional UPI section
             if (mfOrder.paymentName == "UPI") ...[
               const SizedBox(height: 12),
-              TextWidget.titleText(
-                text: "UPI ID (Virtual payment address)",
-                theme: theme.isDarkMode,
-                fw: 1,
+              Text(
+                "UPI ID (Virtual payment address)",
+                style: textStyle(
+                  theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                  15,
+                  FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Container(
@@ -299,11 +315,9 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
               // if (mfOrder.upiError != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
-                  child: TextWidget.captionText(
-                    text: "${mfOrder.upiError}",
-                    theme: theme.isDarkMode,
-                    fw: 0,
-                    color: colors.kColorRedText,
+                  child: Text(
+                    "${mfOrder.upiError}",
+                    style: textStyle(colors.kColorRedText, 10, FontWeight.w500),
                   ),
                 ),
             ],
@@ -345,15 +359,16 @@ class _TimmerScreenForUPI extends State<TimmerScreenForUPI> {
                                     Color.fromARGB(255, 255, 255, 255),
                               ),
                             )
-                          : TextWidget.subText(
-                              text: mfOrder.mfOrderTpye == "SIP"
+                          : Text(
+                              mfOrder.mfOrderTpye == "SIP"
                                   ? "SIP"
                                   : mfOrder.mfOrderTpye,
-                              theme: theme.isDarkMode,
-                              fw: 1,
-                              color: theme.isDarkMode
-                                  ? colors.colorBlack
-                                  : const Color(0xffffffff))),
+                              style: textStyle(
+                                  theme.isDarkMode
+                                      ? colors.colorBlack
+                                      : const Color(0xffffffff),
+                                  14,
+                                  FontWeight.w600))),
                 ),
             
           ],

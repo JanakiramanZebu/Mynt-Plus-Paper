@@ -7,6 +7,7 @@ import '../../../provider/thems.dart';
 import '../../../res/res.dart';
 import '../../../routes/route_names.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
+import '../../../sharedWidget/functions.dart';
 import '../../../res/global_state_text.dart';
 
 class MfCommonSearch extends ConsumerWidget {
@@ -39,16 +40,13 @@ class MfCommonSearch extends ConsumerWidget {
                             ? colors.colorWhite
                             : colors.colorBlack))),
             shadowColor: const Color(0xffECEFF3),
-            title: TextWidget.headText(
-                text: "Mutual Funds Search",
-                theme: theme.isDarkMode,
-                fw: 1,
-                color: theme.isDarkMode
-                    ? colors.colorWhite
-                    : colors.colorBlack),
-        ),
+            title: Text("Mutual Funds Search",
+                style: textStyles.appBarTitleTxt.copyWith(
+                    color: theme.isDarkMode
+                        ? colors.colorWhite
+                        : colors.colorBlack))),
         body: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
+          physics: ClampingScrollPhysics(),
           child: Column(
             children: [
               Container(
@@ -177,15 +175,15 @@ class MfCommonSearch extends ConsumerWidget {
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
-                                      TextWidget.subText(
-                                          text: item.schemeName ?? "Unknown Scheme",
+                                      Text(item.schemeName ?? "Unknown Scheme",
                                           maxLines: 1,
-                                          textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
-                                          fw: 0,
-                                          color: theme.isDarkMode
-                                              ? colors.colorWhite
-                                              : colors.colorBlack),
+                                          overflow: TextOverflow.ellipsis,
+                                          style: textStyle(
+                                              theme.isDarkMode
+                                                  ? colors.colorWhite
+                                                  : colors.colorBlack,
+                                              14,
+                                              FontWeight.w500)),
                                       const SizedBox(height: 4),
                                       SizedBox(
                                           height: 18,
@@ -286,28 +284,22 @@ class MfCommonSearch extends ConsumerWidget {
       String value2, dynamic theme) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Row(children: [
-        TextWidget.captionText(
-            text: label1,
-            theme: theme.isDarkMode,
-            fw: 0,
-            color: const Color(0xff999999)),
-        TextWidget.captionText(
-            text: value1,
-            theme: theme.isDarkMode,
-            fw: 0,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
+        Text(label1,
+            style: textStyle(const Color(0xff999999), 12, FontWeight.w500)),
+        Text(value1,
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                12,
+                FontWeight.w500))
       ]),
       Row(children: [
-        TextWidget.captionText(
-            text: label2,
-            theme: theme.isDarkMode,
-            fw: 0,
-            color: const Color(0xff999999)),
-        TextWidget.captionText(
-            text: value2,
-            theme: theme.isDarkMode,
-            fw: 0,
-            color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack)
+        Text(label2,
+            style: textStyle(const Color(0xff999999), 12, FontWeight.w500)),
+        Text(value2,
+            style: textStyle(
+                theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+                12,
+                FontWeight.w500))
       ])
     ]);
   }
@@ -317,7 +309,17 @@ class MfCommonSearch extends ConsumerWidget {
     return InkWell(
         onTap: () async {
           mfData.chngMandate("Lumpsum");
-          // Note: SIP data and mandate details are loaded in MFOrderScreen's initState
+          await mfData.fetchUpiDetail();
+          // await mfData.fetchBankDetail();
+
+          final isin = item.iSIN;
+          final schemeCode = item.schemeCode;
+
+          if (item.sIPFLAG == "Y" && isin != null && schemeCode != null) {
+            await mfData.fetchMFSipData(isin, schemeCode);
+            await mfData.fetchMFMandateDetail();
+          }
+
           Navigator.pushNamed(context, Routes.mforderScreen, arguments: item);
         },
         child: Container(
