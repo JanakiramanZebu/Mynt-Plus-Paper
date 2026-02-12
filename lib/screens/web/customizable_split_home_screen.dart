@@ -343,6 +343,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "portfolioDashboard") {
             debugPrint("Portfolio analysis route matched: $routeName");
             _handlePortfolioAnalysisTap();
+          } else if (routeName == Routes.strategyBuilder ||
+              routeName == "strategyBuilder") {
+            debugPrint("Strategy Builder route matched: $routeName");
+            _handleStrategyBuilderTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -397,6 +401,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "portfolioDashboard") {
             debugPrint("Portfolio analysis route matched: $routeName");
             _handlePortfolioAnalysisTap();
+          } else if (routeName == Routes.strategyBuilder ||
+              routeName == "strategyBuilder") {
+            debugPrint("Strategy Builder route matched: $routeName");
+            _handleStrategyBuilderTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -1310,29 +1318,18 @@ class _CustomizableSplitHomeScreenState
             // Show navigation items only on larger screens
             if (!showHamburger) ...[
               const SizedBox(width: 24),
-              // Primary actions
-              _buildNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
+              // Primary actions - using shadcn NavigationMenu
+              _buildShadcnNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
                   () => _handleMutualFundTap()),
-              const SizedBox(width: 12),
-              _buildNavItem('IPO', isDarkMode, ScreenType.ipo,
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('IPO', isDarkMode, ScreenType.ipo,
                   () => _handleIPOTap()),
-              const SizedBox(width: 12),
-              _buildNavItem('Bonds', isDarkMode, ScreenType.bond,
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('Bonds', isDarkMode, ScreenType.bond,
                 () => _handleBondTap()),
-            const SizedBox(width: 12),
-            _buildNavItem('OptionZ', isDarkMode, ScreenType.tradeAction,
-                  () => _handleOptionZTap()),
-
-                  const SizedBox(width: 12),
-                // Option Flash button
-                Consumer(builder: (context, ref, _) {
-                  return _buildOptionFlashButton(isDarkMode, ref);
-                }),
-
-            const SizedBox(width: 12),
-            _buildNavItem('Strategy Builder', isDarkMode, ScreenType.strategyBuilder,
-                  () => _handleStrategyBuilderTap()),
-         
+            const SizedBox(width: 4),
+            // Trading Tools dropdown menu
+            _buildTradingToolsMenu(isDarkMode),
             ],
 
             const Spacer(),
@@ -1801,19 +1798,19 @@ class _CustomizableSplitHomeScreenState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildNavItem('Home', isDarkMode, ScreenType.dashboard,
+        _buildShadcnNavItem('Home', isDarkMode, ScreenType.dashboard,
             () => _handleDashboardTap()),
-        const SizedBox(width: 8),
-        _buildNavItem('Positions', isDarkMode, ScreenType.positions,
+        const SizedBox(width: 4),
+        _buildShadcnNavItem('Positions', isDarkMode, ScreenType.positions,
             () => _handlePositionsTap()),
-        const SizedBox(width: 8),
-        _buildNavItem('Holdings', isDarkMode, ScreenType.holdings,
+        const SizedBox(width: 4),
+        _buildShadcnNavItem('Holdings', isDarkMode, ScreenType.holdings,
             () => _handleHoldingsTap()),
-        const SizedBox(width: 8),
-        _buildNavItem('Orders', isDarkMode, ScreenType.orderBook,
+        const SizedBox(width: 4),
+        _buildShadcnNavItem('Orders', isDarkMode, ScreenType.orderBook,
             () => _handleOrderBookTap()),
-        const SizedBox(width: 8),
-        _buildNavItem(
+        const SizedBox(width: 4),
+        _buildShadcnNavItem(
             'Funds', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
       ],
     );
@@ -1859,6 +1856,194 @@ class _CustomizableSplitHomeScreenState
         }
       },
       isDarkMode: isDarkMode,
+    );
+  }
+
+  // Build shadcn NavigationMenu for single nav items
+  Widget _buildShadcnNavItem(String title, bool isDarkMode, ScreenType screenType,
+      VoidCallback onTap) {
+    // Check if this screen is currently active in any panel
+    bool isActive = false;
+    for (int i = 0; i < _panels.length; i++) {
+      final panel = _panels[i];
+      if (panel.screenType == screenType ||
+          (panel.screens.isNotEmpty &&
+              panel.activeScreenIndex >= 0 &&
+              panel.activeScreenIndex < panel.screens.length &&
+              panel.screens[panel.activeScreenIndex] == screenType)) {
+        isActive = true;
+        break;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: shadcn.NavigationMenu(
+        children: [
+          shadcn.NavigationMenuItem(
+            onPressed: onTap,
+            child: Text(
+              title,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: isActive ? MyntFonts.bold : MyntFonts.semiBold,
+                darkColor: isActive ? MyntColors.primaryDark : MyntColors.textPrimaryDark,
+                lightColor: isActive ? MyntColors.primary : MyntColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build Trading Tools dropdown menu (click-based)
+  Widget _buildTradingToolsMenu(bool isDarkMode) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final optionFlash = ref.watch(optionFlashProvider);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: shadcn.GhostButton(
+            onPressed: () {
+              shadcn.showDropdown(
+                context: context,
+                builder: (context) {
+                  return shadcn.DropdownMenu(
+                    children: [
+                      // OptionZ
+                      shadcn.MenuButton(
+                        onPressed: (context) {
+                          _handleOptionZTap();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                shadcn.LucideIcons.chartBar,
+                                size: 22,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.iconDark,
+                                  light: MyntColors.icon,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Text(
+                                'OptionZ',
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Option Flash
+                      shadcn.MenuButton(
+                        onPressed: (context) {
+                          if (optionFlash.isVisible) {
+                            optionFlash.closePanel();
+                          } else {
+                            optionFlash.showPanel(context);
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                shadcn.BootstrapIcons.lightning,
+                                size: 22,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.iconDark,
+                                  light: MyntColors.icon,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Text(
+                                'Option Flash',
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Strategy Builder
+                      shadcn.MenuButton(
+                        onPressed: (context) {
+                          _handleStrategyBuilderTap();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                shadcn.LucideIcons.draftingCompass,
+                                size: 22,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.iconDark,
+                                  light: MyntColors.icon,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Text(
+                                'Strategy Builder',
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'More',
+                  style: MyntWebTextStyles.body(
+                    context,
+                    fontWeight: MyntFonts.semiBold,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_drop_down,
+                  size: 18,
+                  color: resolveThemeColor(
+                    context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -1980,7 +2165,6 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.holdings:
         return Consumer(
           builder: (context, ref, _) {
-            // ✅ Optimize: Only watch specific properties instead of entire provider
             final isLoading =
                 _screenLoadingStates[ScreenType.holdings] ?? false;
             final holdloader =

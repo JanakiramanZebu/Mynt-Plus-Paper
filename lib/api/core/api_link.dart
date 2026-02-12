@@ -135,7 +135,7 @@ class ApiLinks {
 
   // String get mainBaseURL => 'https://copy.mynt.in/uat';
 
-  String get mainBaseURL => 'https://ws.mynt.in/login';
+  String get mainBaseURL => 'https://ws.mynt.in/login';      
 
   String get mobileLogin => 'https://ws.mynt.in/login/MobileLogin';
 
@@ -156,11 +156,11 @@ class ApiLinks {
   String get getAllIndx => '$mainBaseURL/GetIndexList';
 
   // Position Group
-  String get positionGrp => '$mainBaseURL/Getpositiongrp';
-  String get creatGrpName => '$mainBaseURL/Createpositiongrp';
-  String get addSymbolGrp => '$mainBaseURL/addsymbolpositiongrp';
-  String get delpositiongrpName => '$mainBaseURL/Deletepositiongrp';
-  String get delpositiongrpSym => '$mainBaseURL/removesymbolpositiongrp';
+  String get positionGrp => 'https://copy.mynt.in/Getpositiongrp';
+  String get creatGrpName => 'https://copy.mynt.in/Createpositiongrp';
+  String get addSymbolGrp => 'https://copy.mynt.in/addsymbolpositiongrp';
+  String get delpositiongrpName => 'https://copy.mynt.in/Deletepositiongrp';
+  String get delpositiongrpSym => 'https://copy.mynt.in/removesymbolpositiongrp';
 
   // Scrip Overview
 

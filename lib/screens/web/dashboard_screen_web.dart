@@ -6,6 +6,7 @@ import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/mynt_loader.dart';
+import '../../../sharedWidget/feature_card_widget.dart';
 import '../../../provider/index_list_provider.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/websocket_provider.dart';
@@ -22,6 +23,9 @@ import 'trade_action_screen_web.dart';
 import '../../../routes/route_names.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../utils/rupee_convert_format.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../locator/locator.dart';
+import '../../../locator/preference.dart';
 
 class DashboardScreenWeb extends ConsumerStatefulWidget {
   const DashboardScreenWeb({super.key});
@@ -195,7 +199,10 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               _buildDashboardCardsSection(context),
               const SizedBox(height: 32),
               // Today's trade action section
+              // _buildFeatureCardsSection(context),
+              // const SizedBox(height: 32),
               _buildTodaysTradeActionSection(context),
+              // Feature Cards Section - NEW UI TEST
               // const SizedBox(height: 32),
               // Portfolio Analysis section
               // _buildPortfolioAnalysisSection(context),
@@ -203,6 +210,106 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFeatureCardsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Title
+        Text(
+          'Quick Access',
+          style: MyntWebTextStyles.title(
+            context,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ).copyWith(fontSize: 24),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Access key features and insights at a glance',
+          style: MyntWebTextStyles.para(
+            context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Feature Cards - 2 per row
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: FeatureCard(
+                badgeNumber: '01',
+                iconData:  shadcn.LucideIcons.chartBar,
+                title: 'OptionZ',
+                description: 'Access advanced options trading platform with real-time data and powerful analytics tools.',
+                badgeColor: const Color(0xFF6366F1), // Indigo - vibrant purple
+                iconColor: const Color(0xFF6366F1),
+                onTap: () async {
+                  // Open OptionZ in new tab
+                  final funds = ref.read(fundProvider);
+                  await funds.fetchHstoken(context);
+                  await funds.openOptionZInNewTab();
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: FeatureCard(
+                badgeNumber: '02',
+                iconData: shadcn.LucideIcons.draftingCompass,
+                title: 'Strategy Builder',
+                description: 'Create and backtest your trading strategies with our powerful strategy building tools.',
+                badgeColor: const Color(0xFF06B6D4), // Cyan - bright teal
+                iconColor: const Color(0xFF06B6D4),
+                onTap: () {
+                  // Open Strategy Builder in right panel using WebNavigationHelper
+                  WebNavigationHelper.navigateTo('strategyBuilder');
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: FeatureCard(
+                badgeNumber: '03',
+                iconData: shadcn.LucideIcons.shoppingBag,
+                title: 'Scalper',
+                description: 'Quick in & out trading with real-time market data and lightning-fast order execution.',
+                badgeColor: const Color(0xFFEC4899),
+                iconColor: const Color(0xFFEC4899),
+                onTap: () {},
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: FeatureCard(
+                badgeNumber: '04',
+                iconData: shadcn.BootstrapIcons.wechat,
+                title: 'Refer & Earn',
+                description: 'Invite your friends and earn rewards. Share the benefits of smart trading together.',
+                badgeColor: const Color(0xFFF59E0B), // Amber - warm and inviting
+                iconColor: const Color(0xFFF59E0B),
+                onTap: () async {
+                  // Open Refer & Earn in external browser (same as profile dropdown)
+                  final Preferences pref = locator<Preferences>();
+                  final url = 'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
+                  launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

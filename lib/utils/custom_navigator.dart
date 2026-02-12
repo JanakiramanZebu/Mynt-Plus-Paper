@@ -159,6 +159,9 @@ class WebNavigationHelper {
       case Routes.portfolioDashboard:
       case 'portfolioAnalysis':
         return '/portfolio-analysis';
+      case Routes.strategyBuilder:
+      case 'strategyBuilder':
+        return WebRoutes.strategyBuilder;
       case 'reports':
         return WebRoutes.reports;
       case 'optionChain':
@@ -190,6 +193,8 @@ class WebNavigationHelper {
         return 'mutualFunds';
       case '/portfolio-analysis':
         return Routes.portfolioDashboard;
+      case WebRoutes.strategyBuilder:
+        return 'strategyBuilder';
       case WebRoutes.reports:
         return 'reports';
       case WebRoutes.optionChain:
