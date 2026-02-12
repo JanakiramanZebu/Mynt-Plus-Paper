@@ -749,15 +749,16 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
           decoration: BoxDecoration(
             color: resolveThemeColor(
               context,
-              dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+              // dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+              dark: MyntColors.transparent,
               light: const Color(0xffF1F3F8),
             ),
             borderRadius: BorderRadius.circular(5),
             border: Border.all(
               color: resolveThemeColor(
                 context,
-                dark: WebColors.outlinedBorderDark,
-                light: WebColors.outlinedBorder,
+               dark:MyntColors.textSecondaryDark,
+              light:MyntColors.primary,
               ),
             ),
           ),
@@ -796,15 +797,18 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         decoration: BoxDecoration(
           color: resolveThemeColor(
             context,
-            dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+            // dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+            dark: MyntColors.transparent,
             light: const Color(0xffF1F3F8),
           ),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: resolveThemeColor(
               context,
-              dark: WebColors.outlinedBorderDark,
-              light: WebColors.outlinedBorder,
+              // dark: WebColors.outlinedBorderDark,
+              // light: WebColors.outlinedBorder,
+              dark:MyntColors.textSecondaryDark,
+              light:MyntColors.primary,
             ),
           ),
         ),
@@ -969,15 +973,15 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         decoration: BoxDecoration(
           color: resolveThemeColor(
             context,
-            dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+            dark: MyntColors.transparent,
             light: const Color(0xffF1F3F8),
           ),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: resolveThemeColor(
               context,
-              dark: WebColors.outlinedBorderDark,
-              light: WebColors.outlinedBorder,
+            dark:MyntColors.textSecondaryDark,
+              light:MyntColors.primary,
             ),
           ),
         ),
@@ -1221,15 +1225,15 @@ class _OptionFlashPanelState extends ConsumerState<OptionFlashPanel> {
         decoration: BoxDecoration(
           color: resolveThemeColor(
             context,
-            dark: const Color(0xffB5C0CF).withValues(alpha: 0.15),
+            dark: MyntColors.transparent,
             light: const Color(0xffF1F3F8),
           ),
           borderRadius: BorderRadius.circular(5),
           border: Border.all(
             color: resolveThemeColor(
               context,
-              dark: WebColors.outlinedBorderDark,
-              light: WebColors.outlinedBorder,
+dark:MyntColors.textSecondaryDark,
+              light:MyntColors.primary,
             ),
           ),
         ),

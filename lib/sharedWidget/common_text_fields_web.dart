@@ -145,7 +145,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
     final effectiveBackgroundColor = widget.backgroundColor ??
         resolveThemeColor(
           context,
-          dark: Color(0xffB5C0CF).withOpacity(.15),
+          // dark: Color(0xffB5C0CF).withOpacity(.15),
+          dark: MyntColors.transparent,
           light: Color(0xffF1F3F8),
         );
 
@@ -153,8 +154,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
     final effectiveBorderColor = widget.borderColor ??
         resolveThemeColor(
           context,
-          dark: MyntColors.primaryDark,
-          light: MyntColors.primary,
+         dark:MyntColors.textSecondaryDark,
+              light:MyntColors.primary,
         );
 
     // Build prefix icon

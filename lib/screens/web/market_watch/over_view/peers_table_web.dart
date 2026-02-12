@@ -605,13 +605,11 @@ class _PeersTableWebState extends ConsumerState<PeersTableWeb> {
                                     child: Text(
                                       _cleanSymbol(stock.sYMBOL),
                                       style: _getTextStyle(context).copyWith(
-                                        fontWeight: isCurrentStock
-                                            ? MyntFonts.bold
-                                            : MyntFonts.medium,
+                                        fontWeight: MyntFonts.medium,
                                         color: isCurrentStock
                                             ? resolveThemeColor(context,
                                                 dark: MyntColors.textPrimaryDark,
-                                                light: MyntColors.primary)
+                                                light: MyntColors.textPrimary)
                                             : null,
                                       ),
                                       overflow: TextOverflow.ellipsis,

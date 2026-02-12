@@ -264,7 +264,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
             width: 50,
             height: 28,
             decoration: BoxDecoration(
-              color: isSIP ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : const Color(0xFFE0E0E0),
+              color: isSIP ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textPrimaryDark),
               borderRadius: BorderRadius.circular(14),
             ),
             child: AnimatedAlign(
@@ -274,8 +274,8 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
                 width: 24,
                 height: 24,
                 margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration:  BoxDecoration(
+                  color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textWhite),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -1043,12 +1043,12 @@ void _showCalendarDialog(
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            color: theme.isDarkMode ? MyntColors.inputBgDark : MyntColors.inputBg,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: theme.isDarkMode
-                  ? colors.textSecondaryDark.withOpacity(0.5)
-                  : colors.colorWhite,
+                  ? MyntColors.textSecondaryDark.withOpacity(0.5)
+                  : MyntColors.textSecondary.withOpacity(0.5),
             ),
           ),
           width: dialogWidth,

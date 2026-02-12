@@ -626,7 +626,7 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
             child: Container(
               decoration: BoxDecoration(
                 color: resolveThemeColor(context,
-                    dark: MyntColors.backgroundColorDark,
+                    dark: MyntColors.dialogDark,
                     light: MyntColors.backgroundColor),
                 // borderRadius: BorderRadius.circular(12),
               ),

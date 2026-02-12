@@ -1684,8 +1684,8 @@ class _PendingAlertWebState extends ConsumerState<PendingAlertWeb> {
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: styles.MyntColors.backgroundColorDark,
-                  light: styles.MyntColors.backgroundColor),
+                  dark: styles.MyntColors.dialogDark,
+                  light: styles.MyntColors.dialog),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(

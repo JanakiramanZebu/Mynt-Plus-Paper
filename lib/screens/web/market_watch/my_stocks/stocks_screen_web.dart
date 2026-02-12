@@ -397,12 +397,12 @@ class _HoldingsCardWebState extends ConsumerState<_HoldingsCardWeb> {
                                     color: Colors.white,
                                     backgroundColor: resolveThemeColor(
                                       context,
-                                      dark: MyntColors.primaryDark,
+                                      dark: MyntColors.secondary,
                                       light: MyntColors.primary,
                                     ),
                                     borderColor: resolveThemeColor(
                                       context,
-                                      dark: MyntColors.primaryDark,
+                                      dark: MyntColors.secondary,
                                       light: MyntColors.primary,
                                     ),
                                     onPressed: () async {

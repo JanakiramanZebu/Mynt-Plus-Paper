@@ -5,6 +5,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -144,7 +145,7 @@ class _MfOrderBottomsheet extends State<MfOrderBottomsheet> {
           child: SafeArea(
             child: Container(
               decoration: BoxDecoration(
-                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                color: theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),

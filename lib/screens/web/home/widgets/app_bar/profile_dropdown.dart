@@ -670,8 +670,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
       builder: (BuildContext dialogContext) {
         return Dialog(
           backgroundColor: theme.isDarkMode
-              ? web_colors.WebDarkColors.surface
-              : web_colors.WebColors.surface,
+              ? MyntColors.dialogDark : MyntColors.dialog,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5),
           ),
@@ -709,8 +708,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                     border: Border(
                       bottom: BorderSide(
                         color: theme.isDarkMode
-                            ? web_colors.WebDarkColors.divider
-                            : web_colors.WebColors.divider,
+                            ? MyntColors.dividerDark
+                            : MyntColors.divider,
                       ),
                     ),
                   ),
@@ -722,8 +721,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                         style: WebTextStyles.dialogTitle(
                           isDarkTheme: theme.isDarkMode,
                           color: theme.isDarkMode
-                              ? web_colors.WebDarkColors.textPrimary
-                              : web_colors.WebColors.textPrimary,
+                              ? MyntColors.textPrimaryDark
+                              : MyntColors.textPrimary,
                         ),
                       ),
                       Material(
@@ -744,8 +743,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                               Icons.close,
                               size: 20,
                               color: theme.isDarkMode
-                                  ? web_colors.WebDarkColors.iconSecondary
-                                  : web_colors.WebColors.iconSecondary,
+                                  ? MyntColors.iconSecondaryDark
+                                  : MyntColors.iconSecondary,
                             ),
                           ),
                         ),
@@ -767,8 +766,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                             style: WebTextStyles.dialogContent(
                               isDarkTheme: theme.isDarkMode,
                               color: theme.isDarkMode
-                                  ? web_colors.WebDarkColors.textPrimary
-                                  : web_colors.WebColors.textPrimary,
+                                  ? MyntColors.textPrimaryDark
+                                  : MyntColors.textPrimary,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -779,8 +778,8 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                               height: 40,
                               decoration: BoxDecoration(
                                 color: theme.isDarkMode
-                                    ? web_colors.WebDarkColors.primary
-                                    : web_colors.WebColors.primary,
+                                    ? MyntColors.secondary
+                                    : MyntColors.primary,
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Material(

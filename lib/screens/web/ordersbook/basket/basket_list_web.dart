@@ -905,8 +905,8 @@ class _BasketListState extends ConsumerState<BasketList> {
             width: 400,
             decoration: BoxDecoration(
               color: theme.isDarkMode
-                  ? MyntColors.backgroundColorDark
-                  : MyntColors.backgroundColor,
+                  ? MyntColors.dialogDark
+                  : MyntColors.dialog,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -2977,7 +2977,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                  dark: MyntColors.dialogDark, light: MyntColors.dialog),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -3109,7 +3109,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.backgroundColorDark, light: colors.colorWhite),
+                  dark: MyntColors.dialogDark, light: MyntColors.dialog),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(

@@ -298,28 +298,18 @@ class _PositionHoldingsCardWebState
                 dark: MyntColors.lossDark,
                 light: MyntColors.loss);
 
-    return Column(
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            // Darker/muted background for closed positions (QTY 0)
-            color: isZeroQty
-                ? resolveThemeColor(context,
-                    dark: MyntColors.listItemBgDark.withValues(alpha: 0.6),
-                    light: MyntColors.listItemBg.withValues(alpha: 0.6))
-                : resolveThemeColor(context,
-                    dark: MyntColors.backgroundColorDark,
-                    light: MyntColors.backgroundColor),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: resolveThemeColor(context,
-                  dark: MyntColors.dividerDark, light: MyntColors.divider),
-              width: 1,
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
           ),
-          child: Column(
+        ),
+      ),
+      child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Row 1: Symbol name | Exit icon button (only for open positions)
@@ -396,7 +386,7 @@ class _PositionHoldingsCardWebState
                           ),
                         ),
                         TextSpan(
-                          text: "$absQty ",
+                          text: "${absQty == 0 ? '' : isLong ? '+' : '-'}$absQty ",
                           style: MyntWebTextStyles.para(
                             context,
                             fontWeight: MyntFonts.medium,
@@ -465,15 +455,7 @@ class _PositionHoldingsCardWebState
               ),
             ],
           ),
-        ),
-      
-    Divider(
-      color: resolveThemeColor(context,
-          dark: MyntColors.dividerDark, light: MyntColors.divider),
-      thickness: 1,
-      height: 1,
-    ),
-  ]);
+    );
   }
 
   Widget _buildHoldingsCard(
@@ -522,17 +504,14 @@ class _PositionHoldingsCardWebState
             dark: MyntColors.lossDark, light: MyntColors.loss);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: resolveThemeColor(context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(context,
-              dark: MyntColors.dividerDark, light: MyntColors.divider),
-          width: 1,
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
         ),
       ),
       child: Column(
@@ -616,7 +595,7 @@ class _PositionHoldingsCardWebState
                       ),
                     ),
                     TextSpan(
-                      text: "$currentQty ",
+                      text: "+$currentQty ",
                       style: MyntWebTextStyles.para(
                         context,
                         fontWeight: MyntFonts.medium,
@@ -698,16 +677,11 @@ class _PositionHoldingsCardWebState
   /// Build open orders section showing pending orders for this symbol
   Widget _buildOpenOrdersSection(
       List<OrderBookModel> orders, Map socketDatas, ThemesProvider theme) {
-    // Return order cards with margin (same as position card)
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // List of orders
-          ...orders.map((order) => _buildOrderRow(order, socketDatas, theme)),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...orders.map((order) => _buildOrderRow(order, socketDatas, theme)),
+      ],
     );
 
     // OLD UI - Container with yellow border and OPEN ORDERS header
@@ -807,17 +781,14 @@ class _PositionHoldingsCardWebState
             dark: MyntColors.lossDark, light: MyntColors.loss);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(8), // Same as position/holdings cards
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: resolveThemeColor(context,
-            dark: MyntColors.backgroundColorDark,
-            light: MyntColors.backgroundColor),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(context,
-              dark: MyntColors.dividerDark, light: MyntColors.divider),
-          width: 1,
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
         ),
       ),
       child: Column(
@@ -843,25 +814,54 @@ class _PositionHoldingsCardWebState
                 ),
               ),
               const SizedBox(width: 8),
-              // Cancel button (X icon) - always red
-              InkWell(
-                onTap: () => _cancelOrder(order),
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: resolveThemeColor(context,
-                            dark: MyntColors.lossDark,
-                            light: MyntColors.loss)
-                        .withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
+              // Modify button (pencil icon) - primary/blue
+              Tooltip(
+                message: "Modify",
+                child: InkWell(
+                  onTap: () => _modifyOrder(order),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: resolveThemeColor(context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary)
+                          .withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary),
+                    ),
                   ),
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.lossDark,
-                        light: MyntColors.loss),
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Cancel button (X icon) - always red
+              Tooltip(
+                message: "Cancel",
+                child: InkWell(
+                  onTap: () => _cancelOrder(order),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: resolveThemeColor(context,
+                              dark: MyntColors.lossDark,
+                              light: MyntColors.loss)
+                          .withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.lossDark,
+                          light: MyntColors.loss),
+                    ),
                   ),
                 ),
               ),
@@ -1203,7 +1203,7 @@ class _PositionHoldingsCardWebState
                   width: 400,
                   decoration: BoxDecoration(
                     color: resolveThemeColor(context,
-                        dark: colors.colorBlack, light: colors.colorWhite),
+                        dark: MyntColors.dialogDark, light: MyntColors.dialog),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(

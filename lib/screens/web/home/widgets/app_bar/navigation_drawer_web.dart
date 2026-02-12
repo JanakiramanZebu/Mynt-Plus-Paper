@@ -211,12 +211,12 @@ class NavigationDrawerWeb extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: MyntColors.primary.withValues(alpha: isDarkMode ? 0.2 : 0.1),
+                    backgroundColor: (isDarkMode ?  MyntColors.primaryDark : MyntColors.primary).withValues(alpha: isDarkMode ? 0.2 : 0.1),
                     child: Text(
                       _displayInitial,
                       style: MyntWebTextStyles.hero(
                         context,
-                        color: MyntColors.primary,
+                        color:  isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                         fontWeight: MyntFonts.semiBold,
                       ),
                     ),
@@ -284,11 +284,11 @@ class NavigationDrawerWeb extends StatelessWidget {
   }) {
     final isActive = isScreenActive?.call(screenName) ?? false;
 
-    final activeColor = MyntColors.primary;
+    final activeColor = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary);
     final textColor = resolveThemeColor(context,
         dark: MyntColors.textPrimaryDark,
         light: MyntColors.textPrimary);
-    final hoverColor = MyntColors.primary.withValues(alpha: 0.08);
+    final hoverColor = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),

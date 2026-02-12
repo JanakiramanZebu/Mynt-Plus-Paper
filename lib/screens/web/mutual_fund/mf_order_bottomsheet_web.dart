@@ -3,6 +3,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../../provider/thems.dart';
 import '../../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -135,7 +136,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
             child: Container(
               width: screenWidth * 0.2,
                decoration: BoxDecoration(
-                  color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  color: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
                   borderRadius: BorderRadius.circular(16),
             
                    border: Border(
@@ -176,7 +177,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                               height: screenheight * 0.5,
                               width: screenWidth,
                               child: Material(
-                                color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                                color: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
                                 child: Theme(
                                   data: Theme.of(context),
                                   child: Center(
@@ -206,8 +207,8 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                                         AlwaysStoppedAnimation<
                                                             Color>(
                                                       theme.isDarkMode
-                                                          ? colors.primaryDark
-                                                          : colors.primaryLight,
+                                                          ? MyntColors.primaryDark
+                                                          : MyntColors.primary,
                                                     ),
                                                     backgroundColor:
                                                         Colors.transparent,
@@ -615,9 +616,8 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                                           Icon(
                                                             Icons.check_circle,
                                                             color: theme.isDarkMode
-                                                                ? colors.primaryDark
-                                                                : colors
-                                                                    .primaryLight,
+                                                                ? MyntColors.primaryDark
+                                                                : MyntColors.primary,
                                                             size: 20,
                                                           )
                                                         else
@@ -962,7 +962,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(5),
                                         ),
-                                        backgroundColor: colors.primaryDark,
+                                        backgroundColor:resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
                                         // mfOrder.mandateStatus == "APPROVED"
                                         //     ? (theme.isDarkMode
                                         //         ? colors.primaryDark
@@ -976,16 +976,18 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                         //     :
                                       ),
                                       child: mfOrder.investloader == true
-                                          ? const SizedBox(
+                                          ? SizedBox(
                                               height: 15,
                                               width: 15,
                                               child: CircularProgressIndicator(
                                                 strokeWidth: 2.0,
                                                 valueColor: AlwaysStoppedAnimation<
                                                         Color>(
-                                                    Color.fromARGB(99, 48, 48, 48)),
-                                                backgroundColor: Color.fromARGB(
-                                                    255, 255, 255, 255),
+                                                    theme.isDarkMode
+                                                        ? MyntColors.primaryDark
+                                                        : MyntColors.primary),
+                                                backgroundColor:
+                                                    Colors.transparent,
                                               ),
                                             )
                                           : Text(
@@ -1021,14 +1023,14 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: theme.isDarkMode ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.3,
+            width: MediaQuery.of(context).size.width * 0.25,
             decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(16),
-             color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-             border: Border.all(color: theme.isDarkMode ? colors.textSecondaryDark.withOpacity(0.2) : Colors.transparent),
+             borderRadius: BorderRadius.circular(14),
+             color: theme.isDarkMode ? MyntColors.overlayBgDark : MyntColors.backgroundColor,
+             border: Border.all(color: theme.isDarkMode ? MyntColors.textSecondaryDark.withOpacity(0.2) : MyntColors.transparent),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1038,7 +1040,7 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                 Padding(
                   padding: const EdgeInsets.only(left: 16, bottom: 10),
                   child: Text(
-                    'Choose an bank:',
+                    'Choose an bank',
                     style: MyntWebTextStyles.title(
                       context,
                       color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight,
@@ -1071,8 +1073,8 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                           style: MyntWebTextStyles.bodySmall(
                             context,
                             color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
+                                ? MyntColors.textPrimaryDark
+                                : MyntColors.textPrimary,
                           ),
                         ),
                       ),

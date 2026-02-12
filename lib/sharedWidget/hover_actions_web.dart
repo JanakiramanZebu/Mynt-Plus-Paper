@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../res/mynt_web_text_styles.dart';
@@ -304,42 +306,68 @@ class HoverActionsContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = isDarkMode(context);
     final defaultPadding =
         padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
     final defaultBorderRadius = borderRadius ?? 8.0;
     final defaultSpacing = spacing ?? 4.0;
     final defaultBackgroundColor = backgroundColor ??
-        resolveThemeColor(
-          context,
-          dark: MyntColors.textWhite,
-          light: Colors.white,
-        );
+        (dark
+            ? MyntColors.textPrimaryDark
+            : Colors.white);
     final defaultBoxShadow = boxShadow ??
-        [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 10,
-            spreadRadius: 1,
-            offset: const Offset(0, 2),
-          ),
-        ];
+        (dark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 16,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 2),
+                ),
+              ]);
+    final defaultBorder = border ??
+        (dark
+            ? Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 0.5,
+              )
+            : null);
+
+    final borderRadiusGeometry =
+        BorderRadius.circular(defaultBorderRadius);
 
     return AnimatedOpacity(
       opacity: isVisible ? 1.0 : 0.0,
       duration: animationDuration,
       child: IgnorePointer(
         ignoring: !isVisible,
-        child: Container(
-          padding: defaultPadding,
-          decoration: BoxDecoration(
-            color: defaultBackgroundColor,
-            borderRadius: BorderRadius.circular(defaultBorderRadius),
-            boxShadow: defaultBoxShadow,
-            border: border,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: _buildActionsWithSpacing(defaultSpacing),
+        child: ClipRRect(
+          borderRadius: borderRadiusGeometry,
+          child: BackdropFilter(
+            filter: dark
+                ? ImageFilter.blur(sigmaX: 12, sigmaY: 12)
+                : ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: Container(
+              padding: defaultPadding,
+              decoration: BoxDecoration(
+                color: defaultBackgroundColor,
+                borderRadius: borderRadiusGeometry,
+                boxShadow: defaultBoxShadow,
+                border: defaultBorder,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _buildActionsWithSpacing(defaultSpacing),
+              ),
+            ),
           ),
         ),
       ),

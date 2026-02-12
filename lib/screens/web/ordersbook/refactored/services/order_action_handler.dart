@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/models/order_book_model/order_book_model.dart';
 import 'package:mynt_plus/models/order_book_model/gtt_order_book.dart';
@@ -430,7 +431,7 @@ class OrderActionHandler {
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: colors.colorBlack, light: colors.colorWhite),
+                  dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(

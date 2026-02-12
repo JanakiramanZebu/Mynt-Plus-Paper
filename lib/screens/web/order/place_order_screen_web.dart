@@ -7886,9 +7886,9 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             margin: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               color: currentTheme.isDarkMode
-                                  ? MyntColors.backgroundColorDark
-                                  : MyntColors.backgroundColor,
-                              borderRadius: BorderRadius.circular(5),
+                                  ? MyntColors.dialogDark
+                                  : MyntColors.dialog,
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -7901,7 +7901,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                             border: Border(
                               bottom: BorderSide(
                                 color: currentTheme.isDarkMode
-                                    ? MyntColors.divider
+                                    ? MyntColors.dividerDark
                                     : MyntColors.divider,
                               ),
                             ),
@@ -7920,7 +7920,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     style: WebTextStyles.dialogTitle(
                                       isDarkTheme: currentTheme.isDarkMode,
                                       color: currentTheme.isDarkMode
-                                          ? MyntColors.textPrimary
+                                          ? MyntColors.textPrimaryDark
                                           : MyntColors.textPrimary,
                                     ),
                                   ),
@@ -7971,7 +7971,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   fontSize: 13,
                                   isDarkTheme: currentTheme.isDarkMode,
                                   color: currentTheme.isDarkMode
-                                      ? MyntColors.textPrimary
+                                      ? MyntColors.textPrimaryDark
                                       : MyntColors.textPrimary,
                                 ),
                               ),
@@ -8014,8 +8014,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                   style: ElevatedButton.styleFrom(
                                     elevation: 0,
                                     backgroundColor: currentTheme.isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
+                                        ? MyntColors.secondary
+                                        : MyntColors.primary,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(5),
                                     ),
@@ -8025,7 +8025,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                     style: WebTextStyles.custom(
                                       fontSize: 14,
                                       isDarkTheme: currentTheme.isDarkMode,
-                                      color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                                      color: resolveThemeColor(context, dark: MyntColors.backgroundColor, light: MyntColors.backgroundColor),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),

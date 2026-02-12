@@ -1735,6 +1735,12 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
                 child: Container(
                   width: 400,
                   constraints: const BoxConstraints(maxHeight: 250),
+                  decoration: BoxDecoration(
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.dialogDark,
+                        light: MyntColors.dialog),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

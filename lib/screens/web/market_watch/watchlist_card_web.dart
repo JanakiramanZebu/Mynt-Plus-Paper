@@ -427,7 +427,7 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                       SvgPicture.asset(assets.suitcase,
                                           height: 16,
                                           width: 16,
-                                          color: resolveThemeColor(context,
+                                          color : resolveThemeColor(context,
                                           dark: MyntColors.primaryDark,
                                           light: MyntColors.primary.withOpacity(0.8)
                                           )),

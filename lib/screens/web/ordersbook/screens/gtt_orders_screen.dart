@@ -1363,7 +1363,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.backgroundColorDark, light: colors.colorWhite),
+                  dark: MyntColors.dialogDark, light: MyntColors.dialog),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(

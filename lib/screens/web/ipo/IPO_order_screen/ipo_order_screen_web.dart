@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart' hide WebTextStyles;
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/res/web_colors.dart';
 
 import '../../../../models/ipo_model/ipo_details_model.dart';
 import '../../../../models/ipo_model/ipo_mainstream_model.dart';
@@ -271,12 +271,12 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color:
-                  theme.isDarkMode ? WebDarkColors.surface : WebColors.surface,
+                  theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
               border: Border(
                 bottom: BorderSide(
                   color: theme.isDarkMode
-                      ? WebDarkColors.divider
-                      : WebColors.divider,
+                      ? MyntColors.dividerDark
+                      : MyntColors.divider,
                 ),
               ),
             ),
@@ -309,8 +309,12 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: isOpen
-                                ? const Color(0xffE6F4EA)
-                                : const Color(0xffFCE8E6),
+                                ? (theme.isDarkMode
+                                    ? MyntColors.profitDark.withValues(alpha: 0.15)
+                                    : const Color(0xffE6F4EA))
+                                : (theme.isDarkMode
+                                    ? MyntColors.lossDark.withValues(alpha: 0.15)
+                                    : const Color(0xffFCE8E6)),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -319,8 +323,12 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: isOpen
-                                  ? const Color(0xff1E8E3E)
-                                  : const Color(0xffD93025),
+                                  ? (theme.isDarkMode
+                                      ? MyntColors.profitDark
+                                      : const Color(0xff1E8E3E))
+                                  : (theme.isDarkMode
+                                      ? MyntColors.lossDark
+                                      : const Color(0xffD93025)),
                             ),
                           ),
                         ),
@@ -332,7 +340,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                   IconButton(
                     onPressed: closeNotifier.onClose,
                     icon: Icon(Icons.close,
-                        color: theme.isDarkMode ? Colors.white : Colors.black),
+                        color: theme.isDarkMode
+                            ? MyntColors.textPrimaryDark
+                            : MyntColors.textPrimary),
                   ),
               ],
             ),
@@ -356,7 +366,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             ),
             child: Scaffold(
               backgroundColor:
-                  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+                  theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
               body: Column(
                 children: [
                   headerSection,
@@ -403,16 +413,20 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                               },
                               decoration: InputDecoration(
                                 fillColor: theme.isDarkMode
-                                    ? colors.darkGrey
+                                    ? MyntColors.inputBgDark
                                     : const Color(0xffF1F3F8),
                                 filled: true,
                                 enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                        color: colors.btnOutlinedBorder),
+                                        color: theme.isDarkMode
+                                            ? MyntColors.dividerDark
+                                            : colors.btnOutlinedBorder),
                                     borderRadius: BorderRadius.circular(5)),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: colors.primary),
+                                    borderSide: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? MyntColors.primaryDark
+                                            : colors.primary),
                                     borderRadius: BorderRadius.circular(5)),
                                 contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 8),
@@ -495,16 +509,18 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 10),
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                            0xFFFFF4E5), // Light orange background
+                                        color: theme.isDarkMode
+                                            ? MyntColors.warningDark.withValues(alpha: 0.15)
+                                            : const Color(0xFFFFF4E5),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Row(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.info_outline,
-                                            color: Color(
-                                                0xFFFF8C00), // Darker orange icon
+                                            color: theme.isDarkMode
+                                                ? MyntColors.warningDark
+                                                : const Color(0xFFFF8C00),
                                             size: 18,
                                           ),
                                           const SizedBox(width: 8),
@@ -514,8 +530,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                               style:
                                                   MyntWebTextStyles.bodySmall(
                                                 context,
-                                                color: const Color(
-                                                    0xFFFF8C00), // Darker orange text
+                                                color: theme.isDarkMode
+                                                    ? MyntColors.warningDark
+                                                    : const Color(0xFFFF8C00),
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
@@ -543,16 +560,20 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                               decoration: InputDecoration(
                                 hintText: "Add UPI ID",
                                 fillColor: theme.isDarkMode
-                                    ? colors.darkGrey
+                                    ? MyntColors.inputBgDark
                                     : const Color(0xffF1F3F8),
                                 filled: true,
                                 enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
-                                        color: colors.btnOutlinedBorder),
+                                        color: theme.isDarkMode
+                                            ? MyntColors.dividerDark
+                                            : colors.btnOutlinedBorder),
                                     borderRadius: BorderRadius.circular(5)),
                                 focusedBorder: OutlineInputBorder(
-                                    borderSide:
-                                        BorderSide(color: colors.primary),
+                                    borderSide: BorderSide(
+                                        color: theme.isDarkMode
+                                            ? MyntColors.primaryDark
+                                            : colors.primary),
                                     borderRadius: BorderRadius.circular(5)),
                                 contentPadding: const EdgeInsets.all(13),
                               ),
@@ -573,7 +594,12 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                       _isTermsAccepted = val ?? false;
                                     });
                                   },
-                                  activeColor: colors.primary,
+                                  activeColor: theme.isDarkMode
+                                      ? MyntColors.primaryDark
+                                      : MyntColors.primary,
+                                  side: theme.isDarkMode
+                                      ? const BorderSide(color: Color(0xFF6E7681), width: 1.5)
+                                      : null,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
@@ -604,13 +630,13 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: theme.isDarkMode
-                              ? colors.darkGrey
+                              ? MyntColors.cardDark
                               : const Color(0xffF1F3F8),
                           border: Border(
                             top: BorderSide(
                               color: theme.isDarkMode
-                                  ? colors.dividerDark
-                                  : colors.dividerLight,
+                                  ? MyntColors.dividerDark
+                                  : MyntColors.divider,
                             ),
                           ),
                         ),
@@ -646,9 +672,13 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                   }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: colors.primary,
-                              disabledBackgroundColor:
-                                  colors.primary.withOpacity(0.5),
+                              backgroundColor: theme.isDarkMode
+                                  ? MyntColors.primaryDark
+                                  : MyntColors.primary,
+                              disabledBackgroundColor: (theme.isDarkMode
+                                      ? MyntColors.primaryDark
+                                      : MyntColors.primary)
+                                  .withValues(alpha: 0.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
@@ -725,7 +755,12 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 _updateProviderState(ipo);
                               });
                             },
-                            activeColor: colors.primary,
+                            activeColor: theme.isDarkMode
+                                ? MyntColors.primaryDark
+                                : MyntColors.primary,
+                            side: theme.isDarkMode
+                                ? const BorderSide(color: Color(0xFF6E7681), width: 1.5)
+                                : null,
                           ),
                         ),
                       ),
@@ -755,10 +790,13 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                 height: 45,
                 decoration: BoxDecoration(
                   color: theme.isDarkMode
-                      ? colors.darkGrey
+                      ? MyntColors.inputBgDark
                       : const Color(0xffF1F3F8),
                   borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: colors.btnOutlinedBorder),
+                  border: Border.all(
+                      color: theme.isDarkMode
+                          ? MyntColors.dividerDark
+                          : colors.btnOutlinedBorder),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -844,20 +882,27 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                     prefixText: "₹ ",
                     fillColor: addIpo[index].isChecked
                         ? (theme.isDarkMode
-                            ? colors.darkGrey.withOpacity(0.5)
-                            : const Color(0xffF1F3F8).withOpacity(0.5))
+                            ? MyntColors.inputBgDark.withValues(alpha: 0.5)
+                            : const Color(0xffF1F3F8).withValues(alpha: 0.5))
                         : (theme.isDarkMode
-                            ? colors.darkGrey
+                            ? MyntColors.inputBgDark
                             : const Color(0xffF1F3F8)),
                     filled: true,
                     enabledBorder: OutlineInputBorder(
                         borderSide: BorderSide(
                             color: addIpo[index].isChecked
-                                ? colors.btnOutlinedBorder.withOpacity(0.5)
-                                : colors.btnOutlinedBorder),
+                                ? (theme.isDarkMode
+                                    ? MyntColors.dividerDark.withValues(alpha: 0.5)
+                                    : colors.btnOutlinedBorder.withValues(alpha: 0.5))
+                                : (theme.isDarkMode
+                                    ? MyntColors.dividerDark
+                                    : colors.btnOutlinedBorder)),
                         borderRadius: BorderRadius.circular(5)),
                     focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: colors.primary),
+                        borderSide: BorderSide(
+                            color: theme.isDarkMode
+                                ? MyntColors.primaryDark
+                                : colors.primary),
                         borderRadius: BorderRadius.circular(5)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
@@ -1058,19 +1103,19 @@ class _DraggableIpoOrderScreenDialogState
             onTap: () {}, // Prevent tap from propagating to background
             child: Material(
               elevation: _isDragging ? 16 : 8,
-              borderRadius: BorderRadius.circular(5),
+              borderRadius: BorderRadius.circular(8),
               color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : WebColors.background,
+                  ? MyntColors.dialogDark
+                  : MyntColors.dialog,
               child: Container(
                 width: dialogWidth,
                 height: dialogHeight,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
+                        ? MyntColors.dividerDark
+                        : MyntColors.divider,
                   ),
                 ),
                 child: _IpoOrderDialogCloseNotifier(

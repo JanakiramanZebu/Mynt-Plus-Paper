@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mynt_plus/main.dart' show getNavigatorContext, getNavigatorState, rootScaffoldMessengerKey;
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/responsive_extensions.dart';
@@ -399,9 +400,9 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
     // Border: Subtle Light Grey
     // Text/Icon: Colored based on type (as per previous request)
     
-    Color borderColor = const Color(0xFFE4E4E7); // Subtle grey border
-    Color bgColor = Colors.white;
-    Color contentColor = Colors.black;
+    Color borderColor =  resolveThemeColor(context, dark: MyntColors.overlayBgDark, light: const Color(0xFFE4E4E7)); // Subtle grey border
+    Color bgColor = resolveThemeColor(context, dark: MyntColors.overlayBgDark, light: MyntColors.dialog);
+    Color contentColor = resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
     Color subTextColor = Colors.grey[600]!;
     Color statusColor;
     IconData statusIcon;

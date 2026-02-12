@@ -2021,7 +2021,7 @@ class _CustomizableSplitHomeScreenState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'More',
+                  'Options',
                   style: MyntWebTextStyles.body(
                     context,
                     fontWeight: MyntFonts.semiBold,

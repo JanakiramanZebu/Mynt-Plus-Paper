@@ -135,11 +135,12 @@ class ApiLinks {
 
   // String get mainBaseURL => 'https://copy.mynt.in/uat';
 
-  String get mainBaseURL => 'https://ws.mynt.in/login';      
+  String get mainBaseURL => 'https://copy.mynt.in';
+  String get mainBaseURLnew => 'https://ws.mynt.in/login';
 
-  String get mobileLogin => 'https://ws.mynt.in/login/MobileLogin';
+  String get mobileLogin => '$mainBaseURLnew/MobileLogin';
 
-  String get mobileOtp => 'https://ws.mynt.in/login/otp_verify';
+  String get mobileOtp => '$mainBaseURLnew/otp_verify';
 
   String get loginOtp => '$mainBaseURL/otp_send_Tv';
   String get loginOtpVerify => 'https://ws.mynt.in/login/otp_verify';
@@ -152,7 +153,7 @@ class ApiLinks {
 
   String get placeSipOrder => '$goMyntURL/PlaceSipOrder';
 
-  String get preDefdMWatchScrip => '$mainBaseURL/PreDefinedMW';
+  String get preDefdMWatchScrip => 'https://copy.mynt.in/PreDefinedMW';
   String get getAllIndx => '$mainBaseURL/GetIndexList';
 
   // Position Group
