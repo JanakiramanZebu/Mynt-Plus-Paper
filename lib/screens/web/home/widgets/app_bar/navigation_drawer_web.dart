@@ -26,6 +26,18 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback? onOptionFlashTap;
   final VoidCallback? onClose;
 
+  // Control which items to show - if null, show all items
+  final bool? showHome;
+  final bool? showPositions;
+  final bool? showHoldings;
+  final bool? showOrders;
+  final bool? showFunds;
+  final bool? showMutualFund;
+  final bool? showIPO;
+  final bool? showBonds;
+  final bool? showOptionZ;
+  final bool? showOptionFlash;
+
   const NavigationDrawerWeb({
     super.key,
     required this.isDarkMode,
@@ -45,6 +57,16 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.onOptionZTap,
     this.onOptionFlashTap,
     this.onClose,
+    this.showHome,
+    this.showPositions,
+    this.showHoldings,
+    this.showOrders,
+    this.showFunds,
+    this.showMutualFund,
+    this.showIPO,
+    this.showBonds,
+    this.showOptionZ,
+    this.showOptionFlash,
   });
 
   /// Display name: use userName if available, fallback to clientId
@@ -114,46 +136,52 @@ class NavigationDrawerWeb extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  // Home
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Home',
-                    icon: shadcn.RadixIcons.home,
-                    screenName: 'dashboard',
-                    onTap: onDashboardTap,
-                  ),
+                  // Home - show if null or true
+                  if (showHome ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Home',
+                      icon: shadcn.RadixIcons.home,
+                      screenName: 'dashboard',
+                      onTap: onDashboardTap,
+                    ),
 
-                  // TRADE section
-                  _buildSectionHeader(context, 'TRADE'),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Positions',
-                    icon: shadcn.LucideIcons.chartCandlestick,
-                    screenName: 'positions',
-                    onTap: onPositionsTap,
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Holdings',
-                    icon: shadcn.LucideIcons.briefcase,
-                    screenName: 'holdings',
-                    onTap: onHoldingsTap,
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Orders',
-                    icon: shadcn.BootstrapIcons.receipt,
-                    screenName: 'orderBook',
-                    onTap: onOrderBookTap,
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'Funds',
-                    icon: shadcn.LucideIcons.wallet,
-                    screenName: 'funds',
-                    onTap: onFundsTap,
-                  ),
-                  if (onOptionZTap != null)
+                  // TRADE section - show if any TRADE item is visible
+                  if ((showPositions ?? true) || (showHoldings ?? true) || (showOrders ?? true) || (showFunds ?? true) || (showOptionZ ?? (onOptionZTap != null)) || (showOptionFlash ?? (onOptionFlashTap != null)))
+                    _buildSectionHeader(context, 'TRADE'),
+                  if (showPositions ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Positions',
+                      icon: shadcn.LucideIcons.chartCandlestick,
+                      screenName: 'positions',
+                      onTap: onPositionsTap,
+                    ),
+                  if (showHoldings ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Holdings',
+                      icon: shadcn.LucideIcons.briefcase,
+                      screenName: 'holdings',
+                      onTap: onHoldingsTap,
+                    ),
+                  if (showOrders ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Orders',
+                      icon: shadcn.BootstrapIcons.receipt,
+                      screenName: 'orderBook',
+                      onTap: onOrderBookTap,
+                    ),
+                  if (showFunds ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'Funds',
+                      icon: shadcn.LucideIcons.wallet,
+                      screenName: 'funds',
+                      onTap: onFundsTap,
+                    ),
+                  if ((showOptionZ ?? (onOptionZTap != null)) && onOptionZTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'OptionZ',
@@ -161,7 +189,7 @@ class NavigationDrawerWeb extends StatelessWidget {
                       screenName: 'tradeAction',
                       onTap: onOptionZTap!,
                     ),
-                  if (onOptionFlashTap != null)
+                  if ((showOptionFlash ?? (onOptionFlashTap != null)) && onOptionFlashTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'Option Flash',
@@ -170,9 +198,10 @@ class NavigationDrawerWeb extends StatelessWidget {
                       onTap: onOptionFlashTap!,
                     ),
 
-                  // INVEST section
-                  _buildSectionHeader(context, 'INVEST'),
-                  if (onMutualFundTap != null)
+                  // INVEST section - show if any INVEST item is visible
+                  if ((showMutualFund ?? (onMutualFundTap != null)) || (showIPO ?? true) || (showBonds ?? (onBondsTap != null)))
+                    _buildSectionHeader(context, 'INVEST'),
+                  if ((showMutualFund ?? (onMutualFundTap != null)) && onMutualFundTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'Mutual Fund',
@@ -180,14 +209,15 @@ class NavigationDrawerWeb extends StatelessWidget {
                       screenName: 'mutualFund',
                       onTap: onMutualFundTap!,
                     ),
-                  _buildDrawerItem(
-                    context: context,
-                    title: 'IPO',
-                    icon: shadcn.BootstrapIcons.suitcaseLg,
-                    screenName: 'ipo',
-                    onTap: onIPOTap,
-                  ),
-                  if (onBondsTap != null)
+                  if (showIPO ?? true)
+                    _buildDrawerItem(
+                      context: context,
+                      title: 'IPO',
+                      icon: shadcn.BootstrapIcons.suitcaseLg,
+                      screenName: 'ipo',
+                      onTap: onIPOTap,
+                    ),
+                  if ((showBonds ?? (onBondsTap != null)) && onBondsTap != null)
                     _buildDrawerItem(
                       context: context,
                       title: 'Bonds',

@@ -805,7 +805,7 @@ class _CustomizableSplitHomeScreenState
             _buildMainScaffold(),
             // const WebChartOverlay(), // Commented out - using panel chart only
             const InlineChartPortal(), // Persistent chart that follows ChartWithDepthWeb's target
-            const OptionFlashPanel(), 
+            const OptionFlashPanel(),
 
           ],
         ),
@@ -1154,7 +1154,18 @@ class _CustomizableSplitHomeScreenState
   }
 
   /// Open navigation drawer using shadcn drawer
-  void _openShadcnDrawer(BuildContext context) {
+  void _openShadcnDrawer(BuildContext context, {
+    bool? showHome,
+    bool? showPositions,
+    bool? showHoldings,
+    bool? showOrders,
+    bool? showFunds,
+    bool? showMutualFund,
+    bool? showIPO,
+    bool? showBonds,
+    bool? showOptionZ,
+    bool? showOptionFlash,
+  }) {
     final theme = ref.read(themeProvider);
     final userProfile = ref.read(userProfileProvider);
     final userDetail = userProfile.userDetailModel;
@@ -1237,16 +1248,45 @@ class _CustomizableSplitHomeScreenState
           onClose: () {
             shadcn.closeDrawer(drawerContext);
           },
+          // Pass visibility flags - null means show all
+          showHome: showHome,
+          showPositions: showPositions,
+          showHoldings: showHoldings,
+          showOrders: showOrders,
+          showFunds: showFunds,
+          showMutualFund: showMutualFund,
+          showIPO: showIPO,
+          showBonds: showBonds,
+          showOptionZ: showOptionZ,
+          showOptionFlash: showOptionFlash,
         ),
         );
       },
     );
   }
 
-  /// Build app bar for right side only
+  /// Build app bar for right side only - with responsive navigation
   Widget _buildRightSideAppBar(bool isDarkMode) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final showHamburger = screenWidth < _mobileBreakpoint;
+
+    // Responsive breakpoints - Option 2 implementation
+    final isMobileTablet = screenWidth < 900; // Full mobile/tablet mode
+
+    // Left navigation - hide ALL at once when space is not available
+    final showAllLeftNav = screenWidth >= 1650; // Show MF, IPO, Bonds, Options together
+
+    // Right navigation - hide ALL at once (not one by one)
+    // When left nav is visible: need more space, so hide right nav items earlier
+    // When left nav is hidden: have more space, so can show right nav items longer
+    final showAllRightNav = showAllLeftNav
+        ? (screenWidth >= 1550)  // If left nav visible, need 1550px to show all right nav
+        : (screenWidth >= 950);  // If left nav hidden, only need 950px to show all right nav
+
+    // Determine which items to show in hamburger drawer
+    // Desktop mode: Show only hidden items in drawer
+    // Tablet/Mobile mode: Show all items in drawer
+    final showHamburgerForHiddenItems = !isMobileTablet && (!showAllLeftNav || !showAllRightNav); // Desktop with any hidden items
+    final showHamburger = isMobileTablet || showHamburgerForHiddenItems;
 
     return Container(
       height: context.responsive(mobile: 56.0, tablet: 60.0, desktop: 65.0),
@@ -1279,7 +1319,7 @@ class _CustomizableSplitHomeScreenState
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Hamburger menu for mobile/tablet
+            // Hamburger menu - shows when ANY item is hidden
             if (showHamburger)
               Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -1288,7 +1328,27 @@ class _CustomizableSplitHomeScreenState
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(
                     onTap: () {
-                      _openShadcnDrawer(context);
+                      // In mobile/tablet mode: show all items
+                      // In desktop mode: show only hidden items
+                      if (isMobileTablet) {
+                        // Mobile/Tablet: show everything
+                        _openShadcnDrawer(context);
+                      } else {
+                        // Desktop: show only hidden items
+                        _openShadcnDrawer(
+                          context,
+                          showHome: false, // Home always visible in desktop
+                          showPositions: !showAllRightNav, // Show if hidden (when showAllRightNav is false)
+                          showHoldings: !showAllRightNav,
+                          showOrders: !showAllRightNav,
+                          showFunds: !showAllRightNav,
+                          showMutualFund: !showAllLeftNav, // Show if left nav is hidden
+                          showIPO: !showAllLeftNav,
+                          showBonds: !showAllLeftNav,
+                          showOptionZ: !showAllLeftNav, // Options dropdown hidden with left nav
+                          showOptionFlash: !showAllLeftNav,
+                        );
+                      }
                     },
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
@@ -1315,28 +1375,36 @@ class _CustomizableSplitHomeScreenState
               ),
             ),
 
-            // Show navigation items only on larger screens
-            if (!showHamburger) ...[
+            // Left navigation items - hide ALL at once when screen < 1500px
+            if (!isMobileTablet && showAllLeftNav) ...[
               const SizedBox(width: 24),
-              // Primary actions - using shadcn NavigationMenu
-              _buildShadcnNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund,
-                  () => _handleMutualFundTap()),
+              _buildShadcnNavItem('Mutual Fund', isDarkMode, ScreenType.mutualFund, () => _handleMutualFundTap()),
               const SizedBox(width: 4),
-              _buildShadcnNavItem('IPO', isDarkMode, ScreenType.ipo,
-                  () => _handleIPOTap()),
+              _buildShadcnNavItem('IPO', isDarkMode, ScreenType.ipo, () => _handleIPOTap()),
               const SizedBox(width: 4),
-              _buildShadcnNavItem('Bonds', isDarkMode, ScreenType.bond,
-                () => _handleBondTap()),
-            const SizedBox(width: 4),
-            // Trading Tools dropdown menu
-            _buildTradingToolsMenu(isDarkMode),
+              _buildShadcnNavItem('Bonds', isDarkMode, ScreenType.bond, () => _handleBondTap()),
+              const SizedBox(width: 4),
+              _buildTradingToolsMenu(isDarkMode),
             ],
 
             const Spacer(),
 
-            // Navigation screens (only on larger screens)
-            if (!showHamburger) ...[
-              _buildNavigationScreens(isDarkMode),
+            // Right navigation - hide ALL at once
+            if (!isMobileTablet && showAllRightNav) ...[
+              // Home - always visible in desktop mode
+              _buildShadcnNavItem('Home', isDarkMode, ScreenType.dashboard, () => _handleDashboardTap()),
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('Positions', isDarkMode, ScreenType.positions, () => _handlePositionsTap()),
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('Holdings', isDarkMode, ScreenType.holdings, () => _handleHoldingsTap()),
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('Orders', isDarkMode, ScreenType.orderBook, () => _handleOrderBookTap()),
+              const SizedBox(width: 4),
+              _buildShadcnNavItem('Funds', isDarkMode, ScreenType.funds, () => _handleFundsTap()),
+              const SizedBox(width: 20),
+            ] else if (!isMobileTablet) ...[
+              // When right nav is hidden, only show Home
+              _buildShadcnNavItem('Home', isDarkMode, ScreenType.dashboard, () => _handleDashboardTap()),
               const SizedBox(width: 20),
             ],
 
