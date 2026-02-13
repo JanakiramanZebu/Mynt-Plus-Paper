@@ -2412,16 +2412,24 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       {required String searchText,
       required BuildContext context,
       required String segment,
-      required bool option}) async {
+      required bool option,
+      List<String>? exchanges}) async {
     try {
       toggleLoadingOn(true);
-      if (_exarr.isEmpty) {
-        List<String> rawList =
-            ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
-        _exarr = rawList.map((e) => '"${e.toString()}"').toList();
-      } // _searchScripModel = await api.getSearchScrip(searchText: searchText);
+      // Use provided exchanges or default to user profile exchanges
+      List<String> exchFilter;
+      if (exchanges != null && exchanges.isNotEmpty) {
+        exchFilter = exchanges.map((e) => '"$e"').toList();
+      } else {
+        if (_exarr.isEmpty) {
+          List<String> rawList =
+              ref.read(userProfileProvider).userDetailModel?.exarr ?? [];
+          _exarr = rawList.map((e) => '"${e.toString()}"').toList();
+        }
+        exchFilter = _exarr;
+      }
       _searchScripModel = await api.getSearchScripNew(
-          searchText: searchText, categ: segment, exchs: _exarr, opt: option);
+          searchText: searchText, categ: segment, exchs: exchFilter, opt: option);
       _allSearchScrip = [];
       // _equitySearchScrip = [];
       // _fNoSearchScrip = [];

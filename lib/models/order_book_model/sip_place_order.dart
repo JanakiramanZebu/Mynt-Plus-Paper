@@ -87,3 +87,55 @@ class ModifySipInput {
       required this.token,
       required this.qty});
 }
+
+/// Model for creating SIP basket with multiple scrips
+class SipBasketInput {
+  String regdate;
+  String startdate;
+  String frequency;
+  String endperiod;
+  String sipname;
+  List<SipScripInput> scrips;
+
+  SipBasketInput({
+    required this.regdate,
+    required this.startdate,
+    required this.frequency,
+    required this.endperiod,
+    required this.sipname,
+    required this.scrips,
+  });
+}
+
+/// Individual scrip input for SIP basket
+class SipScripInput {
+  String exch;
+  String tsym;
+  String prd;
+  String token;
+  String qty;
+  String sipType; // 'qty' or 'amount'
+  String? prc;
+
+  SipScripInput({
+    required this.exch,
+    required this.tsym,
+    required this.prd,
+    required this.token,
+    required this.qty,
+    this.sipType = 'qty',
+    this.prc,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'exch': exch,
+      'tsym': tsym,
+      'prd': prd,
+      'token': token,
+      'qty': qty,
+      'prc': prc ?? '',
+      'sip_type': sipType,
+    };
+  }
+}

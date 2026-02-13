@@ -375,7 +375,7 @@ class OrderProvider extends DefaultChangeNotifier {
     }
 
     // Only perform search if there's text and we're on a searchable tab
-    if (orderSearchCtrl.text.isNotEmpty && (index <= 3 || index == 5)) {
+    if (orderSearchCtrl.text.isNotEmpty && (index <= 3 || index == 5 || index == 6)) {
       searchOrders(orderSearchCtrl.text, context);
     }
 
@@ -390,11 +390,11 @@ class OrderProvider extends DefaultChangeNotifier {
       debugPrint("📥 [Order Book] Fetching GTT Orders data");
       fetchGTTOrderBook(context, "");
     }
-    // Tab 4 (web: 5): SIP Orders
-    // else if ((kIsWeb ? index == 5 : index == 4) && _siporderBookModel == null) {
-    //   debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
-    //   fetchSipOrderHistory(context);
-    // }
+    // Tab 5: SIP Orders
+    if (index == 5 && _siporderBookModel == null) {
+      debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
+      fetchSipOrderHistory(context);
+    }
 
     // Handle WebSocket subscription/unsubscription for order book tabs (0-3)
     // Unsubscribe from previous tab if it was a subscription tab (0-3)
@@ -662,17 +662,11 @@ class OrderProvider extends DefaultChangeNotifier {
       Tab(
         text: _bsktList.isNotEmpty ? "Basket ${_bsktList.length}" : "Basket",
       ),
-      // Tab(
-      //   text: (_tradeBook != null && _tradeBook!.isNotEmpty)
-      //       ? "Trade Book (${_tradeBook!.length})"
-      //       : "Trade Book",
-      // ),
-
-      // Tab(
-      //   text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
-      //       ? "SIP ${_siporderBookModel!.sipDetails!.length}"
-      //       : "SIP",
-      // ),
+      Tab(
+        text: (_siporderBookModel?.sipDetails?.isNotEmpty ?? false)
+            ? "SIP ${_siporderBookModel!.sipDetails!.length}"
+            : "SIP",
+      ),
       Tab(
         text: ref.read(marketWatchProvider).alertPendingModel != null &&
                 ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty
@@ -825,13 +819,15 @@ class OrderProvider extends DefaultChangeNotifier {
         case 4: // Basket (Web & Mobile)
           // Basket doesn't need search as per current implementation
           break;
-        // case 5: // SIP Orders
-        //   _siporderBookSearch = _siporderBookModel!.sipDetails!
-        //       .where((element) =>
-        //           element.sipName!.toUpperCase().contains(value.toUpperCase()))
-        //       .toList();
-        //   break;
-        case 5: // Alerts
+        case 5: // SIP Orders
+          if (_siporderBookModel?.sipDetails != null) {
+            _siporderBookSearch = _siporderBookModel!.sipDetails!
+                .where((element) =>
+                    element.sipName!.toUpperCase().contains(value.toUpperCase()))
+                .toList();
+          }
+          break;
+        case 6: // Alerts
           final alertProvider = ref.read(marketWatchProvider);
           final notificationProvider = ref.read(notificationprovider);
 
@@ -2977,7 +2973,11 @@ class OrderProvider extends DefaultChangeNotifier {
           });
         }
 
-        final qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(_bsktScripList[0]["ls"]) ).toString();
+        // Calculate qty with lot size only for MCX
+        String qty = '${_bsktScripList[0]["qty"]}';
+        if (_bsktScripList[0]["exch"] == 'MCX' && _bsktScripList[0]["ls"] != null) {
+          qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(_bsktScripList[0]["ls"])).toString();
+        }
 
         // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
@@ -2985,7 +2985,7 @@ class OrderProvider extends DefaultChangeNotifier {
             prc: '${_bsktScripList[0]["prc"]}',
             prctyp: '${_bsktScripList[0]["prctyp"]}',
             prd: '${_bsktScripList[0]["prd"]}',
-            qty: _bsktScripList[0]["exch"] == 'MCX' ? qty : '${_bsktScripList[0]["qty"]}',
+            qty: qty,
             trantype: '${_bsktScripList[0]["trantype"]}',
             tsym: '${_bsktScripList[0]["tsym"]}',
             trgprc: _bsktScripList[0]["trgprc"]?.toString() ?? '',
@@ -3031,6 +3031,33 @@ class OrderProvider extends DefaultChangeNotifier {
     } catch (e) {
       ref.read(indexListProvider).logError.add({"type": "API", "Error": "$e"});
       notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  /// Place SIP basket order with multiple scrips
+  Future<SipPlaceOrderModel?> placeSipBasketOrder(
+      SipBasketInput sipBasketInput, BuildContext context) async {
+    try {
+      toggleLoadingOn(true);
+      _sipPlaceOrder = await api.getPlaceSipBasketOrder(sipBasketInput);
+      if (_sipPlaceOrder!.reqStatus == "OK") {
+        changeTabIndex(5, context);
+        ref.read(indexListProvider).bottomMenu(2, context);
+        ref.read(portfolioProvider).changeTabIndex(2);
+        fetchSipOrderHistory(context);
+        tabSize();
+      } else if (_sipPlaceOrder!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
+      notifyListeners();
+      return _sipPlaceOrder;
+    } catch (e) {
+      ref.read(indexListProvider).logError.add({"type": "SIP BASKET API", "Error": "$e"});
+      notifyListeners();
+      return null;
     } finally {
       toggleLoadingOn(false);
     }
@@ -3194,13 +3221,14 @@ class OrderProvider extends DefaultChangeNotifier {
       await fetchSipOrderHistory(context);
       if (_cancleSipOrder!.reqStatus == "OK") {
         tabSize();
-        Navigator.pop(context);
-        Navigator.pop(context);
-        if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(
-              context, "Order Sucessfully Cancelled");
-        } else {
+        // Only pop navigation on mobile - web handles its own navigation (sheets)
+        if (!kIsWeb) {
+          Navigator.pop(context);
+          Navigator.pop(context);
           successMessage(context, "Order Sucessfully Cancelled");
+        } else {
+          ResponsiveSnackBar.showSuccess(
+              context, "SIP Order Cancelled Successfully");
         }
       } else if (cancleSipOrder!.emsg ==
           "Session Expired :  Invalid Session Key") {

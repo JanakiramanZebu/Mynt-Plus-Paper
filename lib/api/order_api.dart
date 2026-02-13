@@ -396,6 +396,33 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// Place SIP basket order with multiple scrips
+  Future<SipPlaceOrderModel> getPlaceSipBasketOrder(
+      SipBasketInput sipBasketInput) async {
+    try {
+      final uri = Uri.parse(apiLinks.placeSipOrder);
+
+      // Build scrips array JSON - include qty for qty type, prc for amount type
+      final scripsJson = sipBasketInput.scrips.map((scrip) {
+        final valueField = scrip.sipType == 'qty'
+            ? '"qty":"${scrip.qty}"'
+            : '"prc":"${scrip.prc ?? ''}"';
+        return '{"exch":"${scrip.exch}","tsym":"${UrlUtils.encodeParameter(scrip.tsym)}","prd":"${scrip.prd}","token":"${scrip.token}",$valueField,"sip_type":"${scrip.sipType}"}';
+      }).join(',');
+
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipBasketInput.regdate}","start_date":"${sipBasketInput.startdate}","actid":"${prefs.clientId}","frequency":"${sipBasketInput.frequency}","end_period":"${sipBasketInput.endperiod}","sip_name":"${sipBasketInput.sipname}","Scrips":[$scripsJson]}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+      return SipPlaceOrderModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      log("PlaceSipBasketOrder Error::$e");
+      rethrow;
+    }
+  }
+
 // // get Modify SIP order response from kambala
 
   Future<ModifySIPModel> getmodifysiporder(

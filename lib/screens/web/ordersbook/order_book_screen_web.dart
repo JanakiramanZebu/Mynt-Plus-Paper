@@ -21,6 +21,7 @@ import 'screens/open_orders_screen.dart';
 import 'screens/executed_orders_screen.dart';
 import 'screens/trade_book_screen.dart';
 import 'screens/gtt_orders_screen.dart';
+import 'screens/sip_orders_screen_web.dart';
 import '../../../sharedWidget/common_search_fields_web.dart';
 
 /// Main Order Book Screen - Now just a coordinator
@@ -49,6 +50,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
       ScrollController();
   final ScrollController _gttVerticalScrollController = ScrollController();
   final ScrollController _gttHorizontalScrollController = ScrollController();
+  final ScrollController _sipVerticalScrollController = ScrollController();
+  final ScrollController _sipHorizontalScrollController = ScrollController();
   final ScrollController _tabScrollController = ScrollController();
 
   // MF tab state
@@ -280,6 +283,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     _tradeBookVerticalScrollController.dispose();
     _gttVerticalScrollController.dispose();
     _gttHorizontalScrollController.dispose();
+    _sipVerticalScrollController.dispose();
+    _sipHorizontalScrollController.dispose();
     _tabScrollController.dispose();
     super.dispose();
   }
@@ -569,10 +574,13 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           horizontalScrollController: _gttHorizontalScrollController,
           verticalScrollController: _gttVerticalScrollController,
         ),
-        // MF tab with sub tabs: Orders and SIP
-        // _buildMFSubTabs(theme),
         // Basket List
         const BasketList(),
+        // SIP Orders
+        SipOrdersScreenWeb(
+          horizontalScrollController: _sipHorizontalScrollController,
+          verticalScrollController: _sipVerticalScrollController,
+        ),
         // Pending Alerts
         const PendingAlertWeb(),
       ],
