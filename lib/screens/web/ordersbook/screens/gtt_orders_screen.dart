@@ -833,7 +833,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                 message:
                     '$displayText${gttOrder.exch != null && gttOrder.exch!.isNotEmpty ? ' ${gttOrder.exch}' : ''}',
                 child: Padding(
-                  padding: EdgeInsets.only(right: isRowHovered ? 70.0 : 0.0),
+                  padding: EdgeInsets.only(right: isRowHovered ? 105.0 : 0.0),
                   child: RichText(
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
@@ -873,6 +873,11 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Modify button
+                      if (isPending)
+                        _buildModifyButton(gttOrder, uniqueId),
+                      if (isPending)
+                        const SizedBox(width: 6),
                       // Cancel button (X icon) - only for pending orders
                       if (isPending)
                         _buildCancelButton(gttOrder, uniqueId),
@@ -943,6 +948,59 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
           fontWeight: FontWeight.bold,
           color: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
+        ),
+      ),
+    );
+  }
+
+  // Build Modify button with edit icon
+  Widget _buildModifyButton(
+    GttOrderBookModel gttOrder,
+    String uniqueId,
+  ) {
+    final isProcessing =
+        _processingOrderToken == uniqueId && _isProcessingModify;
+
+    return GestureDetector(
+      onTap: isProcessing
+          ? null
+          : () async {
+              // Close menu if open
+              _closePopover();
+              setState(() {
+                _processingOrderToken = uniqueId;
+                _isProcessingModify = true;
+              });
+              await _handleModifyGttOrder(gttOrder);
+              if (mounted) {
+                setState(() {
+                  _isProcessingModify = false;
+                  _processingOrderToken = null;
+                });
+              }
+            },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.textWhite,
+              light: MyntColors.textWhite),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: resolveThemeColor(context,
+                  dark: Colors.transparent,
+                  light: Colors.grey),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.edit_outlined,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.primaryDark, light: MyntColors.primary),
         ),
       ),
     );

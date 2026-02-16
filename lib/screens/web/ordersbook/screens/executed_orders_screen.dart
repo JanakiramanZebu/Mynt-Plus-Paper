@@ -200,10 +200,19 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
         child: shadcn.OutlinedContainer(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              // Calculate equal column widths for 8 columns
+              // Calculate proportional column widths for 8 columns
               final availableWidth = constraints.maxWidth;
-              final columnCount = 8;
-              final equalWidth = availableWidth / columnCount;
+
+              // Proportional widths for columns (total = 100%)
+              // Time: 12%, Type: 8%, Instrument: 25%, Product: 12%, Qty: 12%, LTP: 11%, Avg. price: 12%, Status: 8%
+              final timeWidth = availableWidth * 0.12;
+              final typeWidth = availableWidth * 0.08;
+              final instrumentWidth = availableWidth * 0.24; // 25% for instrument - wider to show full names
+              final productWidth = availableWidth * 0.08;
+              final qtyWidth = availableWidth * 0.12;
+              final ltpWidth = availableWidth * 0.11;
+              final avgPriceWidth = availableWidth * 0.12;
+              final statusWidth = availableWidth * 0.13;
 
               // Build table content
               Widget buildTableContent() {
@@ -220,14 +229,14 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                       // Fixed Header
                       shadcn.Table(
                         columnWidths: {
-                          0: shadcn.FixedTableSize(equalWidth),
-                          1: shadcn.FixedTableSize(equalWidth),
-                          2: shadcn.FixedTableSize(equalWidth),
-                          3: shadcn.FixedTableSize(equalWidth),
-                          4: shadcn.FixedTableSize(equalWidth),
-                          5: shadcn.FixedTableSize(equalWidth),
-                          6: shadcn.FixedTableSize(equalWidth),
-                          7: shadcn.FixedTableSize(equalWidth),
+                          0: shadcn.FixedTableSize(timeWidth),
+                          1: shadcn.FixedTableSize(typeWidth),
+                          2: shadcn.FixedTableSize(instrumentWidth),
+                          3: shadcn.FixedTableSize(productWidth),
+                          4: shadcn.FixedTableSize(qtyWidth),
+                          5: shadcn.FixedTableSize(ltpWidth),
+                          6: shadcn.FixedTableSize(avgPriceWidth),
+                          7: shadcn.FixedTableSize(statusWidth),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
@@ -283,14 +292,14 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                               key: ValueKey(
                                   'table_${_sortColumnIndex}_$_sortAscending'),
                               columnWidths: {
-                                0: shadcn.FixedTableSize(equalWidth),
-                                1: shadcn.FixedTableSize(equalWidth),
-                                2: shadcn.FixedTableSize(equalWidth),
-                                3: shadcn.FixedTableSize(equalWidth),
-                                4: shadcn.FixedTableSize(equalWidth),
-                                5: shadcn.FixedTableSize(equalWidth),
-                                6: shadcn.FixedTableSize(equalWidth),
-                                7: shadcn.FixedTableSize(equalWidth),
+                                0: shadcn.FixedTableSize(timeWidth),
+                                1: shadcn.FixedTableSize(typeWidth),
+                                2: shadcn.FixedTableSize(instrumentWidth),
+                                3: shadcn.FixedTableSize(productWidth),
+                                4: shadcn.FixedTableSize(qtyWidth),
+                                5: shadcn.FixedTableSize(ltpWidth),
+                                6: shadcn.FixedTableSize(avgPriceWidth),
+                                7: shadcn.FixedTableSize(statusWidth),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: [

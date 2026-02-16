@@ -197,8 +197,16 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
               // Available width
               final availableWidth = constraints.maxWidth;
 
-              // Equal width for all 8 columns
-              final equalWidth = availableWidth / 8;
+              // Proportional widths for columns (total = 100%)
+              // Trade ID: 10%, Fill time: 10%, Type: 8%, Instrument: 25%, Product: 12%, Qty: 12%, LTP: 11%, Avg Price: 12%
+              final tradeIdWidth = availableWidth * 0.10;
+              final fillTimeWidth = availableWidth * 0.10;
+              final typeWidth = availableWidth * 0.08;
+              final instrumentWidth = availableWidth * 0.25; // 25% for instrument - wider to show full names
+              final productWidth = availableWidth * 0.12;
+              final qtyWidth = availableWidth * 0.12;
+              final ltpWidth = availableWidth * 0.11;
+              final avgPriceWidth = availableWidth * 0.12;
 
               // Build table content
               Widget buildTableContent() {
@@ -212,17 +220,17 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                   ),
                   child: Column(
                     children: [
-                      // Fixed Header - 8 columns with equal width (always visible)
+                      // Fixed Header - 8 columns with proportional widths (always visible)
                       shadcn.Table(
                         columnWidths: {
-                          0: shadcn.FixedTableSize(equalWidth),
-                          1: shadcn.FixedTableSize(equalWidth),
-                          2: shadcn.FixedTableSize(equalWidth),
-                          3: shadcn.FixedTableSize(equalWidth),
-                          4: shadcn.FixedTableSize(equalWidth),
-                          5: shadcn.FixedTableSize(equalWidth),
-                          6: shadcn.FixedTableSize(equalWidth),
-                          7: shadcn.FixedTableSize(equalWidth),
+                          0: shadcn.FixedTableSize(tradeIdWidth),
+                          1: shadcn.FixedTableSize(fillTimeWidth),
+                          2: shadcn.FixedTableSize(typeWidth),
+                          3: shadcn.FixedTableSize(instrumentWidth),
+                          4: shadcn.FixedTableSize(productWidth),
+                          5: shadcn.FixedTableSize(qtyWidth),
+                          6: shadcn.FixedTableSize(ltpWidth),
+                          7: shadcn.FixedTableSize(avgPriceWidth),
                         },
                         defaultRowHeight: const shadcn.FixedTableSize(50),
                         rows: [
@@ -278,14 +286,14 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                               key: ValueKey(
                                   'table_${_sortColumnIndex}_$_sortAscending'),
                               columnWidths: {
-                                0: shadcn.FixedTableSize(equalWidth),
-                                1: shadcn.FixedTableSize(equalWidth),
-                                2: shadcn.FixedTableSize(equalWidth),
-                                3: shadcn.FixedTableSize(equalWidth),
-                                4: shadcn.FixedTableSize(equalWidth),
-                                5: shadcn.FixedTableSize(equalWidth),
-                                6: shadcn.FixedTableSize(equalWidth),
-                                7: shadcn.FixedTableSize(equalWidth),
+                                0: shadcn.FixedTableSize(tradeIdWidth),
+                                1: shadcn.FixedTableSize(fillTimeWidth),
+                                2: shadcn.FixedTableSize(typeWidth),
+                                3: shadcn.FixedTableSize(instrumentWidth),
+                                4: shadcn.FixedTableSize(productWidth),
+                                5: shadcn.FixedTableSize(qtyWidth),
+                                6: shadcn.FixedTableSize(ltpWidth),
+                                7: shadcn.FixedTableSize(avgPriceWidth),
                               },
                               defaultRowHeight: const shadcn.FixedTableSize(50),
                               rows: sortedTrades.asMap().entries.map((entry) {
