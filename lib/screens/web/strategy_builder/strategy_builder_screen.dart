@@ -9,6 +9,8 @@ import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
+import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
+import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
@@ -58,6 +60,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     _strategyTabController.addListener(() {
       final tabs = ['Bullish', 'Bearish', 'Neutral', 'MyStrategy'];
       ref.read(strategyBuilderProvider).setStrategyTypeTab(tabs[_strategyTabController.index]);
+    });
+
+    _searchController.addListener(() {
+      if (_searchController.text.isEmpty) {
+        ref.read(strategyBuilderProvider).searchStocks('');
+      }
     });
   }
 
@@ -193,7 +201,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           // Payoff Chart section
           Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              color: isDark ? MyntColors.overlayBgDark : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
@@ -206,7 +214,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 const Divider(height: 1),
                 // Chart or Greeks table (fixed height for small screen)
                 SizedBox(
-                  height: 350,
+                  height: 280,
                   child: provider.payoffTab == 0
                       ? _buildPayoffChart(context, provider, isDark)
                       : _buildGreeksTable(context, provider, isDark),
@@ -618,19 +626,15 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 36,
-                  child: MyntTextField(
-                    controller: _searchController,
-                    placeholder: 'Search symbol (e.g., NIFTY, BANKNIFTY)',
-                    leadingWidget: Icon(
-                      Icons.search,
-                      size: 18,
-                      color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
-                    ),
-                    borderRadius: 6,
-                    onChanged: (value) => provider.searchStocks(value),
-                  ),
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search symbol (e.g., NIFTY, BANKNIFTY)',
+                  leadingIcon: assets.searchIcon,
+                  onChanged: (value) => provider.searchStocks(value),
+                  onClear: () {
+                    _searchController.clear();
+                    provider.searchStocks('');
+                  },
                 ),
               ),
               const SizedBox(width: 8),
@@ -1601,6 +1605,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       columnSpacing: 10,
       horizontalMargin: 8,
       headingRowHeight: 40,
+      headingRowColor: WidgetStateProperty.all(
+        isDark ? MyntColors.dividerDark : MyntColors.divider,
+      ),
       dataRowMinHeight: 40,
       dataRowMaxHeight: 48,
       columns: [
@@ -1914,7 +1921,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               SizedBox(
                 width: 40,
                 child: Text(
-                  '${item.ordlot}',
+                  '${item.ordlot * provider.lotMultiplier}',
                   textAlign: TextAlign.center,
                   style: MyntWebTextStyles.bodySmall(
                     context,
@@ -2051,31 +2058,33 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Save button
-              OutlinedButton(
-                onPressed: provider.basket.isNotEmpty
-                    ? () => _showSaveStrategyDialog(context, provider, isDark)
-                    : null,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  minimumSize: const Size(70, 36),
-                  side: BorderSide(
-                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+              // Save button (hidden in analyze mode)
+              if (!provider.isAnalyzeMode) ...[
+                OutlinedButton(
+                  onPressed: provider.basket.isNotEmpty
+                      ? () => _showSaveStrategyDialog(context, provider, isDark)
+                      : null,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(70, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                  child: Text(
+                    'Save',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
                   ),
                 ),
-                child: Text(
-                  'Save',
-                  style: MyntWebTextStyles.bodySmall(
-                    context,
-                    darkColor: MyntColors.textPrimaryDark,
-                    lightColor: MyntColors.textBlack,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
+                const SizedBox(width: 8),
+              ],
               // Place Order button
               ElevatedButton(
                 onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
@@ -2200,7 +2209,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   Widget _buildRightPanel(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? MyntColors.overlayBgDark : Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
@@ -3176,6 +3185,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           child: DataTable(
           columnSpacing: 16,
           headingRowHeight: 40,
+          headingRowColor: WidgetStateProperty.all(
+            isDark ? MyntColors.dividerDark : MyntColors.divider,
+          ),
+          dividerThickness: 0,
           dataRowMinHeight: 40,
           dataRowMaxHeight: 48,
           columns: [
@@ -3470,13 +3483,14 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           ),
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: 3,
+              trackHeight: 6,
               activeTrackColor: MyntColors.primary,
-              inactiveTrackColor: Colors.grey[300],
-              thumbColor: MyntColors.primary,
+              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
+              thumbColor: Colors.white,
               overlayColor: MyntColors.primary.withValues(alpha: 0.1),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              trackShape: const RoundedRectSliderTrackShape(),
             ),
             child: Slider(
               value: provider.targetSpotPrice > 0
@@ -3524,6 +3538,50 @@ class _PayoffData {
   _PayoffData({required this.price, required this.payoff});
 }
 
+class _BorderedThumbShape extends RoundSliderThumbShape {
+  final Color borderColor;
+  final double borderWidth;
+
+  const _BorderedThumbShape({
+    super.enabledThumbRadius = 8,
+    this.borderColor = Colors.black,
+    this.borderWidth = 2,
+  });
+
+  @override
+  void paint(PaintingContext context, Offset center,
+      {required Animation<double> activationAnimation,
+      required Animation<double> enableAnimation,
+      required bool isDiscrete,
+      required TextPainter labelPainter,
+      required RenderBox parentBox,
+      required SliderThemeData sliderTheme,
+      required TextDirection textDirection,
+      required double value,
+      required double textScaleFactor,
+      required Size sizeWithOverflow}) {
+    super.paint(context, center,
+        activationAnimation: activationAnimation,
+        enableAnimation: enableAnimation,
+        isDiscrete: isDiscrete,
+        labelPainter: labelPainter,
+        parentBox: parentBox,
+        sliderTheme: sliderTheme,
+        textDirection: textDirection,
+        value: value,
+        textScaleFactor: textScaleFactor,
+        sizeWithOverflow: sizeWithOverflow);
+    context.canvas.drawCircle(
+      center,
+      enabledThumbRadius,
+      Paint()
+        ..color = borderColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth,
+    );
+  }
+}
+
 /// Strategy Builder Panel - Embeddable panel version for use within CustomizableSplitHomeScreen
 /// This version has no Scaffold/AppBar and fits directly into the panel layout
 class StrategyBuilderPanelWeb extends ConsumerStatefulWidget {
@@ -3568,6 +3626,12 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     _strategyTabController.addListener(() {
       final tabs = ['Bullish', 'Bearish', 'Neutral', 'MyStrategy'];
       ref.read(strategyBuilderProvider).setStrategyTypeTab(tabs[_strategyTabController.index]);
+    });
+
+    _searchController.addListener(() {
+      if (_searchController.text.isEmpty) {
+        ref.read(strategyBuilderProvider).searchStocks('');
+      }
     });
   }
 
@@ -3618,9 +3682,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       return _buildNarrowPanelLayout(context, provider, isDark);
     }
 
-    return Container(
-      // color: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
-      // padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.all(16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -3643,12 +3706,19 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   /// Build layout for narrow panels (single column scrollable)
   Widget _buildNarrowPanelLayout(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Basket Card with search and table
           Container(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+              ),
+            ),
             child: Column(
               children: [
                 // Search bar (hidden in analyze mode) or analyze header
@@ -3668,16 +3738,28 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               ],
             ),
           ),
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          const SizedBox(height: 12),
           // Metrics section (compact for narrow panels)
           Container(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+              ),
+            ),
             child: _buildMetricsSectionNarrow(context, provider, isDark),
           ),
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          const SizedBox(height: 12),
           // Payoff Chart section
           Container(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+              ),
+            ),
             child: Column(
               children: [
                 // Tabs
@@ -3685,7 +3767,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 const Divider(height: 1),
                 // Chart or Greeks table (fixed height)
                 SizedBox(
-                  height: 300,
+                  height: 250,
                   child: provider.payoffTab == 0
                       ? _buildPayoffChart(context, provider, isDark)
                       : _buildGreeksTable(context, provider, isDark),
@@ -3695,17 +3777,23 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
           // Strategies Card (hidden in analyze mode)
           if (!provider.isAnalyzeMode) ...[
-            Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+            const SizedBox(height: 12),
             Container(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              decoration: BoxDecoration(
+                color: isDark ? MyntColors.overlayBgDark : Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+                ),
+              ),
               child: Column(
                 children: [
                   // Strategy tabs
                   TabBar(
                     controller: _strategyTabController,
-                    labelColor: MyntColors.primary,
+                    labelColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     unselectedLabelColor: isDark ? Colors.grey : Colors.grey[600],
-                    indicatorColor: MyntColors.primary,
+                    indicatorColor:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     labelStyle: MyntWebTextStyles.bodySmall(
                       context,
                       fontWeight: MyntFonts.medium,
@@ -3727,10 +3815,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               ),
             ),
           ],
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          const SizedBox(height: 12),
           // Chart controls
           Container(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+              ),
+            ),
             child: _buildChartControls(context, provider, isDark),
           ),
           const SizedBox(height: 60), // Bottom padding
@@ -3813,7 +3907,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+        color: isDark ? MyntColors.overlayBgDark : const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
@@ -3851,7 +3945,13 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         Expanded(
           flex: 2,
           child: Container(
-            color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.dashboardCarColor : MyntColors.backgroundColor,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? MyntColors.dividerDark : MyntColors.divider,
+              ),
+            ),
             child: Column(
               children: [
                 // Search bar (hidden in analyze mode) or analyze header
@@ -3873,16 +3973,24 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         ),
         // Strategies Card (hidden in analyze mode)
         if (!provider.isAnalyzeMode) ...[
-          Divider(height: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          const SizedBox(height: 16),
           Expanded(
             flex: 1,
             child: Container(
-              color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
+              decoration: BoxDecoration(
+                color: isDark ? MyntColors.dashboardCarColor : MyntColors.backgroundColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? MyntColors.dividerDark : MyntColors.divider,
+                ),
+              ),
               child: Column(
                 children: [
                   // Strategy tabs
                   TabBar(
                     controller: _strategyTabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     labelColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                     unselectedLabelColor: isDark ? Colors.grey : Colors.grey[600],
                     indicatorColor:resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
@@ -3961,19 +4069,15 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           Row(
             children: [
               Expanded(
-                child: SizedBox(
-                  height: 36,
-                  child: MyntTextField(
-                    controller: _searchController,
-                    placeholder: 'Search & add',
-                    leadingWidget: Icon(
-                      Icons.search,
-                      size: 18,
-                      color: isDark ? Colors.grey : Colors.grey[600],
-                    ),
-                    borderRadius: 6,
-                    onChanged: (value) => provider.searchStocks(value),
-                  ),
+                child: MyntSearchTextField.withSmartClear(
+                  controller: _searchController,
+                  placeholder: 'Search & add',
+                  leadingIcon: assets.searchIcon,
+                  onChanged: (value) => provider.searchStocks(value),
+                  onClear: () {
+                    _searchController.clear();
+                    provider.searchStocks('');
+                  },
                 ),
               ),
               const SizedBox(width: 8),
@@ -3994,7 +4098,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   ),
                 ),
                 child: Text(
-                  'Add',
+                  'Chain',
                   style: MyntWebTextStyles.bodySmall(
                     context,
                     darkColor: MyntColors.textPrimaryDark,
@@ -4031,21 +4135,34 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   final result = provider.searchResults[index];
                   return ListTile(
                     dense: true,
-                    title: Text(
-                      result['displayName'] ?? result['tsym'] ?? '',
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        darkColor: MyntColors.textPrimaryDark,
-                        lightColor: MyntColors.textBlack,
+                    title: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${result['displayName'] ?? result['tsym'] ?? ''} ',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textBlack,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '${result['exch'] ?? ''}',
+                            style: MyntWebTextStyles.bodySmall(
+                              context,
+                              color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
+                            ).copyWith(fontSize: 10),
+                          ),
+                        ],
                       ),
                     ),
-                    subtitle: Text(
-                      result['exch'] ?? '',
-                      style: MyntWebTextStyles.caption(
-                        context,
-                        color: Colors.grey,
-                      ),
-                    ),
+                    // subtitle: Text(
+                    //   result['exch'] ?? '',
+                    //   style: MyntWebTextStyles.caption(
+                    //     context,
+                    //     color: isDark ? Colors.grey : Colors.grey[600],
+                    //   ),
+                    // ),
                     onTap: () async {
                       final selectedName = result['displayName'] ?? result['tsym'] ?? '';
                       _searchController.text = selectedName;
@@ -4809,6 +4926,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       columnSpacing: 10,
       horizontalMargin: 8,
       headingRowHeight: 40,
+      headingRowColor: WidgetStateProperty.all(
+        isDark ? MyntColors.overlayBgDark : MyntColors.listItemBg,
+      ),
       dataRowMinHeight: 40,
       dataRowMaxHeight: 48,
       columns: [
@@ -4819,7 +4939,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
             checkColor: isDark ? Colors.white : null,
-            side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
+            // side: isDark ? const BorderSide(color: Color(0xFF6E7681), width: 1.5) : null,
           ),
         ),
         DataColumn(
@@ -4995,7 +5115,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: (isDark ? MyntColors.cardBorderDark : MyntColors.cardBorder)),
               borderRadius: BorderRadius.circular(4),
             ),
             child: DropdownButtonHideUnderline(
@@ -5022,7 +5142,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: (isDark ? MyntColors.cardBorderDark : MyntColors.cardBorder)),
               borderRadius: BorderRadius.circular(4),
             ),
             child: DropdownButtonHideUnderline(
@@ -5093,11 +5213,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 height: 28,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: (isDark ? MyntColors.cardBorderDark : MyntColors.cardBorder)),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  '${item.ordlot}',
+                  '${item.ordlot * provider.lotMultiplier}',
                   style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12),
                 ),
               ),
@@ -5147,7 +5267,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   Widget _buildBottomActions(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
@@ -5155,83 +5274,145 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
         ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Clear button
-          OutlinedButton(
-            onPressed: () => provider.clearBasket(),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              minimumSize: const Size(60, 36),
-              side: BorderSide(
-                color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: Text(
-              'Clear',
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                darkColor: MyntColors.textPrimaryDark,
-                lightColor: MyntColors.textBlack,
-              ),
-            ),
-          ),
-          const Spacer(),
-          // Save & Place Order buttons
-          if (provider.basket.isNotEmpty) ...[
-            OutlinedButton(
-              onPressed: () => _showSaveStrategyDialog(context, provider, isDark),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                minimumSize: const Size(60, 36),
-                side: BorderSide(
-                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+          // Lot Multiplier row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Text(
+                  'Lot Multiplier',
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                    fontWeight: MyntFonts.medium,
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-              child: Text(
-                'Save',
-                style: MyntWebTextStyles.bodySmall(
-                  context,
-                  darkColor: MyntColors.textPrimaryDark,
-                  lightColor: MyntColors.textBlack,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          ElevatedButton(
-            onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              minimumSize: const Size(100, 36),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: provider.isOrderLoading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+                const SizedBox(width: 8),
+                Container(
+                  height: 28,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
                     ),
-                  )
-                : Text(
-                    'Place order',
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      color: Colors.white,
-                      fontWeight: MyntFonts.medium,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: provider.lotMultiplier,
+                      isDense: true,
+                      menuMaxHeight: 300,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.semiBold,
+                      ),
+                      dropdownColor: isDark ? MyntColors.textPrimary : Colors.white,
+                      items: List.generate(200, (i) => i + 1)
+                          .map((val) => DropdownMenuItem<int>(
+                                value: val,
+                                child: Text('$val'),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          provider.setLotMultiplier(val, context);
+                          _lotMultiplierController.text = val.toString();
+                        }
+                      },
                     ),
                   ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          // Clear, Save, Place Order row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                OutlinedButton(
+                  onPressed: () => provider.clearBasket(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(60, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Clear',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode) ...[
+                  OutlinedButton(
+                    onPressed: () => _showSaveStrategyDialog(context, provider, isDark),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      minimumSize: const Size(60, 36),
+                      side: BorderSide(
+                        color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: Text(
+                      'Save',
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textBlack,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                ElevatedButton(
+                  onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    minimumSize: const Size(100, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: provider.isOrderLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Place order',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -5265,10 +5446,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             return InkWell(
               onTap: () => provider.setActivePredefinedStrategy(strategy, context),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? (isDark ? MyntColors.card : MyntColors.cardHover)
+                      ? (isDark ? MyntColors.overlayBgDark   : MyntColors.cardHover)
                       : (isDark ? MyntColors.cardDark : Colors.white),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
@@ -5294,7 +5475,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                         height: 34,
                         placeholderBuilder: (context) => Icon(
                           Icons.show_chart,
-                          color: isActive ? Colors.white : MyntColors.primary,
+                          color: isActive ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                           size: 18,
                         ),
                       ),
@@ -5305,7 +5486,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                       style: MyntWebTextStyles.bodySmall(
                         context,
                         color: isActive
-                            ? const Color.fromARGB(255, 0, 0, 0)
+                            ? (isDark ? MyntColors.primaryDark : MyntColors.primary)
                             : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
                         fontWeight: MyntFonts.medium,
                       ),
@@ -5323,12 +5504,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   Widget _buildRightPanel(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
-        borderRadius: BorderRadius.circular(0),
-        border: Border(
-          left: BorderSide(
-            color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
-          ),
+        color: isDark ? MyntColors.dashboardCarColor : Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
         ),
       ),
       child: Column(
@@ -5418,7 +5597,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             label,
             style: MyntWebTextStyles.caption(
               context,
-              color: Colors.grey,
+              color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
               fontWeight: MyntFonts.medium,
             ).copyWith(fontSize: 11),
           ),
@@ -5437,26 +5616,26 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   }
 
   Widget _buildPayoffTabs(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    final hasData = provider.payoffData.isNotEmpty;
-    final targetDate = DateTime.now().add(Duration(days: provider.targetDaysToExpiry));
-    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
-    final labelStyle = MyntWebTextStyles.caption(
-      context,
-      darkColor: Colors.grey,
-      lightColor: Colors.grey[700],
-      fontWeight: MyntFonts.medium,
-    ).copyWith(fontSize: 11);
-    final resetStyle = MyntWebTextStyles.caption(
-      context,
-      color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-      fontWeight: MyntFonts.bold,
-    ).copyWith(fontSize: 11);
-    final valueStyle = MyntWebTextStyles.bodySmall(
-      context,
-      darkColor: MyntColors.textPrimaryDark,
-      lightColor: MyntColors.textBlack,
-      fontWeight: MyntFonts.semiBold,
-    ).copyWith(fontSize: 13);
+    // final hasData = provider.payoffData.isNotEmpty;
+    // final targetDate = DateTime.now().add(Duration(days: provider.targetDaysToExpiry));
+    // final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+    // final labelStyle = MyntWebTextStyles.caption(
+    //   context,
+    //   darkColor: Colors.grey,
+    //   lightColor: Colors.grey[700],
+    //   fontWeight: MyntFonts.medium,
+    // ).copyWith(fontSize: 11);
+    // final resetStyle = MyntWebTextStyles.caption(
+    //   context,
+    //   color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+    //   fontWeight: MyntFonts.bold,
+    // ).copyWith(fontSize: 11);
+    // final valueStyle = MyntWebTextStyles.bodySmall(
+    //   context,
+    //   darkColor: MyntColors.textPrimaryDark,
+    //   lightColor: MyntColors.textBlack,
+    //   fontWeight: MyntFonts.semiBold,
+    // ).copyWith(fontSize: 13);
 
     return Padding(
       padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
@@ -5469,57 +5648,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           _buildTabButton(context, 'Greeks', provider.payoffTab == 1, isDark, () {
             provider.setPayoffTab(1);
           }),
-          const Spacer(),
-          // Target Date controls
-          Text('Target Date: ${provider.targetDaysToExpiry}D', style: labelStyle),
-          const SizedBox(width: 8),
-          InkWell(
-            onTap: hasData ? () => provider.setTargetDaysToExpiry(0) : null,
-            child: Text('Reset', style: resetStyle),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            height: 28,
-            decoration: BoxDecoration(
-              border: Border.all(color: borderColor),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                InkWell(
-                  onTap: () {
-                    if (!hasData || provider.targetDaysToExpiry <= 0) return;
-                    provider.setTargetDaysToExpiry(provider.targetDaysToExpiry - 1);
-                  },
-                  child: Container(
-                    width: 28, height: 28, alignment: Alignment.center,
-                    child: Icon(Icons.chevron_left, size: 14, color: isDark ? Colors.white70 : Colors.black54),
-                  ),
-                ),
-                VerticalDivider(width: 1, color: borderColor),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)} ${targetDate.hour > 12 ? targetDate.hour - 12 : targetDate.hour}:${targetDate.minute.toString().padLeft(2, '0')} ${targetDate.hour >= 12 ? 'PM' : 'AM'}",
-                    style: valueStyle,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                VerticalDivider(width: 1, color: borderColor),
-                InkWell(
-                  onTap: () {
-                    if (!hasData || provider.targetDaysToExpiry >= provider.daysToExpiry) return;
-                    provider.setTargetDaysToExpiry(provider.targetDaysToExpiry + 1);
-                  },
-                  child: Container(
-                    width: 28, height: 28, alignment: Alignment.center,
-                    child: Icon(Icons.chevron_right, size: 14, color: isDark ? Colors.white70 : Colors.black54),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -6298,10 +6426,13 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           child: DataTable(
             columnSpacing: 16,
           headingRowHeight: 40,
+          headingRowColor: WidgetStateProperty.all(
+            isDark ? MyntColors.overlayBgDark : MyntColors.listItemBg,
+          ),
           dataRowMinHeight: 40,
           dataRowMaxHeight: 48,
           horizontalMargin: 12,
-          dividerThickness: 1,
+          dividerThickness: 0,
           columns: [
             DataColumn(
               label: Text('Instrument', style: MyntWebTextStyles.bodySmall(context, fontWeight: MyntFonts.bold)),
@@ -6538,14 +6669,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: 3,
-              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-              inactiveTrackColor: Colors.grey[300],
-              thumbColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+            trackHeight: 2,
+            activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
+              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
               overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-            ),
+               thumbShape: _BorderedThumbShape(
+                enabledThumbRadius: 10,
+                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              trackShape: const RoundedRectSliderTrackShape(),
+          ),
             child: Slider(
               value: provider.targetSpotPrice > 0
                   ? provider.targetSpotPrice
@@ -6555,8 +6690,94 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               onChanged: hasData ? (value) => provider.setTargetSpotPrice(value) : null,
             ),
           ),
+          // Target Date controls
+          _buildTargetDateRow(context, provider, isDark, hasData, labelStyle, resetStyle, valueStyle, borderColor),
         ],
       ),
+    );
+  }
+
+  Widget _buildTargetDateRow(BuildContext context, StrategyBuilderProvider provider, bool isDark, bool hasData, TextStyle labelStyle, TextStyle resetStyle, TextStyle valueStyle, Color borderColor) {
+    final targetDate = DateTime.now().add(Duration(days: provider.targetDaysToExpiry));
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Text('Target Date: ${provider.targetDaysToExpiry}D - Expiry', style: labelStyle),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: hasData ? () => provider.setTargetDaysToExpiry(0) : null,
+              child: Text('Reset', style: resetStyle),
+            ),
+            const Spacer(),
+            Container(
+              height: 28,
+              decoration: BoxDecoration(
+                border: Border.all(color: borderColor),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      if (!hasData || provider.targetDaysToExpiry <= 0) return;
+                      provider.setTargetDaysToExpiry(provider.targetDaysToExpiry - 1);
+                    },
+                    child: Container(
+                      width: 28, height: 28, alignment: Alignment.center,
+                      child: Icon(Icons.chevron_left, size: 14, color: isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
+                  VerticalDivider(width: 1, color: borderColor),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)} ${targetDate.hour > 12 ? targetDate.hour - 12 : targetDate.hour}:${targetDate.minute.toString().padLeft(2, '0')} ${targetDate.hour >= 12 ? 'PM' : 'AM'}",
+                      style: valueStyle,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  VerticalDivider(width: 1, color: borderColor),
+                  InkWell(
+                    onTap: () {
+                      if (!hasData || provider.targetDaysToExpiry >= provider.daysToExpiry) return;
+                      provider.setTargetDaysToExpiry(provider.targetDaysToExpiry + 1);
+                    },
+                    child: Container(
+                      width: 28, height: 28, alignment: Alignment.center,
+                      child: Icon(Icons.chevron_right, size: 14, color: isDark ? Colors.white70 : Colors.black54),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SliderTheme(
+             data: SliderThemeData(
+            trackHeight: 2,
+            activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
+              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
+               thumbShape: _BorderedThumbShape(
+                enabledThumbRadius: 10,
+                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              trackShape: const RoundedRectSliderTrackShape(),
+          ),
+          child: Slider(
+            value: provider.targetDaysToExpiry.toDouble(),
+            min: 0,
+            max: provider.daysToExpiry.toDouble(),
+            divisions: provider.daysToExpiry > 0 ? provider.daysToExpiry : 1,
+            onChanged: hasData ? (value) => provider.setTargetDaysToExpiry(value.round()) : null,
+          ),
+        ),
+      ],
     );
   }
 

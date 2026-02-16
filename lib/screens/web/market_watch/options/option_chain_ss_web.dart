@@ -865,7 +865,7 @@ class _ColumnHeaders extends ConsumerWidget {
                     border: Border(
                       bottom: BorderSide(
                         color: resolveThemeColor(context,
-                            dark: Color(0xFFF1F3F8),
+                            dark: MyntColors.dividerDark,
                             light: MyntColors.primary.withValues(alpha: 0.07)),
                       ),
                     ),
@@ -992,7 +992,7 @@ class _ColumnHeaders extends ConsumerWidget {
                 border: Border(
                   bottom: BorderSide(
                     color: resolveThemeColor(context,
-                        dark: Color(0xFFF1F3F8),
+                        dark: MyntColors.dividerDark,
                         light: MyntColors.primary.withValues(alpha: 0.07)),
                   ),
                 ),

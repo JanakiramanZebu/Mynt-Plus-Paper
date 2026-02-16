@@ -421,7 +421,7 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
         statusIcon = Icons.warning_rounded;
         break;
       case SnackBarType.info:
-        statusColor = Colors.black; // Info is typically neutral
+        statusColor = resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textPrimary); // Info is typically neutral
         statusIcon = Icons.info_rounded;
         break;
     }

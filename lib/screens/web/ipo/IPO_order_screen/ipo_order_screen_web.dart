@@ -470,14 +470,16 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                             theme: false,
                                             fw: 0,
                                             color: theme.isDarkMode
-                                                ? colors.primaryDark
-                                                : colors.primaryLight,
+                                                ? MyntColors.primaryDark
+                                                : MyntColors.primary,
                                           ),
                                           const SizedBox(width: 4),
                                           Icon(
                                             Icons.keyboard_arrow_down,
                                             size: 18,
-                                            color: colors.primary,
+                                             color: theme.isDarkMode
+                                                ? MyntColors.primaryDark
+                                                : MyntColors.primary,
                                           ),
                                         ],
                                       ),
@@ -645,7 +647,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                             text:
                                 "Margin · ${_getMaxPrice(ipo).toStringAsFixed(2)}",
                             theme: false,
-                            color: colors.primary,
+                             color: theme.isDarkMode
+                                                ? MyntColors.primaryDark
+                                                : MyntColors.primary,
                             fw: 1,
                           ),
                         ),
@@ -673,10 +677,10 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: theme.isDarkMode
-                                  ? MyntColors.primaryDark
+                                  ? MyntColors.secondary
                                   : MyntColors.primary,
                               disabledBackgroundColor: (theme.isDarkMode
-                                      ? MyntColors.primaryDark
+                                      ? MyntColors.secondary
                                       : MyntColors.primary)
                                   .withValues(alpha: 0.5),
                               shape: RoundedRectangleBorder(
@@ -825,7 +829,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 _updateProviderState(ipo);
                               });
                             },
-                      icon: Icon(Icons.remove, size: 18, color: colors.primary),
+                      icon: Icon(Icons.remove, size: 18, color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary),
                     ),
                     Expanded(
                       child: TextFormField(
@@ -864,7 +868,7 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 _updateProviderState(ipo);
                               });
                             },
-                      icon: Icon(Icons.add, size: 18, color: colors.primary),
+                      icon: Icon(Icons.add, size: 18, color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary),
                     ),
                   ],
                 ),
@@ -942,9 +946,9 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () => removeItem(index),
-              icon: Icon(Icons.delete_outline, color: colors.error, size: 18),
+              icon: Icon(Icons.delete_outline, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), size: 18),
               label: Text("Delete",
-                  style: TextStyle(color: colors.error, fontSize: 12)),
+                  style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontSize: 12)),
             ),
           ),
         const SizedBox(height: 16),

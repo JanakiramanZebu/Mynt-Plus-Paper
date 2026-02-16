@@ -659,6 +659,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _expiryDates = [];
     _optionChain = [];
     _targetSpotPrice = 0; // Reset target to fallback to spot price
+    _lotMultiplier = 1;
     _basket.clear();
     _payoffData = [];
     _targetPayoffData = [];
@@ -712,6 +713,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Set active predefined strategy
   Future<void> setActivePredefinedStrategy(PredefinedStrategy strategy, BuildContext context) async {
     _activePredefinedStrategy = strategy.title;
+    _lotMultiplier = 1;
 
     // Clear basket and add strategy legs
     _basket.clear();
@@ -768,22 +770,50 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     final cleanLs = (option.ls ?? '1').replaceAll(',', '').replaceAll(' ', '');
     final lotSize = int.tryParse(cleanLs) ?? 1;
 
-    final item = StrategyBasketItem(
-      tsym: option.tsym ?? '',
-      token: option.token ?? '',
-      exch: option.exch ?? 'NFO',
-      strprc: option.strprc ?? '0',
-      optt: option.optt ?? 'CE',
-      expdate: _selectedExpiry,
-      buySell: buySell,
-      ordlot: 1,
-      entryPrice: ltp,
-      ltp: ltp,
-      lotSize: lotSize,
-      checkbox: true, // Explicitly set to true to ensure it's selected
+    // Check if the same option (token) already exists in basket
+    final existingIndex = _basket.indexWhere(
+      (b) => b.token == (option.token ?? ''),
     );
 
-    _basket.add(item);
+    StrategyBasketItem basketItem;
+
+    if (existingIndex != -1) {
+      final existing = _basket[existingIndex];
+      if (existing.buySell == buySell) {
+        // Same direction already exists — block duplicate
+        ResponsiveSnackBar.show(context: context, message: '${option.tsym ?? ''} is already added');
+        return;
+      } else {
+        // Opposite direction — replace buy/sell
+        _basket[existingIndex].buySell = buySell;
+        _updateItemGreeks(_basket[existingIndex]);
+        basketItem = _basket[existingIndex];
+      }
+    } else {
+      basketItem = StrategyBasketItem(
+        tsym: option.tsym ?? '',
+        token: option.token ?? '',
+        exch: option.exch ?? 'NFO',
+        strprc: option.strprc ?? '0',
+        optt: option.optt ?? 'CE',
+        expdate: _selectedExpiry,
+        buySell: buySell,
+        ordlot: 1,
+        entryPrice: ltp,
+        ltp: ltp,
+        lotSize: lotSize,
+        checkbox: true,
+      );
+
+      // Bake current multiplier into existing items' ordlot before resetting
+      if (_lotMultiplier > 1) {
+        for (var item in _basket) {
+          item.ordlot = item.ordlot * _lotMultiplier;
+        }
+        _lotMultiplier = 1;
+      }
+      _basket.add(basketItem);
+    }
 
     // Calculate payoff immediately for instant chart feedback
     _calculatePayoff();
@@ -792,7 +822,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     // Call APIs for payoff, Greeks, and margin (will update with API data)
     await Future.wait([
       _fetchPayoffFromAPI(),
-      _fetchGreeksFromAPI(item),
+      _fetchGreeksFromAPI(basketItem),
       _calculateMargin(context),
     ]);
 
@@ -958,6 +988,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Clear basket
   void clearBasket() {
     _basket.clear();
+    _lotMultiplier = 1;
     _activePredefinedStrategy = null;
     _payoffData = [];
     _targetPayoffData = [];
@@ -1307,7 +1338,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         "buySell": item.buySell,
         "expdate": _expiryDates,
         "ordvai": "MKT",
-        "ordlot": item.ordlot.toString(),
+        "ordlot": (item.ordlot * _lotMultiplier).toString(),
         "ordprc": item.entryPrice.toString(),
         "checkbox": item.checkbox,
         "ser": item.expdate,
@@ -1417,7 +1448,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         "buySell": item.buySell,
         "expdate": _expiryDates,
         "ordvai": "MKT",
-        "ordlot": item.ordlot.toString(),
+        "ordlot": (item.ordlot * _lotMultiplier).toString(),
         "ordprc": item.entryPrice.toString(),
         "checkbox": item.checkbox,
         "ser": item.expdate,
@@ -2035,6 +2066,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Load positions into the strategy builder for analysis
   Future<void> loadFromPositions(List<PositionBookModel> positions, BuildContext context) async {
     _isAnalyzeMode = true;
+    _lotMultiplier = 1;
     _basket.clear();
     _payoffData = [];
     _targetPayoffData = [];
@@ -2182,6 +2214,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Exit analyze mode and reset state
   void exitAnalyzeMode() {
     _isAnalyzeMode = false;
+    _lotMultiplier = 1;
     _basket.clear();
     _payoffData = [];
     _targetPayoffData = [];

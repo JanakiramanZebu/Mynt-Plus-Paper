@@ -25,6 +25,7 @@ class WebChartManager {
   String? _currentToken;
   bool _isVisible = false;
   bool _isIframeCreated = false; // Track if iframe has been created and added to DOM
+  bool? _currentDarkMode; // Track current dark mode to detect theme changes
 
   // Track if a user-selected symbol has been successfully loaded via URL
   // This helps detect when postMessage might fail (TradingView not ready)
@@ -60,6 +61,7 @@ class WebChartManager {
               prefs: prefs,
             );
             _currentToken = _pendingSymbol!['token'];
+            _currentDarkMode = _pendingSymbol!['isDarkMode'];
             // Mark that a user-selected symbol was loaded (via URL, not postMessage)
             _hasLoadedUserSymbol = true;
             debugPrint('WebChartManager: Creating iframe with pending symbol: ${_pendingSymbol!['tsym']}');
@@ -75,6 +77,7 @@ class WebChartManager {
               prefs: prefs,
             );
             _currentToken = _defaultToken;
+            _currentDarkMode = false;
           }
 
           _iframe = html.IFrameElement()
@@ -127,10 +130,11 @@ class WebChartManager {
     required String tsym,
     required bool isDarkMode,
   }) {
-    // Skip if same token (but NOT if we haven't successfully loaded a user symbol yet)
+    // Skip if same token and same theme (but NOT if we haven't successfully loaded a user symbol yet)
     // This prevents skipping when we failed to load the first symbol due to timing issues
-    if (token == _currentToken && _hasLoadedUserSymbol) {
-      debugPrint('WebChartManager: Same token ($token), skipping');
+    // Also allow through when dark mode changed (theme toggle)
+    if (token == _currentToken && _hasLoadedUserSymbol && isDarkMode == _currentDarkMode) {
+      debugPrint('WebChartManager: Same token ($token) and same theme, skipping');
       return;
     }
 
@@ -176,6 +180,7 @@ class WebChartManager {
           try {
             _iframe!.src = newUrl;
             _currentToken = token;
+            _currentDarkMode = isDarkMode;
             _hasLoadedUserSymbol = true;
             debugPrint('WebChartManager: Reloaded stored iframe with $tsym');
           } catch (e) {
@@ -193,12 +198,14 @@ class WebChartManager {
       debugPrint('WebChartManager: First user symbol, using URL reload for: $tsym');
       _reloadAllIframesWithUrl(allChartIframes, exch, token, tsym, isDarkMode);
       _currentToken = token;
+      _currentDarkMode = isDarkMode;
       _hasLoadedUserSymbol = true;
       return;
     }
 
-    // Update token now that we're about to change it
+    // Update token and theme now that we're about to change it
     _currentToken = token;
+    _currentDarkMode = isDarkMode;
 
     // Use postMessage for subsequent symbol changes (faster, no reload)
     int successCount = 0;

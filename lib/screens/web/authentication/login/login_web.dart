@@ -261,7 +261,9 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
         // Check if we need OTP verification
         if (webAuth.mobileLogin?.stat == 'Ok' &&
             webAuth.mobileLogin?.apitoken == null) {
-          // OTP/TOTP flow needed
+          // OTP/TOTP flow needed - clear previous OTP before showing
+          ref.read(authProvider).otpCtrl.clear();
+          webAuth.otpController.clear();
           setState(() {
             _showOtpScreen = true;
             _start = 89;

@@ -1182,7 +1182,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
         "expos": expriceType,
         "stickysrc": _stickyOrderWindow ? true : false,
       },
-      "source": "WEB"
+      "source": "FWEB"
     };
 
     try {

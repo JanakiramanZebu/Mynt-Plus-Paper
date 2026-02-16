@@ -13,6 +13,8 @@ import '../res/mynt_web_color_styles.dart';
 import '../themes/theme.dart';
 import 'core/default_change_notifier.dart';
 import 'user_profile_provider.dart';
+import 'market_watch_provider.dart';
+import '../screens/web/chart/web_chart_manager.dart';
 
 final themeProvider = ChangeNotifierProvider((ref) => ThemesProvider(ref));
 
@@ -232,6 +234,18 @@ class ThemesProvider extends DefaultChangeNotifier {
     //          pref.setTheme(brightness == Brightness.dark);
     // }
     ref.read(userProfileProvider).fetchsetting();
+    // Update chart iframe theme on web
+    if (kIsWeb) {
+      final activeTab = ref.read(marketWatchProvider).activeTab;
+      if (activeTab != null) {
+        webChartManager.changeSymbol(
+          exch: activeTab.exch,
+          token: activeTab.token,
+          tsym: activeTab.tsym,
+          isDarkMode: isDarkMode,
+        );
+      }
+    }
     notifyListeners();  // This will trigger rebuild of both MaterialApp (mobile) and ShadcnApp (web)
   }
 

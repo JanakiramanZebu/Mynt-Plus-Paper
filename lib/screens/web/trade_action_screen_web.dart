@@ -1,16 +1,18 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:flutter/material.dart'
+    hide DataTable, DataColumn, DataRow, DataCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/thems.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../models/explore_model/stocks_model/toplist_stocks.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
-import '../../../res/web_colors.dart';
-import '../../../res/global_font_web.dart';
+import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/mynt_web_color_styles.dart';
 import '../../../sharedWidget/no_data_found.dart';
 
 class TradeActionScreenWeb extends ConsumerStatefulWidget {
@@ -32,7 +34,8 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
   
   int? _sortColumnIndex;
   bool _sortAscending = true;
-  String? _hoveredRowToken;
+  // PERFORMANCE FIX: Use ValueNotifier for hover instead of setState
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
   StreamSubscription? _socketSubscription;
   
   // Store WebSocket data for each stock
@@ -43,6 +46,20 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     'Top losers',
     'Volume breakout',
     'Most active',
+  ];
+
+  // Column headers for the table
+  final List<String> _headers = [
+    'Symbol',
+    'Exchange',
+    'LTP',
+    'Change',
+    'Change %',
+    'Open',
+    'High',
+    'Low',
+    'Close',
+    'Volume',
   ];
 
   @override
@@ -143,6 +160,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
     _tabScrollController.dispose();
+    _hoveredRowIndex.dispose();
     super.dispose();
   }
 
@@ -281,44 +299,21 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     final theme = ref.watch(themeProvider);
     
     return Scaffold(
-      backgroundColor: theme.isDarkMode
-          ? WebDarkColors.background
-          : WebColors.background,
+      backgroundColor: resolveThemeColor(context,
+          dark: MyntColors.backgroundColorDark,
+          light: MyntColors.backgroundColor),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header with tabs
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: theme.isDarkMode
-                    ? WebDarkColors.surface
-                    : WebColors.surface,
-                // border: Border(
-                //   bottom: BorderSide(
-                //     color: theme.isDarkMode
-                //         ? WebDarkColors.divider
-                //         : WebColors.divider,
-                //   ),
-                // ),
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              color: Colors.transparent,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
-                  // Text(
-                  //   "Today's trade action",
-                  //   style: WebTextStyles.head(
-                  //     isDarkTheme: theme.isDarkMode,
-                  //     color: theme.isDarkMode
-                  //         ? WebDarkColors.textPrimary
-                  //         : WebColors.textPrimary,
-                  //     fontWeight: WebFonts.bold,
-                  //   ),
-                  // ),
-                  // const SizedBox(height: 16),
                   // Tabs
                   _buildTabs(theme),
                 ],
@@ -368,373 +363,640 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
   ) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      child: InkWell(
+      child: GestureDetector(
         onTap: () {
           if (_tabController.index != index) {
             _tabController.animateTo(index);
           }
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isSelected
-                ? (theme.isDarkMode
-                    ? WebDarkColors.backgroundTertiary
-                    : WebColors.backgroundTertiary)
+                ? (isDarkMode(context)
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05))
                 : Colors.transparent,
-            border: Border.all(
-              color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.textSecondary
-                      : WebColors.textSecondary),
-              width: isSelected ? 1.5 : 1,
-            ),
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
             title,
             overflow: TextOverflow.ellipsis,
-            style: WebTextStyles.tab(
-              isDarkTheme: theme.isDarkMode,
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+            ).copyWith(
               color: isSelected
-                  ? (theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary)
-                  : (theme.isDarkMode
-                      ? WebDarkColors.navItem
-                      : WebColors.navItem),
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ? shadcn.Theme.of(context).colorScheme.foreground
+                  : shadcn.Theme.of(context).colorScheme.mutedForeground,
             ),
           ),
         ),
       ),
     );
   }
+
+  // ─── TABLE ──────────────────────────────────────────────────────
 
   Widget _buildTable(ThemesProvider theme) {
     final stocks = _getCurrentStocks();
 
     if (stocks.isEmpty) {
-      return const Center(child: NoDataFoundWeb());
+      return shadcn.OutlinedContainer(
+        child: NoDataFoundWeb(
+          title: "No Data",
+          subtitle: "No stocks available for this category.",
+          primaryEnabled: false,
+          secondaryEnabled: false,
+        ),
+      );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height: screen height minus all UI elements
-        final screenHeight = MediaQuery.of(context).size.height;
-        const padding = 32.0; // Top and bottom padding (16 * 2)
-        const headerHeight = 120.0; // Header with tabs
-        const spacing = 16.0; // Spacing between sections
-        const bottomMargin = 20.0; // Bottom margin
-        final tableHeight =
-            screenHeight - padding - headerHeight - spacing - bottomMargin;
+    return shadcn.OutlinedContainer(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate dynamic column widths based on content
+          final minWidths = _calculateMinWidths(stocks, context);
+          final availableWidth = constraints.maxWidth;
 
-        // Ensure we don't exceed 75% of screen height
-        final maxHeight = screenHeight * 0.75;
-        final calculatedHeight = tableHeight > maxHeight
-            ? maxHeight
-            : (tableHeight > 400 ? tableHeight : 400.0);
+          // Start with minimum widths
+          final columnWidths = <int, double>{};
+          for (int i = 0; i < _headers.length; i++) {
+            columnWidths[i] = minWidths[i] ?? 100.0;
+          }
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20.0),
-          child: Container(
-            height: calculatedHeight.toDouble(),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: theme.isDarkMode
-                    ? WebDarkColors.divider
-                    : WebColors.divider,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-              color: theme.isDarkMode
-                  ? WebDarkColors.background
-                  : Colors.white,
-            ),
-            clipBehavior: Clip.antiAlias, // Ensure no gaps show through
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                scrollbarTheme: ScrollbarThemeData(
-                  thumbVisibility: WidgetStateProperty.all(true),
-                  trackVisibility: WidgetStateProperty.all(true),
-                  thickness: WidgetStateProperty.all(6.0),
-                  crossAxisMargin: 0.0,
-                  mainAxisMargin: 0.0,
-                  radius: const Radius.circular(3),
-                  thumbColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.textSecondary.withOpacity(0.3)
-                        : WebColors.textSecondary.withOpacity(0.3);
+          // Calculate total minimum width needed
+          final totalMinWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+
+          // Distribute extra space or shrink columns
+          if (totalMinWidth < availableWidth) {
+            final extraSpace = availableWidth - totalMinWidth;
+
+            // Growth priorities: Symbol gets more growth, numeric columns less
+            const symbolGrowthFactor = 2.0;
+            const numericGrowthFactor = 1.0;
+
+            final growthFactors = <int, double>{};
+            double totalGrowthFactor = 0.0;
+
+            for (int i = 0; i < _headers.length; i++) {
+              final header = _headers[i];
+              if (header == 'Exchange') {
+                growthFactors[i] = 0.0; // Exchange doesn't grow
+              } else if (header == 'Symbol') {
+                growthFactors[i] = symbolGrowthFactor;
+                totalGrowthFactor += symbolGrowthFactor;
+              } else {
+                growthFactors[i] = numericGrowthFactor;
+                totalGrowthFactor += numericGrowthFactor;
+              }
+            }
+
+            if (totalGrowthFactor > 0) {
+              for (int i = 0; i < _headers.length; i++) {
+                if (growthFactors[i]! > 0) {
+                  final extraForThisColumn =
+                      (extraSpace * growthFactors[i]!) / totalGrowthFactor;
+                  columnWidths[i] = columnWidths[i]! + extraForThisColumn;
+                }
+              }
+            }
+          } else if (totalMinWidth > availableWidth) {
+            final excessWidth = totalMinWidth - availableWidth;
+
+            // Absolute minimum widths
+            final absoluteMinWidths = <int, double>{
+              0: 100.0, // Symbol
+              1: 60.0,  // Exchange
+              2: 70.0,  // LTP
+              3: 70.0,  // Change
+              4: 80.0,  // Change %
+              5: 65.0,  // Open
+              6: 65.0,  // High
+              7: 65.0,  // Low
+              8: 65.0,  // Close
+              9: 70.0,  // Volume
+            };
+
+            final shrinkableAmounts = <int, double>{};
+            double totalShrinkable = 0.0;
+
+            for (int i = 0; i < _headers.length; i++) {
+              final currentWidth = columnWidths[i]!;
+              final absoluteMin = absoluteMinWidths[i] ?? 60.0;
+              final shrinkable = currentWidth - absoluteMin;
+              if (shrinkable > 0) {
+                shrinkableAmounts[i] = shrinkable;
+                totalShrinkable += shrinkable;
+              } else {
+                shrinkableAmounts[i] = 0.0;
+              }
+            }
+
+            if (totalShrinkable > 0) {
+              final shrinkFactor = excessWidth < totalShrinkable
+                  ? excessWidth / totalShrinkable
+                  : 1.0;
+
+              for (int i = 0; i < _headers.length; i++) {
+                if (shrinkableAmounts[i]! > 0) {
+                  final shrinkAmount = shrinkableAmounts[i]! * shrinkFactor;
+                  columnWidths[i] = columnWidths[i]! - shrinkAmount;
+                }
+              }
+            }
+          }
+
+          final totalRequiredWidth = columnWidths.values
+              .fold<double>(0.0, (sum, width) => sum + width);
+          final needsHorizontalScroll = totalRequiredWidth > availableWidth;
+
+          // Build table content (split header + scrollable body)
+          Widget buildTableContent() {
+            return Column(
+              children: [
+                // Fixed Header
+                shadcn.Table(
+                  columnWidths: columnWidths.map((index, width) {
+                    return MapEntry(index, shadcn.FixedTableSize(width));
                   }),
-                  trackColor: WidgetStateProperty.resolveWith((states) {
-                    return theme.isDarkMode 
-                        ? WebDarkColors.divider.withOpacity(0.1)
-                        : WebColors.divider.withOpacity(0.1);
-                  }),
-                  trackBorderColor: WidgetStateProperty.all(Colors.transparent),
-                  minThumbLength: 48.0,
+                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  rows: [
+                    shadcn.TableHeader(
+                      cells: _headers.asMap().entries.map((entry) {
+                        final columnIndex = entry.key;
+                        final header = entry.value;
+                        final isNumeric = _isNumericColumn(header);
+                        return _buildHeaderCell(header, columnIndex, theme, isNumeric);
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                // Scrollable Body
+                Expanded(
+                  child: RawScrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    trackColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.1),
+                        light: Colors.grey.withOpacity(0.1)),
+                    thumbColor: resolveThemeColor(context,
+                        dark: Colors.grey.withOpacity(0.3),
+                        light: Colors.grey.withOpacity(0.3)),
+                    thickness: 6,
+                    radius: const Radius.circular(3),
+                    interactive: true,
+                    child: SingleChildScrollView(
+                      controller: _verticalScrollController,
+                      scrollDirection: Axis.vertical,
+                      child: shadcn.Table(
+                        key: ValueKey('table_${_sortColumnIndex}_$_sortAscending'),
+                        columnWidths: columnWidths.map((index, width) {
+                          return MapEntry(index, shadcn.FixedTableSize(width));
+                        }),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
+                        rows: [
+                          ...stocks.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final stock = entry.value;
+                            return _buildDataRow(stock, index, theme);
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          // Wrap in horizontal scroll if needed
+          if (needsHorizontalScroll) {
+            return RawScrollbar(
+              controller: _horizontalScrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              trackColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.1),
+                  light: Colors.grey.withOpacity(0.1)),
+              thumbColor: resolveThemeColor(context,
+                  dark: Colors.grey.withOpacity(0.3),
+                  light: Colors.grey.withOpacity(0.3)),
+              thickness: 6,
+              radius: const Radius.circular(3),
+              interactive: true,
+              child: SingleChildScrollView(
+                controller: _horizontalScrollController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: totalRequiredWidth,
+                  child: buildTableContent(),
                 ),
               ),
-              child: DataTable2(
-                columnSpacing: 12,
-                // horizontalMargin: 12,
-                // Calculate minWidth: Symbol(300) + Exchange(100) + 8 columns(120 each) + spacing(12*9) = ~1500
-                minWidth: 1500,
-                sortColumnIndex: _sortColumnIndex,
-                sortAscending: _sortAscending,
-                fixedLeftColumns: 1, // Fix the Symbol column
-                fixedColumnsColor: theme.isDarkMode 
-                    ? WebDarkColors.backgroundSecondary.withOpacity(0.8)
-                    : WebColors.backgroundSecondary.withOpacity(0.8),
-                showBottomBorder: true,
-                horizontalScrollController: _horizontalScrollController,
-                scrollController: _verticalScrollController,
-                showCheckboxColumn: false,
-                headingRowColor: WidgetStateProperty.all(
-                  theme.isDarkMode
-                      ? WebDarkColors.primary
-                      : WebColors.primary.withOpacity(0.05),
-                ),
-                headingTextStyle: WebTextStyles.tableHeader(
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                ),
-                dataTextStyle: WebTextStyles.custom(
-                  fontSize: 13,
-                  isDarkTheme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? WebDarkColors.textPrimary
-                      : WebColors.textPrimary,
-                  fontWeight: WebFonts.medium,
-                ),
-                border: TableBorder(
-                  top: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  bottom: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  horizontalInside: BorderSide(
-                    color: theme.isDarkMode
-                        ? WebDarkColors.divider
-                        : WebColors.divider,
-                    width: 1,
-                  ),
-                  verticalInside: const BorderSide(
-                    color: Colors.transparent, // Hide vertical lines
-                    width: 0,
-                  ),
-                ),
-                columns: _buildColumns(theme),
-                rows: _buildRows(stocks, theme),
-              ),
-            ),
-          ),
-        );
-      },
+            );
+          } else {
+            return buildTableContent();
+          }
+        },
+      ),
     );
   }
 
-  List<DataColumn2> _buildColumns(ThemesProvider theme) {
-    return [
-      DataColumn2(
-        label: _buildHeaderWidget('Symbol', 0, theme),
-        size: ColumnSize.L,
-        fixedWidth: 300.0, // Match position screen width
-        onSort: (index, ascending) => _onSortTable(0, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Exchange', 1, theme),
-        size: ColumnSize.S,
-        fixedWidth: 100.0,
-        onSort: (index, ascending) => _onSortTable(1, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('LTP', 2, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(2, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Change', 3, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(3, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Change %', 4, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(4, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Open', 5, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(5, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('High', 6, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(6, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Low', 7, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(7, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Close', 8, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(8, ascending),
-      ),
-      DataColumn2(
-        label: _buildHeaderWidget('Volume', 9, theme),
-        size: ColumnSize.S,
-        fixedWidth: 120.0,
-        onSort: (index, ascending) => _onSortTable(9, ascending),
-      ),
-    ];
-  }
+  // ─── HEADER CELL (matches positions page) ──────────────────────
 
-  Widget _buildHeaderWidget(String label, int columnIndex, ThemesProvider theme) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          label,
-          style: WebTextStyles.tableHeader(
-            isDarkTheme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? WebDarkColors.textPrimary
-                : WebColors.textPrimary,
+  shadcn.TableCell _buildHeaderCell(
+      String label, int columnIndex, ThemesProvider theme,
+      [bool alignRight = false]) {
+    final isFirstColumn = columnIndex == 0; // Symbol column
+    final isLastColumn = columnIndex == _headers.length - 1; // Volume column
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 6);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(4, 6, 16, 6);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 6);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
           ),
         ),
-        const SizedBox(width: 4),
-        if (columnIndex >= 0)
-          _buildSortIcon(columnIndex, theme),
+      ),
+      child: InkWell(
+        onTap: () => _onSort(columnIndex),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          padding: headerPadding,
+          alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.cardDark,
+              light: MyntColors.listItemBg,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment:
+                alignRight ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+              if (alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              Text(
+                label,
+                style: _getHeaderStyle(context),
+              ),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                const SizedBox(width: 4),
+              if (!alignRight && _sortColumnIndex == columnIndex)
+                Icon(
+                  _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                  size: 16,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── DATA CELL WITH HOVER (matches positions page) ─────────────
+
+  shadcn.TableCell _buildCellWithHover({
+    required Widget child,
+    required int rowIndex,
+    required int columnIndex,
+    bool alignRight = false,
+    VoidCallback? onTap,
+  }) {
+    final isFirstColumn = columnIndex == 0; // Symbol column
+    final isLastColumn = columnIndex == _headers.length - 1; // Volume column
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(4, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: const shadcn.TableCellTheme(
+        border: shadcn.WidgetStatePropertyAll(
+          shadcn.Border(
+            top: shadcn.BorderSide.none,
+            bottom: shadcn.BorderSide.none,
+            left: shadcn.BorderSide.none,
+            right: shadcn.BorderSide.none,
+          ),
+        ),
+      ),
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          child: child,
+          builder: (context, hoveredIndex, cachedChild) {
+            final isRowHovered = hoveredIndex == rowIndex;
+
+            final container = Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: cellPadding,
+              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+              color: isRowHovered
+                  ? resolveThemeColor(
+                      context,
+                      dark: MyntColors.primaryDark.withValues(alpha: 0.08),
+                      light: MyntColors.primary.withValues(alpha: 0.08),
+                    )
+                  : Colors.transparent,
+              child: cachedChild,
+            );
+
+            if (onTap != null) {
+              return GestureDetector(
+                onTap: onTap,
+                behavior: HitTestBehavior.opaque,
+                child: container,
+              );
+            }
+            return container;
+          },
+        ),
+      ),
+    );
+  }
+
+  // ─── BUILD DATA ROW ────────────────────────────────────────────
+
+  shadcn.TableRow _buildDataRow(TopGainers stock, int rowIndex, ThemesProvider theme) {
+    final token = stock.token ?? "";
+    final socketData = _socketDataMap[token];
+    final ltp = socketData?['lp']?.toString() ?? stock.lp ?? '0.00';
+    final change = socketData?['chng']?.toString() ?? stock.c ?? '0.00';
+    final perChange = socketData?['pc']?.toString() ?? stock.pc ?? '0.00';
+    final open = socketData?['o']?.toString() ?? '0.00';
+    final high = socketData?['h']?.toString() ?? '0.00';
+    final low = socketData?['l']?.toString() ?? '0.00';
+    final close = socketData?['c']?.toString() ?? stock.pp ?? '0.00';
+    final volume = socketData?['v']?.toString() ?? stock.v ?? '0';
+
+    final changeColor = _getChangeColorFromValues(change, perChange, theme);
+    final rowTap = () => _handleStockTap(stock, theme);
+
+    return shadcn.TableRow(
+      cells: [
+        // Column 0: Symbol (left-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 0,
+          onTap: rowTap,
+          child: Text(
+            _getSymbolName(stock),
+            style: _getTextStyle(context),
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+          ),
+        ),
+        // Column 1: Exchange (left-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 1,
+          onTap: rowTap,
+          child: Text(
+            stock.exch ?? "",
+            style: _getTextStyle(context),
+            overflow: TextOverflow.ellipsis,
+            softWrap: false,
+          ),
+        ),
+        // Column 2: LTP (right-aligned, colored)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 2,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(
+            "₹$ltp",
+            style: _getTextStyle(context, color: changeColor),
+          ),
+        ),
+        // Column 3: Change (right-aligned, colored)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 3,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(
+            change.startsWith("-") ? change : "+$change",
+            style: _getTextStyle(context, color: changeColor),
+          ),
+        ),
+        // Column 4: Change % (right-aligned, colored)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 4,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(
+            "$perChange%",
+            style: _getTextStyle(context, color: changeColor),
+          ),
+        ),
+        // Column 5: Open (right-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 5,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(open, style: _getTextStyle(context)),
+        ),
+        // Column 6: High (right-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 6,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(high, style: _getTextStyle(context)),
+        ),
+        // Column 7: Low (right-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 7,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(low, style: _getTextStyle(context)),
+        ),
+        // Column 8: Close (right-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 8,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(close, style: _getTextStyle(context)),
+        ),
+        // Column 9: Volume (right-aligned)
+        _buildCellWithHover(
+          rowIndex: rowIndex,
+          columnIndex: 9,
+          alignRight: true,
+          onTap: rowTap,
+          child: Text(volume, style: _getTextStyle(context)),
+        ),
       ],
     );
   }
 
-  Widget _buildSortIcon(int columnIndex, ThemesProvider theme) {
-    if (_sortColumnIndex == columnIndex) {
-      return const SizedBox(width: 16);
-    } else {
-      return Icon(
-        Icons.unfold_more,
-        size: 16,
-        color: theme.isDarkMode
-            ? WebDarkColors.iconSecondary
-            : WebColors.iconSecondary,
-      );
-    }
-  }
+  // ─── TEXT STYLE HELPERS (match positions page) ─────────────────
 
-  List<DataRow2> _buildRows(List<TopGainers> stocks, ThemesProvider theme) {
-    return stocks.map((stock) {
-      final token = stock.token ?? "";
-      final uniqueId = '${token}_${stock.exch ?? ''}';
-      final isHovered = _hoveredRowToken == uniqueId;
-      
-      // Get WebSocket data if available
-      final socketData = _socketDataMap[token];
-      final ltp = socketData?['lp']?.toString() ?? stock.lp ?? '0.00';
-      final change = socketData?['chng']?.toString() ?? stock.c ?? '0.00';
-      final perChange = socketData?['pc']?.toString() ?? stock.pc ?? '0.00';
-      final open = socketData?['o']?.toString() ?? '0.00';
-      final high = socketData?['h']?.toString() ?? '0.00';
-      final low = socketData?['l']?.toString() ?? '0.00';
-      final close = socketData?['c']?.toString() ?? stock.pp ?? '0.00';
-      final volume = socketData?['v']?.toString() ?? stock.v ?? '0';
-
-      return DataRow2(
-        color: WidgetStateProperty.resolveWith((states) {
-          if (isHovered) {
-            return theme.isDarkMode
-                ? WebDarkColors.primary.withOpacity(0.06)
-                : WebColors.primary.withOpacity(0.10);
-          }
-          return null;
-        }),
-        cells: [
-          _buildCell(_getSymbolName(stock), theme, Alignment.centerLeft, uniqueId: uniqueId),
-          _buildCell(stock.exch ?? "", theme, Alignment.centerLeft, uniqueId: uniqueId),
-          _buildCell("₹$ltp", theme, Alignment.centerRight,
-              color: _getChangeColorFromValues(change, perChange, theme), uniqueId: uniqueId),
-          _buildCell(
-              change.startsWith("-") ? change : "+$change",
-              theme,
-              Alignment.centerRight,
-              color: _getChangeColorFromValues(change, perChange, theme), uniqueId: uniqueId),
-          _buildCell(
-              "$perChange%",
-              theme,
-              Alignment.centerRight,
-              color: _getChangeColorFromValues(change, perChange, theme), uniqueId: uniqueId),
-          _buildCell(open, theme, Alignment.centerRight, uniqueId: uniqueId),
-          _buildCell(high, theme, Alignment.centerRight, uniqueId: uniqueId),
-          _buildCell(low, theme, Alignment.centerRight, uniqueId: uniqueId),
-          _buildCell(close, theme, Alignment.centerRight, uniqueId: uniqueId),
-          _buildCell(volume, theme, Alignment.centerRight, uniqueId: uniqueId),
-        ],
-        onTap: () => _handleStockTap(stock, theme),
-      );
-    }).toList();
-  }
-
-  DataCell _buildCell(String text, ThemesProvider theme, Alignment alignment,
-      {Color? color, String? uniqueId}) {
-    return DataCell(
-      MouseRegion(
-        onEnter: (_) {
-          if (uniqueId != null) {
-            setState(() => _hoveredRowToken = uniqueId);
-          }
-        },
-        onExit: (_) {
-          if (uniqueId != null) {
-            setState(() => _hoveredRowToken = null);
-          }
-        },
-        child: Align(
-          alignment: alignment,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 6.0),
-            child: Text(
-              text,
-              style: WebTextStyles.custom(
-                fontSize: 13,
-                isDarkTheme: theme.isDarkMode,
-                color: color ??
-                    (theme.isDarkMode
-                        ? WebDarkColors.textPrimary
-                        : WebColors.textPrimary),
-                fontWeight: WebFonts.medium,
-              ),
-              maxLines: 1,
-              softWrap: false,
-              overflow: TextOverflow.visible,
-            ),
-          ),
-        ),
-      ),
+  TextStyle _getTextStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableCell(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textPrimaryDark,
+      lightColor: color ?? MyntColors.textPrimary,
+      fontWeight: MyntFonts.medium,
     );
   }
+
+  TextStyle _getHeaderStyle(BuildContext context, {Color? color}) {
+    return MyntWebTextStyles.tableHeader(
+      context,
+      color: color,
+      darkColor: color ?? MyntColors.textSecondaryDark,
+      lightColor: color ?? MyntColors.textSecondary,
+      fontWeight: MyntFonts.semiBold,
+    );
+  }
+
+  // ─── COLUMN WIDTH CALCULATION (match positions page) ───────────
+
+  bool _isNumericColumn(String header) {
+    return header != 'Symbol' && header != 'Exchange';
+  }
+
+  double _measureTextWidth(String text, TextStyle style) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    );
+    textPainter.layout();
+    return textPainter.width;
+  }
+
+  Map<int, double> _calculateMinWidths(
+      List<TopGainers> stocks, BuildContext context) {
+    final textStyle = const TextStyle(fontSize: 14, fontFamily: 'Geist');
+    const padding = 24.0;
+    const sortIconWidth = 24.0;
+
+    final minWidths = <int, double>{};
+
+    for (int col = 0; col < _headers.length; col++) {
+      double maxWidth = 0.0;
+      final header = _headers[col];
+
+      // Measure header width + sort icon space
+      final headerWidth = _measureTextWidth(header, textStyle);
+      maxWidth = headerWidth + sortIconWidth;
+
+      // Measure widest value in this column (sample first 10 rows)
+      for (final stock in stocks.take(10)) {
+        final token = stock.token ?? "";
+        final socketData = _socketDataMap[token];
+        String cellText = '';
+
+        switch (col) {
+          case 0: // Symbol
+            cellText = _getSymbolName(stock);
+            break;
+          case 1: // Exchange
+            cellText = stock.exch ?? '';
+            break;
+          case 2: // LTP
+            cellText = '₹${socketData?['lp']?.toString() ?? stock.lp ?? '0.00'}';
+            break;
+          case 3: // Change
+            final change = socketData?['chng']?.toString() ?? stock.c ?? '0.00';
+            cellText = change.startsWith("-") ? change : '+$change';
+            break;
+          case 4: // Change %
+            cellText = '${socketData?['pc']?.toString() ?? stock.pc ?? '0.00'}%';
+            break;
+          case 5: // Open
+            cellText = socketData?['o']?.toString() ?? '0.00';
+            break;
+          case 6: // High
+            cellText = socketData?['h']?.toString() ?? '0.00';
+            break;
+          case 7: // Low
+            cellText = socketData?['l']?.toString() ?? '0.00';
+            break;
+          case 8: // Close
+            cellText = socketData?['c']?.toString() ?? stock.pp ?? '0.00';
+            break;
+          case 9: // Volume
+            cellText = socketData?['v']?.toString() ?? stock.v ?? '0';
+            break;
+        }
+
+        final cellWidth = _measureTextWidth(cellText, textStyle);
+        if (cellWidth > maxWidth) {
+          maxWidth = cellWidth;
+        }
+      }
+
+      // Ensure minimum width for Symbol column
+      if (header == 'Symbol') {
+        const minSymbolWidth = 120.0;
+        maxWidth = maxWidth < minSymbolWidth ? minSymbolWidth : maxWidth;
+      }
+
+      minWidths[col] = maxWidth + padding;
+    }
+
+    return minWidths;
+  }
+
+  // ─── SORT HANDLER (matches positions page toggle pattern) ──────
+
+  void _onSort(int columnIndex) {
+    setState(() {
+      if (_sortColumnIndex == columnIndex) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumnIndex = columnIndex;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  // ─── DATA HELPERS (unchanged logic) ────────────────────────────
 
   String _getSymbolName(TopGainers stock) {
     final tsym = stock.tsym ?? "";
@@ -744,29 +1006,18 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     return tsym.toUpperCase();
   }
 
-  Color _getChangeColor(TopGainers stock, ThemesProvider theme) {
-    final change = stock.c ?? "0.00";
-    final perChange = stock.pc ?? "0.00";
-    return _getChangeColorFromValues(change, perChange, theme);
-  }
   
   Color _getChangeColorFromValues(String change, String perChange, ThemesProvider theme) {
     if (change.startsWith("-") || perChange.startsWith('-')) {
-      return theme.isDarkMode ? WebDarkColors.error : WebColors.error;
+      return resolveThemeColor(context,
+          dark: MyntColors.lossDark, light: MyntColors.loss);
     } else if (change == "0.00" || perChange == "0.00") {
-      return theme.isDarkMode
-          ? WebDarkColors.textSecondary
-          : WebColors.textSecondary;
+      return resolveThemeColor(context,
+          dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     } else {
-      return theme.isDarkMode ? WebDarkColors.success : WebColors.success;
+      return resolveThemeColor(context,
+          dark: MyntColors.profitDark, light: MyntColors.profit);
     }
-  }
-
-  void _onSortTable(int columnIndex, bool ascending) {
-    setState(() {
-      _sortColumnIndex = columnIndex;
-      _sortAscending = ascending;
-    });
   }
 
   Future<void> _handleStockTap(TopGainers stock, ThemesProvider theme) async {
@@ -801,4 +1052,3 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     }
   }
 }
-

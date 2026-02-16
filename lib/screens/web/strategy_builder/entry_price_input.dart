@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 
 class EntryPriceTableInput extends StatefulWidget {
@@ -57,7 +59,8 @@ class _EntryPriceTableInputState extends State<EntryPriceTableInput> {
       textAlign: TextAlign.center,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       borderRadius: 4,
-      borderColor: Colors.grey[300],
+      borderColor:(resolveThemeColor(context, dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder)),
+      backgroundColor: Colors.transparent,
       height: 28,
       onChanged: (val) {
          final price = double.tryParse(val);

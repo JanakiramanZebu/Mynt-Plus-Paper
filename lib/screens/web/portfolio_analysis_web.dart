@@ -1669,7 +1669,7 @@ class _PortfolioDashboardScreenState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
       decoration: BoxDecoration(
-         color:  theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+         color:  theme.isDarkMode ? MyntColors.transparent : MyntColors.textWhite,
         // borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -2188,7 +2188,7 @@ class _PortfolioDashboardScreenState
               '${maxLoss.toStringAsFixed(1)}%',
               style: MyntWebTextStyles.caption(
                 context,
-                color: Colors.black87,
+                color: isDarkMode(  context) ? MyntColors.textPrimaryDark : MyntColors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -2959,8 +2959,8 @@ class _PortfolioDashboardScreenState
           side: isSelected
               ? BorderSide(
                   color: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
+                      ? MyntColors.primaryDark
+                      : MyntColors.primary,
                   width: 1,
                 )
               : BorderSide.none,

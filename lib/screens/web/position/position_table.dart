@@ -1589,7 +1589,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Add pressed');
-                    // Clear hover state before navigating to prevent stuck hover
+                    _closePopover();
                     _hoveredRowIndex.value = null;
                     _handleAddPosition(position);
                   },
@@ -1607,7 +1607,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                   textColor: textColor,
                   onPressed: (ctx) {
                     debugPrint('Convert pressed');
-                    // Clear hover state before opening dialog to prevent stuck hover
+                    _closePopover();
                     _hoveredRowIndex.value = null;
                     _handleConvertPosition(position);
                   },
@@ -1629,7 +1629,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   debugPrint('Info pressed');
-                  // Clear hover state before showing detail to prevent stuck hover
+                  _closePopover();
                   _hoveredRowIndex.value = null;
                   _showPositionDetail(position);
                 },
@@ -1650,6 +1650,8 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 textColor: textColor,
                 onPressed: (ctx) {
                   debugPrint('Chart pressed');
+                  _closePopover();
+                  _hoveredRowIndex.value = null;
                   _handleChartTap(position);
                 },
               ),

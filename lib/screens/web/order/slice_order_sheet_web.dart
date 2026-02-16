@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'dart:html' as html;
 
@@ -10,7 +11,7 @@ import '../../../models/order_book_model/place_order_model.dart';
 import '../../../provider/order_input_provider.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/thems.dart';
-import '../../../res/web_colors.dart';
+import '../../../res/web_colors.dart' hide WebColors;
 import '../../../res/global_font_web.dart';
 import '../../../sharedWidget/custom_exch_badge.dart';
 import '../../../utils/responsive_snackbar.dart';
@@ -205,8 +206,8 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
 
       return Dialog(
         backgroundColor: theme.isDarkMode
-            ? WebDarkColors.surface
-            : WebColors.surface,
+            ? MyntColors.dialogDark
+            : MyntColors.dialog,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5),
         ),
@@ -276,10 +277,10 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                         child: InkWell(
                           customBorder: const CircleBorder(),
                           splashColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.15)
+                              ? theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textWhite.withOpacity(.15)
                               : Colors.black.withOpacity(.15),
                           highlightColor: theme.isDarkMode
-                              ? Colors.white.withOpacity(.08)
+                              ? theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textWhite.withOpacity(.08)
                               : Colors.black.withOpacity(.08),
                           onTap: orders.orderloader
                               ? null
@@ -321,13 +322,12 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
                               color: theme.isDarkMode 
-                                  ? WebDarkColors.backgroundTertiary 
-                                  : WebColors.backgroundTertiary,
+                                  ? MyntColors.dashboardCarColor : MyntColors.overlayBg,
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(
                                 color: theme.isDarkMode
-                                    ? WebDarkColors.divider
-                                    : WebColors.divider,
+                                    ? MyntColors.dividerDark
+                                    : MyntColors.divider,
                               ),
                             ),
                             child: Row(
@@ -342,8 +342,8 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                                         fontSize: 13,
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? WebDarkColors.textPrimary
-                                            : WebColors.textPrimary,
+                                            ? MyntColors.textPrimaryDark
+                                            : MyntColors.textPrimary,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -353,8 +353,8 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                                         fontSize: 12,
                                         isDarkTheme: theme.isDarkMode,
                                         color: theme.isDarkMode
-                                            ? WebDarkColors.textSecondary
-                                            : WebColors.textSecondary,
+                                            ? MyntColors.textSecondaryDark
+                                            : MyntColors.textSecondary,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -406,20 +406,20 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                               style: ElevatedButton.styleFrom(
                                 elevation: 0,
                                 backgroundColor: widget.isBuy
-                                    ? (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary)
-                                    : (theme.isDarkMode ? WebDarkColors.error : WebColors.error),
-                                disabledBackgroundColor: (theme.isDarkMode ? WebDarkColors.primary : WebColors.primary).withOpacity(0.5),
+                                    ? (theme.isDarkMode ? MyntColors.secondary : MyntColors.primary)
+                                    : (theme.isDarkMode ? MyntColors.lossDark : MyntColors.error),
+                                disabledBackgroundColor: (theme.isDarkMode ? MyntColors.secondary : MyntColors.primary).withOpacity(0.5),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                               ),
                               child: orders.orderloader
-                                  ? const SizedBox(
+                                  ?  SizedBox(
                                       width: 18,
                                       height: 18,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        color: Colors.white,
+                                        color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textWhite,
                                       ),
                                     )
                                   : Text(
@@ -427,7 +427,7 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
                                       style: WebTextStyles.custom(
                                         fontSize: 14,
                                         isDarkTheme: theme.isDarkMode,
-                                        color: Colors.white,
+                                        color: theme.isDarkMode ? MyntColors.textWhite : MyntColors.textWhite,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -509,13 +509,12 @@ class _SliceOrderSheetWebState extends State<SliceOrderSheetWeb> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: theme.isDarkMode 
-            ? WebDarkColors.backgroundTertiary 
-            : WebColors.backgroundTertiary,
+           ? MyntColors.dashboardCarColor : MyntColors.overlayBg,
         borderRadius: BorderRadius.circular(5),
         border: Border.all(
           color: theme.isDarkMode
-              ? WebDarkColors.divider
-              : WebColors.divider,
+               ? MyntColors.dividerDark
+               : MyntColors.divider,
         ),
       ),
       child: Row(

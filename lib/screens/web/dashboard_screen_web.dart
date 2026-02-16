@@ -1280,8 +1280,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                       }
                     },
                     child: Text(
-                      // 'See all',
-                      '',
+                      'See all',
+                      // '',
                       style: MyntWebTextStyles.para(
                         context,
                         darkColor: MyntColors.primaryDark,
