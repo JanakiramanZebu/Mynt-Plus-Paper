@@ -96,11 +96,15 @@ class SipModifyAlert extends ConsumerWidget {
                         period: sipdetails.internal!.period.toString(),
                         active: sipdetails.internal!.active.toString(),
                         sipId: sipdetails.internal!.sipId.toString(),
-                        exch: sipdetails.scrips![0].exch.toString(),
-                        tysm: sipdetails.scrips![0].tsym.toString(),
-                        prd: sipdetails.scrips![0].prd.toString().toUpperCase(),
-                        token: sipdetails.scrips![0].token.toString(),
-                        qty: sipqtyctrl.text);
+                        scrips: [
+                          SipScripInput(
+                            exch: sipdetails.scrips![0].exch.toString(),
+                            tsym: sipdetails.scrips![0].tsym.toString(),
+                            prd: sipdetails.scrips![0].prd.toString().toUpperCase(),
+                            token: sipdetails.scrips![0].token.toString(),
+                            qty: sipqtyctrl.text,
+                          ),
+                        ]);
                     await ref.read(orderProvider).fetchModifySipOrder(
                           context,
                           sipOrderInput,

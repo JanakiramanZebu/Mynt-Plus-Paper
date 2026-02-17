@@ -64,11 +64,7 @@ class ModifySipInput {
   String? period;
   String? active;
   String? sipId;
-  String? exch;
-  String? tysm;
-  String? prd;
-  String? token;
-  String? qty;
+  List<SipScripInput> scrips;
   ModifySipInput(
       {required this.regdate,
       required this.startdate,
@@ -81,11 +77,7 @@ class ModifySipInput {
       required this.period,
       required this.active,
       required this.sipId,
-      required this.exch,
-      required this.tysm,
-      required this.prd,
-      required this.token,
-      required this.qty});
+      required this.scrips});
 }
 
 /// Model for creating SIP basket with multiple scrips

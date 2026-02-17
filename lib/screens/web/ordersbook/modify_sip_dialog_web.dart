@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../models/order_book_model/sip_place_order.dart';
+import '../../../models/order_book_model/sip_order_book.dart';
 import '../../../models/marketwatch_model/search_scrip_new_model.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/market_watch_provider.dart';
@@ -18,32 +19,106 @@ import '../../../sharedWidget/cust_text_formfield.dart';
 import '../../../sharedWidget/list_divider.dart';
 import '../../../utils/responsive_snackbar.dart';
 
-class CreateSipDialogWeb extends ConsumerStatefulWidget {
-  const CreateSipDialogWeb({super.key});
+class ModifySipDialogWeb extends ConsumerStatefulWidget {
+  final SipDetails sipDetails;
+
+  const ModifySipDialogWeb({super.key, required this.sipDetails});
 
   @override
-  ConsumerState<CreateSipDialogWeb> createState() => _CreateSipDialogWebState();
+  ConsumerState<ModifySipDialogWeb> createState() => _ModifySipDialogWebState();
 }
 
-class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
-  final TextEditingController _sipNameController = TextEditingController();
+class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _noOfSipsController = TextEditingController(text: '');
+  final TextEditingController _noOfSipsController = TextEditingController();
 
   DateTime? _startDate;
-  String _selectedFrequency = '1'; // Weekly by default
+  DateTime? _originalStartDate;
+  String _selectedFrequency = '1';
+  String _sipName = '';
 
-  final List<SipScripItem> _addedScrips = [];
+  final List<_ModifySipScripItem> _addedScrips = [];
   bool _isLoading = false;
   bool _isSearching = false;
   Timer? _debounceTimer;
 
-  final List<String> _frequencies = ['Daily', 'Weekly', 'Fortnightly', 'Monthly'];
+  final List<String> _frequencies = [
+    'Daily',
+    'Weekly',
+    'Fortnightly',
+    'Monthly'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _populateFromSipDetails();
+    _subscribeExistingScrips();
+  }
+
+  void _subscribeExistingScrips() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (var item in _addedScrips) {
+        ref.read(websocketProvider).establishConnection(
+          channelInput: '${item.exch}|${item.token}',
+          task: 't',
+          context: context,
+        );
+      }
+    });
+  }
+
+  void _populateFromSipDetails() {
+    final sip = widget.sipDetails;
+
+    _sipName = sip.sipName ?? '';
+    _selectedFrequency = sip.frequency ?? '1';
+    _noOfSipsController.text = sip.endPeriod ?? '';
+
+    // Parse start date using manual substring (same approach as duedateformate)
+    if (sip.startDate != null && sip.startDate!.isNotEmpty) {
+      try {
+        final dateStr = sip.startDate!;
+        if (dateStr.length == 8) {
+          // ddMMyyyy format (e.g., "24022026")
+          final day = int.parse(dateStr.substring(0, 2));
+          final month = int.parse(dateStr.substring(2, 4));
+          final year = int.parse(dateStr.substring(4));
+          _startDate = DateTime(year, month, day);
+        } else if (dateStr.length == 10) {
+          // dd-MM-yyyy format (e.g., "24-02-2026")
+          final day = int.parse(dateStr.substring(0, 2));
+          final month = int.parse(dateStr.substring(3, 5));
+          final year = int.parse(dateStr.substring(6));
+          _startDate = DateTime(year, month, day);
+        }
+        _originalStartDate = _startDate;
+      } catch (_) {}
+    }
+
+    // Pre-populate existing scrips
+    if (sip.scrips != null) {
+      for (var scrip in sip.scrips!) {
+        final isQtyMode = scrip.sipType != 'prc';
+        _addedScrips.add(_ModifySipScripItem(
+          token: scrip.token ?? '',
+          exch: scrip.exch ?? 'NSE',
+          tsym: scrip.tsym ?? '',
+          prd: scrip.prd ?? 'C',
+          investBy: isQtyMode ? 'Qty' : 'Amount',
+          qtyController: TextEditingController(text: scrip.qty ?? ''),
+          amountController: TextEditingController(text: scrip.prc ?? ''),
+          isExisting: true,
+          fallbackLtp: scrip.ltp ?? '0',
+        ));
+      }
+    }
+  }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _sipNameController.dispose();
     _searchController.dispose();
     _noOfSipsController.dispose();
     for (var item in _addedScrips) {
@@ -83,21 +158,32 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
     }
   }
 
+  bool get _isStartDatePassed {
+    if (_originalStartDate == null) return false;
+    final today = DateTime.now();
+    final todayDate = DateTime(today.year, today.month, today.day);
+    return _originalStartDate!.isBefore(todayDate);
+  }
+
   Future<void> _selectStartDate() async {
+    // If start date has already passed, do not allow modification
+    if (_isStartDatePassed) return;
+
     try {
       final theme = ref.read(themeProvider);
       final now = DateTime.now();
-      final initialDate = _startDate ?? now;
-
-      // Ensure initialDate is not before firstDate
-      final effectiveInitialDate = initialDate.isBefore(now) ? now : initialDate;
+      // Allow selecting from original start date onward
+      final firstDate = _originalStartDate ?? now;
+      final initialDate = _startDate != null && !_startDate!.isBefore(firstDate)
+          ? _startDate!
+          : firstDate;
 
       final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: effectiveInitialDate,
-        firstDate: now,
+        initialDate: initialDate,
+        firstDate: firstDate,
         lastDate: now.add(const Duration(days: 365)),
-        useRootNavigator: true, // Important for showing in sheet overlay
+        useRootNavigator: true,
         builder: (dialogContext, child) {
           return Theme(
             data: theme.isDarkMode
@@ -132,7 +218,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
   List<ScripNewValue> _searchResults = [];
 
   void _onSearchChanged(String query) {
-    // Cancel previous timer
     _debounceTimer?.cancel();
 
     if (query.length < 2) {
@@ -144,10 +229,8 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
       return;
     }
 
-    // Show loading indicator immediately
     setState(() => _isSearching = true);
 
-    // Debounce the actual search by 400ms
     _debounceTimer = Timer(const Duration(milliseconds: 400), () {
       _searchScrips(query);
     });
@@ -155,8 +238,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
 
   Future<void> _searchScrips(String query) async {
     try {
-      // Use 'EQ' segment for equity stocks (SIP only supports equity)
-      // Pass NSE and BSE exchanges directly to API filter
       await ref.read(marketWatchProvider).fetchSearchScrip(
             searchText: query,
             context: context,
@@ -164,7 +245,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
             option: false,
             exchanges: ['NSE', 'BSE'],
           );
-      // Get results directly after fetch completes
       if (mounted) {
         setState(() {
           _searchResults = ref.read(marketWatchProvider).allSearchScrip ?? [];
@@ -177,19 +257,23 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
 
   void _addScrip(ScripNewValue scrip) {
     // Check if already added
-    if (_addedScrips.any((s) => s.scrip.token == scrip.token)) {
-      ResponsiveSnackBar.showWarning(context, '${scrip.tsym} is already added');
+    if (_addedScrips.any((s) => s.token == scrip.token)) {
+      ResponsiveSnackBar.showWarning(
+          context, '${scrip.tsym} is already added');
       return;
     }
 
     setState(() {
-      _addedScrips.add(SipScripItem(
-        scrip: scrip,
+      _addedScrips.add(_ModifySipScripItem(
+        token: scrip.token ?? '',
+        exch: scrip.exch ?? 'NSE',
+        tsym: scrip.tsym ?? '',
+        prd: 'C',
         investBy: 'Qty',
         qtyController: TextEditingController(text: '1'),
         amountController: TextEditingController(),
+        isExisting: false,
       ));
-      // Clear search results to close dropdown
       _searchResults = [];
     });
 
@@ -200,7 +284,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
       context: context,
     );
 
-    // Clear search field and provider
     _searchController.clear();
     ref.read(marketWatchProvider).searchClear();
   }
@@ -213,53 +296,58 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
     });
   }
 
-  Future<void> _createSip() async {
-    // Validation
-    if (_sipNameController.text.trim().isEmpty) {
-      ResponsiveSnackBar.showWarning(context, 'Please enter SIP name');
-      return;
-    }
-    if (_startDate == null) {
+  Future<void> _modifySip() async {
+    // Validation - only validate start date if SIP hasn't started yet
+    if (!_isStartDatePassed && _startDate == null) {
       ResponsiveSnackBar.showWarning(context, 'Please select start date');
       return;
     }
-    if (_noOfSipsController.text.isEmpty || int.tryParse(_noOfSipsController.text) == null) {
-      ResponsiveSnackBar.showWarning(context, 'Please enter valid number of SIPs');
+    if (_noOfSipsController.text.isEmpty ||
+        int.tryParse(_noOfSipsController.text) == null ||
+        int.parse(_noOfSipsController.text) <= 0) {
+      ResponsiveSnackBar.showWarning(
+          context, 'Please enter valid number of SIPs');
       return;
     }
     if (_addedScrips.isEmpty) {
-      ResponsiveSnackBar.showWarning(context, 'Please add at least one stock');
+      ResponsiveSnackBar.showWarning(
+          context, 'At least one stock must be in the basket');
       return;
     }
 
     // Validate qty/amount values
     for (var item in _addedScrips) {
       final isQtyMode = item.investBy == 'Qty';
-      final value = isQtyMode ? item.qtyController.text.trim() : item.amountController.text.trim();
+      final value = isQtyMode
+          ? item.qtyController.text.trim()
+          : item.amountController.text.trim();
       if (value.isEmpty) {
         final fieldName = isQtyMode ? 'quantity' : 'amount';
-        ResponsiveSnackBar.showWarning(context, 'Please enter valid $fieldName for ${item.scrip.tsym}');
+        ResponsiveSnackBar.showWarning(
+            context, 'Please enter valid $fieldName for ${item.tsym}');
         return;
       }
       if (isQtyMode) {
         final qty = int.tryParse(value);
         if (qty == null || qty <= 0) {
-          ResponsiveSnackBar.showWarning(context, 'Please enter valid quantity for ${item.scrip.tsym}');
+          ResponsiveSnackBar.showWarning(
+              context, 'Please enter valid quantity for ${item.tsym}');
           return;
         }
       } else {
         final amount = double.tryParse(value);
         if (amount == null || amount <= 0) {
-          ResponsiveSnackBar.showWarning(context, 'Please enter valid amount for ${item.scrip.tsym}');
+          ResponsiveSnackBar.showWarning(
+              context, 'Please enter valid amount for ${item.tsym}');
           return;
         }
         // Validate amount is at least LTP (need at least 1 share worth)
         final ltp = double.tryParse(
-          ref.read(websocketProvider).getBestLTP(item.scrip.token ?? '', '0'),
+          ref.read(websocketProvider).getBestLTP(item.token, item.fallbackLtp),
         ) ?? 0;
         if (ltp > 0 && amount < ltp) {
           ResponsiveSnackBar.showWarning(
-            context, 'Amount must be at least LTP (${ltp.toStringAsFixed(2)}) for ${item.scrip.tsym}');
+            context, 'Amount must be at least LTP (${ltp.toStringAsFixed(2)}) for ${item.tsym}');
           return;
         }
       }
@@ -268,46 +356,57 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
     setState(() => _isLoading = true);
 
     try {
-      final regDate = _sipdateformat(DateTime.now());
-      final startDate = _sipdateformat(_startDate!);
+      // Don't send start_date if SIP has already started
+      final startDate = _isStartDatePassed ? null : _sipdateformat(_startDate!);
+      final internal = widget.sipDetails.internal;
 
       final scrips = _addedScrips.map((item) {
         final isQtyMode = item.investBy == 'Qty';
         return SipScripInput(
-          exch: item.scrip.exch ?? 'NSE',
-          tsym: item.scrip.tsym ?? '',
-          prd: 'C', // CNC for SIP
-          token: item.scrip.token ?? '',
+          exch: item.exch,
+          tsym: item.tsym,
+          prd: item.prd,
+          token: item.token,
           qty: isQtyMode ? item.qtyController.text : '',
           sipType: isQtyMode ? 'qty' : 'prc',
           prc: isQtyMode ? null : item.amountController.text,
         );
       }).toList();
 
-      final sipInput = SipBasketInput(
-        regdate: regDate,
+      final modifyInput = ModifySipInput(
+        regdate: widget.sipDetails.regDate ?? '',
         startdate: startDate,
         frequency: _selectedFrequency,
         endperiod: _noOfSipsController.text,
-        sipname: _sipNameController.text.trim(),
+        sipname: _sipName,
+        prevExecutedate: internal?.prevExecDate ?? '0',
+        duedate: internal?.dueDate ?? '',
+        exedate: internal?.execDate ?? '',
+        period: internal?.period ?? '0',
+        active: internal?.active ?? 'true',
+        sipId: internal?.sipId ?? '',
         scrips: scrips,
       );
 
-      final result = await ref.read(orderProvider).placeSipBasketOrder(sipInput, context);
+      final result = await ref
+          .read(orderProvider)
+          .modifySipBasketOrder(context, modifyInput);
 
       if (result != null && result.reqStatus == 'OK') {
         if (mounted) {
           Navigator.of(context).pop();
-          ResponsiveSnackBar.showSuccess(context, 'SIP created successfully');
+          ResponsiveSnackBar.showSuccess(
+              context, 'SIP modified successfully');
         }
       } else {
         if (mounted) {
-          ResponsiveSnackBar.showError(context, result?.emsg ?? 'Failed to create SIP');
+          final errorMsg = result?.rejreason ?? result?.emsg ?? 'Failed to modify SIP';
+          ResponsiveSnackBar.showError(context, errorMsg);
         }
       }
     } catch (e) {
       if (mounted) {
-        ResponsiveSnackBar.showError(context, 'Failed to create SIP: $e');
+        ResponsiveSnackBar.showError(context, 'Failed to modify SIP: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -336,7 +435,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // SIP Configuration
+                // SIP Name (read-only)
                 _buildSipNameField(context, theme),
                 const SizedBox(height: 16),
                 _buildDateAndFrequencyRow(context, theme),
@@ -351,7 +450,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                 // Added Scrips List
                 if (_addedScrips.isNotEmpty) ...[
                   Text(
-                    '${_addedScrips.length} stock${_addedScrips.length > 1 ? 's' : ''} added',
+                    '${_addedScrips.length} stock${_addedScrips.length > 1 ? 's' : ''} in basket',
                     style: MyntWebTextStyles.body(
                       context,
                       color: resolveThemeColor(context,
@@ -380,7 +479,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Create SIP',
+            'Modify SIP',
             style: MyntWebTextStyles.title(
               context,
               fontWeight: MyntFonts.semiBold,
@@ -430,29 +529,29 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
           ),
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          height: 40,
-          child: CustomTextFormField(
-            fillColor: resolveThemeColor(context,
-                dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
-            hintText: 'Enter SIP name',
-            hintStyle: MyntWebTextStyles.bodySmall(
-              context,
+        Opacity(
+          opacity: 0.6,
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
               color: resolveThemeColor(context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary).withValues(alpha: 0.4),
+                  dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(
+                color: resolveThemeColor(context,
+                    dark: MyntColors.dividerDark, light: MyntColors.divider),
+              ),
             ),
-            keyboardType: TextInputType.text,
-            style: MyntWebTextStyles.body(
-              context,
-              darkColor: MyntColors.textPrimaryDark,
-              lightColor: MyntColors.textPrimary,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              _sipName,
+              style: MyntWebTextStyles.body(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textPrimary,
+              ),
             ),
-            textCtrl: _sipNameController,
-            textAlign: TextAlign.start,
-            inputFormate: [
-              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9 ]')),
-            ],
           ),
         ),
       ],
@@ -477,19 +576,25 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                 ),
               ),
               const SizedBox(height: 8),
-              InkWell(
-                onTap: _selectStartDate,
+              Opacity(
+                opacity: _isStartDatePassed ? 0.6 : 1.0,
+                child: InkWell(
+                onTap: _isStartDatePassed ? null : _selectStartDate,
                 borderRadius: BorderRadius.circular(5),
                 child: Container(
                   height: 40,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     color: resolveThemeColor(context,
-                        dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
+                        dark: MyntColors.inputBgDark,
+                        light: MyntColors.inputBg),
                     borderRadius: BorderRadius.circular(5),
                     border: Border.all(
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.dividerDark, light: MyntColors.divider),
+                      color: _isStartDatePassed
+                          ? resolveThemeColor(context,
+                              dark: MyntColors.dividerDark, light: MyntColors.divider)
+                          : resolveThemeColor(context,
+                              dark: MyntColors.primaryDark, light: MyntColors.primary),
                     ),
                   ),
                   child: Row(
@@ -520,6 +625,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                   ),
                 ),
               ),
+              ),
             ],
           ),
         ),
@@ -544,11 +650,13 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: resolveThemeColor(context,
-                      dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
+                      dark: MyntColors.inputBgDark,
+                      light: MyntColors.inputBg),
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
                     color: resolveThemeColor(context,
-                        dark: MyntColors.dividerDark, light: MyntColors.divider),
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary),
                   ),
                 ),
                 child: DropdownButtonHideUnderline(
@@ -636,7 +744,8 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
   }
 
   Widget _buildSearchSection(BuildContext context, ThemesProvider theme) {
-    final showDropdown = _searchResults.isNotEmpty && _searchController.text.length >= 2;
+    final showDropdown =
+        _searchResults.isNotEmpty && _searchController.text.length >= 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,9 +760,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
           ),
         ),
         const SizedBox(height: 8),
-        // Search Field with dropdown - use SizedBox to ensure hit testing works
         SizedBox(
-          // Height includes search input (40) + gap (4) + dropdown (200) when showing
           height: showDropdown ? 244 : 40,
           child: Stack(
             clipBehavior: Clip.none,
@@ -663,11 +770,13 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                 height: 40,
                 decoration: BoxDecoration(
                   color: resolveThemeColor(context,
-                      dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
+                      dark: MyntColors.inputBgDark,
+                      light: MyntColors.inputBg),
                   borderRadius: BorderRadius.circular(5),
                   border: Border.all(
                     color: resolveThemeColor(context,
-                        dark: MyntColors.dividerDark, light: MyntColors.divider),
+                        dark: MyntColors.dividerDark,
+                        light: MyntColors.divider),
                   ),
                 ),
                 child: Row(
@@ -716,10 +825,10 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                   ],
                 ),
               ),
-              // Search Results Dropdown (positioned below input)
+              // Search Results Dropdown
               if (showDropdown)
                 Positioned(
-                  top: 44, // Below the search input
+                  top: 44,
                   left: 0,
                   right: 0,
                   child: Material(
@@ -729,11 +838,13 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                       constraints: const BoxConstraints(maxHeight: 200),
                       decoration: BoxDecoration(
                         color: resolveThemeColor(context,
-                            dark: MyntColors.cardDark, light: MyntColors.card),
+                            dark: MyntColors.cardDark,
+                            light: MyntColors.card),
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: resolveThemeColor(context,
-                              dark: MyntColors.dividerDark, light: MyntColors.divider),
+                              dark: MyntColors.dividerDark,
+                              light: MyntColors.divider),
                         ),
                       ),
                       child: ListView.separated(
@@ -743,19 +854,21 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                         separatorBuilder: (_, __) => const ListDivider(),
                         itemBuilder: (context, index) {
                           final scrip = _searchResults[index];
-                          // Get symbol name - use symbol field or parse from tsym
-                          final symbolName = scrip.symbol?.isNotEmpty == true
-                              ? scrip.symbol!
-                              : (scrip.tsym?.replaceAll('-EQ', '') ?? '');
+                          final symbolName =
+                              scrip.symbol?.isNotEmpty == true
+                                  ? scrip.symbol!
+                                  : (scrip.tsym?.replaceAll('-EQ', '') ?? '');
                           return InkWell(
                             onTap: () => _addScrip(scrip),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 10),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
@@ -763,18 +876,24 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                                           style: MyntWebTextStyles.body(
                                             context,
                                             fontWeight: MyntFonts.medium,
-                                            darkColor: MyntColors.textPrimaryDark,
-                                            lightColor: MyntColors.textPrimary,
+                                            darkColor:
+                                                MyntColors.textPrimaryDark,
+                                            lightColor:
+                                                MyntColors.textPrimary,
                                           ),
                                         ),
                                         if (scrip.cname?.isNotEmpty == true)
                                           Text(
                                             scrip.cname!,
-                                            style: MyntWebTextStyles.caption(
+                                            style:
+                                                MyntWebTextStyles.caption(
                                               context,
-                                              color: resolveThemeColor(context,
-                                                  dark: MyntColors.textSecondaryDark,
-                                                  light: MyntColors.textSecondary),
+                                              color: resolveThemeColor(
+                                                  context,
+                                                  dark: MyntColors
+                                                      .textSecondaryDark,
+                                                  light: MyntColors
+                                                      .textSecondary),
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
@@ -783,7 +902,8 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: resolveThemeColor(context,
                                               dark: MyntColors.primaryDark,
@@ -833,18 +953,8 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
               ),
               const SizedBox(height: 12),
               Text(
-                'No stocks added',
+                'No stocks in basket',
                 style: MyntWebTextStyles.body(
-                  context,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Search and add stocks to your SIP',
-                style: MyntWebTextStyles.bodySmall(
                   context,
                   color: resolveThemeColor(context,
                       dark: MyntColors.textSecondaryDark,
@@ -869,14 +979,13 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
     );
   }
 
-  Widget _buildScripCard(BuildContext context, ThemesProvider theme, WebSocketProvider wsProvider, SipScripItem item, int index) {
-    // Get symbol name - use symbol field or parse from tsym, strip any suffix after hyphen
-    final rawSymbol = item.scrip.symbol?.isNotEmpty == true
-        ? item.scrip.symbol!
-        : (item.scrip.tsym ?? '');
-    final symbolName = rawSymbol.contains('-') ? rawSymbol.split('-').first : rawSymbol;
+  Widget _buildScripCard(BuildContext context, ThemesProvider theme,
+      WebSocketProvider wsProvider, _ModifySipScripItem item, int index) {
+    final rawSymbol = item.tsym;
+    final symbolName =
+        rawSymbol.contains('-') ? rawSymbol.split('-').first : rawSymbol;
     final isQtyMode = item.investBy == 'Qty';
-    final liveLtp = wsProvider.getBestLTP(item.scrip.token ?? '', '0');
+    final liveLtp = wsProvider.getBestLTP(item.token, item.fallbackLtp);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -914,7 +1023,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                         borderRadius: BorderRadius.circular(3),
                       ),
                       child: Text(
-                        item.scrip.exch ?? '',
+                        item.exch,
                         style: MyntWebTextStyles.caption(
                           context,
                           color: resolveThemeColor(context,
@@ -987,11 +1096,14 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
             child: SizedBox(
               height: 34,
               child: TextField(
-                controller: isQtyMode ? item.qtyController : item.amountController,
+                controller:
+                    isQtyMode ? item.qtyController : item.amountController,
                 keyboardType: TextInputType.number,
                 inputFormatters: isQtyMode
                     ? [FilteringTextInputFormatter.digitsOnly]
-                    : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                    : [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                      ],
                 style: MyntWebTextStyles.bodySmall(
                   context,
                   darkColor: MyntColors.textPrimaryDark,
@@ -1007,27 +1119,32 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                   ),
                   filled: true,
                   fillColor: resolveThemeColor(context,
-                      dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      dark: MyntColors.inputBgDark,
+                      light: MyntColors.inputBg),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.dividerDark, light: MyntColors.divider),
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.dividerDark, light: MyntColors.divider),
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.primaryDark, light: MyntColors.primary),
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary),
                     ),
                   ),
                 ),
@@ -1070,7 +1187,6 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
       ),
       child: Column(
         children: [
-          // Info text
           Text(
             'SIP will be placed at 9:30 AM on due date. If market holiday, order placed on next trading day.',
             style: MyntWebTextStyles.caption(
@@ -1082,17 +1198,18 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
-          // Create button
           SizedBox(
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _isLoading || _addedScrips.isEmpty ? null : _createSip,
+              onPressed:
+                  _isLoading || _addedScrips.isEmpty ? null : _modifySip,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _addedScrips.isEmpty
                     ? Colors.grey
                     : resolveThemeColor(context,
-                        dark: MyntColors.primaryDark, light: MyntColors.primary),
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -1108,7 +1225,7 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
                       ),
                     )
                   : Text(
-                      'Create SIP',
+                      'Modify SIP',
                       style: MyntWebTextStyles.buttonMd(
                         context,
                         color: Colors.white,
@@ -1122,17 +1239,27 @@ class _CreateSipDialogWebState extends ConsumerState<CreateSipDialogWeb> {
   }
 }
 
-/// Helper class to hold scrip item data
-class SipScripItem {
-  final ScripNewValue scrip;
+/// Helper class to hold scrip item data for modify dialog
+class _ModifySipScripItem {
+  final String token;
+  final String exch;
+  final String tsym;
+  final String prd;
   String investBy;
   final TextEditingController qtyController;
   final TextEditingController amountController;
+  final bool isExisting;
+  final String fallbackLtp;
 
-  SipScripItem({
-    required this.scrip,
+  _ModifySipScripItem({
+    required this.token,
+    required this.exch,
+    required this.tsym,
+    required this.prd,
     required this.investBy,
     required this.qtyController,
     required this.amountController,
+    this.isExisting = false,
+    this.fallbackLtp = '0',
   });
 }

@@ -16,6 +16,7 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../sip_order_detail_screen_web.dart';
 import '../create_sip_dialog_web.dart';
+import '../modify_sip_dialog_web.dart';
 
 /// Separate screen widget for SIP Orders tab
 class SipOrdersScreenWeb extends ConsumerStatefulWidget {
@@ -787,7 +788,7 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
               child: Tooltip(
                 message: displayText,
                 child: Padding(
-                  padding: EdgeInsets.only(right: isRowHovered ? 70.0 : 0.0),
+                  padding: EdgeInsets.only(right: isRowHovered ? 106.0 : 0.0),
                   child: Text(
                     displayText,
                     style: _getTextStyle(context),
@@ -807,6 +808,8 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      _buildModifyButton(sipOrder, sipId),
+                      const SizedBox(width: 6),
                       _buildCancelButton(sipOrder, sipId),
                       const SizedBox(width: 6),
                       _buildOptionsMenuButton(sipOrder, sipId, rowIndex: rowIndex),
@@ -817,6 +820,57 @@ class _SipOrdersScreenWebState extends ConsumerState<SipOrdersScreenWeb> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildModifyButton(SipDetails sipOrder, String sipId) {
+    return GestureDetector(
+      onTap: () => _handleModifySipOrder(sipOrder),
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: resolveThemeColor(context,
+              dark: MyntColors.textWhite, light: MyntColors.textWhite),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: resolveThemeColor(context,
+                  dark: Colors.transparent, light: Colors.grey),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.edit_outlined,
+          size: 18,
+          color: resolveThemeColor(context,
+              dark: MyntColors.primaryDark, light: MyntColors.primary),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleModifySipOrder(SipDetails sipOrder) async {
+    final theme = ref.read(themeProvider);
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: theme.isDarkMode
+              ? MyntColors.backgroundColorDark
+              : MyntColors.backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SizedBox(
+            width: 580,
+            height: 720,
+            child: ModifySipDialogWeb(sipDetails: sipOrder),
+          ),
+        );
+      },
     );
   }
 

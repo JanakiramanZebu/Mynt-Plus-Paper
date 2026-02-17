@@ -3082,10 +3082,10 @@ class OrderProvider extends DefaultChangeNotifier {
       }
       if (_modifySipModel!.reqStatus == "NOT_OK") {
         if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(
+          ResponsiveSnackBar.showError(
               context, "${_modifySipModel!.rejreason}");
         } else {
-          successMessage(context, "${_modifySipModel!.rejreason}");
+          error(context, "${_modifySipModel!.rejreason}");
         }
       } else if (_modifySipModel!.emsg ==
           "Session Expired :  Invalid Session Key") {
@@ -3099,6 +3099,31 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "MODIFYSIP API", "Error": "$e"});
       notifyListeners();
+    } finally {
+      toggleLoadingOn(false);
+    }
+  }
+
+  Future<ModifySIPModel?> modifySipBasketOrder(
+      BuildContext context, ModifySipInput modifysipinput) async {
+    try {
+      toggleLoadingOn(true);
+      _modifySipModel = await api.getmodifysiporder(modifysipinput);
+      if (_modifySipModel!.reqStatus == "OK") {
+        fetchSipOrderHistory(context);
+      } else if (_modifySipModel!.emsg ==
+          "Session Expired :  Invalid Session Key") {
+        ref.read(authProvider).ifSessionExpired(context);
+      }
+      notifyListeners();
+      return _modifySipModel;
+    } catch (e) {
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "MODIFYSIP API", "Error": "$e"});
+      notifyListeners();
+      return null;
     } finally {
       toggleLoadingOn(false);
     }

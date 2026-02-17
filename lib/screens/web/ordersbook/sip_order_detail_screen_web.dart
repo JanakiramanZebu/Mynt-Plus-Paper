@@ -12,6 +12,7 @@ import '../../../utils/responsive_snackbar.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/functions.dart';
 import '../../../routes/web_router.dart' show webNavigatorKey;
+import 'modify_sip_dialog_web.dart';
 
 class SipOrderDetailScreenWeb extends ConsumerStatefulWidget {
   final SipDetails sipOrder;
@@ -426,6 +427,14 @@ class _SipOrderDetailScreenWebState
       child: Row(
         children: [
           Expanded(
+            child: MyntPrimaryButton(
+              label: 'Modify SIP',
+              onPressed: () => _handleModifySip(context),
+              isFullWidth: true,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: MyntTertiaryButton(
               label: 'Cancel SIP',
               onPressed: () => _handleCancelSip(context),
@@ -434,6 +443,39 @@ class _SipOrderDetailScreenWebState
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handleModifySip(BuildContext context) async {
+    // Capture SIP details before closing sheet
+    final sipDetails = _sipOrder;
+    final theme = ref.read(themeProvider);
+
+    // Close the detail sheet first
+    shadcn.closeSheet(context);
+
+    // Get navigator context for dialog
+    final navigatorContext = webNavigatorKey.currentContext;
+    if (navigatorContext == null) return;
+
+    // Show modify dialog (same pattern as CreateSipDialogWeb)
+    await showDialog(
+      context: navigatorContext,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: theme.isDarkMode
+              ? MyntColors.backgroundColorDark
+              : MyntColors.backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SizedBox(
+            width: 580,
+            height: 720,
+            child: ModifySipDialogWeb(sipDetails: sipDetails),
+          ),
+        );
+      },
     );
   }
 
