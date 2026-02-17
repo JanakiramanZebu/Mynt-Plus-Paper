@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" />
+  <title>TradingView Charting Library</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script> -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <style>
+    #spinnerDisplay {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 100vh;
+      /* background-color: #fff; */
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      animation: spinner-c7wet2 1s infinite linear;
+    }
+
+    @keyframes spinner-c7wet2 {
+      100% {
+        transform: rotate(1turn);
+      }
+    }
+  </style>
+  <script type="text/javascript" src="./charting_library/charting_library.js"></script>
+  <script src="./datafeeds/udf/dist/bundle.js"></script>
+  <!-- Custom datafeed module. -->
+  <script type="module" src="./src/main.js"></script>
+</head>
+
+<body style="margin: 0px">
+  <div id="tv_chart_container" style="display: none">
+    <!-- This div will contain the Charting Library widget. -->
+  </div>
+  <div id="spinnerDisplay">
+    <div id="spinner" class="spinner"></div>
+  </div>
+</body>
+
+</html>

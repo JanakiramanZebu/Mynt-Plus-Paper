@@ -94,6 +94,7 @@ import 'market_watch/index/index_bottom_sheet_web.dart';
 import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
+import 'scalper/scalper_screen_web.dart';
 
 /// Global ValueNotifier for ticker visibility - reactive updates across the app
 final tickerVisibilityNotifier = ValueNotifier<bool>(true);
@@ -165,6 +166,7 @@ class _CustomizableSplitHomeScreenState
   final int _panelCount = 2; // Fixed to 2 panels
   bool _isInitialLoad = true; // Track if this is the initial load
   int _holdingsInitialTabIndex = 0; // Track initial tab for holdings screen
+  bool _isScalperMode = false; // When true, hides watchlist and shows scalper full-width
 
   // Scaffold key for drawer control
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -949,7 +951,20 @@ class _CustomizableSplitHomeScreenState
 
   /// New layout: Watchlist full height on one side, AppBar + Content on other side
   /// Respects panel swap - checks which panel has watchlist
+  /// In scalper mode: hides watchlist, shows AppBar + Scalper content full-width
   Widget _buildNewLayout(ThemesProvider theme) {
+    // Scalper mode: full-width AppBar + Scalper content, no watchlist
+    if (_isScalperMode) {
+      return Column(
+        children: [
+          _buildRightSideAppBar(theme.isDarkMode),
+          const Expanded(
+            child: ScalperScreenWeb(embedded: true),
+          ),
+        ],
+      );
+    }
+
     // Calculate watchlist width (25% of screen)
     final screenWidth = MediaQuery.of(context).size.width;
     const double watchlistRatio = 0.25;
@@ -1165,6 +1180,7 @@ class _CustomizableSplitHomeScreenState
     bool? showBonds,
     bool? showOptionZ,
     bool? showOptionFlash,
+    bool? showScalper,
   }) {
     final theme = ref.read(themeProvider);
     final userProfile = ref.read(userProfileProvider);
@@ -1239,6 +1255,10 @@ class _CustomizableSplitHomeScreenState
               optionFlash.showPanel(context);
             }
           },
+          onScalperTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleScalperTap();
+          },
           onThemeToggle: () {
             shadcn.closeDrawer(drawerContext);
             ref.read(themeProvider.notifier).toggleTheme(
@@ -1259,6 +1279,7 @@ class _CustomizableSplitHomeScreenState
           showBonds: showBonds,
           showOptionZ: showOptionZ,
           showOptionFlash: showOptionFlash,
+          showScalper: showScalper,
         ),
         );
       },
@@ -1347,6 +1368,7 @@ class _CustomizableSplitHomeScreenState
                           showBonds: !showAllLeftNav,
                           showOptionZ: !showAllLeftNav, // Options dropdown hidden with left nav
                           showOptionFlash: !showAllLeftNav,
+                          showScalper: !showAllLeftNav,
                         );
                       }
                     },
@@ -1861,6 +1883,10 @@ class _CustomizableSplitHomeScreenState
     _replaceScreenInPanel(ScreenType.strategyBuilder);
   }
 
+  void _handleScalperTap() {
+    setState(() => _isScalperMode = true);
+  }
+
   // Build navigation screens for app bar
   Widget _buildNavigationScreens(bool isDarkMode) {
     return Row(
@@ -1887,24 +1913,32 @@ class _CustomizableSplitHomeScreenState
   // Build individual navigation item
   Widget _buildNavItem(String title, bool isDarkMode, ScreenType screenType,
       VoidCallback onTap) {
-    // Check if this screen is currently active in any panel
+    // In scalper mode, no other nav items should show as active
     bool isActive = false;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      if (panel.screenType == screenType ||
-          (panel.screens.isNotEmpty &&
-              panel.activeScreenIndex >= 0 &&
-              panel.activeScreenIndex < panel.screens.length &&
-              panel.screens[panel.activeScreenIndex] == screenType)) {
-        isActive = true;
-        break;
+    if (!_isScalperMode) {
+      for (int i = 0; i < _panels.length; i++) {
+        final panel = _panels[i];
+        if (panel.screenType == screenType ||
+            (panel.screens.isNotEmpty &&
+                panel.activeScreenIndex >= 0 &&
+                panel.activeScreenIndex < panel.screens.length &&
+                panel.screens[panel.activeScreenIndex] == screenType)) {
+          isActive = true;
+          break;
+        }
       }
     }
 
     return _HoverableNavItem(
       title: title,
       isActive: isActive,
-      onTap: onTap,
+      onTap: () {
+        // Exit scalper mode when navigating to another screen
+        if (_isScalperMode) {
+          setState(() => _isScalperMode = false);
+        }
+        onTap();
+      },
       isDarkMode: isDarkMode,
     );
   }
@@ -1932,15 +1966,17 @@ class _CustomizableSplitHomeScreenState
       VoidCallback onTap) {
     // Check if this screen is currently active in any panel
     bool isActive = false;
-    for (int i = 0; i < _panels.length; i++) {
-      final panel = _panels[i];
-      if (panel.screenType == screenType ||
-          (panel.screens.isNotEmpty &&
-              panel.activeScreenIndex >= 0 &&
-              panel.activeScreenIndex < panel.screens.length &&
-              panel.screens[panel.activeScreenIndex] == screenType)) {
-        isActive = true;
-        break;
+    if (!_isScalperMode) {
+      for (int i = 0; i < _panels.length; i++) {
+        final panel = _panels[i];
+        if (panel.screenType == screenType ||
+            (panel.screens.isNotEmpty &&
+                panel.activeScreenIndex >= 0 &&
+                panel.activeScreenIndex < panel.screens.length &&
+                panel.screens[panel.activeScreenIndex] == screenType)) {
+          isActive = true;
+          break;
+        }
       }
     }
 
@@ -2080,6 +2116,50 @@ class _CustomizableSplitHomeScreenState
                           ),
                         ),
                       ),
+                      // Scalper
+                      shadcn.MenuButton(
+                        onPressed: (context) {
+                          _handleScalperTap();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.speed,
+                                size: 22,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.iconDark,
+                                  light: MyntColors.icon,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Text(
+                                'Scalper',
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: MyntFonts.medium,
+                                  darkColor: MyntColors.textPrimaryDark,
+                                  lightColor: MyntColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Transform.translate(
+                                offset: const Offset(0, -6),
+                                child: Text(
+                                  'Beta',
+                                  style: MyntWebTextStyles.caption(
+                                    context,
+                                    color: Colors.red,
+                                    fontWeight: MyntFonts.semiBold,
+                                  ).copyWith(fontSize: 10),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   );
                 },
@@ -2092,9 +2172,9 @@ class _CustomizableSplitHomeScreenState
                   'Options',
                   style: MyntWebTextStyles.body(
                     context,
-                    fontWeight: MyntFonts.semiBold,
-                    darkColor: MyntColors.textPrimaryDark,
-                    lightColor: MyntColors.textPrimary,
+                    fontWeight: _isScalperMode ? MyntFonts.bold : MyntFonts.semiBold,
+                    darkColor: _isScalperMode ? MyntColors.primaryDark : MyntColors.textPrimaryDark,
+                    lightColor: _isScalperMode ? MyntColors.primary : MyntColors.textPrimary,
                   ),
                 ),
                 const SizedBox(width: 4),
@@ -2103,8 +2183,8 @@ class _CustomizableSplitHomeScreenState
                   size: 18,
                   color: resolveThemeColor(
                     context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
+                    dark: _isScalperMode ? MyntColors.primaryDark : MyntColors.textPrimaryDark,
+                    light: _isScalperMode ? MyntColors.primary : MyntColors.textPrimary,
                   ),
                 ),
               ],
@@ -2409,6 +2489,8 @@ class _CustomizableSplitHomeScreenState
         return const NotificationScreenWeb();
       case ScreenType.strategyBuilder:
         return const StrategyBuilderPanelWeb();
+      case ScreenType.scalper:
+        return const ScalperScreenWeb(embedded: true);
       // caEvent and cpAction removed
     }
   }
@@ -2466,6 +2548,8 @@ class _CustomizableSplitHomeScreenState
         return 'Notification';
       case ScreenType.strategyBuilder:
         return 'Strategy Builder';
+      case ScreenType.scalper:
+        return 'Scalper';
       // caEvent and cpAction removed
     }
   }
@@ -2523,6 +2607,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.notifications_outlined;
       case ScreenType.strategyBuilder:
         return Icons.architecture;
+      case ScreenType.scalper:
+        return Icons.speed;
       // caEvent and cpAction removed
     }
   }
@@ -2907,6 +2993,9 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.cagrCalculator:
       case ScreenType.mfStockDetail:
       case ScreenType.strategyBuilder:
+        break;
+      case ScreenType.scalper:
+        setState(() => _isScalperMode = true);
         break;
       // caEvent and cpAction removed
     }
@@ -3636,6 +3725,11 @@ class _CustomizableSplitHomeScreenState
   }
 
   void _replaceScreenInPanel(ScreenType screenType) {
+    // Exit scalper mode when switching to any other screen
+    if (_isScalperMode && screenType != ScreenType.scalper) {
+      _isScalperMode = false;
+    }
+
     int targetPanelIndex = -1;
     for (int i = 0; i < _panels.length; i++) {
       final panel = _panels[i];
@@ -4820,6 +4914,7 @@ enum ScreenType {
   notification,
   portfolioAnalysis,
   strategyBuilder,
+  scalper,
 }
 
 // Hoverable navigation item widget

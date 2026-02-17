@@ -230,20 +230,32 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     final orderBook = ref
         .watch(orderProvider); // Changed to watch to rebuild on search changes
 
+    final showTriggered = orderBook.showTriggeredGtt;
+
     // Get GTT orders (search or regular)
     // Only show search results if we're on the GTT Orders tab (index 3)
     final searchQuery = orderBook.orderSearchCtrl.text.trim();
     final isGttOrdersTab = orderBook.selectedTab == 3;
-    final gttOrders = (searchQuery.isNotEmpty && isGttOrdersTab)
-        ? (orderBook.gttOrderBookSearch ?? [])
-        : (orderBook.gttOrderBookModel ?? []);
+
+    final List<GttOrderBookModel> gttOrders;
+    if (showTriggered) {
+      gttOrders = orderBook.triggeredGttOrders ?? [];
+    } else {
+      gttOrders = (searchQuery.isNotEmpty && isGttOrdersTab)
+          ? (orderBook.gttOrderBookSearch ?? [])
+          : (orderBook.gttOrderBookModel ?? []);
+    }
 
     // Sort GTT orders - handle empty case for showing header always
     final sortedOrders = gttOrders.isNotEmpty
         ? _getSortedGttOrders(gttOrders)
         : <GttOrderBookModel>[];
 
-    return shadcn.OutlinedContainer(
+    return Column(
+      children: [
+        // Pending / Triggered toggle bar
+        _buildGttToggleBar(context, orderBook),
+        Expanded(child: shadcn.OutlinedContainer(
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Calculate minimum widths dynamically based on actual content
@@ -344,12 +356,16 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: NoDataFoundWeb(
-                                  title: searchQuery.isNotEmpty
-                                      ? "No GTT Orders Found"
-                                      : "No GTT Orders",
-                                  subtitle: searchQuery.isNotEmpty
-                                      ? "No GTT orders match your search \"$searchQuery\"."
-                                      : "You don't have any GTT orders yet.",
+                                  title: showTriggered
+                                      ? "No Triggered GTT Orders"
+                                      : (searchQuery.isNotEmpty
+                                          ? "No GTT Orders Found"
+                                          : "No GTT Orders"),
+                                  subtitle: showTriggered
+                                      ? "You don't have any triggered GTT orders yet."
+                                      : (searchQuery.isNotEmpty
+                                          ? "No GTT orders match your search \"$searchQuery\"."
+                                          : "You don't have any GTT orders yet."),
                                   primaryEnabled: false,
                                   secondaryEnabled: false,
                                 ),
@@ -496,6 +512,68 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
 
           return buildTableContent();
         },
+      ),
+    )),
+      ],
+    );
+  }
+
+  /// Toggle bar for Pending / Triggered GTT orders
+  Widget _buildGttToggleBar(BuildContext context, OrderProvider orderBook) {
+    final showTriggered = orderBook.showTriggeredGtt;
+    final primaryColor = resolveThemeColor(context,
+        dark: MyntColors.primaryDark, light: MyntColors.primary);
+    final secondaryColor = resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+
+    Widget buildToggleButton(String label, bool isActive, VoidCallback onTap) {
+      return MouseRegion(
+        cursor: isActive
+            ? shadcn.SystemMouseCursors.basic
+            : shadcn.SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? primaryColor.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+              border: isActive
+                  ? shadcn.Border.all(
+                      color: primaryColor.withValues(alpha: 0.3), width: 1)
+                  : null,
+            ),
+            child: Text(
+              label,
+              style: MyntWebTextStyles.bodySmall(
+                context,
+                fontWeight: isActive ? MyntFonts.semiBold : MyntFonts.medium,
+                color: isActive ? primaryColor : secondaryColor,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Row(
+        children: [
+          buildToggleButton(
+            'Pending',
+            !showTriggered,
+            () => ref.read(orderProvider).toggleTriggeredGtt(false, context),
+          ),
+          const SizedBox(width: 8),
+          buildToggleButton(
+            'Triggered',
+            showTriggered,
+            () => ref.read(orderProvider).toggleTriggeredGtt(true, context),
+          ),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
 import '../screens/web/strategy_builder/strategy_builder_screen.dart';
+import '../screens/web/scalper/scalper_screen_web.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
 
@@ -37,6 +38,7 @@ class WebRoutes {
   static const String profile = '/profile';
   static const String portfolioAnalysis = '/portfolio-analysis';
   static const String strategyBuilder = '/strategy-builder';
+  static const String scalper = '/scalper';
 }
 
 /// Global GoRouter instance for web
@@ -152,6 +154,12 @@ void initializeWebRouter() {
       GoRoute(
         path: WebRoutes.strategyBuilder,
         builder: (context, state) => const StrategyBuilderScreenWeb(),
+      ),
+
+      // Scalper screen - standalone full-screen trading interface
+      GoRoute(
+        path: WebRoutes.scalper,
+        builder: (context, state) => const ScalperScreenWeb(),
       ),
     ],
 

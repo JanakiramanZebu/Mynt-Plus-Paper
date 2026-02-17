@@ -24,6 +24,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback? onBondsTap;
   final VoidCallback? onOptionZTap;
   final VoidCallback? onOptionFlashTap;
+  final VoidCallback? onScalperTap;
   final VoidCallback? onClose;
 
   // Control which items to show - if null, show all items
@@ -37,6 +38,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final bool? showBonds;
   final bool? showOptionZ;
   final bool? showOptionFlash;
+  final bool? showScalper;
 
   const NavigationDrawerWeb({
     super.key,
@@ -56,6 +58,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.onBondsTap,
     this.onOptionZTap,
     this.onOptionFlashTap,
+    this.onScalperTap,
     this.onClose,
     this.showHome,
     this.showPositions,
@@ -67,6 +70,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.showBonds,
     this.showOptionZ,
     this.showOptionFlash,
+    this.showScalper,
   });
 
   /// Display name: use userName if available, fallback to clientId
@@ -147,7 +151,7 @@ class NavigationDrawerWeb extends StatelessWidget {
                     ),
 
                   // TRADE section - show if any TRADE item is visible
-                  if ((showPositions ?? true) || (showHoldings ?? true) || (showOrders ?? true) || (showFunds ?? true) || (showOptionZ ?? (onOptionZTap != null)) || (showOptionFlash ?? (onOptionFlashTap != null)))
+                  if ((showPositions ?? true) || (showHoldings ?? true) || (showOrders ?? true) || (showFunds ?? true) || (showOptionZ ?? (onOptionZTap != null)) || (showOptionFlash ?? (onOptionFlashTap != null)) || (showScalper ?? (onScalperTap != null)))
                     _buildSectionHeader(context, 'TRADE'),
                   if (showPositions ?? true)
                     _buildDrawerItem(
@@ -196,6 +200,15 @@ class NavigationDrawerWeb extends StatelessWidget {
                       icon: shadcn.BootstrapIcons.lightning,
                       screenName: 'optionFlash',
                       onTap: onOptionFlashTap!,
+                    ),
+                  if ((showScalper ?? (onScalperTap != null)) && onScalperTap != null)
+                    _buildDrawerItemWithBadge(
+                      context: context,
+                      title: 'Scalper',
+                      icon: Icons.speed,
+                      screenName: 'scalper',
+                      badge: 'Beta',
+                      onTap: onScalperTap!,
                     ),
 
                   // INVEST section - show if any INVEST item is visible
@@ -344,6 +357,68 @@ class NavigationDrawerWeb extends StatelessWidget {
                     context,
                     color: isActive ? activeColor : textColor,
                     fontWeight: isActive ? MyntFonts.bold : MyntFonts.medium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItemWithBadge({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required String screenName,
+    required String badge,
+    required VoidCallback onTap,
+  }) {
+    final isActive = isScreenActive?.call(screenName) ?? false;
+
+    final activeColor = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark,
+        light: MyntColors.textPrimary);
+    final hoverColor = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: isActive ? hoverColor : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: isActive ? activeColor : textColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  title,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    color: isActive ? activeColor : textColor,
+                    fontWeight: isActive ? MyntFonts.bold : MyntFonts.medium,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Transform.translate(
+                  offset: const Offset(0, -6),
+                  child: Text(
+                    badge,
+                    style: MyntWebTextStyles.caption(
+                      context,
+                      color: Colors.red,
+                      fontWeight: MyntFonts.semiBold,
+                    ).copyWith(fontSize: 10),
                   ),
                 ),
               ],

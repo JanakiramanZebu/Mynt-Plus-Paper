@@ -80,6 +80,10 @@ class OrderProvider extends DefaultChangeNotifier {
   // List<GttOrderBookModel>? _tgttOrderBookModel = [];
   List<GttOrderBookModel>? _gttOrderBookSearch = [];
   List<GttOrderBookModel>? get gttOrderBookSearch => _gttOrderBookSearch;
+  List<GttOrderBookModel>? _triggeredGttOrders = [];
+  List<GttOrderBookModel>? get triggeredGttOrders => _triggeredGttOrders;
+  bool _showTriggeredGtt = false;
+  bool get showTriggeredGtt => _showTriggeredGtt;
   final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook = [];
   List<TradeBookModel>? get tradeBook => _tradeBook;
@@ -203,6 +207,8 @@ class OrderProvider extends DefaultChangeNotifier {
     _siporderBookModel = null;
     _siporderBookSearch = [];
     _gttOrderBookSearch = [];
+    _triggeredGttOrders = [];
+    _showTriggeredGtt = false;
     _tradeBooksearch = [];
     _executedOrder = [];
     _openOrder = [];
@@ -1420,6 +1426,63 @@ class OrderProvider extends DefaultChangeNotifier {
           .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Toggle between pending and triggered GTT orders
+  void toggleTriggeredGtt(bool show, BuildContext context) {
+    _showTriggeredGtt = show;
+    if (show && (_triggeredGttOrders == null || _triggeredGttOrders!.isEmpty)) {
+      fetchTriggeredGTTOrders(context);
+    }
+    notifyListeners();
+  }
+
+  /// Fetch triggered GTT orders from API
+  Future fetchTriggeredGTTOrders(BuildContext context) async {
+    try {
+      final result = await api.getTriggeredGTTOrders();
+      if (result['stat'] == 'success') {
+        _triggeredGttOrders = result['data'];
+      } else {
+        if (result['stat'] == 'no data') {
+          _triggeredGttOrders = [];
+        }
+      }
+
+      if (_triggeredGttOrders != null && _triggeredGttOrders!.isNotEmpty) {
+        if (_triggeredGttOrders![0].stat == "Not_Ok") {
+          if (_triggeredGttOrders![0].emsg ==
+              "Session Expired :  Invalid Session Key") {
+            ref.read(authProvider).ifSessionExpired(context);
+          }
+          _triggeredGttOrders = [];
+        } else {
+          for (var element in _triggeredGttOrders!) {
+            Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+            element.symbol = "${spilitSymbol["symbol"]}";
+            element.expDate = "${spilitSymbol["expDate"]}";
+            element.option = "${spilitSymbol["option"]}";
+            element.ordDate = convertToISOFormat("${element.norentm}");
+            // For triggered orders, use 'stat' as the display status
+            if (element.stat != null && element.stat!.isNotEmpty) {
+              element.gttOrderCurrentStatus = element.stat;
+            }
+          }
+          _triggeredGttOrders!
+              .sort((a, b) => b.ordDate!.compareTo(a.ordDate!));
+        }
+      }
+
+      return _triggeredGttOrders;
+    } catch (e) {
+      print("Triggered GTT Orders $e");
+      ref
+          .read(indexListProvider)
+          .logError
+          .add({"type": "API Triggered GTT Orders", "Error": "$e"});
     } finally {
       notifyListeners();
     }

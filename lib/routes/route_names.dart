@@ -238,4 +238,6 @@ class Routes {
   // Refer and Earn
   static const String referAndEarn = 'referAndEarn';
 
+  // Scalper
+  static const String scalperScreen = 'scalperScreen';
 }

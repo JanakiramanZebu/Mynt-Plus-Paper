@@ -58,6 +58,7 @@ class ApiLinks {
   String get addMWScrips => '$goMyntURL/AddMultiScripsToMW';
   String get searchScrip => '$goMyntURL/SearchScrip';
   String get searchScripNew => '${bemynt}global/SearchScrip';
+  String get searchOptScript => '${bemynt}global/SearchOptScript';
   String get technicalData => '$goMyntURL/GetTechnicals';
   String get watchListrename => '$goMyntURL/RenameMW';
   String get spanCalc => 'https://go.mynt.in/NorenWClientWeb/SpanCalc';
@@ -99,6 +100,7 @@ class ApiLinks {
   String get tradeBook => '$goMyntURL/TradeBook';
   String get cancleSiporder => '$goMyntURL/CancelSipOrder';
   String get pendingGttorder => '$goMyntURL/GetPendingGTTOrder';
+  String get triggeredGttorder => '$goMyntURL/GetTrgOi';
   String get cancelGTTOrderURL => '$goMyntURL/CancelGTTOrder';
   String get basketMargin => '$goMyntURL/GetBasketMargin';
 

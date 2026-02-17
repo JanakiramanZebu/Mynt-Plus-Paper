@@ -1646,9 +1646,7 @@ changeHoldingsTabIndex(int index) {
               if (_placeOrderModel!.stat!.toLowerCase() != "ok") {
                 break;
               }
-            }
-            if (!isPositionSelected(element)) {
-            } else {
+            } else if (element.isExitSelection == true) {
               PlaceOrderInput placeOrderInput = PlaceOrderInput(
                   amo: "",
                   blprc: '',

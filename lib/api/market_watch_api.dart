@@ -248,6 +248,22 @@ print("res.body: ${res.body}");
     }
   }
 
+// Fetch all available option scripts (called once, cached in provider)
+  Future<SearchScripModel> fetchAllOptScripts() async {
+    try {
+      final uri = Uri.parse(apiLinks.searchOptScript);
+      final res = await apiClient.post(uri,
+          headers: {'Content-Type': 'text/plain'},
+          body:
+              '''jData={"stext":""}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+      return SearchScripModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 // Get Linked scrip details from kambala
 
   Future<LinkedScrips> getLinkedScrip(String token, String exch) async {

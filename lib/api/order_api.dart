@@ -720,6 +720,57 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+  // get Triggered GTT orders from kambala
+
+  Future<Map<String, dynamic>> getTriggeredGTTOrders() async {
+    String stat = "";
+    try {
+      final uri = Uri.parse(apiLinks.triggeredGttorder);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
+
+      final List<GttOrderBookModel> data = [];
+
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        try {
+          if (json is Map && json['stat'] == 'Not_Ok') {
+            stat = 'Not_Ok';
+            final GttOrderBookModel ord =
+                GttOrderBookModel.fromJson(json as Map<String, dynamic>);
+            return {"stat": stat, "data": ord};
+          } else if (json is List && json.isNotEmpty) {
+            stat = 'success';
+            for (final item in json) {
+              data.add(
+                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          } else {
+            stat = 'no data';
+          }
+        } catch (e) {
+          stat = 'error';
+          if (json is List) {
+            for (final item in json) {
+              data.add(
+                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
+            }
+          }
+        }
+      } else {
+        final json = jsonDecode(res.body);
+        if (json is Map && json['emsg'] != null && json['emsg'].contains('Session Expired')) {
+          data.add(GttOrderBookModel.fromJson(json as Map<String, dynamic>));
+        }
+      }
+      return {"stat": stat, "data": data};
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // get Basket order margin  from kambala
 
   Future<OrderMarginModel> getBasketMargin(

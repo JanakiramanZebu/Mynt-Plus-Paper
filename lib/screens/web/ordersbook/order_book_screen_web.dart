@@ -130,7 +130,11 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           await orderBook.fetchTradeBook(context);
           break;
         case 3: // GTT Orders
-          await orderBook.fetchGTTOrderBook(context, "");
+          if (orderBook.showTriggeredGtt) {
+            await orderBook.fetchTriggeredGTTOrders(context);
+          } else {
+            await orderBook.fetchGTTOrderBook(context, "");
+          }
           break;
         case 4: // Basket
           await orderBook.getBasketName();

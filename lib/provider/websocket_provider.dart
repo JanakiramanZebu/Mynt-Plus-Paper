@@ -634,6 +634,8 @@ class WebSocketProvider extends ChangeNotifier {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _safeNotifyListeners();
         });
+        // Schedule a frame so the post-frame callback fires even when idle
+        WidgetsBinding.instance.scheduleFrame();
       }
     });
   }
@@ -1051,6 +1053,8 @@ class WebSocketProvider extends ChangeNotifier {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _safeNotifyListeners();
       });
+      // Schedule a frame so the post-frame callback actually fires even when idle
+      WidgetsBinding.instance.scheduleFrame();
 
       // Minimize portfolio recalculations by checking if this is a price update
       // and only update if we have valid price data
