@@ -1572,7 +1572,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                               //             ? InvestType.delivery
                                               //             : InvestType.carryForward,
                                               //         "GTT");
-                                              if (orderInput.prcType != "MKT") {
+                                              if (orderInput.prcType == "MKT") {
+                                                ref
+                                                    .read(ordInputProvider)
+                                                    .setGTTPriceTypeOrderIsMarket(true);
+                                                ref
+                                                    .read(ordInputProvider)
+                                                    .chngGTTPriceType("Market");
+                                                orderInput.priceCtrl.text = "Market";
+                                              } else {
+                                                ref
+                                                    .read(ordInputProvider)
+                                                    .setGTTPriceTypeOrderIsMarket(false);
                                                 ref
                                                     .read(ordInputProvider)
                                                     .updatePrcCtrl(
