@@ -8178,8 +8178,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     Map<String, dynamic> data = {};
     String curDate = convDateWithTime();
 
-    // Validate quantity is multiple of lot size for basket orders
-    final quantity = SafeParse.toInt(qtyCtrl.text);
+    // Convert lots to qty if in lot mode, then validate
+    final quantity = SafeParse.toInt(getFinalQuantity(qtyCtrl.text));
     final lotSizeVal = lotSize;
 
     if (quantity % lotSizeVal != 0) {
