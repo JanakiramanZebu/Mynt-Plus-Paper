@@ -334,6 +334,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   bool _isMarketOrder = false;
   bool _isQtyToAmount = false;
   bool _isLotToQty = true;
+  bool _isGTTLotToQty = true;
   bool _isStoplossOrder = false;
   bool _afterMarketOrder = false;
   bool _savedAfterMarketOrder = false; // Stores AMO state when switching to CO-BO
@@ -1564,6 +1565,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                             }
                                             if (orderType != "GTT") {
                                               isOco = false;
+                                              // Re-sync provider's _prcType with regular section's local priceType
+                                              // because GTT's chngGTTPriceType may have overwritten it
+                                              ref.read(ordInputProvider).chngPriceType(
+                                                  priceType, widget.scripInfo.exch ?? "");
                                               _debouncedMarginUpdate();
                                             } else {
                                               // ref.read(ordInputProvider)
@@ -2232,219 +2237,214 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                  headerTitleText("Qty", theme),
+                                                  InkWell(
+                                                    onTap: (widget.scripInfo.exch == "NFO" ||
+                                                        widget.scripInfo.exch == "BFO" ||
+                                                        _isStock) ? () {
+                                                      setState(() {
+                                                        if (_isStock) {
+                                                          // Stocks: no amount toggle for GTT
+                                                        } else {
+                                                          // NFO/BFO: Toggle between Lot and Qty
+                                                          _isGTTLotToQty = !_isGTTLotToQty;
+                                                          if (_isGTTLotToQty) {
+                                                            int currentLot = int.tryParse(orderInput.qtyCtrl.text) ?? 1;
+                                                            orderInput.qtyCtrl.text = (currentLot * lotSize).toString();
+                                                          } else {
+                                                            int currentQty = int.tryParse(orderInput.qtyCtrl.text) ?? lotSize;
+                                                            orderInput.qtyCtrl.text = ((currentQty / lotSize).round()).toString();
+                                                          }
+                                                        }
+                                                      });
+                                                    } : () {},
+                                                    child: Row(children: [
+                                                      headerTitleText(
+                                                        (_isStock)
+                                                            ? (_isQtyToAmount ? "Amount" : "Qty")
+                                                            : (_isGTTLotToQty ? "Qty" : "Lot"),
+                                                        theme),
+                                                      const SizedBox(width: 16),
+                                                      if (widget.scripInfo.exch == "NFO" ||
+                                                          widget.scripInfo.exch == "BFO" ||
+                                                          _isStock)
+                                                        Padding(
+                                                          padding: const EdgeInsets.all(0.0),
+                                                          child: SvgPicture.asset(
+                                                            assets.switchIcon,
+                                                            width: 16,
+                                                            height: 16,
+                                                            fit: BoxFit.contain,
+                                                            colorFilter: ColorFilter.mode(
+                                                              resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                                                              BlendMode.srcIn,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ]),
+                                                  ),
                                                   const SizedBox(height: 10),
                                                   SizedBox(
                                                       height: 40,
-                                                      // width: 150,
                                                       child: Semantics(
                                                         identifier:
                                                             "GTT Qty Input",
                                                         child: MyntTextField(
                                                             backgroundColor: theme.isDarkMode ? colors.darkGrey : const Color(0xffF1F3F8),
-                                                            placeholder: "0", //orderInput.qtyCtrl.text,
+                                                            placeholder: "0",
                                                             placeholderStyle: WebTextStyles.formInput(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
+                                                              isDarkTheme: theme.isDarkMode,
                                                               color: resolveThemeColor(
                                                                   context,
-                                                                  dark: MyntColors
-                                                                      .textSecondaryDark,
-                                                                  light: MyntColors
-                                                                      .textSecondary)
+                                                                  dark: MyntColors.textSecondaryDark,
+                                                                  light: MyntColors.textSecondary)
                                                                   .withValues(alpha: 0.5),
                                                             ),
                                                             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                                             keyboardType: TextInputType.number,
                                                             textStyle: WebTextStyles.formInput(
-                                                              isDarkTheme: theme
-                                                                  .isDarkMode,
+                                                              isDarkTheme: theme.isDarkMode,
                                                               color: resolveThemeColor(
                                                                   context,
-                                                                  dark: MyntColors
-                                                                      .textPrimaryDark,
-                                                                  light: MyntColors
-                                                                      .textPrimary)
+                                                                  dark: MyntColors.textPrimaryDark,
+                                                                  light: MyntColors.textPrimary),
                                                             ),
-                                                            // prefixIcon: InkWell(
-                                                            //   onTap: () {
-                                                            //     setState(() {
-                                                            //       String input =
-                                                            //           orderInput
-                                                            //               .qtyCtrl.text;
+                                                            leadingWidget: _isStock ? null : GestureDetector(
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  String input = orderInput.qtyCtrl.text;
+                                                                  int currentValue = int.tryParse(input) ?? 0;
+                                                                  int adjustedQty = currentValue >= multiplayer
+                                                                    ? ((currentValue / multiplayer).floor()) * multiplayer
+                                                                    : multiplayer;
 
-                                                            //       int currentQty =
-                                                            //           int.tryParse(
-                                                            //                   input) ??
-                                                            //               0;
+                                                                  if (_isGTTLotToQty) {
+                                                                    if (currentValue != adjustedQty) {
+                                                                      orderInput.qtyCtrl.text = adjustedQty.toString();
+                                                                    } else if (input.isNotEmpty && currentValue > multiplayer) {
+                                                                      orderInput.qtyCtrl.text = (currentValue - multiplayer).toString();
+                                                                    } else {
+                                                                      orderInput.qtyCtrl.text = "$multiplayer";
+                                                                    }
+                                                                  } else {
+                                                                    if (currentValue > 1) {
+                                                                      orderInput.qtyCtrl.text = (currentValue - 1).toString();
+                                                                    } else {
+                                                                      orderInput.qtyCtrl.text = "1";
+                                                                    }
+                                                                  }
+                                                                });
+                                                              },
+                                                              child: Icon(
+                                                                Icons.remove,
+                                                                size: 18,
+                                                                color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                                                              ),
+                                                            ),
+                                                            trailingWidget: _isStock ? null : GestureDetector(
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  String input = orderInput.qtyCtrl.text;
+                                                                  int currentValue = int.tryParse(input) ?? 0;
+                                                                  int adjustedQty = currentValue >= multiplayer
+                                                                    ? ((currentValue / multiplayer).floor()) * multiplayer
+                                                                    : multiplayer;
 
-                                                            //       int adjustedQty =
-                                                            //           ((currentQty /
-                                                            //                       multiplayer)
-                                                            //                   .floor()) *
-                                                            //               multiplayer;
+                                                                  bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                  bool withinLimit = hasNoFreezeLimit || currentValue < frezQtyOrderSliceMaxLimit * frezQty;
 
-                                                            //       if (currentQty !=
-                                                            //           adjustedQty) {
-                                                            //         orderInput.qtyCtrl
-                                                            //                 .text =
-                                                            //             adjustedQty
-                                                            //                 .toString();
-                                                            //       } else if (input
-                                                            //               .isNotEmpty &&
-                                                            //           currentQty >
-                                                            //               multiplayer) {
-                                                            //         orderInput.qtyCtrl
-                                                            //             .text = (int.parse(orderInput
-                                                            //                     .qtyCtrl
-                                                            //                     .text) -
-                                                            //                 multiplayer)
-                                                            //             .toString();
-                                                            //       } else {
-                                                            //         orderInput.qtyCtrl
-                                                            //                 .text =
-                                                            //             "$multiplayer";
-                                                            //       }
-                                                            //     });
-                                                            //   },
-                                                            //   child: SvgPicture.asset(
-                                                            //       theme.isDarkMode
-                                                            //           ? assets
-                                                            //               .darkCMinus
-                                                            //           : assets
-                                                            //               .minusIcon,
-                                                            //       fit:
-                                                            //           BoxFit.scaleDown),
-                                                            // ),
-                                                            // suffixIcon: InkWell(
-                                                            //           onTap: () {},
-                                                            //           child: SvgPicture.asset(
-                                                            //               assets.switchIcon,
-                                                            //               fit: BoxFit.scaleDown),
-                                                            //         ),
+                                                                  if (_isGTTLotToQty) {
+                                                                    if (currentValue != adjustedQty) {
+                                                                      orderInput.qtyCtrl.text = adjustedQty.toString();
+                                                                    } else if (input.isNotEmpty && withinLimit) {
+                                                                      orderInput.qtyCtrl.text = (currentValue + multiplayer).toString();
+                                                                    } else if (input.isEmpty) {
+                                                                      orderInput.qtyCtrl.text = "$multiplayer";
+                                                                    } else if (!hasNoFreezeLimit) {
+                                                                      ResponsiveSnackBar.showWarning(context,
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                    }
+                                                                  } else {
+                                                                    bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                    int maxAllowedLots = hasNoFreezeLimit
+                                                                      ? 999999
+                                                                      : (frezQtyOrderSliceMaxLimit * frezQty) ~/ lotSize;
 
-                                                            // suffixIcon: InkWell(
-                                                            //   onTap: () {
-                                                            //     setState(() {
-                                                            //       String input =
-                                                            //           orderInput
-                                                            //               .qtyCtrl.text;
-
-                                                            //       int currentQty =
-                                                            //           int.tryParse(
-                                                            //                   input) ??
-                                                            //               0;
-
-                                                            //       int adjustedQty =
-                                                            //           ((currentQty /
-                                                            //                       multiplayer)
-                                                            //                   .round()) *
-                                                            //               multiplayer;
-
-                                                            //       if (currentQty !=
-                                                            //           adjustedQty) {
-                                                            //         orderInput.qtyCtrl
-                                                            //                 .text =
-                                                            //             adjustedQty
-                                                            //                 .toString();
-                                                            //       } else if (input
-                                                            //               .isNotEmpty &&
-                                                            //           currentQty <
-                                                            //               ((frezQtyOrderSliceMaxLimit *
-                                                            //                           frezQty) ==
-                                                            //                       frezQtyOrderSliceMaxLimit
-                                                            //                   ? 999999
-                                                            //                   : frezQtyOrderSliceMaxLimit *
-                                                            //                       frezQty)) {
-                                                            //         orderInput.qtyCtrl
-                                                            //                 .text =
-                                                            //             (currentQty +
-                                                            //                     multiplayer)
-                                                            //                 .toString();
-                                                            //       } else {
-                                                            //         ScaffoldMessenger
-                                                            //                 .of(context)
-                                                            //             .removeCurrentSnackBar();
-                                                            //         ScaffoldMessenger
-                                                            //                 .of(context)
-                                                            //             .showSnackBar(
-                                                            //                 ResponsiveSnackBar.showWarning(
-                                                            //                     context,
-                                                            //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                                            //         // orderInput.
-                                                            //         //         qtyCtrl
-                                                            //         //         .text =
-                                                            //         //      multiplayer
-                                                            //         //       .toString();
-                                                            //       }
-                                                            //     });
-                                                            //   },
-                                                            //   child: SvgPicture.asset(
-                                                            //       theme.isDarkMode
-                                                            //           ? assets.darkAdd
-                                                            //           : assets.addIcon,
-                                                            //       fit:
-                                                            //           BoxFit.scaleDown),
-                                                            // ),
+                                                                    if (input.isEmpty) {
+                                                                      orderInput.qtyCtrl.text = "1";
+                                                                    } else if (currentValue < maxAllowedLots) {
+                                                                      orderInput.qtyCtrl.text = (currentValue + 1).toString();
+                                                                    } else {
+                                                                      ResponsiveSnackBar.showWarning(context,
+                                                                        "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                    }
+                                                                  }
+                                                                });
+                                                              },
+                                                              child: Icon(
+                                                                Icons.add,
+                                                                size: 18,
+                                                                color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                                                              ),
+                                                            ),
                                                             controller: orderInput.qtyCtrl,
-                                                            textAlign: TextAlign.start,
+                                                            textAlign: _isStock ? TextAlign.start : TextAlign.center,
                                                             onChanged: (value) {
-                                                              if (value
-                                                                      .isEmpty ||
-                                                                  value ==
-                                                                      "0") {
+                                                              if (value.isEmpty || value == "0") {
+                                                                String fieldName = (_isStock)
+                                                                  ? 'Quantity'
+                                                                  : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                 _showDebouncedWarning(
-                                                                    "Quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                    "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                               } else {
-                                                                String
-                                                                    newValue =
-                                                                    value.replaceAll(
-                                                                        RegExp(
-                                                                            r'[^0-9]'),
-                                                                        '');
+                                                                String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                                                var number = !_isGTTLotToQty
+                                                                  ? int.tryParse(newValue) ?? 0
+                                                                  : ((int.tryParse(newValue) ?? 0) ~/ lotSize);
 
-                                                                int number =
-                                                                    int.tryParse(
-                                                                            newValue) ??
-                                                                        0;
-                                                                if (number >
-                                                                    (frezQty ==
-                                                                            lotSize
-                                                                        ? 999999
-                                                                        : frezQtyOrderSliceMaxLimit *
-                                                                            frezQty)) {
-                                                                  orderInput
-                                                                          .qtyCtrl
-                                                                          .text =
-                                                                      orderInput
-                                                                          .qtyCtrl
-                                                                          .text;
+                                                                bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                                  orderInput.qtyCtrl.text = orderInput.qtyCtrl.text;
                                                                   _showDebouncedWarning(
                                                                       "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                                 } else {
                                                                   _cancelPendingWarning();
                                                                 }
 
-                                                                if (newValue !=
-                                                                    value) {
-                                                                  orderInput
-                                                                          .qtyCtrl
-                                                                          .text =
-                                                                      newValue;
-
-                                                                  orderInput
-                                                                          .qtyCtrl
-                                                                          .selection =
-                                                                      TextSelection
-                                                                          .fromPosition(
-                                                                    TextPosition(
-                                                                        offset:
-                                                                            newValue.length),
+                                                                if (newValue != value) {
+                                                                  orderInput.qtyCtrl.text = newValue;
+                                                                  orderInput.qtyCtrl.selection = TextSelection.fromPosition(
+                                                                    TextPosition(offset: newValue.length),
                                                                   );
                                                                 }
                                                               }
                                                             }),
-                                                      ))
+                                                      )),
+                                                  if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 4),
+                                                      child: Text(
+                                                        "Lot : ${((int.tryParse(orderInput.qtyCtrl.text) ?? 0) / lotSize).ceil()}",
+                                                        style: WebTextStyles.para(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: resolveThemeColor(context,
+                                                            dark: MyntColors.textSecondaryDark,
+                                                            light: MyntColors.textSecondary),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  if (!_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
+                                                    Padding(
+                                                      padding: const EdgeInsets.only(top: 4),
+                                                      child: Text(
+                                                        "Qty : ${(int.tryParse(orderInput.qtyCtrl.text) ?? 0) * lotSize}",
+                                                        style: WebTextStyles.para(
+                                                          isDarkTheme: theme.isDarkMode,
+                                                          color: resolveThemeColor(context,
+                                                            dark: MyntColors.textSecondaryDark,
+                                                            light: MyntColors.textSecondary),
+                                                        ),
+                                                      ),
+                                                    ),
                                                 ])),
                                             const SizedBox(width: 16),
                                             Expanded(
@@ -2963,8 +2963,51 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                    headerTitleText(
-                                                        "Qty", theme),
+                                                    InkWell(
+                                                      onTap: (widget.scripInfo.exch == "NFO" ||
+                                                          widget.scripInfo.exch == "BFO" ||
+                                                          _isStock) ? () {
+                                                        setState(() {
+                                                          if (_isStock) {
+                                                            // Stocks: no amount toggle for GTT/OCO
+                                                          } else {
+                                                            // NFO/BFO: Toggle between Lot and Qty
+                                                            _isGTTLotToQty = !_isGTTLotToQty;
+                                                            if (_isGTTLotToQty) {
+                                                              int currentLot = int.tryParse(orderInput.ocoQtyCtrl.text) ?? 1;
+                                                              orderInput.ocoQtyCtrl.text = (currentLot * lotSize).toString();
+                                                            } else {
+                                                              int currentQty = int.tryParse(orderInput.ocoQtyCtrl.text) ?? lotSize;
+                                                              orderInput.ocoQtyCtrl.text = ((currentQty / lotSize).round()).toString();
+                                                            }
+                                                          }
+                                                        });
+                                                      } : () {},
+                                                      child: Row(children: [
+                                                        headerTitleText(
+                                                          (_isStock)
+                                                              ? (_isQtyToAmount ? "Amount" : "Qty")
+                                                              : (_isGTTLotToQty ? "Qty" : "Lot"),
+                                                          theme),
+                                                        const SizedBox(width: 16),
+                                                        if (widget.scripInfo.exch == "NFO" ||
+                                                            widget.scripInfo.exch == "BFO" ||
+                                                            _isStock)
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(0.0),
+                                                            child: SvgPicture.asset(
+                                                              assets.switchIcon,
+                                                              width: 16,
+                                                              height: 16,
+                                                              fit: BoxFit.contain,
+                                                              colorFilter: ColorFilter.mode(
+                                                                resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                                                                BlendMode.srcIn,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                      ]),
+                                                    ),
                                                     const SizedBox(height: 10),
                                                     SizedBox(
                                                         height: 40,
@@ -2997,190 +3040,143 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     : MyntColors
                                                                         .textPrimary,
                                                               ),
-                                                              // prefixIcon: InkWell(
-                                                              //   onTap: () {
-                                                              //     setState(() {
-                                                              //       String input =
-                                                              //           orderInput
-                                                              //               .ocoQtyCtrl
-                                                              //               .text;
-                                                              //       int currentQty =
-                                                              //           int.tryParse(
-                                                              //                   input) ??
-                                                              //               0;
-                                                              //       int adjustedQty =
-                                                              //           ((currentQty /
-                                                              //                       multiplayer)
-                                                              //                   .floor()) *
-                                                              //               multiplayer;
+                                                              leadingWidget: _isStock ? null : GestureDetector(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    String input = orderInput.ocoQtyCtrl.text;
+                                                                    int currentValue = int.tryParse(input) ?? 0;
+                                                                    int adjustedQty = currentValue >= multiplayer
+                                                                      ? ((currentValue / multiplayer).floor()) * multiplayer
+                                                                      : multiplayer;
 
-                                                              //       if (currentQty !=
-                                                              //           adjustedQty) {
-                                                              //         orderInput
-                                                              //                 .ocoQtyCtrl
-                                                              //                 .text =
-                                                              //             adjustedQty
-                                                              //                 .toString();
-                                                              //       } else if (input
-                                                              //               .isNotEmpty &&
-                                                              //           currentQty >
-                                                              //               multiplayer) {
-                                                              //         orderInput
-                                                              //             .ocoQtyCtrl
-                                                              //             .text = (currentQty -
-                                                              //                 multiplayer)
-                                                              //             .toString();
-                                                              //       } else {
-                                                              //         orderInput
-                                                              //                 .ocoQtyCtrl
-                                                              //                 .text =
-                                                              //             multiplayer
-                                                              //                 .toString();
-                                                              //       }
-                                                              //     });
-                                                              //   },
-                                                              //   child: SvgPicture.asset(
-                                                              //       theme.isDarkMode
-                                                              //           ? assets
-                                                              //               .darkCMinus
-                                                              //           : assets
-                                                              //               .minusIcon,
-                                                              //       fit: BoxFit
-                                                              //           .scaleDown),
-                                                              // ),
+                                                                    if (_isGTTLotToQty) {
+                                                                      if (currentValue != adjustedQty) {
+                                                                        orderInput.ocoQtyCtrl.text = adjustedQty.toString();
+                                                                      } else if (input.isNotEmpty && currentValue > multiplayer) {
+                                                                        orderInput.ocoQtyCtrl.text = (currentValue - multiplayer).toString();
+                                                                      } else {
+                                                                        orderInput.ocoQtyCtrl.text = "$multiplayer";
+                                                                      }
+                                                                    } else {
+                                                                      if (currentValue > 1) {
+                                                                        orderInput.ocoQtyCtrl.text = (currentValue - 1).toString();
+                                                                      } else {
+                                                                        orderInput.ocoQtyCtrl.text = "1";
+                                                                      }
+                                                                    }
+                                                                  });
+                                                                },
+                                                                child: Icon(
+                                                                  Icons.remove,
+                                                                  size: 18,
+                                                                  color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                                                                ),
+                                                              ),
+                                                              trailingWidget: _isStock ? null : GestureDetector(
+                                                                onTap: () {
+                                                                  setState(() {
+                                                                    String input = orderInput.ocoQtyCtrl.text;
+                                                                    int currentValue = int.tryParse(input) ?? 0;
+                                                                    int adjustedQty = currentValue >= multiplayer
+                                                                      ? ((currentValue / multiplayer).floor()) * multiplayer
+                                                                      : multiplayer;
 
-                                                              // suffixIcon: InkWell(
-                                                              //       onTap: () {},
-                                                              //       child: SvgPicture.asset(
-                                                              //           assets.switchIcon,
-                                                              //           fit: BoxFit.scaleDown),
-                                                              //     ),
+                                                                    bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                    bool withinLimit = hasNoFreezeLimit || currentValue < frezQtyOrderSliceMaxLimit * frezQty;
 
-                                                              // suffixIcon: InkWell(
-                                                              //   onTap: () {
-                                                              //     setState(() {
-                                                              //       String input =
-                                                              //           orderInput
-                                                              //               .ocoQtyCtrl
-                                                              //               .text;
-                                                              //       int currentQty =
-                                                              //           int.tryParse(
-                                                              //                   input) ??
-                                                              //               0;
-                                                              //       int adjustedQty =
-                                                              //           ((currentQty /
-                                                              //                       multiplayer)
-                                                              //                   .round()) *
-                                                              //               multiplayer;
+                                                                    if (_isGTTLotToQty) {
+                                                                      if (currentValue != adjustedQty) {
+                                                                        orderInput.ocoQtyCtrl.text = adjustedQty.toString();
+                                                                      } else if (input.isNotEmpty && withinLimit) {
+                                                                        orderInput.ocoQtyCtrl.text = (currentValue + multiplayer).toString();
+                                                                      } else if (input.isEmpty) {
+                                                                        orderInput.ocoQtyCtrl.text = "$multiplayer";
+                                                                      } else if (!hasNoFreezeLimit) {
+                                                                        ResponsiveSnackBar.showWarning(context,
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                      }
+                                                                    } else {
+                                                                      bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                      int maxAllowedLots = hasNoFreezeLimit
+                                                                        ? 999999
+                                                                        : (frezQtyOrderSliceMaxLimit * frezQty) ~/ lotSize;
 
-                                                              //       if (currentQty !=
-                                                              //           adjustedQty) {
-                                                              //         orderInput
-                                                              //                 .ocoQtyCtrl
-                                                              //                 .text =
-                                                              //             adjustedQty
-                                                              //                 .toString();
-                                                              //       } else if (input
-                                                              //               .isNotEmpty &&
-                                                              //           currentQty <
-                                                              //               ((frezQtyOrderSliceMaxLimit *
-                                                              //                           frezQty) ==
-                                                              //                       frezQtyOrderSliceMaxLimit
-                                                              //                   ? 999999
-                                                              //                   : frezQtyOrderSliceMaxLimit *
-                                                              //                       frezQty)) {
-                                                              //         orderInput
-                                                              //             .ocoQtyCtrl
-                                                              //             .text = (int.parse(orderInput
-                                                              //                     .ocoQtyCtrl
-                                                              //                     .text) +
-                                                              //                 multiplayer)
-                                                              //             .toString();
-                                                              //       } else {
-                                                              //         ScaffoldMessenger
-                                                              //                 .of(context)
-                                                              //             .removeCurrentSnackBar();
-                                                              //         ScaffoldMessenger
-                                                              //                 .of(
-                                                              //                     context)
-                                                              //             .showSnackBar(
-                                                              //                 ResponsiveSnackBar.showWarning(
-                                                              //                     context,
-                                                              //                     "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}"));
-                                                              //         // orderInput
-                                                              //         //     .ocoQtyCtrl
-                                                              //         //     .text = "$multiplayer";
-                                                              //       }
-                                                              //     });
-                                                              //   },
-                                                              //   child: SvgPicture.asset(
-                                                              //       theme.isDarkMode
-                                                              //           ? assets.darkAdd
-                                                              //           : assets
-                                                              //               .addIcon,
-                                                              //       fit: BoxFit
-                                                              //           .scaleDown),
-                                                              // ),
+                                                                      if (input.isEmpty) {
+                                                                        orderInput.ocoQtyCtrl.text = "1";
+                                                                      } else if (currentValue < maxAllowedLots) {
+                                                                        orderInput.ocoQtyCtrl.text = (currentValue + 1).toString();
+                                                                      } else {
+                                                                        ResponsiveSnackBar.showWarning(context,
+                                                                          "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
+                                                                      }
+                                                                    }
+                                                                  });
+                                                                },
+                                                                child: Icon(
+                                                                  Icons.add,
+                                                                  size: 18,
+                                                                  color: theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
+                                                                ),
+                                                              ),
                                                               controller: orderInput.ocoQtyCtrl,
-                                                              textAlign: TextAlign.start,
+                                                              textAlign: _isStock ? TextAlign.start : TextAlign.center,
                                                               onChanged: (value) {
-                                                                if (value
-                                                                        .isEmpty ||
-                                                                    value ==
-                                                                        "0") {
+                                                                if (value.isEmpty || value == "0") {
+                                                                  String fieldName = (_isStock)
+                                                                    ? 'Quantity'
+                                                                    : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                   _showDebouncedWarning(
-                                                                      "OCO quantity cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                      "OCO $fieldName cannot be ${value == "0" ? '0' : 'empty'}");
                                                                 } else {
-                                                                  String
-                                                                      newValue =
-                                                                      value.replaceAll(
-                                                                          RegExp(
-                                                                              r'[^0-9]'),
-                                                                          '');
+                                                                  String newValue = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                                                  var number = !_isGTTLotToQty
+                                                                    ? int.tryParse(newValue) ?? 0
+                                                                    : ((int.tryParse(newValue) ?? 0) ~/ lotSize);
 
-                                                                  int number =
-                                                                      int.tryParse(
-                                                                              newValue) ??
-                                                                          0;
-                                                                  bool
-                                                                      hasNoFreezeLimit =
-                                                                      frezQty <=
-                                                                          lotSize;
-                                                                  if (!hasNoFreezeLimit &&
-                                                                      number >
-                                                                          frezQtyOrderSliceMaxLimit *
-                                                                              frezQty) {
-                                                                    orderInput
-                                                                            .qtyCtrl
-                                                                            .text =
-                                                                        orderInput
-                                                                            .qtyCtrl
-                                                                            .text;
+                                                                  bool hasNoFreezeLimit = frezQty <= lotSize;
+                                                                  if (!hasNoFreezeLimit && number > frezQtyOrderSliceMaxLimit * frezQty) {
+                                                                    orderInput.ocoQtyCtrl.text = orderInput.ocoQtyCtrl.text;
                                                                     _showDebouncedWarning(
                                                                         "Maximum Allowed Quantity $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQtyOrderSliceMaxLimit * frezQty}");
                                                                   } else {
                                                                     _cancelPendingWarning();
                                                                   }
 
-                                                                  if (newValue !=
-                                                                      value) {
-                                                                    orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .text =
-                                                                        newValue;
-                                                                    orderInput
-                                                                            .ocoQtyCtrl
-                                                                            .selection =
-                                                                        TextSelection
-                                                                            .fromPosition(
-                                                                      TextPosition(
-                                                                          offset:
-                                                                              newValue.length),
+                                                                  if (newValue != value) {
+                                                                    orderInput.ocoQtyCtrl.text = newValue;
+                                                                    orderInput.ocoQtyCtrl.selection = TextSelection.fromPosition(
+                                                                      TextPosition(offset: newValue.length),
                                                                     );
                                                                   }
                                                                 }
                                                               }),
-                                                        ))
+                                                        )),
+                                                    if (_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 4),
+                                                        child: Text(
+                                                          "Lot : ${((int.tryParse(orderInput.ocoQtyCtrl.text) ?? 0) / lotSize).ceil()}",
+                                                          style: WebTextStyles.para(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: resolveThemeColor(context,
+                                                              dark: MyntColors.textSecondaryDark,
+                                                              light: MyntColors.textSecondary),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    if (!_isGTTLotToQty && (widget.scripInfo.exch == "NFO" || widget.scripInfo.exch == "BFO"))
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 4),
+                                                        child: Text(
+                                                          "Qty : ${(int.tryParse(orderInput.ocoQtyCtrl.text) ?? 0) * lotSize}",
+                                                          style: WebTextStyles.para(
+                                                            isDarkTheme: theme.isDarkMode,
+                                                            color: resolveThemeColor(context,
+                                                              dark: MyntColors.textSecondaryDark,
+                                                              light: MyntColors.textSecondary),
+                                                          ),
+                                                        ),
+                                                      ),
                                                   ])),
                                               const SizedBox(width: 16),
                                               Expanded(
@@ -5889,14 +5885,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .qtyCtrl
                                                                           .text
                                                                           .isEmpty) {
+                                                                        String qtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "Quantity cannot be empty");
+                                                                            "$qtyFieldName cannot be empty");
                                                                       } else if (SafeParse.toDouble(orderInput.qtyCtrl.text) <=
                                                                           0) {
+                                                                        String qtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "Quantity cannot be 0");
+                                                                            "$qtyFieldName cannot be 0");
                                                                       } else if (orderInput
                                                                           .priceCtrl
                                                                           .text
@@ -5928,16 +5926,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .ocoQtyCtrl
                                                                           .text
                                                                           .isEmpty) {
+                                                                        String ocoQtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "OCO quantity cannot be empty");
+                                                                            "OCO $ocoQtyFieldName cannot be empty");
                                                                       } else if (SafeParse.toDouble(orderInput
                                                                               .ocoQtyCtrl
                                                                               .text) <=
                                                                           0) {
+                                                                        String ocoQtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "OCO quantity cannot be 0");
+                                                                            "OCO $ocoQtyFieldName cannot be 0");
                                                                       } else if (orderInput
                                                                           .ocoPriceCtrl
                                                                           .text
@@ -6052,14 +6052,16 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .qtyCtrl
                                                                           .text
                                                                           .isEmpty) {
+                                                                        String qtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "Quantity cannot be empty");
+                                                                            "$qtyFieldName cannot be empty");
                                                                       } else if (SafeParse.toDouble(orderInput.qtyCtrl.text) <=
                                                                           0) {
+                                                                        String qtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "Quantity cannot be 0");
+                                                                            "$qtyFieldName cannot be 0");
                                                                       } else if (orderInput
                                                                           .priceCtrl
                                                                           .text
@@ -6090,16 +6092,18 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                           .ocoQtyCtrl
                                                                           .text
                                                                           .isEmpty) {
+                                                                        String ocoQtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "OCO quantity cannot be empty");
+                                                                            "OCO $ocoQtyFieldName cannot be empty");
                                                                       } else if (SafeParse.toDouble(orderInput
                                                                               .ocoQtyCtrl
                                                                               .text) <=
                                                                           0) {
+                                                                        String ocoQtyFieldName = (_isStock) ? (_isQtyToAmount ? 'Amount' : 'Quantity') : (_isGTTLotToQty ? 'Quantity' : 'Lot');
                                                                         ResponsiveSnackBar.showWarning(
                                                                             context,
-                                                                            "OCO quantity cannot be 0");
+                                                                            "OCO $ocoQtyFieldName cannot be 0");
                                                                       } else if (orderInput
                                                                           .ocoPriceCtrl
                                                                           .text
@@ -8076,7 +8080,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
   prepareToPlaceGttOrder(OrderInputProvider orderInput) async {
     PlaceGTTOrderInput input = PlaceGTTOrderInput(
         exch: stockExchangeSelected.exch == null ? '${widget.scripInfo.exch}' : stockExchangeSelected.exch??"",
-        qty: orderInput.qtyCtrl.text,
+        qty: getGTTFinalQuantity(orderInput.qtyCtrl.text),
         tsym: stockExchangeSelected.tsym == null ? '${widget.scripInfo.tsym}' : stockExchangeSelected.tsym??"",
         validity: "GTT",
         prc: orderInput.actPrcType == "Market" ||
@@ -8124,7 +8128,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         trantype: isBuy! ? 'B' : "S",
         ret: 'DAY',
         remarks: orderInput.reMarksCtrl.text,
-        qty1: orderInput.qtyCtrl.text,
+        qty1: getGTTFinalQuantity(orderInput.qtyCtrl.text),
         trgprc1: orderInput.actOcoPrcType == "SL Limit" ||
                 orderInput.actOcoPrcType == "SL MKT"
             ? orderInput.trgPrcCtrl.text
@@ -8143,7 +8147,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
             ? "0.00"
             : orderInput.ocoPriceCtrl.text,
         prd2: orderInput.ocoOrderType,
-        qty2: orderInput.ocoQtyCtrl.text,
+        qty2: getGTTFinalQuantity(orderInput.ocoQtyCtrl.text),
         trgprc2: orderInput.actOcoPrcType == "SL Limit" ||
                 orderInput.actOcoPrcType == "SL MKT"
             ? orderInput.ocoTrgPrcCtrl.text
@@ -8443,6 +8447,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       int inputValue = int.tryParse(value) ?? 0;
       return _isLotToQty ? value : (inputValue * lotSize).toString();
     }
+  }
+
+  // Get the final quantity for GTT/OCO order placement
+  String getGTTFinalQuantity(String value) {
+    if (value.trim().isEmpty) return "0";
+    if (_isStock) return value; // stocks: no amount toggle for GTT
+    int inputValue = int.tryParse(value) ?? 0;
+    return _isGTTLotToQty ? value : (inputValue * lotSize).toString();
   }
 }
 
