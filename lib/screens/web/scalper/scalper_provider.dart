@@ -651,6 +651,16 @@ class ScalperProvider extends ChangeNotifier {
         // Auto-select strike based on default offset if not already selected
         if (_selectedStrike.isEmpty && _atmStrike.isNotEmpty) {
           _applyDefaultStrikeOffset();
+        } else if (_callStrike.isNotEmpty || _putStrike.isNotEmpty) {
+          // Re-lookup call/put from the new chain data (e.g. after expiry change).
+          // The strike number may be the same but the OptionValues objects
+          // (with different tokens/tsyms) belong to the new expiry.
+          if (_callStrike.isNotEmpty) {
+            _selectedCall = getCallForStrike(_callStrike);
+          }
+          if (_putStrike.isNotEmpty) {
+            _selectedPut = getPutForStrike(_putStrike);
+          }
         }
       } else {
         debugPrint('ScalperProvider: Option chain empty or failed. stat=${chainData?.stat}');
