@@ -100,6 +100,7 @@ class Scrips {
   String? sprdtali;
   String? prd;
   String? qty;
+  String? prc;
   String? sipType;
   String? ltp;
   String? change;
@@ -113,6 +114,7 @@ class Scrips {
     this.sprdtali,
     this.prd,
     this.qty,
+    this.prc,
     this.sipType,
     this.ltp,
     this.change,
@@ -127,6 +129,7 @@ class Scrips {
     sprdtali = json['s_prdt_ali'];
     prd = json['prod'];
     qty = json['qty'];
+    prc = json['prc'];
     sipType = json['sip_type'];
     ltp = json['ltp'];
     change = json['change'];
@@ -144,6 +147,7 @@ class Scrips {
     data['s_prdt_ali'] = sprdtali;
     data['prod'] = prd;
     data['qty'] = qty;
+    data['prc'] = prc;
     data['sip_type'] = sipType;
     data['ltp'] = ltp;
     data['change'] = change;

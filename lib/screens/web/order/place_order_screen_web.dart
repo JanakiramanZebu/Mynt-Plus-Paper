@@ -442,6 +442,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         }
       }
 
+      // SIP is now handled via dedicated SIP creation dialog
       // if (widget.scripInfo.instname == "EQ") {
       //   orderTypes.add({
       //     "type": "SIP",

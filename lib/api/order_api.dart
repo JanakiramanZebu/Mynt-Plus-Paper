@@ -396,23 +396,63 @@ mixin OrderAPI on ApiCore {
     }
   }
 
+// Place SIP basket order with multiple scrips
+  Future<SipPlaceOrderModel> getPlaceSipBasketOrder(
+      SipBasketInput sipBasketInput) async {
+    try {
+      final uri = Uri.parse(apiLinks.placeSipOrder);
+
+      // Build scrips array JSON - include qty for qty type, prc for amount type
+      final scripsJson = sipBasketInput.scrips.map((scrip) {
+        final valueField = scrip.sipType == 'qty'
+            ? '"qty":"${scrip.qty}"'
+            : '"prc":"${scrip.prc ?? ''}"';
+        return '{"exch":"${scrip.exch}","tsym":"${UrlUtils.encodeParameter(scrip.tsym)}","prd":"${scrip.prd}","token":"${scrip.token}",$valueField,"sip_type":"${scrip.sipType}"}';
+      }).join(',');
+
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body:
+              '''jData={"uid":"${prefs.clientId}","reg_date":"${sipBasketInput.regdate}","start_date":"${sipBasketInput.startdate}","actid":"${prefs.clientId}","frequency":"${sipBasketInput.frequency}","end_period":"${sipBasketInput.endperiod}","sip_name":"${sipBasketInput.sipname}","Scrips":[$scripsJson]}&jKey=${prefs.clientSession}''');
+
+      final json = jsonDecode(res.body);
+      return SipPlaceOrderModel.fromJson(json as Map<String, dynamic>);
+    } catch (e) {
+      log("PlaceSipBasketOrder Error::$e");
+      rethrow;
+    }
+  }
+
 // // get Modify SIP order response from kambala
 
   Future<ModifySIPModel> getmodifysiporder(
       ModifySipInput modifysipinput) async {
     try {
       final uri = Uri.parse(apiLinks.modifySipOrder);
+
+      // Build scrips array JSON - include qty for qty type, prc for amount type
+      final scripsJson = modifysipinput.scrips.map((scrip) {
+        final valueField = scrip.sipType == 'qty'
+            ? '"qty":"${scrip.qty}"'
+            : '"prc":"${scrip.prc ?? ''}"';
+        return '{"exch":"${scrip.exch}","tsym":"${UrlUtils.encodeParameter(scrip.tsym)}","prd":"${scrip.prd}","token":"${scrip.token}",$valueField,"sip_type":"${scrip.sipType}"}';
+      }).join(',');
+
+      // Only include start_date if provided (not passed when SIP already started)
+      final startDateField = modifysipinput.startdate != null && modifysipinput.startdate!.isNotEmpty
+          ? ',"start_date":"${modifysipinput.startdate}"'
+          : '';
+
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
-              '''jData={"reg_date":"${modifysipinput.regdate}","start_date":"${modifysipinput.startdate}","frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[{"exch":"${modifysipinput.exch}","tsym":"${modifysipinput.tysm != null ? UrlUtils.encodeParameter(modifysipinput.tysm!) : ''}","prd":"${modifysipinput.prd}","token":"${modifysipinput.token}","qty":"${modifysipinput.qty}"}]}&jKey=${prefs.clientSession}''');
+              '''jData={"reg_date":"${modifysipinput.regdate}"$startDateField,"frequency":"${modifysipinput.frequency}","end_period":"${modifysipinput.endperiod}","sip_name":"${modifysipinput.sipname}","internal":{"PrevExecDate":"${modifysipinput.prevExecutedate}","DueDate":"${modifysipinput.duedate}","ExecDate":"${modifysipinput.exedate}","period":"${modifysipinput.period}","active":"${modifysipinput.active}","SipId":"${modifysipinput.sipId}"},"Scrips":[$scripsJson]}&jKey=${prefs.clientSession}''');
 
-      // log("ModifysipOrder => ${res.body}");
       final json = jsonDecode(res.body);
 
       return ModifySIPModel.fromJson(json as Map<String, dynamic>);
     } catch (e) {
-      log("PlaceOrdersip Error::$e");
+      log("ModifySipOrder Error::$e");
       rethrow;
     }
   }
