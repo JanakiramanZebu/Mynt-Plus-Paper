@@ -95,6 +95,12 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
+import '../../../sharedWidget/dynamic_banner_widget.dart';
+import '../../../models/banner_model/banner_model.dart';
+import '../../../provider/banner_provider.dart';
+import '../../../provider/text_nugget_provider.dart';
+import '../../../widgets/text_nugget_widget.dart';
+import '../../../models/text_nugget_model/text_nugget_model.dart';
 
 /// Global ValueNotifier for ticker visibility - reactive updates across the app
 final tickerVisibilityNotifier = ValueNotifier<bool>(true);
@@ -270,6 +276,10 @@ class _CustomizableSplitHomeScreenState
       // Check session validity and load data on page refresh
       // This handles the case when user refreshes on /holdings, /positions, etc.
       _validateSessionAndLoadData();
+
+      // Load banners and text nuggets
+      ref.read(bannerProvider.notifier).loadBanners();
+      ref.read(textNuggetProvider).loadTextNuggets();
 
       // Ensure index data is loaded (may not be loaded if session was restored)
       final indexProvider = ref.read(indexListProvider);
@@ -808,7 +818,10 @@ class _CustomizableSplitHomeScreenState
             // const WebChartOverlay(), // Commented out - using panel chart only
             const InlineChartPortal(), // Persistent chart that follows ChartWithDepthWeb's target
             const OptionFlashPanel(),
-
+            const DynamicBannerWidget(
+              screenType: BannerScreenType.homescreen,
+              showImmediately: true,
+            ),
           ],
         ),
       ),
@@ -991,11 +1004,14 @@ class _CustomizableSplitHomeScreenState
           // Divider
           Container(
               width: 1, color: shadcn.Theme.of(context).colorScheme.border),
-          // Right side: AppBar + Ticker + Content
+          // Right side: AppBar + TextNugget + Ticker + Content
           Expanded(
             child: Column(
               children: [
                 _buildRightSideAppBar(theme.isDarkMode),
+                const AutoLoadTextNuggetWidget(
+                  screenType: TextNuggetScreenType.homescreen,
+                ),
                 const PortfolioTickerStrip(),
                 Expanded(
                   child: _buildContentPanel(theme, panelIndex: 1),
@@ -1009,11 +1025,14 @@ class _CustomizableSplitHomeScreenState
       // Watchlist on RIGHT, Content on LEFT
       return Row(
         children: [
-          // Left side: AppBar + Ticker + Content
+          // Left side: AppBar + TextNugget + Ticker + Content
           Expanded(
             child: Column(
               children: [
                 _buildRightSideAppBar(theme.isDarkMode),
+                const AutoLoadTextNuggetWidget(
+                  screenType: TextNuggetScreenType.homescreen,
+                ),
                 const PortfolioTickerStrip(),
                 Expanded(
                   child: _buildContentPanel(theme, panelIndex: 0),

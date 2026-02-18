@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:readmore/readmore.dart';
@@ -351,81 +352,120 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
 
   Widget _buildCardContent(TextNuggetModel text, bool isDark, bool isInteractive) {
     final theme = ref.watch(themeProvider);
-    
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 70),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: widget.backgroundColor ??
-              (theme.isDarkMode
-                  ? colors.searchBgDark
-                  : const Color(0xffF1F3F8)),
-                  border: Border.all(color: theme.isDarkMode ? colors.dividerDark : colors.divider.withOpacity(0.5)),
-          // boxShadow: [
-          //   BoxShadow(
-          //     color: Colors.black.withOpacity(0.05),
-          //     blurRadius: 8,
-          //     offset: const Offset(0, 2),
-          //   ),
-          // ],
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: widget.backgroundColor ??
+            (theme.isDarkMode
+                ? const Color(0xFF1A2332)
+                : const Color(0xFFFFF8E1)),
+        border: Border(
+          bottom: BorderSide(
+            color: theme.isDarkMode
+                ? colors.dividerDark
+                : const Color(0xFFFFE082),
+          ),
         ),
-        child: ReadMoreText(
-          text.content,
-          style: TextWidget.textStyle(
-            fontSize: 14,
-            theme: theme.isDarkMode,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            size: 16,
             color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            height: 1.5,
-            letterSpacing: 0.5,
-            fw: 0,
+                ? const Color(0xFFFFB74D)
+                : const Color(0xFFF57C00),
           ),
-          textAlign: TextAlign.left,
-          trimLines: 2,
-          trimMode: TrimMode.Line,
-          trimCollapsedText: ' show more',
-          trimExpandedText: ' show less',
-          moreStyle: TextWidget.textStyle(
-            fontSize: 14,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.primaryDark
-                : colors.primaryLight,
-            fw: 0,
+          const SizedBox(width: 8),
+          Expanded(
+            child: ReadMoreText(
+              text.content,
+              style: TextWidget.textStyle(
+                fontSize: 13,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.textPrimaryDark
+                    : colors.textPrimaryLight,
+                height: 1.4,
+                letterSpacing: 0.2,
+                fw: 0,
+              ),
+              textAlign: TextAlign.left,
+              trimLines: 1,
+              trimMode: TrimMode.Line,
+              trimCollapsedText: ' more',
+              trimExpandedText: ' less',
+              moreStyle: TextWidget.textStyle(
+                fontSize: 13,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.primaryDark
+                    : colors.primaryLight,
+                fw: 1,
+              ),
+              lessStyle: TextWidget.textStyle(
+                fontSize: 13,
+                theme: theme.isDarkMode,
+                color: theme.isDarkMode
+                    ? colors.primaryDark
+                    : colors.primaryLight,
+                fw: 1,
+              ),
+              colorClickableText: theme.isDarkMode
+                  ? colors.colorLightBlue
+                  : colors.colorBlue,
+            ),
           ),
-          lessStyle: TextWidget.textStyle(
-            fontSize: 14,
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.primaryDark
-                : colors.primaryLight,
-            fw: 0,
-          ),
-          colorClickableText: theme.isDarkMode
-              ? colors.colorLightBlue
-              : colors.colorBlue,
-        ),
+          if (isInteractive)
+            GestureDetector(
+              onTap: () => _handleDismiss(text.id),
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.close,
+                  size: 16,
+                  color: theme.isDarkMode
+                      ? colors.textSecondaryDark
+                      : colors.textSecondaryLight,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to provider changes
+    // Listen to provider changes and reload texts when provider updates
+    ref.listen(textNuggetProvider, (previous, next) {
+      _loadTexts();
+    });
     ref.watch(textNuggetProvider);
 
+    // Also reload if local list is empty but provider has data
     if (_textNuggets.isEmpty) {
+      final provider = ref.read(textNuggetProvider);
+      final texts = provider.getTextsForScreen(widget.screenType);
+      if (texts.isNotEmpty) {
+        // Provider has data we haven't picked up yet - schedule reload
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _loadTexts();
+        });
+      }
       return const SizedBox.shrink();
     }
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    if (kIsWeb) {
+      return _buildWebBanner(isDark);
+    }
+
+    // Mobile: stacked card layout
     // Calculate visible cards count (max 3)
     final visibleCards = (_textNuggets.length - _currentIndex).clamp(1, 3);
 
@@ -449,13 +489,23 @@ class _TextNuggetWidgetState extends ConsumerState<TextNuggetWidget>
             ),
           ),
           // Render cards from back to front (only if index is valid)
-          for (int i = (_currentIndex + 2).clamp(_currentIndex, _textNuggets.length - 1); 
-               i >= _currentIndex && i < _textNuggets.length; 
+          for (int i = (_currentIndex + 2).clamp(_currentIndex, _textNuggets.length - 1);
+               i >= _currentIndex && i < _textNuggets.length;
                i--)
             _buildStackedCard(i, isDark),
         ],
       ),
     );
+  }
+
+  Widget _buildWebBanner(bool isDark) {
+    if (_currentIndex >= _textNuggets.length) {
+      return const SizedBox.shrink();
+    }
+
+    final currentText = _textNuggets[_currentIndex];
+
+    return _buildCardContent(currentText, isDark, true);
   }
 }
 
@@ -492,7 +542,7 @@ class _AutoLoadTextNuggetWidgetState extends ConsumerState<AutoLoadTextNuggetWid
   Future<void> _loadTextNuggets() async {
     final provider = ref.read(textNuggetProvider);
 
-    // Only load if not already loaded
+    // Only trigger a new load if not already loaded and not currently loading
     if (provider.textNuggets.isEmpty && !provider.loading) {
       await provider.loadTextNuggets();
     }
@@ -506,8 +556,17 @@ class _AutoLoadTextNuggetWidgetState extends ConsumerState<AutoLoadTextNuggetWid
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    // Watch provider so widget rebuilds when loading completes
+    final provider = ref.watch(textNuggetProvider);
+
+    // If still loading from provider, show nothing
+    if (_isLoading && provider.loading) {
       return const SizedBox.shrink();
+    }
+
+    // Once provider finishes loading, ensure _isLoading is cleared
+    if (_isLoading && !provider.loading) {
+      _isLoading = false;
     }
 
     return TextNuggetWidget(

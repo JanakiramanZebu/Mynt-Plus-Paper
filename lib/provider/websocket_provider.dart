@@ -187,17 +187,70 @@ class WebSocketProvider extends ChangeNotifier {
     });
   }
 
-  void closeSocket(bool mounted) {
+  /// Force-reset all connection state for a fresh session (e.g. after login).
+  /// This handles the case where session expired while the user was away,
+  /// leaving _connecting/_reconnecting stuck as true. closeSocket() can't
+  /// fix this because its guard `if (_connecting && !_wsConnected) return;`
+  /// prevents cleanup during an in-progress connection attempt.
+  void resetForNewSession() {
+    print('🔄 [WEBSOCKET] Resetting all state for new session');
+    log('🔄 WebSocket: resetForNewSession called');
+
+    // Cancel all timers first
+    _stopPingTimer();
+    _reconnectBackoff?.cancel();
+    _reconnectBackoff = null;
+    _subscriptionDebounce?.cancel();
+    _subscriptionDebounce = null;
+    for (var timer in _subscriptionTimers.values) {
+      timer.cancel();
+    }
+    _subscriptionTimers.clear();
+
+    // Complete any pending connection completer
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      _connectionCompleter!.completeError('Session reset');
+    }
+
+    // Close the channel if it exists
+    _channelSubscription?.cancel();
+    _channelSubscription = null;
+    _channel?.sink.close();
+    _channel = null;
+
+    // Reset ALL flags
+    _wsConnected = false;
+    _connecting = false;
+    _reconnecting = false;
+    _connectionCount = 0;
+    _consecutiveServerClosures = 0;
+    _lastServerClosure = null;
+    _retryScreen = false;
+    _isLowBandwidth = false;
+    _failedPingCount = 0;
+
+    // Clear subscriptions and data
+    _sentSubscriptions.clear();
+    _pendingSubscriptions['t'] = [];
+    _pendingSubscriptions['d'] = [];
+    _socketDatas.clear();
+    _ltpCache.clear();
+
+    print('✅ [WEBSOCKET] State reset complete, ready for fresh connection');
+    log('✅ WebSocket: State reset complete');
+  }
+
+  void closeSocket(bool mounted, {bool force = false}) {
     // Prevent closing if already closed to avoid unnecessary operations
-    if (!_wsConnected && _channel == null) {
+    if (!_wsConnected && _channel == null && !_connecting) {
       print('ℹ️  [WEBSOCKET] Already closed, skipping close operation');
       log('ℹ️  WebSocket: Already closed, skipping');
       return;
     }
 
-    // CRITICAL: Prevent closing if socket is currently being established
-    // This prevents race conditions where screen dispose closes connection during establishment
-    if (_connecting && !_wsConnected) {
+    // Prevent closing if socket is currently being established
+    // UNLESS force=true (used by logout/session expiry to ensure clean state)
+    if (_connecting && !_wsConnected && !force) {
       print('⚠️  [WEBSOCKET] Connection in progress, preventing premature close');
       print('   Connecting: $_connecting, Connected: $_wsConnected');
       log('⚠️  WebSocket: Preventing close during connection establishment');

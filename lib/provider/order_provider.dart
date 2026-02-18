@@ -2970,20 +2970,26 @@ class OrderProvider extends DefaultChangeNotifier {
             "prc": '${_bsktScripList[i]["prc"]}',
             "prd": '${_bsktScripList[i]["prd"]}',
             "trantype": '${_bsktScripList[i]["trantype"]}',
-            "prctyp": '${_bsktScripList[i]["prctyp"]}',
+            "prctyp": '${_bsktScripList[i]["prctype"] ?? _bsktScripList[i]["prctyp"] ?? "MKT"}',
             "trgprc": _bsktScripList[i]["trgprc"]?.toString() ?? '',
             "blprc": _bsktScripList[i]["blprc"]?.toString() ?? '',
             "bpprc": _bsktScripList[i]["bpprc"]?.toString() ?? ''
           });
         }
 
-        final qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(_bsktScripList[0]["ls"]) ).toString();
+        // Handle lot size - basket items from place order screen may not have "ls" field
+        final ls = _bsktScripList[0]["ls"]?.toString() ?? "1";
+        final qty = (double.parse(_bsktScripList[0]["qty"]) * double.parse(ls)).toString();
+
+        // Read prctyp with fallback to prctype (basket items save as "prctype")
+        final prctyp = _bsktScripList[0]["prctype"]?.toString() ??
+            _bsktScripList[0]["prctyp"]?.toString() ?? "MKT";
 
         // Use first script as main input with available order parameters
         OrderMarginInput inputs = OrderMarginInput(
             exch: '${_bsktScripList[0]["exch"]}',
             prc: '${_bsktScripList[0]["prc"]}',
-            prctyp: '${_bsktScripList[0]["prctyp"]}',
+            prctyp: prctyp,
             prd: '${_bsktScripList[0]["prd"]}',
             qty: _bsktScripList[0]["exch"] == 'MCX' ? qty : '${_bsktScripList[0]["qty"]}',
             trantype: '${_bsktScripList[0]["trantype"]}',
@@ -2998,7 +3004,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("$e");
+      debugPrint("fetchBasketMargin error: $e");
     }
   }
 

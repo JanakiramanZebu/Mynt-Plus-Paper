@@ -1,14 +1,27 @@
 import 'dart:async';
+import 'dart:js_interop';
 import 'package:flutter/foundation.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:js_util' as js_util;
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:ui_web' as ui_web;
 
 import '../../../locator/locator.dart';
 import '../../../locator/preference.dart';
+
+/// JS interop binding for the ScalperCharts bridge (window.ScalperCharts)
+@JS('ScalperCharts')
+extension type _ScalperChartsBridge._(JSObject _) implements JSObject {
+  external void createChart(String containerId, JSObject options);
+  external void changeSymbol(String containerId, String symbol);
+  external bool hasChart(String containerId);
+  external void pushTick(String containerId, JSObject tickData);
+  external void resetData(String containerId);
+  external void removeChart(String containerId);
+}
+
+@JS('ScalperCharts')
+external _ScalperChartsBridge? get _scalperChartsBridge;
 
 /// Chart manager for the Scalper Screen using direct TradingView JS interop.
 ///
@@ -222,23 +235,23 @@ class ScalperChartManager {
     final prefs = locator<Preferences>();
 
     try {
-      final bridge = js_util.getProperty(html.window, 'ScalperCharts');
+      final bridge = _scalperChartsBridge;
       if (bridge == null) {
         debugPrint('ScalperChartManager: ScalperCharts bridge not available');
         return;
       }
 
-      js_util.callMethod(bridge, 'createChart', [
+      bridge.createChart(
         containerId,
-        js_util.jsify({
+        <String, dynamic>{
           'symbol': symbol,
           'user': prefs.clientId,
           'usession': prefs.clientSession,
           'dark': isDarkMode,
           'resolution': '5',
           'libraryPath': _libraryPath,
-        }),
-      ]);
+        }.jsify() as JSObject,
+      );
 
       _setCurrentSymbol(chartId, symbol);
       debugPrint(
@@ -263,13 +276,12 @@ class ScalperChartManager {
     }
 
     try {
-      final bridge = js_util.getProperty(html.window, 'ScalperCharts');
+      final bridge = _scalperChartsBridge;
       if (bridge == null) return;
 
-      final hasChart =
-          js_util.callMethod(bridge, 'hasChart', [containerId]) == true;
+      final chartExists = bridge.hasChart(containerId);
 
-      if (!hasChart) {
+      if (!chartExists) {
         // No chart on this container — create it (handles remount with new div)
         createChart(chartId: chartId, symbol: symbol, isDarkMode: isDarkMode);
       } else {
@@ -278,7 +290,7 @@ class ScalperChartManager {
         if (symbol == currentSymbol) {
           return;
         }
-        js_util.callMethod(bridge, 'changeSymbol', [containerId, symbol]);
+        bridge.changeSymbol(containerId, symbol);
         debugPrint('ScalperChartManager: Changed $chartId to $symbol');
       }
 
@@ -302,13 +314,10 @@ class ScalperChartManager {
     if (containerId == null || !_bridgeLoaded) return;
 
     try {
-      final bridge = js_util.getProperty(html.window, 'ScalperCharts');
+      final bridge = _scalperChartsBridge;
       if (bridge == null) return;
 
-      js_util.callMethod(bridge, 'pushTick', [
-        containerId,
-        js_util.jsify(tickData),
-      ]);
+      bridge.pushTick(containerId, tickData.jsify() as JSObject);
     } catch (_) {
       // Silently ignore tick errors to avoid flooding logs
     }
@@ -321,10 +330,10 @@ class ScalperChartManager {
     if (containerId == null || !_bridgeLoaded) return;
 
     try {
-      final bridge = js_util.getProperty(html.window, 'ScalperCharts');
+      final bridge = _scalperChartsBridge;
       if (bridge == null) return;
 
-      js_util.callMethod(bridge, 'resetData', [containerId]);
+      bridge.resetData(containerId);
     } catch (e) {
       debugPrint('ScalperChartManager: Error resetting $chartId: $e');
     }
@@ -393,9 +402,9 @@ class ScalperChartManager {
   void reset() {
     for (final entry in _containerIds.entries) {
       try {
-        final bridge = js_util.getProperty(html.window, 'ScalperCharts');
+        final bridge = _scalperChartsBridge;
         if (bridge != null) {
-          js_util.callMethod(bridge, 'removeChart', [entry.value]);
+          bridge.removeChart(entry.value);
         }
       } catch (e) {
         // Ignore cleanup errors

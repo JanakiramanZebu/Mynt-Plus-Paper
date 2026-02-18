@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 // import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:mynt_plus/provider/banner_provider.dart';
+import 'package:mynt_plus/provider/text_nugget_provider.dart';
 import 'package:mynt_plus/provider/mf_provider.dart';
 import 'package:mynt_plus/provider/option_flash_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
@@ -1002,7 +1003,7 @@ class AuthProvider extends DefaultChangeNotifier {
         }
 
         // Close WebSocket connections and unsubscribe from market data
-        ref.read(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).closeSocket(true, force: true);
         ref.read(websocketProvider).websockConn(false);
 
         // Save the current page index before cleanup (for restoration after login)
@@ -1019,8 +1020,9 @@ class AuthProvider extends DefaultChangeNotifier {
 
         ref.read(fundProvider).clearFunds();
 
-        // Clear banner seen storage on logout
+        // Clear banner and text nugget seen storage on logout
         ref.read(bannerProvider).onUserLogout();
+        ref.read(textNuggetProvider).onUserLogout();
 
         // Clear pending watchlists on logout
         ref.read(marketWatchProvider).clearPendingWatchlists();
@@ -1893,11 +1895,16 @@ class AuthProvider extends DefaultChangeNotifier {
       ConstantName.timer!.cancel();
       ref.read(indexListProvider).bottomMenu(s.isEmpty ? 0 : 4, context);
 
-      // Only close socket when explicitly switching accounts
-      // DO NOT close on regular page load/refresh - this causes race condition
-      // where home screen is establishing connection and we close it here
+      // Reset WebSocket for account switch or fresh login
+      // For switchAc: force close the existing connection
+      // For fresh login (not page refresh): reset stale state from expired session
       if (s.isNotEmpty && s == "switchAc") {
-        ref.read(websocketProvider).closeSocket(true);
+        ref.read(websocketProvider).closeSocket(true, force: true);
+      } else if (kIsWeb && !ref.read(websocketProvider).wsConnected) {
+        // On web fresh login, reset any stale state (stuck _connecting/_reconnecting)
+        // from a session that expired while the user was away.
+        // Only reset if NOT already connected (page refresh has an active connection).
+        ref.read(websocketProvider).resetForNewSession();
       }
 
       try {
@@ -2242,8 +2249,8 @@ class AuthProvider extends DefaultChangeNotifier {
       loginMethCtrl.text = pref.clientId!;
     }
 
-    // Close WebSocket connection
-    ref.read(websocketProvider).closeSocket(true);
+    // Close WebSocket connection (force to handle stuck _connecting state)
+    ref.read(websocketProvider).closeSocket(true, force: true);
     ref.read(websocketProvider).websockConn(false);
 
     // Cancel any active timers
@@ -2359,8 +2366,9 @@ class AuthProvider extends DefaultChangeNotifier {
       // Clear session state from index list provider to ensure fresh data load on re-login
       ref.read(indexListProvider).clearSessionState();
 
-      // Clear banner seen storage on session expiry
+      // Clear banner and text nugget seen storage on session expiry
       ref.read(bannerProvider).onUserLogout();
+      ref.read(textNuggetProvider).onUserLogout();
 
       // Clear pending watchlists on session expiry
       ref.read(marketWatchProvider).clearPendingWatchlists();
@@ -2369,7 +2377,8 @@ class AuthProvider extends DefaultChangeNotifier {
       loginMethCtrl.text = pref.clientId ?? "";
 
       // Close WebSocket early to stop needless data flow
-      ref.read(websocketProvider).closeSocket(true);
+      // Use force:true to ensure cleanup even if _connecting is stuck
+      ref.read(websocketProvider).closeSocket(true, force: true);
       ref.read(websocketProvider).websockConn(false);
 
       // Reset web auth provider state to prevent stale session data on re-login
