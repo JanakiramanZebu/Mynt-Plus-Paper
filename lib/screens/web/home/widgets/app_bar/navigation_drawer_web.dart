@@ -25,6 +25,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final VoidCallback? onOptionZTap;
   final VoidCallback? onOptionFlashTap;
   final VoidCallback? onScalperTap;
+  final VoidCallback? onStrategyBuilderTap;
   final VoidCallback? onClose;
 
   // Control which items to show - if null, show all items
@@ -39,6 +40,7 @@ class NavigationDrawerWeb extends StatelessWidget {
   final bool? showOptionZ;
   final bool? showOptionFlash;
   final bool? showScalper;
+  final bool? showStrategyBuilder;
 
   const NavigationDrawerWeb({
     super.key,
@@ -59,6 +61,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.onOptionZTap,
     this.onOptionFlashTap,
     this.onScalperTap,
+    this.onStrategyBuilderTap,
     this.onClose,
     this.showHome,
     this.showPositions,
@@ -71,6 +74,7 @@ class NavigationDrawerWeb extends StatelessWidget {
     this.showOptionZ,
     this.showOptionFlash,
     this.showScalper,
+    this.showStrategyBuilder,
   });
 
   /// Display name: use userName if available, fallback to clientId
@@ -151,7 +155,7 @@ class NavigationDrawerWeb extends StatelessWidget {
                     ),
 
                   // TRADE section - show if any TRADE item is visible
-                  if ((showPositions ?? true) || (showHoldings ?? true) || (showOrders ?? true) || (showFunds ?? true) || (showOptionZ ?? (onOptionZTap != null)) || (showOptionFlash ?? (onOptionFlashTap != null)) || (showScalper ?? (onScalperTap != null)))
+                  if ((showPositions ?? true) || (showHoldings ?? true) || (showOrders ?? true) || (showFunds ?? true) || (showOptionZ ?? (onOptionZTap != null)) || (showOptionFlash ?? (onOptionFlashTap != null)) || (showScalper ?? (onScalperTap != null)) || (showStrategyBuilder ?? (onStrategyBuilderTap != null)))
                     _buildSectionHeader(context, 'TRADE'),
                   if (showPositions ?? true)
                     _buildDrawerItem(
@@ -209,6 +213,15 @@ class NavigationDrawerWeb extends StatelessWidget {
                       screenName: 'scalper',
                       badge: 'Beta',
                       onTap: onScalperTap!,
+                    ),
+                  if ((showStrategyBuilder ?? (onStrategyBuilderTap != null)) && onStrategyBuilderTap != null)
+                    _buildDrawerItemWithBadge(
+                      context: context,
+                      title: 'Strategy Builder',
+                      icon: Icons.show_chart,
+                      screenName: 'strategyBuilder',
+                      badge: 'NEW',
+                      onTap: onStrategyBuilderTap!,
                     ),
 
                   // INVEST section - show if any INVEST item is visible

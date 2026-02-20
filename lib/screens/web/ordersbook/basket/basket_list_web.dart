@@ -2637,7 +2637,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
       case 'Type':
         final trantype = item["trantype"]?.toString();
         final isBuy = trantype != "S";
-        final color = isBuy ? styles.MyntColors.profit : styles.MyntColors.loss;
+        final color = isBuy ? resolveThemeColor(context, dark: styles.MyntColors.profitDark, light: styles.MyntColors.profit)  : resolveThemeColor(context, dark: styles.MyntColors.lossDark, light: styles.MyntColors.loss);
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerLeft,

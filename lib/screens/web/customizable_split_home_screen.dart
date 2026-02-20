@@ -394,6 +394,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "strategyBuilder") {
             debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
+          } else if (routeName == Routes.scalperScreen ||
+              routeName == "scalper") {
+            debugPrint("Scalper route matched: $routeName");
+            _handleScalperTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -452,6 +456,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "strategyBuilder") {
             debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
+          } else if (routeName == Routes.scalperScreen ||
+              routeName == "scalper") {
+            debugPrint("Scalper route matched: $routeName");
+            _handleScalperTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -1312,6 +1320,10 @@ class _CustomizableSplitHomeScreenState
           onScalperTap: () {
             shadcn.closeDrawer(drawerContext);
             _handleScalperTap();
+          },
+          onStrategyBuilderTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleStrategyBuilderTap();
           },
           onThemeToggle: () {
             shadcn.closeDrawer(drawerContext);

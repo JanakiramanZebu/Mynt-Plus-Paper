@@ -1229,7 +1229,7 @@ class _ModifyPlaceOrderScreenState
                                                     style: WebTextStyles.sub(
                                                       isDarkTheme: theme.isDarkMode,
                                                       color: resolveThemeColor(context,
-                                                          dark: MyntColors.secondaryDark,
+                                                          dark: MyntColors.primaryDark,
                                                           light: MyntColors.primary),
                                                       fontWeight: WebFonts.semiBold,
                                                     )),
@@ -1241,7 +1241,7 @@ class _ModifyPlaceOrderScreenState
                                                         ? Icons.keyboard_arrow_up
                                                         : Icons.keyboard_arrow_down,
                                                     color: resolveThemeColor(context,
-                                                        dark: MyntColors.secondaryDark,
+                                                        dark: MyntColors.primaryDark,
                                                         light: MyntColors.primary),
                                                   ),
                                                 ),
