@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -95,6 +97,7 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'market_watch/tv_chart/chart_iframe_guard.dart';
 import '../../../sharedWidget/dynamic_banner_widget.dart';
 import '../../../models/banner_model/banner_model.dart';
 import '../../../provider/banner_provider.dart';
@@ -209,6 +212,38 @@ class _CustomizableSplitHomeScreenState
     }
     return false;
   }
+
+  // Disable all chart iframes to prevent cursor bleed when dropdown is open
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
   String? _fundsInitialAction; // Track initial action for funds screen
 
   // Track loading states for each screen type
@@ -2033,7 +2068,25 @@ class _CustomizableSplitHomeScreenState
               shadcn.showDropdown(
                 context: context,
                 builder: (context) {
-                  return shadcn.DropdownMenu(
+                  return PointerInterceptor(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.basic,
+                      onEnter: (_) {
+                        ChartIframeGuard.acquire();
+                        _disableAllChartIframes();
+                      },
+                      onHover: (_) {
+                        _disableAllChartIframes();
+                      },
+                      onExit: (_) {
+                        ChartIframeGuard.release();
+                        _enableAllChartIframes();
+                      },
+                      child: Listener(
+                        onPointerMove: (_) {
+                          _disableAllChartIframes();
+                        },
+                        child: shadcn.DropdownMenu(
                     children: [
                       // OptionZ
                       shadcn.MenuButton(
@@ -2180,6 +2233,9 @@ class _CustomizableSplitHomeScreenState
                         ),
                       ),
                     ],
+                  ),
+                      ),
+                    ),
                   );
                 },
               );

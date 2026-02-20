@@ -1100,29 +1100,32 @@ class _ModifyPlaceOrderScreenState
                                                 backgroundColor: theme.isDarkMode
                                                     ? colors.darkGrey
                                                     : const Color(0xffF1F3F8),
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$')),
+                                                ],
                                                 onChanged: (value) {
                                                   double inputPrice =
                                                       double.tryParse(
                                                               value) ??
                                                           0;
-                                                  if (value.isNotEmpty &&
-                                                      inputPrice > 0) {
-                                                    final regex = RegExp(
-                                                        r'^(\d+)?(\.\d{0,2})?$');
-                                                    if (!regex
-                                                        .hasMatch(value)) {
-                                                      priceCtrl.text =
-                                                          value.substring(
-                                                              0,
-                                                              value.length -
-                                                                  1); // Revert to previous valid input
-                                                      priceCtrl.selection =
-                                                          TextSelection.collapsed(
-                                                              offset: priceCtrl
-                                                                  .text
-                                                                  .length); // Keep cursor at the end
-                                                    }
-                                                  }
+                                                  // if (value.isNotEmpty &&
+                                                  //     inputPrice > 0) {
+                                                  //   final regex = RegExp(
+                                                  //       r'^(\d+)?(\.\d{0,2})?$');
+                                                  //   if (!regex
+                                                  //       .hasMatch(value)) {
+                                                  //     priceCtrl.text =
+                                                  //         value.substring(
+                                                  //             0,
+                                                  //             value.length -
+                                                  //                 1); // Revert to previous valid input
+                                                  //     priceCtrl.selection =
+                                                  //         TextSelection.collapsed(
+                                                  //             offset: priceCtrl
+                                                  //                 .text
+                                                  //                 .length); // Keep cursor at the end
+                                                  //   }
+                                                  // }
                                                   if (value.isEmpty ||
                                                       inputPrice <= 0) {
                                                     ResponsiveSnackBar
@@ -2474,18 +2477,21 @@ class _ModifyPlaceOrderScreenState
                         ? MyntColors.textSecondary
                         : MyntColors.textSecondary,
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}$')),
+                  ],
                   onChanged: (value) {
                     double inputPrice = double.tryParse(value) ?? 0;
-                    if (value.isNotEmpty && inputPrice > 0) {
-                      final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
-                      if (!regex.hasMatch(value)) {
-                        triggerPriceCtrl.text = value.substring(0,
-                            value.length - 1); // Revert to previous valid input
-                        triggerPriceCtrl.selection = TextSelection.collapsed(
-                            offset: triggerPriceCtrl
-                                .text.length); // Keep cursor at the end
-                      }
-                    }
+                    // if (value.isNotEmpty && inputPrice > 0) {
+                    //   final regex = RegExp(r'^(\d+)?(\.\d{0,2})?$');
+                    //   if (!regex.hasMatch(value)) {
+                    //     triggerPriceCtrl.text = value.substring(0,
+                    //         value.length - 1); // Revert to previous valid input
+                    //     triggerPriceCtrl.selection = TextSelection.collapsed(
+                    //         offset: triggerPriceCtrl
+                    //             .text.length); // Keep cursor at the end
+                    //   }
+                    // }
                     if (value.isEmpty || inputPrice <= 0) {
                       ResponsiveSnackBar.showWarning(context,
                           "Trigger can not be ${inputPrice <= 0 ? 'zero' : 'empty'}");

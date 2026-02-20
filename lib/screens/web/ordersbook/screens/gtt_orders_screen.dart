@@ -521,36 +521,33 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
   /// Toggle bar for Pending / Triggered GTT orders
   Widget _buildGttToggleBar(BuildContext context, OrderProvider orderBook) {
     final showTriggered = orderBook.showTriggeredGtt;
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
-    final secondaryColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+    final theme = shadcn.Theme.of(context);
+    final isDark = isDarkMode(context);
 
     Widget buildToggleButton(String label, bool isActive, VoidCallback onTap) {
       return MouseRegion(
-        cursor: isActive
-            ? shadcn.SystemMouseCursors.basic
-            : shadcn.SystemMouseCursors.click,
+        cursor: shadcn.SystemMouseCursors.click,
         child: GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isActive
-                  ? primaryColor.withValues(alpha: 0.12)
+                  ? (isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05))
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
-              border: isActive
-                  ? shadcn.Border.all(
-                      color: primaryColor.withValues(alpha: 0.3), width: 1)
-                  : null,
             ),
             child: Text(
               label,
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.body(
                 context,
                 fontWeight: isActive ? MyntFonts.semiBold : MyntFonts.medium,
-                color: isActive ? primaryColor : secondaryColor,
+              ).copyWith(
+                color: isActive
+                    ? theme.colorScheme.foreground
+                    : theme.colorScheme.mutedForeground,
               ),
             ),
           ),
