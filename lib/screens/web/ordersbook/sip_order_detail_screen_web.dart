@@ -182,7 +182,8 @@ class _SipOrderDetailScreenWebState
                     _buildDetailRow(
                         context,
                         'Total Stocks',
-                        '${_sipOrder.scrips!.length}'),
+                        '${_sipOrder.scrips!.length}',
+                        showDivider: false),
                   ],
                 ],
               ),
@@ -197,7 +198,7 @@ class _SipOrderDetailScreenWebState
 
   Widget _buildHeader(BuildContext context, ThemesProvider theme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -208,8 +209,14 @@ class _SipOrderDetailScreenWebState
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          shadcn.IconButton(
+            icon: const Icon(Icons.close, size: 20),
+            onPressed: () => shadcn.closeSheet(context),
+            variance: shadcn.ButtonVariance.ghost,
+            size: shadcn.ButtonSize.small,
+          ),
+          const SizedBox(width: 12),
           Text(
             'SIP Order Details',
             style: MyntWebTextStyles.title(
@@ -217,14 +224,7 @@ class _SipOrderDetailScreenWebState
               color: resolveThemeColor(context,
                   dark: MyntColors.textPrimaryDark,
                   light: MyntColors.textPrimary),
-            ),
-          ),
-          IconButton(
-            onPressed: () => shadcn.closeSheet(context),
-            icon: Icon(
-              Icons.close,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.iconDark, light: MyntColors.icon),
+              fontWeight: MyntFonts.medium,
             ),
           ),
         ],
@@ -382,10 +382,13 @@ class _SipOrderDetailScreenWebState
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
+  Widget _buildDetailRow(BuildContext context, String label, String value,
+      {bool showDivider = true}) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
@@ -393,9 +396,10 @@ class _SipOrderDetailScreenWebState
             style: MyntWebTextStyles.body(
               context,
               color: resolveThemeColor(context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary),
-            ),
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.medium,
+                 ),
           ),
           Text(
             value,
@@ -409,6 +413,15 @@ class _SipOrderDetailScreenWebState
           ),
         ],
       ),
+        ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+          ),
+      ],
     );
   }
 

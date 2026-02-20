@@ -16,7 +16,6 @@ import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/res.dart';
 import '../../../sharedWidget/cust_text_formfield.dart';
-import '../../../sharedWidget/list_divider.dart';
 import '../../../utils/responsive_snackbar.dart';
 
 class ModifySipDialogWeb extends ConsumerStatefulWidget {
@@ -170,13 +169,16 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
     if (_isStartDatePassed) return;
 
     try {
-      final theme = ref.read(themeProvider);
+      final isDark = ref.read(themeProvider).isDarkMode;
       final now = DateTime.now();
       // Allow selecting from original start date onward
       final firstDate = _originalStartDate ?? now;
       final initialDate = _startDate != null && !_startDate!.isBefore(firstDate)
           ? _startDate!
           : firstDate;
+      final primary = isDark ? MyntColors.primaryDark : MyntColors.primary;
+      final bg = isDark ? MyntColors.cardDark : MyntColors.card;
+      final text = isDark ? MyntColors.textPrimaryDark : MyntColors.textPrimary;
 
       final DateTime? picked = await showDatePicker(
         context: context,
@@ -184,26 +186,29 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
         firstDate: firstDate,
         lastDate: now.add(const Duration(days: 365)),
         useRootNavigator: true,
-        builder: (dialogContext, child) {
-          return Theme(
-            data: theme.isDarkMode
-                ? ThemeData.dark().copyWith(
-                    colorScheme: ColorScheme.dark(
-                      primary: MyntColors.primaryDark,
-                      surface: MyntColors.cardDark,
-                      onSurface: MyntColors.textPrimaryDark,
-                    ),
-                  )
-                : ThemeData.light().copyWith(
-                    colorScheme: ColorScheme.light(
-                      primary: MyntColors.primary,
-                      surface: MyntColors.card,
-                      onSurface: MyntColors.textPrimary,
-                    ),
-                  ),
-            child: child!,
-          );
-        },
+        initialEntryMode: DatePickerEntryMode.calendarOnly,
+        builder: (dialogContext, child) => Theme(
+          data: (isDark ? ThemeData.dark() : ThemeData.light()).copyWith(
+            colorScheme: (isDark ? const ColorScheme.dark() : const ColorScheme.light()).copyWith(
+              primary: primary,
+              onPrimary: Colors.white,
+              surface: bg,
+              onSurface: text,
+            ),
+            datePickerTheme: DatePickerThemeData(
+              backgroundColor: bg,
+              surfaceTintColor: Colors.transparent,
+              headerBackgroundColor: primary,
+              headerForegroundColor: Colors.white,
+              dividerColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: primary),
+            ),
+          ),
+          child: child!,
+        ),
       );
       if (picked != null && mounted) {
         setState(() {
@@ -422,16 +427,25 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
     final theme = ref.watch(themeProvider);
     final wsProvider = ref.watch(websocketProvider);
 
-    return Column(
-      children: [
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: resolveThemeColor(context,
+              dark: MyntColors.dividerDark, light: MyntColors.divider),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Column(
+           children: [
         // Header
         _buildHeader(context, theme),
-        const ListDivider(),
 
-        // Content
+            // Content
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -450,9 +464,10 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                 // Added Scrips List
                 if (_addedScrips.isNotEmpty) ...[
                   Text(
-                    '${_addedScrips.length} stock${_addedScrips.length > 1 ? 's' : ''} in basket',
-                    style: MyntWebTextStyles.body(
+                    '${_addedScrips.length} stock${_addedScrips.length > 1 ? 's' : ''} added',
+                    style: MyntWebTextStyles.bodySmall(
                       context,
+                      fontWeight: MyntFonts.medium,
                       color: resolveThemeColor(context,
                           dark: MyntColors.textSecondaryDark,
                           light: MyntColors.textSecondary),
@@ -466,15 +481,27 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
           ),
         ),
 
-        // Footer
+            // Footer
         _buildFooter(context, theme),
       ],
+        ),
+      ),
     );
   }
 
   Widget _buildHeader(BuildContext context, ThemesProvider theme) {
     return Container(
-      padding: const EdgeInsets.only(left: 16, right: 8, top: 12, bottom: 12),
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+            width: 1,
+          ),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -487,28 +514,16 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
               lightColor: MyntColors.textPrimary,
             ),
           ),
-          Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.15)
-                  : Colors.black.withOpacity(.15),
-              highlightColor: theme.isDarkMode
-                  ? Colors.white.withOpacity(.08)
-                  : Colors.black.withOpacity(.08),
-              onTap: () => Navigator.of(context).pop(),
-              child: Padding(
-                padding: const EdgeInsets.all(6.0),
-                child: Icon(
-                  Icons.close,
-                  size: 20,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.iconDark, light: MyntColors.icon),
-                ),
-              ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: Icon(
+              Icons.close,
+              size: 20,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.iconSecondaryDark,
+                  light: MyntColors.iconSecondary),
             ),
+            splashRadius: 20,
           ),
         ],
       ),
@@ -752,180 +767,211 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
       children: [
         Text(
           'Add Stocks',
-          style: MyntWebTextStyles.bodyMedium(
+          style: MyntWebTextStyles.bodySmall(
             context,
             fontWeight: MyntFonts.medium,
-            darkColor: MyntColors.textPrimaryDark,
-            lightColor: MyntColors.textPrimary,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         SizedBox(
-          height: showDropdown ? 244 : 40,
+          height: showDropdown ? 240 : 36,
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               // Search Input Field
-              Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.inputBgDark,
-                      light: MyntColors.inputBg),
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.dividerDark,
-                        light: MyntColors.divider),
+              SizedBox(
+                height: 36,
+                child: TextField(
+                  controller: _searchController,
+                  style: MyntWebTextStyles.body(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Icon(
-                        Icons.search,
-                        size: 20,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.iconDark, light: MyntColors.icon),
-                      ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: resolveThemeColor(context,
+                        dark: MyntColors.inputBgDark,
+                        light: const Color(0xfff5f5f5)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 8),
+                    hintText: 'Search equity stocks...',
+                    hintStyle: MyntWebTextStyles.body(
+                      context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
                     ),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        style: MyntWebTextStyles.body(
-                          context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: MyntColors.textPrimary,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Search equity stocks...',
-                          hintStyle: MyntWebTextStyles.body(
-                            context,
-                            color: resolveThemeColor(context,
-                                dark: MyntColors.textSecondaryDark,
-                                light: MyntColors.textSecondary).withValues(alpha: 0.4),
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        textCapitalization: TextCapitalization.characters,
-                        onChanged: _onSearchChanged,
-                      ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
                     ),
-                    if (_isSearching)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 10),
-                        child: SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                  ],
+                    suffixIcon: _isSearching
+                        ? Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary),
+                              ),
+                            ),
+                          )
+                        : _searchController.text.isNotEmpty
+                            ? IconButton(
+                                onPressed: () {
+                                  _searchController.clear();
+                                  ref.read(marketWatchProvider).searchClear();
+                                  setState(() {
+                                    _searchResults = [];
+                                    _isSearching = false;
+                                  });
+                                },
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 18,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textSecondaryDark,
+                                      light: MyntColors.textSecondary),
+                                ),
+                              )
+                            : null,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: isDarkMode(context)
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: isDarkMode(context)
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                  onChanged: _onSearchChanged,
                 ),
               ),
               // Search Results Dropdown
               if (showDropdown)
                 Positioned(
-                  top: 44,
+                  top: 40,
                   left: 0,
                   right: 0,
                   child: Material(
-                    elevation: 8,
-                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.transparent,
                     child: Container(
                       constraints: const BoxConstraints(maxHeight: 200),
                       decoration: BoxDecoration(
                         color: resolveThemeColor(context,
-                            dark: MyntColors.cardDark,
-                            light: MyntColors.card),
+                            dark: MyntColors.overlayBgDark, light: MyntColors.overlayBg),
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: resolveThemeColor(context,
-                              dark: MyntColors.dividerDark,
-                              light: MyntColors.divider),
+                              dark: MyntColors.borderMutedDark, light: MyntColors.borderMuted),
                         ),
+                        boxShadow: isDarkMode(context)
+                            ? MyntShadows.dropdownDark
+                            : MyntShadows.dropdown,
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.zero,
-                        itemCount: _searchResults.length,
-                        separatorBuilder: (_, __) => const ListDivider(),
-                        itemBuilder: (context, index) {
-                          final scrip = _searchResults[index];
-                          final symbolName =
-                              scrip.symbol?.isNotEmpty == true
-                                  ? scrip.symbol!
-                                  : (scrip.tsym?.replaceAll('-EQ', '') ?? '');
-                          return InkWell(
-                            onTap: () => _addScrip(scrip),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          symbolName,
-                                          style: MyntWebTextStyles.body(
-                                            context,
-                                            fontWeight: MyntFonts.medium,
-                                            darkColor:
-                                                MyntColors.textPrimaryDark,
-                                            lightColor:
-                                                MyntColors.textPrimary,
-                                          ),
-                                        ),
-                                        if (scrip.cname?.isNotEmpty == true)
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _searchResults.length,
+                          separatorBuilder: (_, __) => Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.dividerDark, light: MyntColors.divider),
+                          ),
+                          itemBuilder: (context, index) {
+                            final scrip = _searchResults[index];
+                            final symbolName = scrip.symbol?.isNotEmpty == true
+                                ? scrip.symbol!
+                                : (scrip.tsym?.replaceAll('-EQ', '') ?? '');
+                            return InkWell(
+                              onTap: () => _addScrip(scrip),
+                              hoverColor: resolveThemeColor(context,
+                                  dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
                                           Text(
-                                            scrip.cname!,
-                                            style:
-                                                MyntWebTextStyles.caption(
+                                            symbolName,
+                                            style: MyntWebTextStyles.body(
                                               context,
-                                              color: resolveThemeColor(
-                                                  context,
-                                                  dark: MyntColors
-                                                      .textSecondaryDark,
-                                                  light: MyntColors
-                                                      .textSecondary),
+                                              fontWeight: MyntFonts.medium,
+                                              darkColor: MyntColors.textPrimaryDark,
+                                              lightColor: MyntColors.textPrimary,
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: resolveThemeColor(context,
-                                              dark: MyntColors.primaryDark,
-                                              light: MyntColors.primary)
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      scrip.exch ?? '',
-                                      style: MyntWebTextStyles.caption(
-                                        context,
-                                        color: resolveThemeColor(context,
-                                            dark: MyntColors.primaryDark,
-                                            light: MyntColors.primary),
+                                          if (scrip.cname?.isNotEmpty == true)
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 2),
+                                              child: Text(
+                                                scrip.cname!,
+                                                style: MyntWebTextStyles.caption(
+                                                  context,
+                                                  color: resolveThemeColor(context,
+                                                      dark: MyntColors.textTertiaryDark,
+                                                      light: MyntColors.textTertiary),
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: resolveThemeColor(context,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary)
+                                            .withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        scrip.exch ?? '',
+                                        style: MyntWebTextStyles.caption(
+                                          context,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -940,25 +986,37 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
   Widget _buildScripsList(BuildContext context, ThemesProvider theme, WebSocketProvider wsProvider) {
     if (_addedScrips.isEmpty) {
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.inventory_2_outlined,
-                size: 48,
+                size: 40,
                 color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
+                    dark: MyntColors.textTertiaryDark,
+                    light: MyntColors.textTertiary),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
-                'No stocks in basket',
+                'No stocks added',
                 style: MyntWebTextStyles.body(
                   context,
+                  fontWeight: MyntFonts.medium,
                   color: resolveThemeColor(context,
                       dark: MyntColors.textSecondaryDark,
                       light: MyntColors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Search and add stocks to your SIP',
+                style: MyntWebTextStyles.caption(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textTertiaryDark,
+                      light: MyntColors.textTertiary),
                 ),
               ),
             ],
@@ -971,7 +1029,12 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _addedScrips.length,
-      separatorBuilder: (_, __) => const ListDivider(),
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        thickness: 1,
+        color: resolveThemeColor(context,
+            dark: MyntColors.dividerDark, light: MyntColors.divider),
+      ),
       itemBuilder: (context, index) {
         final item = _addedScrips[index];
         return _buildScripCard(context, theme, wsProvider, item, index);
@@ -988,12 +1051,11 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
     final liveLtp = wsProvider.getBestLTP(item.token, item.fallbackLtp);
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 2),
       child: Row(
         children: [
           // Stock name + exchange badge + LTP (takes available space)
           Expanded(
-            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -1012,9 +1074,9 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: resolveThemeColor(context,
                                 dark: MyntColors.primaryDark,
@@ -1034,22 +1096,27 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                   ],
                 ),
                 if (liveLtp != '0' && liveLtp != '0.00') ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     'LTP: $liveLtp',
                     style: MyntWebTextStyles.caption(
                       context,
                       color: resolveThemeColor(context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary),
+                          dark: MyntColors.textTertiaryDark,
+                          light: MyntColors.textTertiary),
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          // Switch icon (compact)
+          const SizedBox(width: 12),
+          // Right side controls - fixed width for consistent alignment
+          SizedBox(
+            width: 200,
+            child: Row(
+              children: [
+              // Switch icon (compact)
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -1075,25 +1142,25 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           // Qty/Amt label (compact, 3-letter)
           SizedBox(
             width: 28,
             child: Text(
               isQtyMode ? 'Qty' : 'Amt',
-              style: MyntWebTextStyles.bodySmall(
+              style: MyntWebTextStyles.caption(
                 context,
                 fontWeight: MyntFonts.medium,
-                darkColor: MyntColors.textPrimaryDark,
-                lightColor: MyntColors.textPrimary,
+                 color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           // Input field (takes remaining space)
           Expanded(
-            flex: 2,
-            child: SizedBox(
+                 child: SizedBox(
               height: 34,
               child: TextField(
                 controller:
@@ -1109,7 +1176,8 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                   darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textPrimary,
                 ),
-                decoration: InputDecoration(
+                      textAlign: TextAlign.center,
+                      decoration: InputDecoration(
                   hintText: isQtyMode ? '1' : '0.00',
                   hintStyle: MyntWebTextStyles.bodySmall(
                     context,
@@ -1122,22 +1190,21 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                       dark: MyntColors.inputBgDark,
                       light: MyntColors.inputBg),
                   contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        isDense: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.dividerDark,
-                          light: MyntColors.divider),
-                    ),
+                                dark: MyntColors.borderMutedDark, light: MyntColors.borderMuted),
+                          ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
                     borderSide: BorderSide(
                       color: resolveThemeColor(context,
-                          dark: MyntColors.dividerDark,
-                          light: MyntColors.divider),
-                    ),
+                                dark: MyntColors.borderMutedDark, light: MyntColors.borderMuted),
+                          ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -1151,9 +1218,9 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
               ),
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
           // Delete button (compact)
-          Material(
+               Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () => _removeScrip(index),
@@ -1164,9 +1231,12 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                   Icons.delete_outline,
                   size: 18,
                   color: resolveThemeColor(context,
-                      dark: MyntColors.lossDark, light: MyntColors.loss),
+                            dark: MyntColors.errorDark, light: MyntColors.error),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -1208,7 +1278,7 @@ class _ModifySipDialogWebState extends ConsumerState<ModifySipDialogWeb> {
                 backgroundColor: _addedScrips.isEmpty
                     ? Colors.grey
                     : resolveThemeColor(context,
-                        dark: MyntColors.primaryDark,
+                        dark: MyntColors.secondary,
                         light: MyntColors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),
