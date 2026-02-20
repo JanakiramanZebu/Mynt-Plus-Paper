@@ -759,7 +759,6 @@ class _BondsTableWebState extends ConsumerState<BondsTableWeb> {
     return NumberFormat("#,##,###", "en_IN").format(nm);
   }
 
-  // Helper to format date consistent with screenshot
   String _formatDate(String? dateString) {
     if (dateString == null || dateString.isEmpty) return '-';
     try {

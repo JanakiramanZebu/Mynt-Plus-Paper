@@ -253,7 +253,6 @@ class _MFCategoryListScreenState extends ConsumerState<MFCategoryListScreenWeb>
   Widget _buildCustomHeader(BuildContext context, ThemesProvider theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      // Add a bottom border to separate header from content if needed, or keeping it clean as per screenshot
       child: Row(
         children: [
           CustomBackBtn(onBack: widget.onBack),

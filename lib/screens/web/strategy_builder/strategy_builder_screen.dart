@@ -1549,6 +1549,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
 
   Widget _buildBasketTable(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     if (provider.basket.isEmpty) {
+      // Show skeleton shimmer rows when loading in analyze mode
+      if (provider.isLoading && provider.isAnalyzeMode) {
+        return _buildBasketTableSkeleton(isDark);
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1742,6 +1746,72 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           ),
         );
       },
+    );
+  }
+
+  /// Skeleton shimmer loader for basket table during analyze mode loading
+  Widget _buildBasketTableSkeleton(bool isDark) {
+    Widget shimmerCell(double width) => MyntShimmerLoader(width: width, height: 14, borderRadius: 4);
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          // Skeleton header row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.dividerDark : MyntColors.divider,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          ),
+          // Skeleton data rows
+          ...List.generate(3, (index) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? const Color(0xFF333333) : const Color(0xFFEEEEEE),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          )),
+        ],
+      ),
     );
   }
 
@@ -2229,6 +2299,19 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ? _buildPayoffChart(context, provider, isDark)
                 : _buildGreeksTable(context, provider, isDark),
           ),
+          // Greeks row
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
+              ],
+            ),
+          ),
           // Chart controls
           _buildChartControls(context, provider, isDark),
         ],
@@ -2283,17 +2366,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   isDark,
                 ),
                 const Expanded(child: SizedBox()),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
               ],
             ),
           ],
@@ -3483,13 +3555,16 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           ),
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: 6,
-              activeTrackColor: MyntColors.primary,
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
+              trackHeight: 2,
+              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
               thumbColor: Colors.white,
-              overlayColor: MyntColors.primary.withValues(alpha: 0.1),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+              thumbShape: _TradingSliderThumbShape(
+                enabledThumbRadius: 7,
+                borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
               trackShape: const RoundedRectSliderTrackShape(),
             ),
             child: Slider(
@@ -3538,46 +3613,61 @@ class _PayoffData {
   _PayoffData({required this.price, required this.payoff});
 }
 
-class _BorderedThumbShape extends RoundSliderThumbShape {
+/// Trading-app style slider thumb with shadow, fill, and accent border ring
+class _TradingSliderThumbShape extends SliderComponentShape {
+  final double enabledThumbRadius;
   final Color borderColor;
   final double borderWidth;
 
-  const _BorderedThumbShape({
-    super.enabledThumbRadius = 8,
-    this.borderColor = Colors.black,
-    this.borderWidth = 2,
+  const _TradingSliderThumbShape({
+    this.enabledThumbRadius = 7,
+    this.borderColor = Colors.blue,
+    this.borderWidth = 2.0,
   });
 
   @override
-  void paint(PaintingContext context, Offset center,
-      {required Animation<double> activationAnimation,
-      required Animation<double> enableAnimation,
-      required bool isDiscrete,
-      required TextPainter labelPainter,
-      required RenderBox parentBox,
-      required SliderThemeData sliderTheme,
-      required TextDirection textDirection,
-      required double value,
-      required double textScaleFactor,
-      required Size sizeWithOverflow}) {
-    super.paint(context, center,
-        activationAnimation: activationAnimation,
-        enableAnimation: enableAnimation,
-        isDiscrete: isDiscrete,
-        labelPainter: labelPainter,
-        parentBox: parentBox,
-        sliderTheme: sliderTheme,
-        textDirection: textDirection,
-        value: value,
-        textScaleFactor: textScaleFactor,
-        sizeWithOverflow: sizeWithOverflow);
-    context.canvas.drawCircle(
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(enabledThumbRadius + 2);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+
+    // Shadow
+    final shadowPath = Path()
+      ..addOval(Rect.fromCircle(center: center.translate(0, 1), radius: enabledThumbRadius + 1));
+    canvas.drawShadow(shadowPath, Colors.black.withValues(alpha: 0.25), 3.0, true);
+
+    // White outer ring/background
+    canvas.drawCircle(
       center,
       enabledThumbRadius,
       Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+
+    // Inner solid blue core
+    canvas.drawCircle(
+      center,
+      enabledThumbRadius - 2.0, // Create a 2px white ring effect
+      Paint()
         ..color = borderColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth,
+        ..style = PaintingStyle.fill,
     );
   }
 }
@@ -3678,29 +3768,32 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     // This accounts for watchlist panel taking ~350px on the left
     final isNarrow = screenWidth < 1300;
 
+    final Widget content;
     if (isNarrow) {
-      return _buildNarrowPanelLayout(context, provider, isDark);
+      content = _buildNarrowPanelLayout(context, provider, isDark);
+    } else {
+      content = Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left Panel - Basket & Strategies
+            Expanded(
+              flex: 1,
+              child: _buildLeftPanel(context, provider, isDark),
+            ),
+            const SizedBox(width: 16),
+            // Right Panel - Metrics & Chart
+            Expanded(
+              flex: 1,
+              child: _buildRightPanel(context, provider, isDark),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left Panel - Basket & Strategies
-          Expanded(
-            flex: 1,
-            child: _buildLeftPanel(context, provider, isDark),
-          ),
-          const SizedBox(width: 16),
-          // Right Panel - Metrics & Chart
-          Expanded(
-            flex: 1,
-            child: _buildRightPanel(context, provider, isDark),
-          ),
-        ],
-      ),
-    );
+    return content;
   }
 
   /// Build layout for narrow panels (single column scrollable)
@@ -3825,7 +3918,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
               ),
             ),
-            child: _buildChartControls(context, provider, isDark),
+            child: (provider.isLoading && provider.isAnalyzeMode)
+                ? _buildChartControlsSkeleton(isDark)
+                : _buildChartControls(context, provider, isDark),
           ),
           const SizedBox(height: 60), // Bottom padding
         ],
@@ -3835,6 +3930,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   /// Build compact metrics section for narrow panels
   Widget _buildMetricsSectionNarrow(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildMetricsSkeleton(isDark);
+    }
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -4677,10 +4775,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   Widget _buildPanelOptionChainRow(BuildContext context, StrategyBuilderProvider provider, _StrategyStrikeRowData row, bool isDark) {
     // final strikePrice = double.tryParse(row.strikePrice) ?? 0;
     
-    // In option chain, usually:
-    // CALL ITM: Strike < Spot (Top Left)
-    // PUT ITM: Strike > Spot (Bottom Right)
-    // The screenshot shows Top Left as Yellow (Call ITM)
     // Background Colors
     // final itmColor = isDark ? const Color(0xFF2C2C23) : const Color(0xFFFFFBE6);
 
@@ -4714,7 +4808,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 child: Container(
                   decoration: const BoxDecoration(
                     color: null,
-                    // No side border as per screenshot
                   ),
                   child: _buildSideCell(context, provider, row.callOption, callSocketData, isDark, true),
                 ),
@@ -4870,6 +4963,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   Widget _buildBasketTable(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     if (provider.basket.isEmpty) {
+      // Show skeleton shimmer rows when loading in analyze mode
+      if (provider.isLoading && provider.isAnalyzeMode) {
+        return _buildBasketTableSkeleton(isDark);
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -5063,6 +5160,229 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
         );
       },
+    );
+  }
+
+  /// Skeleton shimmer for metrics section (MAX PROFIT, MAX LOSS, etc.)
+  Widget _buildMetricsSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          // Row 1: 4 metric skeletons
+          Row(
+            children: List.generate(4, (i) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i < 3 ? 8 : 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MyntShimmerLoader(width: 70, height: 10, borderRadius: 4),
+                    const SizedBox(height: 6),
+                    MyntShimmerLoader(width: 50, height: 16, borderRadius: 4),
+                  ],
+                ),
+              ),
+            )),
+          ),
+          const SizedBox(height: 12),
+          // Row 2: 3 metric skeletons + empty
+          Row(
+            children: [
+              ...List.generate(3, (i) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MyntShimmerLoader(width: 70, height: 10, borderRadius: 4),
+                      const SizedBox(height: 6),
+                      MyntShimmerLoader(width: 50, height: 16, borderRadius: 4),
+                    ],
+                  ),
+                ),
+              )),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for payoff chart area
+  Widget _buildPayoffChartSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          // Y-axis labels + chart area
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Y-axis shimmer labels
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(5, (_) =>
+                    const MyntShimmerLoader(width: 40, height: 10, borderRadius: 4),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Chart area shimmer
+                Expanded(
+                  child: MyntShimmerLoader(
+                    width: double.infinity,
+                    height: double.infinity,
+                    borderRadius: 8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // X-axis shimmer labels
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(5, (_) =>
+              const MyntShimmerLoader(width: 40, height: 10, borderRadius: 4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for Greeks row (DELTA, THETA, GAMMA, VEGA)
+  Widget _buildGreeksRowSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: List.generate(4, (i) => Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < 3 ? 8 : 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MyntShimmerLoader(width: 60, height: 10, borderRadius: 4),
+                const SizedBox(height: 4),
+                MyntShimmerLoader(width: 50, height: 14, borderRadius: 4),
+              ],
+            ),
+          ),
+        )),
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for chart controls (target price slider + target date slider)
+  Widget _buildChartControlsSkeleton(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Target price row
+          Row(
+            children: [
+              const MyntShimmerLoader(width: 100, height: 12, borderRadius: 4),
+              const SizedBox(width: 8),
+              const MyntShimmerLoader(width: 36, height: 12, borderRadius: 4),
+              const Spacer(),
+              MyntShimmerLoader(width: 90, height: 28, borderRadius: 4),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Slider shimmer
+          const MyntShimmerLoader(width: double.infinity, height: 4, borderRadius: 2),
+          const SizedBox(height: 14),
+          // Target date row
+          Row(
+            children: [
+              const MyntShimmerLoader(width: 140, height: 12, borderRadius: 4),
+              const SizedBox(width: 8),
+              const MyntShimmerLoader(width: 36, height: 12, borderRadius: 4),
+              const Spacer(),
+              MyntShimmerLoader(width: 130, height: 28, borderRadius: 4),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Slider shimmer
+          const MyntShimmerLoader(width: double.infinity, height: 4, borderRadius: 2),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer loader for basket table during analyze mode loading
+  Widget _buildBasketTableSkeleton(bool isDark) {
+    Widget shimmerCell(double width) => MyntShimmerLoader(width: width, height: 14, borderRadius: 4);
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          // Skeleton header row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : MyntColors.listItemBg,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          ),
+          // Skeleton data rows
+          ...List.generate(3, (index) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? const Color(0xFF333333) : const Color(0xFFEEEEEE),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          )),
+        ],
+      ),
     );
   }
 
@@ -5524,14 +5844,36 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 ? _buildPayoffChart(context, provider, isDark)
                 : _buildGreeksTable(context, provider, isDark),
           ),
+          // Greeks row
+          const Divider(height: 1),
+          if (provider.isLoading && provider.isAnalyzeMode)
+            _buildGreeksRowSkeleton(isDark)
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
+                ],
+              ),
+            ),
           // Chart controls
-          _buildChartControls(context, provider, isDark),
+          if (provider.isLoading && provider.isAnalyzeMode)
+            _buildChartControlsSkeleton(isDark)
+          else
+            _buildChartControls(context, provider, isDark),
         ],
       ),
     );
   }
 
   Widget _buildMetricsSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildMetricsSkeleton(isDark);
+    }
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -5570,17 +5912,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 isDark,
               ),
               const Expanded(child: SizedBox()),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
             ],
           ),
         ],
@@ -5679,6 +6010,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   }
 
   Widget _buildPayoffChart(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildPayoffChartSkeleton(isDark);
+    }
     if (provider.payoffData.isEmpty) {
       return Center(
         child: Text(
@@ -6669,18 +7003,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
           SliderTheme(
             data: SliderThemeData(
-            trackHeight: 2,
-            activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
-              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
-              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
-               thumbShape: _BorderedThumbShape(
-                enabledThumbRadius: 10,
-                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
+              trackHeight: 2,
+              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
+              thumbColor: Colors.white,
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+              thumbShape: _TradingSliderThumbShape(
+                enabledThumbRadius: 7,
+                borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               ),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
               trackShape: const RoundedRectSliderTrackShape(),
-          ),
+            ),
             child: Slider(
               value: provider.targetSpotPrice > 0
                   ? provider.targetSpotPrice
@@ -6756,18 +7090,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ],
         ),
         SliderTheme(
-             data: SliderThemeData(
+          data: SliderThemeData(
             trackHeight: 2,
             activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
-              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
-              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
-               thumbShape: _BorderedThumbShape(
-                enabledThumbRadius: 10,
-                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
-              ),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-              trackShape: const RoundedRectSliderTrackShape(),
+            inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
+            thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
+            overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+            thumbShape: _TradingSliderThumbShape(
+              enabledThumbRadius: 7,
+              borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+            ),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+            trackShape: const RoundedRectSliderTrackShape(),
           ),
           child: Slider(
             value: provider.targetDaysToExpiry.toDouble(),

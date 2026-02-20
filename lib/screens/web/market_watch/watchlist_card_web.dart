@@ -384,8 +384,8 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                             decoration: BoxDecoration(
                               color:  resolveThemeColor(
                                   context,
-                                  dark: Color(0XFFF1F3F8),
-                                  light: Color(0XFFF1F3F8),
+                                  dark: MyntColors.overlayBgDark,
+                                  light: MyntColors.overlayBg,
                                 ),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(
@@ -406,8 +406,8 @@ if (_isExpiryToday(widget.watchListData['expDate'])) ...[
                                           fontWeight: FontWeight.w500,
                                           color: resolveThemeColor(
                                             context,
-                                            dark: MyntColors.secondary,
-                                            light: MyntColors.secondary,
+                                            dark: MyntColors.primaryDark,
+                                            light: MyntColors.primary,
                                           ),
                                         ),
                                       ),
