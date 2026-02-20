@@ -16,6 +16,8 @@ import '../../../../sharedWidget/functions.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/list_divider.dart';
+import '../../../../sharedWidget/no_data_found_web.dart';
+import '../../../../sharedWidget/common_buttons_web.dart';
 import '../../../../utils/responsive_navigation.dart';
 import '../../ordersbook/basket/create_basket_web.dart';
 
@@ -127,14 +129,14 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   orderProv.selectedBsktName.isNotEmpty
                       ? orderProv.selectedBsktName
                       : "No Basket Selected",
-                  style: MyntWebTextStyles.title(context,
+                  style: MyntWebTextStyles.body(context,
                       fontWeight: MyntFonts.semiBold,
                       color: resolveThemeColor(
                         context,
@@ -143,10 +145,10 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                       )),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(width: 4),
                 if (orderProv.selectedBsktName.isNotEmpty)
                   Text(
-                    "${orderProv.bsktScripList.length} items",
+                    "(${orderProv.bsktScripList.length})",
                     style: MyntWebTextStyles.body(
                       context,
                       color: resolveThemeColor(
@@ -182,7 +184,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
               // Add basket icon
               _buildIconButton(
                 icon: Icons.add_circle_outline,
-                tooltip: "Create Basket",
+                tooltip: "Create new Basket",
                 onTap: () => _showCreateBasket(context),
               ),
 
@@ -229,7 +231,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
             padding: const EdgeInsets.all(6.0),
             child: Icon(
               icon,
-              size: 22,
+              size: 20,
               color: resolveThemeColor(
                 context,
                 dark: MyntColors.iconDark,
@@ -244,7 +246,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
 
   Widget _buildMarginsSection(ThemesProvider theme, OrderProvider orderProv) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -253,10 +255,9 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
             children: [
               Text(
                 "Pre Trade Margin",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
               ),
@@ -264,12 +265,11 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
               Text(
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
-                    ? "₹0.00"
-                    : "₹${orderProv.bsktOrderMargin!.marginused ?? '0.00'}",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                    ? "0.00"
+                    : "${orderProv.bsktOrderMargin!.marginused ?? '0.00'}",
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
                   color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
@@ -280,10 +280,9 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
             children: [
               Text(
                 "Post Trade Margin",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                style: MyntWebTextStyles.para(
+                  context,
+                  fontWeight: MyntFonts.medium,
                   color: shadcn.Theme.of(context).colorScheme.mutedForeground,
                 ),
               ),
@@ -291,12 +290,11 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
               Text(
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
-                    ? "₹0.00"
-                    : "₹${orderProv.bsktOrderMargin!.marginusedtrade ?? '0.00'}",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                    ? "0.00"
+                    : "${orderProv.bsktOrderMargin!.marginusedtrade ?? '0.00'}",
+                style: MyntWebTextStyles.body(
+                  context,
+                  fontWeight: MyntFonts.semiBold,
                   color: shadcn.Theme.of(context).colorScheme.foreground,
                 ),
               ),
@@ -317,7 +315,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
           dark: MyntColors.lossDark,
           light: MyntColors.loss,
         ).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Row(
         children: [
@@ -334,15 +332,11 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
           Expanded(
             child: Text(
               "Basket should contain orders of only 1 segment",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.lossDark,
-                  light: MyntColors.loss,
-                ),
+              style: MyntWebTextStyles.caption(
+                context,
+                fontWeight: MyntFonts.medium,
+                darkColor: MyntColors.lossDark,
+                lightColor: MyntColors.loss,
               ),
             ),
           ),
@@ -353,40 +347,15 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
 
   Widget _buildCreateBasketView(ThemesProvider theme, OrderProvider orderProvider) {
     return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(assets.documentIcon,
-                color: const Color(0xff777777), width: 48, height: 48),
-            const SizedBox(height: 8),
-            Text(
-              "No baskets found",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: shadcn.Theme.of(context).colorScheme.mutedForeground,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _showCreateBasket(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: resolveThemeColor(
-                  context,
-                  dark: MyntColors.secondary,
-                  light: MyntColors.primary,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                "Create Basket",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
+      child: NoDataFoundWeb(
+        title: "No Baskets Found",
+        subtitle: "Create a basket to start adding options contracts for trading.",
+        assetIcon: assets.documentIcon,
+        iconSize: 80,
+        primaryLabel: "Create Basket",
+        primaryEnabled: true,
+        onPrimary: () => _showCreateBasket(context),
+        secondaryEnabled: false,
       ),
     );
   }
@@ -395,48 +364,15 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
     // If no basket is selected, show basket selector
     if (orderProvider.selectedBsktName.isEmpty) {
       return Expanded(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                assets.noDatafound,
-                color: const Color(0xff777777),
-                width: 48,
-                height: 48,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "No Basket Selected",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showBasketSelector(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: resolveThemeColor(
-                    context,
-                    dark: MyntColors.primary,
-                    light: MyntColors.primary,
-                  ),
-                  minimumSize: const Size(0, 40),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                ),
-                child: const Text(
-                  "Choose Basket",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+        child: NoDataFoundWeb(
+          title: "No Basket Selected",
+          subtitle: "Choose a basket to view and manage your options contracts.",
+          assetIcon: assets.documentIcon,
+          iconSize: 80,
+          primaryLabel: "Choose Basket",
+          primaryEnabled: true,
+          onPrimary: () => _showBasketSelector(context),
+          secondaryEnabled: false,
         ),
       );
     }
@@ -444,58 +380,35 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
     // If basket is selected but empty
     if (orderProvider.bsktScripList.isEmpty) {
       return Expanded(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                assets.documentIcon,
-                width: 48,
-                height: 48,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Basket is empty",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  "Click on options to add them to basket",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Geist',
-                    fontSize: 12,
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        child: NoDataFoundWeb(
+          title: "Basket is Empty",
+          subtitle: "Click on options to add them to basket",
+          assetIcon: assets.documentIcon,
+          iconSize: 80,
+          primaryEnabled: false,
+          secondaryEnabled: false,
         ),
       );
     }
 
     // Basket items list
     return Expanded(
-      child: ListView.separated(
-        padding: EdgeInsets.zero,
-        itemCount: orderProvider.bsktScripList.length,
-        separatorBuilder: (_, __) => const ListDivider(),
-        itemBuilder: (context, index) {
+      child: ScrollConfiguration(
+        behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
+        child: RawScrollbar(
+          thumbVisibility: false,
+          thickness: 6,
+          radius: const Radius.circular(0),
+          thumbColor: resolveThemeColor(
+            context,
+            dark: MyntColors.scrollbarThumbDark,
+            light: MyntColors.scrollbarThumbLight,
+          ),
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: orderProvider.bsktScripList.length,
+            separatorBuilder: (_, __) => const ListDivider(),
+            itemBuilder: (context, index) {
           final script = Map<String, dynamic>.from(orderProvider.bsktScripList[index]);
 
           // Process script data for display
@@ -514,6 +427,8 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
 
           return _buildScriptCard(theme, script, index, orderProvider, socketDatas);
         },
+          ),
+        ),
       ),
     );
   }
@@ -541,8 +456,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                       Flexible(
                         child: Text(
                           script['symbol'].toString().replaceAll("-EQ", ""),
-                          style: MyntWebTextStyles.body(context,
-                              fontWeight: MyntFonts.medium,
+                          style: MyntWebTextStyles.symbol(context,
                               color: resolveThemeColor(
                                 context,
                                 dark: MyntColors.textPrimaryDark,
@@ -553,12 +467,12 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                       ),
                       Text(
                         " ${script['expDate']} ${script['option']}",
-                        style: MyntWebTextStyles.caption(context,
+                        style: MyntWebTextStyles.symbol(context,
                             color: resolveThemeColor(
-                              context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary,
-                            )),
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              )),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -579,10 +493,9 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                         ),
                         child: Text(
                           _getItemStatusText(script['orderStatus']),
-                          style: TextStyle(
-                            fontFamily: 'Geist',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
+                          style: MyntWebTextStyles.para(
+                            context,
+                            fontWeight: MyntFonts.medium,
                             color: _getItemStatusColor(script['orderStatus']),
                           ),
                         ),
@@ -592,9 +505,11 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                         !_isOrderPlaced(script['orderStatus']))
                       Material(
                         color: Colors.transparent,
+                        shape:CircleBorder(),
                         child: InkWell(
                           onTap: () => _deleteScript(index, script, orderProv),
-                          borderRadius: BorderRadius.circular(4),
+                          // borderRadius: BorderRadius.circular(4),/
+                          customBorder: CircleBorder(),
                           child: Padding(
                             padding: const EdgeInsets.all(4.0),
                             child: Icon(
@@ -614,39 +529,29 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
               ],
             ),
             const SizedBox(height: 6),
-
             // Row 2: Exchange, order type, price type, LTP
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   "${script["exch"]} · ${script["ordType"]} · ${script["prctype"]}",
-                  style: TextStyle(
-                    fontFamily: 'Geist',
-                    fontSize: 11,
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary,
-                    ),
+                  style: MyntWebTextStyles.exch(
+                    context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
                   ),
                 ),
                 Text(
                   "LTP $freshLtp",
-                  style: TextStyle(
-                    fontFamily: 'Geist',
-                    fontSize: 11,
-                    color: resolveThemeColor(
-                      context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary,
-                    ),
+                  style: MyntWebTextStyles.exch(
+                    context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-
+            const SizedBox(height: 6),
             // Row 3: Buy/Sell, qty, price
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -655,44 +560,31 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                   children: [
                     Text(
                       script["trantype"] == "S" ? "SELL" : "BUY",
-                      style: TextStyle(
-                        fontFamily: 'Geist',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: script["trantype"] == "S"
-                            ? resolveThemeColor(context,
-                                dark: MyntColors.lossDark, light: MyntColors.loss)
-                            : resolveThemeColor(context,
-                                dark: MyntColors.primaryDark,
-                                light: MyntColors.primary),
+                      style: MyntWebTextStyles.exch(
+                        context,
+                        fontWeight: MyntFonts.semiBold,
+                        darkColor: script["trantype"] == "S" ? MyntColors.lossDark : MyntColors.primaryDark,
+                        lightColor: script["trantype"] == "S" ? MyntColors.loss : MyntColors.primary,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "Qty: ${script["qty"]}",
-                      style: TextStyle(
-                        fontFamily: 'Geist',
-                        fontSize: 11,
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary,
-                        ),
+                      "${script["dscqty"]} / ${script["qty"]}",
+                      style: MyntWebTextStyles.exch(
+                        context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
                 if (script["prctype"] != "MKT")
                   Text(
-                    "@ ${script['prc'] ?? '0.00'}",
-                    style: TextStyle(
-                      fontFamily: 'Geist',
-                      fontSize: 11,
-                      color: resolveThemeColor(
-                        context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary,
-                      ),
+                    "${script['prc'] ?? '0.00'}",
+                    style: MyntWebTextStyles.exch(
+                      context,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary,
                     ),
                   ),
               ],
@@ -727,14 +619,10 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                     Expanded(
                       child: Text(
                         script['rejectionReason'],
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 10,
-                          color: resolveThemeColor(
-                            context,
-                            dark: MyntColors.lossDark,
-                            light: MyntColors.loss,
-                          ),
+                        style: MyntWebTextStyles.caption(
+                          context,
+                          darkColor: MyntColors.lossDark,
+                          lightColor: MyntColors.loss,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -757,51 +645,32 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
     // Show reset button if basket has been placed
     if (isBasketPlaced) {
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(10),
         child: SizedBox(
           width: double.infinity,
-          child: OutlinedButton(
+          height : 45, 
+          child: MyntOutlinedButton(
+            label: "Reset Orders",
+            size: MyntButtonSize.large,
+            isFullWidth: true,
             onPressed: () {
               orderProv.resetBasketOrderTracking(orderProv.selectedBsktName);
               showResponsiveSuccess(context, "Basket reset. You can place orders again.");
             },
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(0, 45),
-              side: BorderSide(
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
-            ),
-            child: Text(
-              "Reset Orders",
-              style: TextStyle(
-                fontFamily: 'Geist',
-                fontWeight: FontWeight.w600,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary,
-                ),
-              ),
-            ),
           ),
         ),
       );
     }
-
     // Place order button
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       child: SizedBox(
-        width: double.infinity,
-        height: 45,
-        child: ElevatedButton(
+        height : 45, 
+        child: MyntPrimaryButton(
+          label: basketStatus == 'placing' ? "Placing..." : "Place Order",
+          size: MyntButtonSize.large,
+          isFullWidth: true,
+          isLoading: basketStatus == 'placing',
           onPressed: hasMultipleExchanges
               ? null
               : basketStatus == 'placing'
@@ -810,40 +679,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                       await orderProv.placeBasketOrder(context,
                           navigateToOrderBook: false);
                     },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: hasMultipleExchanges
-                ? Colors.grey
-                : resolveThemeColor(
-                    context,
-                    dark: MyntColors.primaryDark,
-                    light: MyntColors.primary,
-                  ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-          child: basketStatus == 'placing'
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    MyntLoader.inline(),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Placing...",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                )
-              : const Text(
-                  "Place Order",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          backgroundColor: hasMultipleExchanges ? Colors.grey : null,
         ),
       ),
     );
@@ -961,120 +797,127 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
   }
 
   void _deleteScript(int index, Map script, OrderProvider orderProv) {
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        final theme = ref.read(themeProvider);
-        return AlertDialog(
-          backgroundColor: theme.isDarkMode
-              ? const Color(0xFF121212)
-              : const Color(0xFFF1F3F8),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          contentPadding: const EdgeInsets.all(20),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.delete_outline,
-                size: 48,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: resolveThemeColor(
+        context,
+        dark: MyntColors.modalBarrierDark,
+        light: MyntColors.modalBarrierLight,
+      ),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: shadcn.Card(
+            borderRadius: BorderRadius.circular(8),
+            padding: EdgeInsets.zero,
+            child: Container(
+              width: 400,
+              constraints: const BoxConstraints(maxHeight: 250),
+              decoration: BoxDecoration(
                 color: resolveThemeColor(
                   context,
-                  dark: MyntColors.lossDark,
-                  light: MyntColors.loss,
+                  dark: MyntColors.dialogDark,
+                  light: MyntColors.dialog,
                 ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(height: 16),
-              Text(
-                "Remove from basket?",
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textPrimaryDark,
-                    light: MyntColors.textPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "${script['symbol']?.toString().replaceAll("-EQ", "")} ${script['expDate']} ${script['option']}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Geist',
-                  fontSize: 13,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 40),
-                      side: BorderSide(
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.outlinedBorderDark,
-                          light: MyntColors.outlinedBorder,
-                        ),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: Text(
-                      "Cancel",
-                      style: TextStyle(
-                        color: resolveThemeColor(
-                          context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: shadcn.Theme.of(context).colorScheme.border,
                         ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await orderProv.removeBsktScrip(index, orderProv.selectedBsktName);
-                      await orderProv.fetchBasketMargin();
-                      Navigator.pop(dialogContext);
-                      showResponsiveSuccess(context, "Removed from basket");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 40),
-                      backgroundColor: resolveThemeColor(
-                        context,
-                        dark: MyntColors.lossDark,
-                        light: MyntColors.loss,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                    child: const Text(
-                      "Remove",
-                      style: TextStyle(color: Colors.white),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Remove from Basket',
+                          style: MyntWebTextStyles.title(
+                            context,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        MyntCloseButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                  // Content
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Are you sure you want to remove "${script['symbol']?.toString().replaceAll("-EQ", "")} ${script['expDate']} ${script['option']}"?',
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              context,
+                              fontWeight: FontWeight.w500,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          MyntButton(
+                            type: MyntButtonType.primary,
+                            size: MyntButtonSize.large,
+                            label: 'Remove',
+                            isFullWidth: true,
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary,
+                            ),
+                            onPressed: () async {
+                              await orderProv.removeBsktScrip(index, orderProv.selectedBsktName);
+                              await orderProv.fetchBasketMargin();
+                              Navigator.pop(context);
+                              showResponsiveSuccess(context, "Removed from basket");
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+          reverseCurve: Curves.easeIn,
+        );
+
+        return FadeTransition(
+          opacity: curvedAnimation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.95, end: 1.0).animate(curvedAnimation),
+            child: child,
+          ),
         );
       },
     );
@@ -1108,118 +951,188 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
 
   void _showBasketSelector(BuildContext context) {
     final orderProv = ref.read(orderProvider);
+    final theme = ref.read(themeProvider);
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Container(
-          width: 400,
-          constraints: const BoxConstraints(maxHeight: 450),
-          decoration: BoxDecoration(
-            color: resolveThemeColor(dialogContext,
-                dark: MyntColors.backgroundColorDark,
-                light: MyntColors.backgroundColor),
-            borderRadius: BorderRadius.circular(12),
+      builder: (dialogContext) {
+        final Map<int, bool> dialogHoveredItems = {};
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Select Basket",
-                      style: TextStyle(
-                        fontFamily: 'Geist',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: resolveThemeColor(
+          child: Container(
+            width: 400,
+            constraints: const BoxConstraints(maxHeight: 450),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(dialogContext,
+                  dark: MyntColors.backgroundColorDark,
+                  light: MyntColors.backgroundColor),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with close button (matching create basket style)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  // margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: resolveThemeColor(dialogContext,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Select Basket",
+                        style: MyntWebTextStyles.title(
                           dialogContext,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary,
+                          fontWeight: MyntFonts.semiBold,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(dialogContext),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: orderProv.bsktList.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (itemContext, index) {
-                    final basket = orderProv.bsktList[index];
-                    final basketName = basket['bsketName'].toString();
-                    final isSelected = basketName == orderProv.selectedBsktName;
-                    return ListTile(
-                      leading: Icon(
-                        Icons.folder,
-                        color: isSelected
-                            ? resolveThemeColor(itemContext,
-                                dark: MyntColors.primaryDark,
-                                light: MyntColors.primary)
-                            : resolveThemeColor(itemContext,
-                                dark: MyntColors.iconDark, light: MyntColors.icon),
-                      ),
-                      title: Text(
-                        basketName,
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          color: isSelected
-                              ? resolveThemeColor(itemContext,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary)
-                              : resolveThemeColor(itemContext,
-                                  dark: MyntColors.textPrimaryDark,
-                                  light: MyntColors.textPrimary),
-                        ),
-                      ),
-                      subtitle: Text(
-                        "${basket['curLength']}/${basket['max']} items",
-                        style: TextStyle(
-                          fontFamily: 'Geist',
-                          fontSize: 12,
-                          color: resolveThemeColor(
-                            itemContext,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary,
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.15)
+                              : Colors.black.withOpacity(.15),
+                          highlightColor: theme.isDarkMode
+                              ? Colors.white.withOpacity(.08)
+                              : Colors.black.withOpacity(.08),
+                          onTap: () => Navigator.of(dialogContext).pop(),
+                          child: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Icon(
+                              Icons.close,
+                              size: 20,
+                              color: resolveThemeColor(dialogContext,
+                                  dark: MyntColors.iconDark,
+                                  light: MyntColors.icon),
+                            ),
                           ),
                         ),
                       ),
-                      trailing: isSelected
-                          ? Icon(
-                              Icons.check_circle,
-                              color: resolveThemeColor(itemContext,
-                                  dark: MyntColors.primaryDark,
-                                  light: MyntColors.primary),
-                            )
-                          : null,
-                      onTap: () async {
-                        Navigator.pop(dialogContext);
-                        await orderProv.chngBsktName(basketName, context, true);
-                      },
-                    );
-                  },
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-            ],
+                // Basket List
+                Flexible(
+                  child: ScrollConfiguration(
+                    behavior: const MaterialScrollBehavior()
+                        .copyWith(scrollbars: false),
+                    child: RawScrollbar(
+                      thumbVisibility: false,
+                      thickness: 6,
+                      radius: const Radius.circular(0),
+                      thumbColor: resolveThemeColor(
+                        dialogContext,
+                        dark: MyntColors.scrollbarThumbDark,
+                        light: MyntColors.scrollbarThumbLight,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10, bottom: 10),
+                        child: StatefulBuilder(
+                          builder: (context, setDialogState) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: orderProv.bsktList.length,
+                              itemBuilder: (itemContext, index) {
+                            final basket = orderProv.bsktList[index];
+                            final basketName = basket['bsketName'].toString();
+                            final isSelected = basketName == orderProv.selectedBsktName;
+
+                            return MouseRegion(
+                              onEnter: (_) => setDialogState(() =>
+                                  dialogHoveredItems[index] = true),
+                              onExit: (_) => setDialogState(() =>
+                                  dialogHoveredItems[index] = false),
+                              child: InkWell(
+                                onTap: () async {
+                                  Navigator.pop(dialogContext);
+                                  await orderProv.chngBsktName(basketName, context, true);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(
+                                      14),
+                                  color: (dialogHoveredItems[index] ?? false)
+                                      ? resolveThemeColor(
+                                          itemContext,
+                                          dark: MyntColors.primaryDark,
+                                          light: MyntColors.primary,
+                                        ).withValues(alpha: 0.08)
+                                      : Colors.transparent,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        shadcn.LucideIcons.shoppingBasket,
+                                        size: 20,
+                                        color: isSelected
+                                            ? resolveThemeColor(itemContext,
+                                                dark: MyntColors.primaryDark,
+                                                light: MyntColors.primary)
+                                            : resolveThemeColor(itemContext,
+                                                dark: MyntColors.iconDark,
+                                                light: MyntColors.icon),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          basketName,
+                                          style: MyntWebTextStyles.body(
+                                            itemContext,
+                                            fontWeight: isSelected
+                                                ? MyntFonts.semiBold
+                                                : MyntFonts.medium,
+                                            darkColor: isSelected
+                                                ? MyntColors.primaryDark
+                                                : MyntColors.textPrimaryDark,
+                                            lightColor: isSelected
+                                                ? MyntColors.primary
+                                                : MyntColors.textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        "${basket['curLength']}/${basket['max']}",
+                                        style: MyntWebTextStyles.para(
+                                          itemContext,
+                                          color: resolveThemeColor(
+                                            itemContext,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
