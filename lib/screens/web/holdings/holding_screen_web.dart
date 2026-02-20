@@ -688,8 +688,8 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildFilterButton(theme),
                 const SizedBox(width: 12),
               ],
-              // E-DIS button (only for Stocks tab)
-              if (_selectedTabIndex == 0) ...[
+              // E-DIS button (only for Stocks tab when showEdis is true)
+              if (_selectedTabIndex == 0 && portfolioData.showEdis) ...[
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
