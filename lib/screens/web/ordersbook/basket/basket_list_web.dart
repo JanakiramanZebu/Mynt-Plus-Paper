@@ -788,10 +788,15 @@ class _BasketListState extends ConsumerState<BasketList> {
                   // Scrollable Body - shows empty state or table rows
                   Expanded(
                     child: sortedBaskets.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: NoDataFound(secondaryEnabled: false),
+                              padding: const EdgeInsets.all(16.0),
+                              child: NoDataFoundWeb(
+                                title: "No Baskets",
+                                subtitle: "You don't have any baskets yet.",
+                                primaryEnabled: false,
+                                secondaryEnabled: false,
+                              ),
                             ),
                           )
                         : Scrollbar(
@@ -1150,9 +1155,7 @@ class _BasketListState extends ConsumerState<BasketList> {
         basket.isBasketLoading
             ? SizedBox(
                 height: 400, child: Center(child: MyntLoader.simple()))
-            : basket.bsktList.isEmpty
-                ? SizedBox(height: 400, child: NoDataFoundWeb(secondaryEnabled: false))
-                : Expanded(
+            : Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         return Padding(
@@ -1161,7 +1164,9 @@ class _BasketListState extends ConsumerState<BasketList> {
                             width: constraints.maxWidth,
                             height: constraints.maxHeight,
                             child: _buildBasketTable(
-                                theme, _getFilteredBaskets(basket.bsktList)),
+                                theme, basket.bsktList.isEmpty
+                                    ? []
+                                    : _getFilteredBaskets(basket.bsktList)),
                           ),
                         );
                       },
@@ -1481,7 +1486,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
   Widget _buildSearchResults(WidgetRef ref, ThemesProvider theme) {
     final searchScrip = ref.watch(marketWatchProvider);
 
-    if (searchScrip.allSearchScrip?.isEmpty ?? true) {
+    // Filter out index instruments (idx == 'YES') - they cannot be traded
+    final filteredResults = searchScrip.allSearchScrip
+        ?.where((scrip) => scrip.idx?.toUpperCase() != 'YES')
+        .toList();
+
+    if (filteredResults?.isEmpty ?? true) {
       return Container(
         decoration: BoxDecoration(
           color: theme.isDarkMode
@@ -1523,7 +1533,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           child: ListView.separated(
             controller: _searchScrollController,
             physics: const BouncingScrollPhysics(),
-            itemCount: searchScrip.allSearchScrip!.length,
+            itemCount: filteredResults!.length,
             separatorBuilder: (context, index) => Divider(
               height: 0,
               color: resolveThemeColor(
@@ -1533,7 +1543,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               ),
             ),
             itemBuilder: (BuildContext context, int index) {
-              final scrip = searchScrip.allSearchScrip![index];
+              final scrip = filteredResults[index];
 
               return MouseRegion(
                 onEnter: (_) => setState(() => _hoveredItems[index] = true),
@@ -1808,7 +1818,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           'symbol': scrip.symbol?.toString() ?? scrip.tsym.toString(),
           'expDate': scrip.expDate?.toString() ?? '',
           'option': scrip.option?.toString() ?? '',
-          'trantype': isBuy ? 'B' : 'S', // Add transaction type to raw map
+          'trantype': isBuy ? 'B' : 'S',
+          'qty': marketWatch.scripInfoModel?.ls?.toString() ?? '1',
         },
       );
 
@@ -2036,6 +2047,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                               ? IconButton(
                                   onPressed: () {
                                     _searchController.clear();
+                                    _hoveredItems.clear();
                                     setState(() {
                                       _searchValue = "";
                                     });
@@ -2054,6 +2066,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                               : null,
                         ),
                         onChanged: (value) async {
+                          _hoveredItems.clear();
                           setState(() {
                             _searchValue = value.toUpperCase();
                           });
@@ -2320,70 +2333,123 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                 ),
               ),
 
-              // 4. Footer: Margins + Action Buttons
-              Container(
-                height: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.isDarkMode
-                          ? WebDarkColors.divider
-                          : WebColors.divider,
-                      width: 1,
+              // 4. Footer: Warning + Margins + Action Buttons
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Multi-segment warning bar
+                  if (_hasMultipleExchanges(basket.bsktScripList))
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(
+                          context,
+                          dark: MyntColors.warningDark.withOpacity(0.1),
+                          light: MyntColors.warning.withOpacity(0.1),
+                        ),
+                        border: Border(
+                          top: BorderSide(
+                            color: theme.isDarkMode
+                                ? WebDarkColors.divider
+                                : WebColors.divider,
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 16,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.warningDark,
+                              light: MyntColors.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Basket should contain orders of only 1 segment",
+                            style: WebTextStyles.custom(
+                              fontSize: 12,
+                              isDarkTheme: theme.isDarkMode,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.warningDark,
+                                light: MyntColors.warning,
+                              ),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Margin Info
-                    Row(
+                  // Margins + Action Buttons row
+                  Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: theme.isDarkMode
+                              ? WebDarkColors.divider
+                              : WebColors.divider,
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: Row(
                       children: [
-                        Text(
-                          "Basket Margin: ",
-                          style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: FontWeight.w400),
+                        // Margin Info
+                        Flexible(
+                          child: Row(
+                            children: [
+                              Text(
+                                "Basket Margin: ",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                              Text(
+                                "₹$preTradeMargin",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(width: 24),
+                              Text(
+                                "Post Trade Margin: ",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w400),
+                              ),
+                              Text(
+                                "₹$postTradeMargin",
+                                style: WebTextStyles.custom(
+                                    fontSize: 13,
+                                    isDarkTheme: theme.isDarkMode,
+                                    color: theme.isDarkMode
+                                        ? WebDarkColors.textPrimary
+                                        : WebColors.textPrimary,
+                                    fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          "₹$preTradeMargin",
-                          style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(width: 24),
-                        Text(
-                          "Post Trade Margin: ",
-                          style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: FontWeight.w400),
-                        ),
-                        Text(
-                          "₹$postTradeMargin",
-                          style: WebTextStyles.custom(
-                              fontSize: 13,
-                              isDarkTheme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? WebDarkColors.textPrimary
-                                  : WebColors.textPrimary,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-
-                    const Spacer(),
 
                     // Refresh Button
                     IconButton(
@@ -2474,6 +2540,8 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                   ],
                 ),
               ),
+              ],
+              ),
             ],
           ),
 
@@ -2484,7 +2552,13 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               right: 16, // Padding of Toolbar
               width: 450, // Width of Search Bar
               height: 400,
-              child: Container(
+              child: MouseRegion(
+                onExit: (_) {
+                  if (_hoveredItems.isNotEmpty) {
+                    setState(() => _hoveredItems.clear());
+                  }
+                },
+                child: Container(
                 decoration: BoxDecoration(
                     color: resolveThemeColor(
                       context,
@@ -2515,6 +2589,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
                     ),
                   ],
                 ),
+              ),
               ),
             ),
         ],
@@ -2678,6 +2753,9 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
               ),
               child: Text(
                 orderStatus,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                softWrap: false,
                 style: MyntWebTextStyles.para(
                   context,
                   color: statusColor,
@@ -3362,8 +3440,8 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
 
   @override
   Widget build(BuildContext context) {
-    final symbol =
-        widget.item['symbol']?.toString() ?? widget.item['tsym'] ?? '';
+    final tsym = widget.item['tsym']?.toString() ?? widget.item['symbol']?.toString() ?? '';
+    final displayText = tsym.replaceAll("-EQ", "").trim();
     final exch = widget.item['exch']?.toString() ?? '';
 
     return SizedBox.expand(
@@ -3377,32 +3455,36 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
               // Instrument name and exchange
               Align(
                 alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(right: isRowHovered ? 100.0 : 0.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          symbol,
-                          style: MyntWebTextStyles.symbol(
-                            context,
-                            fontWeight: MyntFonts.semiBold,
+                child: Tooltip(
+                  message: '$displayText${exch.isNotEmpty ? ' $exch' : ''}',
+                  child: Padding(
+                    padding: EdgeInsets.only(right: isRowHovered ? 100.0 : 0.0),
+                    child: RichText(
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      softWrap: false,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: displayText,
+                            style: MyntWebTextStyles.tableCell(
+                              context,
+                              fontWeight: MyntFonts.semiBold,
+                            ),
                           ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
+                          if (exch.isNotEmpty)
+                            TextSpan(
+                              text: ' $exch',
+                              style: MyntWebTextStyles.para(
+                                context,
+                                darkColor: styles.MyntColors.textSecondaryDark,
+                                lightColor: styles.MyntColors.textSecondary,
+                                fontWeight: MyntFonts.medium,
+                              ).copyWith(fontSize: 10),
+                            ),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        exch,
-                        style: MyntWebTextStyles.exch(
-                          context,
-                          darkColor: styles.MyntColors.textSecondaryDark,
-                          lightColor: styles.MyntColors.textSecondary,
-                        ).copyWith(fontSize: 10),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -3422,7 +3504,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
                           icon: Icons.copy_outlined,
                           iconColor: resolveThemeColor(
                             context,
-                            dark: styles.MyntColors.textSecondaryDark,
+                            dark: styles.MyntColors.textPrimary,
                             light: styles.MyntColors.textSecondary,
                           ),
                           onPressed: widget.onCopy != null
@@ -3435,7 +3517,7 @@ class _BasketInstrumentCellState extends ConsumerState<_BasketInstrumentCell> {
                           icon: Icons.edit_outlined,
                           iconColor: resolveThemeColor(
                             context,
-                            dark: styles.MyntColors.textSecondaryDark,
+                            dark: styles.MyntColors.textPrimary,
                             light: styles.MyntColors.textSecondary,
                           ),
                           onPressed: widget.onEdit != null
@@ -3483,7 +3565,20 @@ class _BasketLtpCellState extends ConsumerState<_BasketLtpCell> {
   void initState() {
     super.initState();
     _updateValues();
+    _subscribeToWebSocket();
+  }
 
+  @override
+  void didUpdateWidget(_BasketLtpCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.item['token'] != oldWidget.item['token']) {
+      _subscription?.cancel();
+      _updateValues();
+      _subscribeToWebSocket();
+    }
+  }
+
+  void _subscribeToWebSocket() {
     final token = widget.item['token']?.toString();
     if (token != null) {
       _subscription =
@@ -3509,16 +3604,6 @@ class _BasketLtpCellState extends ConsumerState<_BasketLtpCell> {
           setState(() {});
         }
       });
-    }
-  }
-
-  @override
-  void didUpdateWidget(_BasketLtpCell oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.item['token'] != oldWidget.item['token']) {
-      _subscription?.cancel();
-      _updateValues();
-      initState();
     }
   }
 

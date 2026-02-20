@@ -39,6 +39,7 @@ import '../../../res/responsive_extensions.dart';
 
 import '../../../routes/route_names.dart';
 import '../../../utils/responsive_navigation.dart';
+import '../../../utils/responsive_snackbar.dart';
 import '../../web/order/quick_order_screen_web.dart';
 import '../../../sharedWidget/no_data_found.dart';
 import '../../../sharedWidget/mynt_loader.dart';
@@ -3189,6 +3190,11 @@ class _ScripDepthInfoWebState extends ConsumerState<ScripDepthInfoWeb>
       color: Colors.transparent,
       child: InkWell(
         onLongPress: () async {
+          if (scripInfo.isPreDefWLs == "Yes") {
+            ResponsiveSnackBar.showWarning(context,
+                "This is a pre-defined watchlist that cannot be edited!");
+            return;
+          }
           await scripInfo.addDelMarketScrip(
             scripInfo.wlName,
             "${displayData.exch}|${displayData.token}",

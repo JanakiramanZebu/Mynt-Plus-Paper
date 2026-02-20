@@ -512,6 +512,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                         symbol: scrip.symbol ?? scrip.tsym.toString(),
                         expDate: scrip.expDate ?? "",
                         option: scrip.option ?? "",
+                        idx: scrip.idx,
                       );
 
                       // Update depth/scrip info panel and header
@@ -537,6 +538,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
                         expDate: scrip.expDate ?? "",
                         option: scrip.option ?? "",
                         isOption: true,
+                        idx: scrip.idx,
                       );
 
                       // Update depth/scrip info panel and header
@@ -940,6 +942,7 @@ class _SearchDialogWebState extends ConsumerState<SearchDialogWeb>
         symbol: scrip.symbol ?? scrip.tsym.toString(),
         expDate: scrip.expDate ?? "",
         option: scrip.option ?? "",
+        idx: scrip.idx,
       );
 
       // Use calldepthApis to fetch data and update background views (Chart/Depth)

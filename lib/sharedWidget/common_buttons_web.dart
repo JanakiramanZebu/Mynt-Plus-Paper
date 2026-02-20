@@ -338,6 +338,7 @@ class MyntButton extends StatelessWidget {
 
     // Tertiary button: Primary style but with tertiary background
     return Container(
+      height: 40,
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(_getDefaultBorderRadius()),
@@ -347,9 +348,13 @@ class MyntButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(_getDefaultBorderRadius()),
           onTap: isLoading ? null : onPressed,
-          child: Padding(
+          child: Align(
+            alignment: Alignment.center,
+            widthFactor: 1.0,
+             child: Padding(
             padding: padding ?? _getDefaultPadding(),
             child: _buildButtonChild(context, txtColor),
+            ),
           ),
         ),
       ),

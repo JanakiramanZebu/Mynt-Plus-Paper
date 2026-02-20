@@ -996,7 +996,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         option: '${flow ? raw['option'] : raw.option}',
         isOption: flow
             ? (raw['isOption'] ?? false)
-            : (raw is DepthInputArgs ? raw.isOption : false));
+            : (raw is DepthInputArgs ? raw.isOption : false)
+            ,idx: flow ? raw['idx'] : raw.idx);
 
     // Guard: if the same scrip is already being opened/loaded on web, just focus it
     if (kIsWeb) {
@@ -3630,7 +3631,8 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       bool isAdd,
       bool isEdit,
       bool isReOrder,
-      bool isOptionStike) async {
+      bool isOptionStike,
+      {bool showSnackBar = true}) async {
     try {
       // Check if this is a pending watchlist (created locally without API call)
       bool wasPending = false;
@@ -3683,7 +3685,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           }
           await fetchMWScrip(wlName, context);
           await changeWLScrip(wlName, context);
-        } else {
+        } else if (showSnackBar) {
           // Wrap ScaffoldMessenger calls in try-catch to handle disposed widgets
           try {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -4203,12 +4205,14 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
         // First step: Delete all scrips (but only from backend, not UI)
         final deleteResult = await addDelMarketScrip(
-            wlName, "$scripTokens#", context, false, true, true, false);
+            wlName, "$scripTokens#", context, false, true, true, false,
+            showSnackBar: false);
 
         // Second step: Add all scrips back in the new order (only to backend)
         if (deleteResult) {
           await addDelMarketScrip(
-              wlName, "$scripTokens#", context, true, true, true, false);
+              wlName, "$scripTokens#", context, true, true, true, false,
+              showSnackBar: false);
 
           print("Backend watchlist order updated successfully");
         }

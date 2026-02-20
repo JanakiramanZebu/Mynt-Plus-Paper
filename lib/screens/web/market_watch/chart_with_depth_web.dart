@@ -481,8 +481,11 @@ class _ChartWithDepthWebState extends ConsumerState<ChartWithDepthWeb>
                           _buildSegmentedControl(context, hasOptions, hasFundamentalData),
                           const Spacer(),
                           // Right side: Buy/Sell/Alert/Sidebar icons
+                          // Hide for indices (UNDIND/idx=yes) and commodities (COM)
                           if (widget.wlValue.instname != "UNDIND" &&
-                              widget.wlValue.instname != "COM") ...[
+                              widget.wlValue.instname != "COM" &&
+                              widget.wlValue.idx != "yes" &&
+                              mw.scripInfoModel?.idx != "yes") ...[
                             // Buy button
                             SizedBox(
                               width: 70,
