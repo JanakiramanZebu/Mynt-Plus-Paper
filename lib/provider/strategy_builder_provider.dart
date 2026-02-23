@@ -722,20 +722,6 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       await loadOptionChain(context);
     }
 
-    // Find ATM strike
-    double minDiff = double.infinity;
-    int atmIndex = 0;
-    final ceOptions = _optionChain.where((o) => o.optt == 'CE').toList();
-
-    for (int i = 0; i < ceOptions.length; i++) {
-      final strike = double.tryParse(ceOptions[i].strprc ?? '0') ?? 0;
-      final diff = (strike - _spotPrice).abs();
-      if (diff < minDiff) {
-        minDiff = diff;
-        atmIndex = i;
-      }
-    }
-
     // Add legs
     for (var leg in strategy.legs) {
       final options = _optionChain.where((o) => o.optt == leg.optionType).toList();
@@ -743,13 +729,21 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         (double.tryParse(a.strprc ?? '0') ?? 0).compareTo(double.tryParse(b.strprc ?? '0') ?? 0)
       );
 
-      int targetIndex = atmIndex + leg.strikeOffset;
-      if (leg.optionType == 'PE') {
-        // For PE, OTM means lower strike (negative offset from ATM)
-        targetIndex = atmIndex - leg.strikeOffset;
+      // Find ATM index within this leg's own sorted options list
+      double minDiff = double.infinity;
+      int atmIndex = 0;
+      for (int i = 0; i < options.length; i++) {
+        final strike = double.tryParse(options[i].strprc ?? '0') ?? 0;
+        final diff = (strike - _spotPrice).abs();
+        if (diff < minDiff) {
+          minDiff = diff;
+          atmIndex = i;
+        }
       }
 
-      targetIndex = targetIndex.clamp(0, options.length - 1);
+      // Apply offset directly - strikeOffset already has correct sign
+      // Positive offset = higher strike (OTM for CE), Negative offset = lower strike (OTM for PE)
+      int targetIndex = (atmIndex + leg.strikeOffset).clamp(0, options.length - 1);
 
       if (options.isNotEmpty && targetIndex < options.length) {
         final option = options[targetIndex];

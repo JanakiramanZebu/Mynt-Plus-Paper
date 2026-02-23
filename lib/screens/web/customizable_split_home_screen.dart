@@ -138,6 +138,7 @@ enum ScreenTypeParam {
   settings,
   tradeAction,
   portfolioAnalysis,
+  strategyBuilder,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -611,6 +612,9 @@ class _CustomizableSplitHomeScreenState
         debugPrint('WebRouter: Handling portfolioAnalysis initial panel');
         _handlePortfolioAnalysisTap();
         debugPrint('WebRouter: portfolioAnalysis handler called');
+        break;
+      case ScreenTypeParam.strategyBuilder:
+        _handleStrategyBuilderTap();
         break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
@@ -4107,6 +4111,9 @@ class _CustomizableSplitHomeScreenState
       case WebRoutes.optionChain: // '/option-chain'
         // Option chain requires arguments, navigate to dashboard instead
         _handleDashboardTap();
+        break;
+      case WebRoutes.strategyBuilder: // '/strategy-builder'
+        _handleStrategyBuilderTap();
         break;
       case WebRoutes.home: // '/'
       default:
