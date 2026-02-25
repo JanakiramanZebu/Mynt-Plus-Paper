@@ -68,7 +68,7 @@ class ScalperOptionChainOverlay extends ConsumerWidget {
       child: Row(
         children: [
           Text(
-            'Option Chain - $indexName',
+            indexName,
             style: MyntWebTextStyles.title(
               context,
               fontWeight: MyntFonts.semiBold,
@@ -555,17 +555,44 @@ class _ScalperOptionChainRowState
                     ),
                   ],
                 ),
-                // Hover action: chart icon to select this strike for call chart
-                HoverActionsContainer(
-                  isVisible: isHovered,
-                  actions: [
-                    HoverActionButton.icon(
-                      context: context,
-                      icon: Icons.show_chart,
-                      onPressed: widget.onCallTap,
+                // Hover action: select icon to choose this strike for call chart
+                if (isHovered && widget.onCallTap != null)
+                  Center(
+                    child: GestureDetector(
+                      onTap: widget.onCallTap,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textWhite,
+                            light: MyntColors.textWhite,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: resolveThemeColor(
+                                context,
+                                dark: Colors.transparent,
+                                light: Colors.grey,
+                              ),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.check_circle_outline,
+                          size: 18,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
               ],
             ),
           );
@@ -681,17 +708,44 @@ class _ScalperOptionChainRowState
                     ),
                   ],
                 ),
-                // Hover action: chart icon to select this strike for put chart
-                HoverActionsContainer(
-                  isVisible: isHovered,
-                  actions: [
-                    HoverActionButton.icon(
-                      context: context,
-                      icon: Icons.show_chart,
-                      onPressed: widget.onPutTap,
+                // Hover action: select icon to choose this strike for put chart
+                if (isHovered && widget.onPutTap != null)
+                  Center(
+                    child: GestureDetector(
+                      onTap: widget.onPutTap,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textWhite,
+                            light: MyntColors.textWhite,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: resolveThemeColor(
+                                context,
+                                dark: Colors.transparent,
+                                light: Colors.grey,
+                              ),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.check_circle_outline,
+                          size: 18,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
               ],
             ),
           );

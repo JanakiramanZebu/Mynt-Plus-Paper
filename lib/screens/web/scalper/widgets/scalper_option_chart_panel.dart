@@ -90,10 +90,10 @@ class _ScalperOptionChartPanelState
             light: MyntColors.divider,
           ),
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(5),
         child: Column(
           children: [
             // Header with consistent height
@@ -149,36 +149,40 @@ class _ScalperOptionChartPanelState
                 Flexible(
                   child: Text(
                     tsym.isNotEmpty ? tsym : '${scalper.selectedIndex.name}...',
-                    style: MyntWebTextStyles.bodySmall(
+                    style: MyntWebTextStyles.symbol(
                       context,
                       fontWeight: MyntFonts.medium,
                       color: resolveThemeColor(
                         context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
                       ),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 // LTP
                 Text(
                   ltp,
-                  style: MyntWebTextStyles.body(
+                  style: MyntWebTextStyles.price(
                     context,
-                    fontWeight: MyntFonts.bold,
+                    // fontWeight: MyntFonts.bold,
                     color: changeColor,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 // Change
                 Text(
                   '$change ($perChange%)',
-                  style: MyntWebTextStyles.caption(
+                  style: MyntWebTextStyles.exch(
                     context,
-                    color: changeColor,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
                   ),
                 ),
               ],
@@ -193,20 +197,20 @@ class _ScalperOptionChartPanelState
                 final optType = option?.optt ?? (widget.isCall ? 'CE' : 'PE');
                 final isCE = optType == 'CE';
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                   decoration: BoxDecoration(
                     color: isCE
                         ? resolveThemeColor(context,
-                            dark: MyntColors.profitDark, light: MyntColors.profit)
+                            dark: MyntColors.primaryDark, light: MyntColors.primary)
                         : resolveThemeColor(context,
-                            dark: MyntColors.lossDark, light: MyntColors.loss),
-                    borderRadius: BorderRadius.circular(6),
+                            dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                    borderRadius: BorderRadius.circular(5),
                   ),
                   child: Text(
                     optType,
                     style: MyntWebTextStyles.caption(
                       context,
-                      fontWeight: MyntFonts.semiBold,
+                      fontWeight: MyntFonts.medium,
                       color: Colors.white,
                     ),
                   ),
@@ -214,46 +218,45 @@ class _ScalperOptionChartPanelState
               }),
               const SizedBox(width: 8),
               // Strike selector button
-              InkWell(
+              GestureDetector(
                 onTap: widget.onStrikeTap,
-                borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  width: 120,
+                  height: 30,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   decoration: BoxDecoration(
                     color: resolveThemeColor(
                       context,
-                      dark: MyntColors.searchBgDark,
-                      light: MyntColors.searchBg,
+                      dark: MyntColors.transparent,
+                      light: const Color(0xffF1F3F8),
                     ),
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: resolveThemeColor(
                         context,
-                        dark: MyntColors.dividerDark,
-                        light: MyntColors.divider,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.primary,
                       ),
-                      width: 0.8,
                     ),
-                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        widget.selectedStrike.isNotEmpty ? widget.selectedStrike : '--',
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          fontWeight: MyntFonts.medium,
-                          color: resolveThemeColor(
+                      Expanded(
+                        child: Text(
+                          widget.selectedStrike.isNotEmpty ? widget.selectedStrike : '--',
+                          style: MyntWebTextStyles.bodySmall(
                             context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary,
+                            darkColor: MyntColors.textWhite,
+                            lightColor: MyntColors.textBlack,
+                            fontWeight: MyntFonts.medium,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 4),
                       Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 16,
+                        Icons.keyboard_arrow_down,
+                        size: 18,
                         color: resolveThemeColor(
                           context,
                           dark: MyntColors.textSecondaryDark,
