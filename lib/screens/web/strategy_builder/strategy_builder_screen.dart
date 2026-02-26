@@ -191,8 +191,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     ],
                   ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -582,8 +582,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     ],
                   ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -4468,8 +4468,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     ],
                   ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -4736,8 +4736,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     ],
                   ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
