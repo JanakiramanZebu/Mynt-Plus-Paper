@@ -255,7 +255,7 @@ class _ScalperOptionChartPanelState
                         ),
                       ),
                       Icon(
-                        Icons.keyboard_arrow_down,
+                        Icons.keyboard_arrow_right,
                         size: 18,
                         color: resolveThemeColor(
                           context,
@@ -300,22 +300,22 @@ class _ScalperOptionChartPanelState
     // Update the chart symbol when option changes
     if (hasOption) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (widget.isCall) {
-          scalperChartManager.changeCallSymbol(
-            exch: option.exch ?? 'NFO',
-            token: option.token ?? '',
-            tsym: option.tsym ?? '',
-            isDarkMode: isDark,
-          );
-        } else {
-          scalperChartManager.changePutSymbol(
-            exch: option.exch ?? 'NFO',
-            token: option.token ?? '',
-            tsym: option.tsym ?? '',
-            isDarkMode: isDark,
-          );
-        }
-        _chartToken = option.token;
+          if (widget.isCall) {
+            scalperChartManager.changeCallSymbol(
+              exch: option.exch ?? 'NFO',
+              token: option.token ?? '',
+              tsym: option.tsym ?? '',
+              isDarkMode: isDark,
+            );
+          } else {
+            scalperChartManager.changePutSymbol(
+              exch: option.exch ?? 'NFO',
+              token: option.token ?? '',
+              tsym: option.tsym ?? '',
+              isDarkMode: isDark,
+            );
+          }
+          _chartToken = option.token;
       });
     }
 

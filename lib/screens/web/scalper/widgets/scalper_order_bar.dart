@@ -262,7 +262,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     );
     final sellColor = resolveThemeColor(
       context,
-      dark: MyntColors.lossDark,
+      dark: MyntColors.tertiary,
       light: MyntColors.tertiary,
     );
 
@@ -270,45 +270,51 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Buy column: price input + button
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!isMarket)
-              _buildPriceInput(context, buyPriceController, isLeft ? 'left_buy' : 'right_buy', buyPriceFocus),
-            _buildOrderButton(
-              context: context,
-              label: 'Buy $optType',
-              subLabel: 'ASK: $askPrice',
-              shortcut: isLeft ? 'Shift + ↑' : 'Ctrl + ↑',
-              color: buyColor,
-              isFilled: true,
-              onPressed: option != null && !_isPlacingOrder
-                  ? () => _placeOrder(option, true, option.optt == 'CE',
-                      limitPrice: !isMarket ? buyPriceController.text : null)
-                  : null,
-            ),
-          ],
+        IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!isMarket)
+                _buildPriceInput(context, buyPriceController, isLeft ? 'left_buy' : 'right_buy', buyPriceFocus),
+              _buildOrderButton(
+                context: context,
+                label: 'Buy $optType',
+                subLabel: 'ASK: $askPrice',
+                shortcut: isLeft ? 'Shift + ↑' : 'Ctrl + ↑',
+                color: buyColor,
+                isFilled: true,
+                onPressed: option != null && !_isPlacingOrder
+                    ? () => _placeOrder(option, true, option.optt == 'CE',
+                        limitPrice: !isMarket ? buyPriceController.text : null)
+                    : null,
+              ),
+            ],
+          ),
         ),
         const SizedBox(width: 8),
-        // Sell column: price input + button
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!isMarket)
-              _buildPriceInput(context, sellPriceController, isLeft ? 'left_sell' : 'right_sell', sellPriceFocus),
-            _buildOrderButton(
-              context: context,
-              label: 'Sell $optType',
-              subLabel: 'BID: $bidPrice',
-              shortcut: isLeft ? 'Shift + ↓' : 'Ctrl + ↓',
-              color: sellColor,
-              isFilled: true,
-              onPressed: option != null && !_isPlacingOrder
-                  ? () => _placeOrder(option, false, option.optt == 'CE',
-                      limitPrice: !isMarket ? sellPriceController.text : null)
-                  : null,
-            ),
-          ],
+        // Sell column: price input + button (IntrinsicWidth so both match widths)
+        IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!isMarket)
+                _buildPriceInput(context, sellPriceController, isLeft ? 'left_sell' : 'right_sell', sellPriceFocus),
+              _buildOrderButton(
+                context: context,
+                label: 'Sell $optType',
+                subLabel: 'BID: $bidPrice',
+                shortcut: isLeft ? 'Shift + ↓' : 'Ctrl + ↓',
+                color: sellColor,
+                isFilled: true,
+                onPressed: option != null && !_isPlacingOrder
+                    ? () => _placeOrder(option, false, option.optt == 'CE',
+                        limitPrice: !isMarket ? sellPriceController.text : null)
+                    : null,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -322,7 +328,6 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     );
 
     return Container(
-      width: 120,
       height: 30,
       margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
@@ -729,13 +734,13 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
 
   void _showSnackbar(BuildContext context, String message,
       {required bool isSuccess}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isSuccess ? MyntColors.profit : MyntColors.loss,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(message),
+    //     backgroundColor: isSuccess ? MyntColors.profit : MyntColors.loss,
+    //     behavior: SnackBarBehavior.floating,
+    //     duration: const Duration(seconds: 3),
+    //   ),
+    // );
   }
 }

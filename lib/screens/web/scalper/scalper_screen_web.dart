@@ -10,6 +10,7 @@ import '../../../models/marketwatch_model/search_scrip_model.dart';
 import '../../../models/order_book_model/place_order_model.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/portfolio_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -54,6 +55,9 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   /// Only push ticks when the provider's selected token matches this,
   /// preventing cross-contamination during rapid symbol switches.
   String? _chartIndexToken;
+
+  /// Track the current theme state to detect changes for index chart
+  bool? _lastIndexThemeState;
 
   // Search
   final GlobalKey _searchFieldKey = GlobalKey();
@@ -122,12 +126,21 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
     }
   }
 
-  void _updateIndexChart() {
+  void _updateIndexChart({bool forceUpdate = false}) {
     final scalper = ref.read(scalperProvider);
     final index = scalper.selectedIndex;
+    // Use the existing isDarkMode helper
     final isDark = isDarkMode(context);
 
+    // Check if we need to update (symbol change or theme change or forced)
+    final shouldUpdate = forceUpdate ||
+        _chartIndexToken != index.token ||
+        (_lastIndexThemeState != null && _lastIndexThemeState != isDark);
+
+    if (!shouldUpdate) return;
+
     _chartIndexToken = index.token;
+    _lastIndexThemeState = isDark;
 
     // changeSymbol handles clearing old data and fetching new data internally.
     // Do NOT call resetData before changeSymbol — it races with changeSymbol's
@@ -196,8 +209,18 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   @override
   Widget build(BuildContext context) {
     final scalper = ref.watch(scalperProvider);
+    // Watch theme provider to trigger rebuilds when theme changes
+    ref.watch(themeProvider);
+    final isDark = isDarkMode(context);
     final indexToken = scalper.selectedIndex.token;
     final indexData = ref.watch(websocketProvider).socketDatas[indexToken];
+
+    // Update index chart when theme changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_lastIndexThemeState != null && _lastIndexThemeState != isDark) {
+        _updateIndexChart(forceUpdate: true);
+      }
+    });
 
     // Update LTP from WebSocket when data arrives
     if (indexData != null && indexData['lp'] != null) {

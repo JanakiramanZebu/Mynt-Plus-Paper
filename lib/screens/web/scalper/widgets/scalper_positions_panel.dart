@@ -204,7 +204,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                     const SizedBox(width: 16),
                     Text(
                       'Positions',
-                      style: MyntWebTextStyles.bodySmall(
+                      style: MyntWebTextStyles.body(
                         context,
                         fontWeight: MyntFonts.medium,
                         color: resolveThemeColor(context,
@@ -234,20 +234,20 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                         ),
                       ),
                     ],
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     // P&L chip
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: pnlColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(5),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'P&L',
-                            style: MyntWebTextStyles.caption(
+                            style: MyntWebTextStyles.body(
                               context,
                               fontWeight: MyntFonts.medium,
                               color: resolveThemeColor(context,
@@ -255,10 +255,10 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                                   light: MyntColors.textSecondary),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
                           Text(
                             '${isPositive ? '+' : ''}${totalPnL.toStringAsFixed(2)}',
-                            style: MyntWebTextStyles.bodySmall(
+                            style: MyntWebTextStyles.body(
                               context,
                               fontWeight: MyntFonts.semiBold,
                               color: pnlColor,
@@ -501,7 +501,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
               tooltip: 'Exit all positions',
               isEnabled: openPositions.isNotEmpty,
               color: resolveThemeColor(context,
-                  dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                  dark: MyntColors.lossDark, light: MyntColors.loss),
               onPressed: openPositions.isNotEmpty
                   ? () => _showCloseAllDialog(context, openPositions)
                   : null,
@@ -514,7 +514,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
             label: 'Cancel All',
             isEnabled: hasOpenOrders,
             color: resolveThemeColor(context,
-                dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                dark: MyntColors.lossDark, light: MyntColors.loss),
             onPressed: hasOpenOrders
                 ? () => _showCancelAllDialog(context, openOrders)
                 : null,
@@ -954,7 +954,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
               // Fixed header — fills full available width
               shadcn.Table(
                 columnWidths: shadcnWidths,
-                defaultRowHeight: const shadcn.FixedTableSize(50),
+                defaultRowHeight: const shadcn.FixedTableSize(36),
                 rows: [
                   shadcn.TableHeader(
                     cells: [
@@ -1226,7 +1226,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                 // Fixed header
                 shadcn.Table(
                   columnWidths: shadcnWidths,
-                  defaultRowHeight: const shadcn.FixedTableSize(50),
+                  defaultRowHeight: const shadcn.FixedTableSize(36),
                   rows: [
                     shadcn.TableHeader(
                       cells: [
@@ -1337,7 +1337,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
       ),
       child: shadcn.Table(
         columnWidths: shadcnWidths,
-        defaultRowHeight: const shadcn.FixedTableSize(50),
+        defaultRowHeight: const shadcn.FixedTableSize(36),
         rows: [
           shadcn.TableRow(
             cells: [
@@ -1345,7 +1345,9 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
               footerCell(const SizedBox.shrink(), padding: const EdgeInsets.fromLTRB(16, 8, 4, 8)), // 1: instrument
               footerCell(const SizedBox.shrink()),                                               // 2: qty
               footerCell(const SizedBox.shrink()),                                               // 3: act avg
-              footerCell(                                                                         // 4: LTP — "Total" label
+              footerCell(const SizedBox.shrink()),                                               // 4: LTP
+              footerCell(const SizedBox.shrink()),                                               // 5: stoploss
+              footerCell(                                                                         // 6: target — "Total" label
                 Text(
                   'Total',
                   style: MyntWebTextStyles.tableHeader(
@@ -1357,8 +1359,6 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                 ),
                 alignRight: true,
               ),
-              footerCell(const SizedBox.shrink()),                                               // 5: stoploss
-              footerCell(const SizedBox.shrink()),                                               // 6: target
               footerCell(                                                                         // 7: P&L value
                 Text(
                   totalPnl.toStringAsFixed(2),
@@ -1426,9 +1426,6 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
   bool _isFocused = false;
-  bool _isMinusHovered = false;
-  bool _isPlusHovered = false;
-  bool _isCheckHovered = false;
 
   @override
   void initState() {
@@ -1441,7 +1438,8 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   @override
   void didUpdateWidget(_GttPriceField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialPrice != widget.initialPrice && !_isFocused) {
+    // Only update if not focused and price changed
+    if (!_isFocused && oldWidget.initialPrice != widget.initialPrice) {
       _controller.text = widget.initialPrice;
     }
   }
@@ -1455,150 +1453,136 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   }
 
   void _onFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
+    setState(() => _isFocused = _focusNode.hasFocus);
     if (!_focusNode.hasFocus) {
-      _handleConfirm();
+      // Reset to original price on blur — only tick icon and Enter should confirm
+      _controller.text = widget.initialPrice;
     }
   }
 
   void _handleConfirm() {
     final newPrice = double.tryParse(_controller.text);
     if (newPrice != null && newPrice > 0) {
-      final currentPrice = double.tryParse(widget.initialPrice) ?? 0;
-      final diff = newPrice - currentPrice;
-      if (diff != 0) {
+      final actualCurrentPrice = double.tryParse(widget.gtt.d ?? '0') ?? 0;
+      final diff = newPrice - actualCurrentPrice;
+      if (diff.abs() > 0.001) {
         widget.scalper.modifyGttPrice(widget.gtt, diff, context);
       }
     } else {
       _controller.text = widget.initialPrice;
     }
+    _focusNode.unfocus();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = resolveThemeColor(
-      context,
-      dark: const Color(0xFF2A2A2A),
-      light: const Color(0xFFF1F3F8),
-    );
     final primaryColor = resolveThemeColor(
       context,
       dark: MyntColors.primaryDark,
       light: MyntColors.primary,
     );
-    
+    final dividerColor = resolveThemeColor(
+      context,
+      dark: MyntColors.dividerDark,
+      light: MyntColors.divider,
+    );
 
-    
-
-    return MyntTextField(
-      controller: _controller,
-      focusNode: _focusNode,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-      ],
-      textAlign: TextAlign.center,
-      placeholder: '0.00',
-      backgroundColor: bgColor,
-      height: 36,
-      textStyle: MyntWebTextStyles.body(
-        context,
-        fontWeight: MyntFonts.semiBold,
-        color: widget.textColor,
+    // Always keep TextField in tree — just change surrounding buttons
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: _isFocused ? primaryColor : dividerColor,
+          width: _isFocused ? 1.5 : 1,
+        ),
+        borderRadius: BorderRadius.circular(5),
       ),
-      leadingWidget: _isFocused
-          ? null
-          : MouseRegion(
-              cursor: SystemMouseCursors.click,
-              onEnter: (_) => setState(() => _isMinusHovered = true),
-              onExit: (_) => setState(() => _isMinusHovered = false),
-              child: GestureDetector(
-                onTap: () => widget.scalper.modifyGttPrice(widget.gtt, -widget.tickSize, context),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 22,
-                  height: 22,
-                  alignment: Alignment.center,
-                  margin: const EdgeInsets.only(left: 2, right: 2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isMinusHovered
-                        ? primaryColor.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                  ),
-                  child: Icon(
-                    Icons.remove,
-                    size: 16,
-                    color: _isMinusHovered
-                        ? primaryColor
-                        : primaryColor.withValues(alpha: 0.8),
-                  ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Minus button (hidden when focused)
+          if (!_isFocused)
+            InkWell(
+              onTap: () => widget.scalper.modifyGttPrice(widget.gtt, -widget.tickSize, context),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(4),
+                bottomLeft: Radius.circular(4),
+              ),
+              child: Container(
+                width: 26,
+                height: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border(right: BorderSide(color: dividerColor)),
                 ),
+                child: Icon(Icons.remove, size: 14, color: primaryColor),
               ),
             ),
-      trailingWidget: _isFocused
-          ? MouseRegion(
-              cursor: SystemMouseCursors.click,
-              onEnter: (_) => setState(() => _isCheckHovered = true),
-              onExit: (_) => setState(() => _isCheckHovered = false),
-              child: GestureDetector(
-                onTap: () {
-                  _handleConfirm();
-                  _focusNode.unfocus();
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 22,
-                  height: 22,
-                  alignment: Alignment.center,
-                  margin: const EdgeInsets.only(left: 2, right: 2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isCheckHovered
-                        ? Colors.green.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    size: 16,
-                    color: _isCheckHovered
-                        ? Colors.green
-                        : primaryColor.withValues(alpha: 0.8),
+          // Price text field — expands to fill remaining space
+          Flexible(
+            child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
+              textAlign: TextAlign.center,
+              style: MyntWebTextStyles.body(
+                context,
+                fontWeight: MyntFonts.semiBold,
+                color: widget.textColor,
+              ),
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                border: InputBorder.none,
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+              ],
+              onSubmitted: (_) => _handleConfirm(),
+            ),
+          ),
+          // Plus button (hidden when focused) / Tick button (shown when focused)
+          if (_isFocused)
+            InkWell(
+              onTap: _handleConfirm,
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(4),
+                bottomRight: Radius.circular(4),
+              ),
+              child: Container(
+                width: 26,
+                height: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border(left: BorderSide(color: dividerColor)),
+                  color: Colors.green.withValues(alpha: 0.08),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(4),
+                    bottomRight: Radius.circular(4),
                   ),
                 ),
+                child: const Icon(Icons.check, size: 14, color: Colors.green),
               ),
             )
-          : MouseRegion(
-              cursor: SystemMouseCursors.click,
-              onEnter: (_) => setState(() => _isPlusHovered = true),
-              onExit: (_) => setState(() => _isPlusHovered = false),
-              child: GestureDetector(
-                onTap: () => widget.scalper.modifyGttPrice(widget.gtt, widget.tickSize, context),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: 20,
-                  height: 20,
-                  alignment: Alignment.center,
-                  margin: const EdgeInsets.only(left: 2, right: 2),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isPlusHovered
-                        ? primaryColor.withValues(alpha: 0.1)
-                        : Colors.transparent,
-                  ),
-                  child: Icon(
-                    Icons.add,
-                    size: 18,
-                    color: _isPlusHovered
-                        ? primaryColor
-                        : primaryColor.withValues(alpha: 0.8),
-                  ),
+          else
+            InkWell(
+              onTap: () => widget.scalper.modifyGttPrice(widget.gtt, widget.tickSize, context),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(4),
+                bottomRight: Radius.circular(4),
+              ),
+              child: Container(
+                width: 26,
+                height: double.infinity,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border(left: BorderSide(color: dividerColor)),
                 ),
+                child: Icon(Icons.add, size: 14, color: primaryColor),
               ),
             ),
-      onSubmitted: (value) => _handleConfirm(),
+        ],
+      ),
     );
   }
 }
