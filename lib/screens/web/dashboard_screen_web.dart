@@ -961,6 +961,22 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
     final List<Map<String, dynamic>> tools = [
       {
+        'title': 'Equity SIP',
+        'subtitle': 'Systematic Investment Plan',
+        'description':
+            'Create and manage SIP baskets to automate your equity investments with ease.',
+        'accentColor': const Color(0xFF0EA5E9),
+        'badge': 'NEW',
+        'icon': Icons.auto_graph_rounded,
+        'onTap': () {
+          // Navigate to orders screen and switch to SIP tab (index 5)
+          ref.read(orderProvider).changeTabIndex(5, context);
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('orderBook');
+          }
+        },
+      },
+      {
         'title': 'Scalper',
         'subtitle': 'F&O • Index Trading',
         'description':

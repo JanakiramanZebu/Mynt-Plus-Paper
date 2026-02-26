@@ -120,50 +120,59 @@ class _SipOrderDetailScreenWebState
     final theme = ref.read(themeProvider);
 
     return Container(
-      constraints: const BoxConstraints(maxWidth: 480),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
-          ),
-        ),
-      ),
+      constraints: const BoxConstraints(maxWidth: 480),     
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header with close button
           _buildHeader(context, theme),
-          // Scrip info
-          _buildScripInfo(context, theme),
-          // Divider
-          Divider(
-            height: 1,
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-          ),
-          // SIP Details
+          // Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'SIP Details',
-                    style: MyntWebTextStyles.titlesub(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                    ),
+                  // SIP Name + stock count in a row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        _sipOrder.sipName ?? 'N/A',
+                        style: MyntWebTextStyles.head(
+                          context,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                          fontWeight: MyntFonts.semiBold,
+                        ),
+                      ),
+                      if ((_sipOrder.scrips?.length ?? 0) > 1) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '(${_sipOrder.scrips!.length} stocks in basket)',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 16),
+
+                  // Action Buttons
+                  _buildActionButtons(context, theme),
+                  const SizedBox(height: 16),
+
+                  // SIP Detail Rows
                   _buildDetailRow(context, 'SIP ID',
                       _sipOrder.internal?.sipId ?? 'N/A'),
                   _buildDetailRow(context, 'Registered On',
-                      sipformatDateTime(value: _sipOrder.regDate ?? '')),
+                      duedateformate(value: _sipOrder.regDate ?? '')),
                   _buildDetailRow(context, 'Start Date',
                       duedateformate(value: _sipOrder.startDate ?? '')),
                   _buildDetailRow(context, 'Due Date',
@@ -185,12 +194,35 @@ class _SipOrderDetailScreenWebState
                         '${_sipOrder.scrips!.length}',
                         showDivider: false),
                   ],
+                  const SizedBox(height: 24),
+
+                  // Scrip list
+                  if (_sipOrder.scrips?.isNotEmpty == true) ...[
+                    Text(
+                      'Stocks List',
+                      style: MyntWebTextStyles.titlesub(
+                        context,
+                        fontWeight: MyntFonts.semiBold,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Divider(
+                    //   height: 1,
+                    //   color: resolveThemeColor(context,
+                    //       dark: MyntColors.dividerDark, light: MyntColors.divider),
+                    // ),
+                    ...(_sipOrder.scrips!.asMap().entries.map((entry) {
+                      return _buildScripRow(
+                          context, entry.value, entry.key, _sipOrder.scrips!.length > 1);
+                    })),
+                  ],
                 ],
               ),
             ),
           ),
-          // Bottom action buttons
-          _buildActionButtons(context, theme),
         ],
       ),
     );
@@ -232,49 +264,6 @@ class _SipOrderDetailScreenWebState
     );
   }
 
-  Widget _buildScripInfo(BuildContext context, ThemesProvider theme) {
-    final scrips = _sipOrder.scrips ?? [];
-    final hasMultipleScrips = scrips.length > 1;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // SIP Name header
-          Text(
-            _sipOrder.sipName ?? 'N/A',
-            style: MyntWebTextStyles.titlesub(
-              context,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-            ),
-          ),
-          if (hasMultipleScrips) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${scrips.length} stocks in basket',
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary),
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          // Display all scrips
-          ...scrips.asMap().entries.map((entry) {
-            final index = entry.key;
-            final scrip = entry.value;
-            return _buildScripRow(context, scrip, index, hasMultipleScrips);
-          }),
-        ],
-      ),
-    );
-  }
-
   Widget _buildScripRow(BuildContext context, Scrips scrip, int index, bool showIndex) {
     final ltp = scrip.ltp ?? '0.00';
     final perChange = scrip.perChange ?? '0.00';
@@ -282,7 +271,7 @@ class _SipOrderDetailScreenWebState
 
     // Determine if this is qty or amount (prc) based SIP
     final isQtyMode = scrip.sipType != 'prc';
-    final investLabel = isQtyMode ? 'Qty' : 'Amount';
+    final investLabel = isQtyMode ? 'QTY' : 'AMOUNT';
     final investValue = isQtyMode ? (scrip.qty ?? '0') : '₹${scrip.prc ?? '0'}';
 
     Color changeColor;
@@ -319,7 +308,7 @@ class _SipOrderDetailScreenWebState
               children: [
                 Text(
                   scrip.tsym ?? 'N/A',
-                  style: MyntWebTextStyles.body(
+                  style: MyntWebTextStyles.symbol(
                     context,
                     color: resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark,
@@ -327,12 +316,12 @@ class _SipOrderDetailScreenWebState
                     fontWeight: MyntFonts.medium,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
                       scrip.exch ?? '',
-                      style: MyntWebTextStyles.bodySmall(
+                      style: MyntWebTextStyles.exch(
                         context,
                         color: resolveThemeColor(context,
                             dark: MyntColors.textSecondaryDark,
@@ -355,24 +344,25 @@ class _SipOrderDetailScreenWebState
             ),
           ),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end, 
             children: [
               Text(
-                '₹$ltp',
-                style: MyntWebTextStyles.body(
-                  context,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary),
-                  fontWeight: MyntFonts.medium,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '($perChange%)',
-                style: MyntWebTextStyles.bodySmall(
+                '$ltp',
+                style: MyntWebTextStyles.symbol(
                   context,
                   color: changeColor,
+                  
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${scrip.change ?? '0.00'} ($perChange%)',
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary) ,
+                  fontWeight: MyntFonts.medium,
                 ),
               ),
             ],
@@ -426,36 +416,24 @@ class _SipOrderDetailScreenWebState
   }
 
   Widget _buildActionButtons(BuildContext context, ThemesProvider theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: resolveThemeColor(context,
-                dark: MyntColors.dividerDark, light: MyntColors.divider),
-            width: 1,
+    return Row(
+      children: [
+        Expanded(
+          child: MyntPrimaryButton(
+            label: 'Modify SIP',
+            onPressed: () => _handleModifySip(context),
+            isFullWidth: true,
           ),
         ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: MyntPrimaryButton(
-              label: 'Modify SIP',
-              onPressed: () => _handleModifySip(context),
-              isFullWidth: true,
-            ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: MyntTertiaryButton(
+            label: 'Cancel SIP',
+            onPressed: () => _handleCancelSip(context),
+            isFullWidth: true,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: MyntTertiaryButton(
-              label: 'Cancel SIP',
-              onPressed: () => _handleCancelSip(context),
-              isFullWidth: true,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

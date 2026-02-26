@@ -146,8 +146,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
         resolveThemeColor(
           context,
           // dark: Color(0xffB5C0CF).withOpacity(.15),
-          dark: MyntColors.transparent,
-          light: Color(0xffF1F3F8),
+          dark: Color(0xffB5C0CF).withOpacity(.15),
+          light: Color(0xffF1F3F8),  
         );
 
     // Determine border color
@@ -291,13 +291,13 @@ class _MyntTextFieldState extends State<MyntTextField> {
   TextStyle _getDefaultPlaceholderStyle(BuildContext context) {
     switch (widget.size) {
       case MyntTextFieldSize.small:
-        return MyntWebTextStyles.bodyMedium(
+        return MyntWebTextStyles.body(
           context,
           fontWeight: FontWeight.w500,
           color: resolveThemeColor(
             context,
-            dark: WebColors.textSecondaryDark,
-            light: WebColors.textSecondary,
+            dark: WebColors.textSecondaryDark.withValues(alpha: 0.5),
+            light: WebColors.textSecondary.withValues(alpha: 0.5),
           ),
         );
       case MyntTextFieldSize.medium:
@@ -308,8 +308,8 @@ class _MyntTextFieldState extends State<MyntTextField> {
           fontWeight: FontWeight.w500,
           color: resolveThemeColor(
             context,
-            dark: WebColors.textSecondaryDark,
-            light: WebColors.textSecondary,
+            dark: WebColors.textSecondaryDark.withValues(alpha: 0.5),
+            light: WebColors.textSecondary.withValues(alpha: 0.5),
           ),
         );
     }
