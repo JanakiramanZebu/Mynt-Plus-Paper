@@ -4357,7 +4357,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // Show success message - ResponsiveSnackBar for web, ScaffoldMessenger for mobile
         if (kIsWeb) {
-          ResponsiveSnackBar.showSuccess(context, "Order Placed Successfully");
+          ResponsiveSnackBar.showSuccess(context, "order triggered successfully");
         } else {
           // ScaffoldMessenger.of(context)
           //     .showSnackBar(successMessage(context, "Order Placed Successfully"));

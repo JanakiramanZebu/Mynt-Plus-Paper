@@ -14,6 +14,7 @@ import '../models/order_book_model/sip_order_book.dart';
 import '../models/order_book_model/sip_order_cancel.dart';
 import '../models/order_book_model/sip_place_order.dart';
 import '../models/order_book_model/trade_book_model.dart';
+import '../models/strategy_builder_model/select_symbols_model.dart';
 import 'core/api_core.dart';
 
 mixin OrderAPI on ApiCore {
@@ -855,6 +856,7 @@ mixin OrderAPI on ApiCore {
     required String spotPrice,
     required int daysToExpiry,
     required List<Map<String, dynamic>> legs,
+    double? targetSpotPrice,
   }) async {
     try {
       final uri = Uri.parse(apiLinks.payoffCalculation);
@@ -865,6 +867,7 @@ mixin OrderAPI on ApiCore {
         "spotPrice": spotPrice,
         "daysToExpiry": daysToExpiry,
         "legs": legs,
+        if (targetSpotPrice != null) "targetSpotPrice": targetSpotPrice,
       };
 
       log("[PayoffCalculation] Request: ${jsonEncode(payload)}");
@@ -888,7 +891,7 @@ mixin OrderAPI on ApiCore {
   Future<Map<String, dynamic>> getOptionGreeks({
     required String spotPrice,
     required int expiryDay,
-    required Map<String, dynamic> options,
+    required List<Map<String, dynamic>> options,
   }) async {
     try {
       final uri = Uri.parse(apiLinks.optionGreeks);
@@ -912,6 +915,36 @@ mixin OrderAPI on ApiCore {
       return json as Map<String, dynamic>;
     } catch (e) {
       log("[OptionGreeks] Error: $e");
+      rethrow;
+    }
+  }
+
+  /// Call /select-symbols to resolve strategy legs to concrete option contracts
+  Future<List<SelectSymbolsLegResponse>> selectSymbols(
+    List<SelectSymbolsLegRequest> legs,
+  ) async {
+    try {
+      final uri = Uri.parse(apiLinks.selectSymbols);
+
+      final payload = legs.map((leg) => leg.toJson()).toList();
+
+      log("[SelectSymbols] Request: ${jsonEncode(payload)}");
+
+      final res = await apiClient.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      log("[SelectSymbols] Response: ${res.body}");
+
+      final jsonList = jsonDecode(res.body) as List<dynamic>;
+      return jsonList
+          .map((item) =>
+              SelectSymbolsLegResponse.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      log("[SelectSymbols] Error: $e");
       rethrow;
     }
   }
