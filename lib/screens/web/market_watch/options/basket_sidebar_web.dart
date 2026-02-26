@@ -266,7 +266,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginused ?? '0.00'}",
+                    : orderProv.bsktOrderMargin!.basketMargin.toStringAsFixed(2),
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.semiBold,
@@ -291,7 +291,7 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginusedtrade ?? '0.00'}",
+                    : orderProv.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2),
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.semiBold,

@@ -338,6 +338,14 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               ),
               const SizedBox(width: 12),
               _buildMetricItemSmall(context, 'MARGIN', provider.totalMargin, null, isDark),
+              const SizedBox(width: 12),
+              _buildMetricItemSmall(
+                context,
+                'MARGIN BENEFIT',
+                provider.marginBenefit,
+                isDark ? MyntColors.profitDark : MyntColors.profit,
+                isDark,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -2947,6 +2955,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   isDark,
                 ),
                 _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
+                _buildMetricItem(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
               ],
             ),
             const SizedBox(height: 12),
@@ -4618,9 +4627,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             ],
           ),
           const SizedBox(height: 8),
-          // Row 2: POP, REWARD/RISK, BREAKEVEN, empty
+          // Row 2: MARGIN BENEFIT, POP, REWARD/RISK, BREAKEVEN
           Row(
             children: [
+              _buildMetricItemNarrow(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
+              const SizedBox(width: 8),
               _buildMetricItemNarrow(context, 'POP', '${provider.metrics.popPercent.toStringAsFixed(0)}%', null, isDark),
               const SizedBox(width: 8),
               _buildMetricItemNarrow(context, 'REWARD/RISK', provider.metrics.riskRewardRatio, null, isDark),
@@ -7085,6 +7096,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 isDark,
               ),
               _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
+              _buildMetricItem(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
             ],
           ),
           const SizedBox(height: 8),

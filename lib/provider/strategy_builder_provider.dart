@@ -357,8 +357,29 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   PayoffMetrics get metrics => _metrics;
 
   // Margin
-  String _totalMargin = '--';
-  String get totalMargin => _totalMargin;
+  OrderMarginModel? _basketMarginModel;
+  OrderMarginModel? get basketMarginModel => _basketMarginModel;
+  bool _includeExistingMargin = false;
+  bool get includeExistingMargin => _includeExistingMargin;
+
+  String get totalMargin {
+    if (_basketMarginModel == null) return '--';
+    if (_includeExistingMargin) {
+      return _basketMarginModel!.basketMarginWithExisting.toIndianRupee();
+    }
+    return _basketMarginModel!.basketMargin.toIndianRupee();
+  }
+
+  String get marginBenefit {
+    if (_basketMarginModel == null) return '--';
+    final benefit = _basketMarginModel!.marginBenefit;
+    return benefit > 1 ? benefit.toIndianRupee() : '--';
+  }
+
+  void toggleIncludeExistingMargin() {
+    _includeExistingMargin = !_includeExistingMargin;
+    notifyListeners();
+  }
 
   // Custom strategies (API-based leg builder)
   final List<PredefinedStrategy> _customStrategies = [];
@@ -1432,7 +1453,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _payoffData = [];
     _targetPayoffData = [];
     _metrics = PayoffMetrics();
-    _totalMargin = '--'; // Reset margin
+    _basketMarginModel = null; // Reset margin
     notifyListeners();
   }
 
@@ -2136,13 +2157,13 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Calculate margin using GetBasketMargin API
   Future<void> _calculateMargin(BuildContext context) async {
     if (_basket.isEmpty) {
-      _totalMargin = '--';
+      _basketMarginModel = null;
       return;
     }
 
     final selectedItems = _basket.where((item) => item.checkbox).toList();
     if (selectedItems.isEmpty) {
-      _totalMargin = '--';
+      _basketMarginModel = null;
       return;
     }
 
@@ -2189,16 +2210,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       log('[StrategyBuilder] Margin API Response: ${response.stat}');
 
       if (response.stat == 'Ok') {
-        // Parse margin from response
-        final margin = double.tryParse(response.marginused ?? '0') ?? 0;
-        _totalMargin = margin.toIndianRupee();
+        _basketMarginModel = response;
       } else {
-        _totalMargin = '--';
+        _basketMarginModel = null;
         log('[StrategyBuilder] Margin API Error: ${response.emsg}');
       }
     } catch (e) {
       log('[StrategyBuilder] Margin API Error: $e');
-      _totalMargin = '--';
+      _basketMarginModel = null;
     }
   }
 
@@ -2625,7 +2644,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _targetPayoffData = [];
     _metrics = PayoffMetrics();
     _activePredefinedStrategy = null;
-    _totalMargin = '--';
+    _basketMarginModel = null;
     notifyListeners();
   }
 

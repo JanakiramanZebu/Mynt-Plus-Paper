@@ -1860,16 +1860,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
     final preTradeMargin = basket.bsktScripList.isEmpty ||
             basket.bsktOrderMargin == null
         ? "0.00"
-        : (double.parse(basket.bsktOrderMargin!.marginused ?? '0.00') -
-                double.parse(basket.bsktOrderMargin!.marginusedprev ?? '0.00'))
-            .toStringAsFixed(2);
+        : basket.bsktOrderMargin!.basketMargin.toStringAsFixed(2);
 
     final postTradeMargin = basket.bsktScripList.isEmpty ||
             basket.bsktOrderMargin == null
         ? "0.00"
-        : (double.parse(basket.bsktOrderMargin!.marginusedtrade ?? '0.00') -
-                double.parse(basket.bsktOrderMargin!.marginusedprev ?? '0.00'))
-            .toStringAsFixed(2);
+        : basket.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2);
 
     return Material(
       color: theme.isDarkMode
