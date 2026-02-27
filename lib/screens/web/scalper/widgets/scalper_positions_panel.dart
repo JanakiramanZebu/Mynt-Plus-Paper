@@ -64,30 +64,25 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final scalper = ref.watch(scalperProvider);
-    final portfolio = ref.watch(portfolioProvider);
-    final isCollapsed = scalper.isPositionsPanelCollapsed;
+    final isCollapsed = ref.watch(scalperProvider.select((s) => s.isPositionsPanelCollapsed));
+    final positionFilter = ref.watch(scalperProvider.select((s) => s.positionFilter));
+    // Use .select() on list reference so LTP ticks (in-place mutations) don't trigger rebuild
+    final allPositionsList = ref.watch(portfolioProvider.select((p) => p.allPostionList));
 
     // Show ALL positions (open + closed), apply position filter
-    final rawPositions = portfolio.allPostionList;
-    final allPositions = scalper.positionFilter == 'fno'
+    final rawPositions = allPositionsList;
+    final allPositions = positionFilter == 'fno'
         ? rawPositions
             .where((p) =>
                 p.exch == 'NFO' || p.exch == 'BFO' || p.exch == 'MCX')
             .toList()
         : rawPositions;
 
-    // Calculate totals using profitNloss (matches main positions page)
-    double totalPnL = 0;
-    for (final pos in allPositions) {
-      totalPnL += double.tryParse(pos.profitNloss ?? '0') ?? 0;
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Drag handle at the top
-        _buildDragHandle(context, allPositions, totalPnL),
+        _buildDragHandle(context, allPositions, isCollapsed),
         // Main content (collapsible)
         if (!isCollapsed)
           Expanded(
@@ -102,7 +97,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
               child: Column(
                 children: [
                   // Header with tabs and actions
-                  _buildHeader(context, totalPnL, allPositions.length),
+                  _buildHeader(context, allPositions.length),
                   // Content
                   Expanded(
                     child: IndexedStack(
@@ -111,7 +106,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                         // Positions tab - show groups view or regular list (with footer included)
                         _isGrouped
                             ? const PositionGroupScreen()
-                            : _buildPositionsListWithFooter(context, allPositions, portfolio),
+                            : _buildPositionsListWithFooter(context, allPositions),
                         // Orders tab
                         _buildOrdersList(context, ref),
                       ],
@@ -126,14 +121,8 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
   }
 
   /// Drag handle for resizing the panel
-  Widget _buildDragHandle(BuildContext context, List<PositionBookModel> allPositions, double totalPnL) {
-    final scalper = ref.watch(scalperProvider);
-    final isCollapsed = scalper.isPositionsPanelCollapsed;
-
-    final isPositive = totalPnL >= 0;
-    final pnlColor = isPositive
-        ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
-        : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss);
+  Widget _buildDragHandle(BuildContext context, List<PositionBookModel> allPositions, bool isCollapsed) {
+    final scalper = ref.read(scalperProvider);
 
     // Count open positions (non-zero qty)
     final openCount = allPositions.where((p) => (int.tryParse(p.qty ?? '0') ?? 0) != 0).length;
@@ -235,38 +224,51 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                       ),
                     ],
                     const SizedBox(width: 16),
-                    // P&L chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: pnlColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'P&L',
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: MyntFonts.medium,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary),
+                    // P&L chip — Consumer for live updates without full rebuild
+                    Consumer(builder: (context, ref, _) {
+                      final livePnL = ref.watch(portfolioProvider.select((_) {
+                        double t = 0;
+                        for (final pos in allPositions) {
+                          t += double.tryParse(pos.profitNloss ?? '0') ?? 0;
+                        }
+                        return t;
+                      }));
+                      final isPositive = livePnL >= 0;
+                      final pnlColor = isPositive
+                          ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                          : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss);
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: pnlColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'P&L',
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: MyntFonts.medium,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${isPositive ? '+' : ''}${totalPnL.toStringAsFixed(2)}',
-                            style: MyntWebTextStyles.body(
-                              context,
-                              fontWeight: MyntFonts.semiBold,
-                              color: pnlColor,
+                            const SizedBox(width: 8),
+                            Text(
+                              '${isPositive ? '+' : ''}${livePnL.toStringAsFixed(2)}',
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: MyntFonts.semiBold,
+                                color: pnlColor,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          ],
+                        ),
+                      );
+                    }),
                   ],
                   const Spacer(),
                   // Collapse/Expand button
@@ -296,14 +298,16 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, double totalPnL, int posCount) {
+  Widget _buildHeader(BuildContext context, int posCount) {
     final orders = ref.watch(orderProvider);
     final allOrders = orders.allOrder ?? [];
     final openOrders = orders.openOrder ?? [];
     final hasOpenOrders = openOrders.isNotEmpty;
 
     // Count open positions (non-zero qty, not BO/CO)
-    final portfolio = ref.watch(portfolioProvider);
+    // Use ref.read() — parent already watches list reference via .select(), so header
+    // rebuilds when positions are added/removed but NOT on every LTP tick
+    final portfolio = ref.read(portfolioProvider);
     final openPositions = portfolio.allPostionList
         .where((p) =>
             (int.tryParse(p.qty ?? '0') ?? 0) != 0 &&
@@ -874,7 +878,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
   }
 
   Widget _buildPositionsListWithFooter(
-      BuildContext context, List<PositionBookModel> positions, PortfolioProvider portfolio) {
+      BuildContext context, List<PositionBookModel> positions) {
     if (positions.isEmpty) {
       return const NoDataFoundWeb(
         title: 'No Positions',
@@ -1001,7 +1005,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                 ),
               ),
               // Fixed footer with column-aligned totals (inside the container)
-              _buildFooterWithColumns(context, portfolio, columnWidths),
+              _buildFooterWithColumns(context, positions, columnWidths),
             ],
           ),
         );
@@ -1282,23 +1286,7 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
     );
   }
 
-  Widget _buildFooterWithColumns(BuildContext context, PortfolioProvider portfolio, Map<int, double> columnWidths) {
-    // Calculate total P&L from all positions using profitNloss (matches main page)
-    final allPositions = portfolio.allPostionList;
-    double totalPnl = 0;
-    for (final pos in allPositions) {
-      totalPnl += double.tryParse(pos.profitNloss ?? '0') ?? 0;
-    }
-
-    final pnlColor = totalPnl > 0
-        ? resolveThemeColor(context,
-            dark: MyntColors.profitDark, light: MyntColors.profit)
-        : totalPnl < 0
-            ? resolveThemeColor(context,
-                dark: MyntColors.lossDark, light: MyntColors.loss)
-            : resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-
+  Widget _buildFooterWithColumns(BuildContext context, List<PositionBookModel> positions, Map<int, double> columnWidths) {
     final shadcnWidths = columnWidths.map((k, v) => MapEntry(k, shadcn.FixedTableSize(v)));
 
     shadcn.TableCell footerCell(Widget child, {bool alignRight = false, EdgeInsets padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8)}) {
@@ -1360,14 +1348,28 @@ class _ScalperPositionsPanelState extends ConsumerState<ScalperPositionsPanel> {
                 alignRight: true,
               ),
               footerCell(                                                                         // 7: P&L value
-                Text(
-                  totalPnl.toStringAsFixed(2),
-                  style: MyntWebTextStyles.body(
-                    context,
-                    fontWeight: MyntFonts.semiBold,
-                    color: pnlColor,
-                  ),
-                ),
+                Consumer(builder: (context, ref, _) {
+                  final totalPnl = ref.watch(portfolioProvider.select((_) {
+                    double t = 0;
+                    for (final pos in positions) {
+                      t += double.tryParse(pos.profitNloss ?? '0') ?? 0;
+                    }
+                    return t;
+                  }));
+                  final pnlColor = totalPnl > 0
+                      ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                      : totalPnl < 0
+                          ? resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)
+                          : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+                  return Text(
+                    totalPnl.toStringAsFixed(2),
+                    style: MyntWebTextStyles.body(
+                      context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: pnlColor,
+                    ),
+                  );
+                }),
                 alignRight: true,
               ),
               footerCell(const SizedBox.shrink(), padding: const EdgeInsets.fromLTRB(4, 8, 16, 8)), // 8: actions
@@ -1426,6 +1428,9 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   late TextEditingController _controller;
   late FocusNode _focusNode;
   bool _isFocused = false;
+  // True while user is actively editing. Only cleared by explicit user actions
+  // (tap outside, Enter, tick button). Survives transient focus loss from rebuilds.
+  bool _isEditing = false;
 
   @override
   void initState() {
@@ -1438,8 +1443,8 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   @override
   void didUpdateWidget(_GttPriceField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only update if not focused and price changed
-    if (!_isFocused && oldWidget.initialPrice != widget.initialPrice) {
+    // Only update text if user is NOT editing and price changed
+    if (!_isEditing && oldWidget.initialPrice != widget.initialPrice) {
       _controller.text = widget.initialPrice;
     }
   }
@@ -1453,14 +1458,44 @@ class _GttPriceFieldState extends State<_GttPriceField> {
   }
 
   void _onFocusChange() {
-    setState(() => _isFocused = _focusNode.hasFocus);
-    if (!_focusNode.hasFocus) {
-      // Reset to original price on blur — only tick icon and Enter should confirm
+    if (_focusNode.hasFocus) {
+      if (!_isFocused) setState(() => _isFocused = true);
+      _isEditing = true;
+    } else if (_isEditing) {
+      // Focus lost while editing — this is transient (parent rebuild / WebSocket update).
+      // Re-request focus to keep editing alive.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _isEditing && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
+    } else {
+      // _isEditing is false — genuine blur (user tapped outside, pressed Enter, etc.)
+      if (_isFocused) setState(() => _isFocused = false);
       _controller.text = widget.initialPrice;
     }
   }
 
+  /// Called when user taps outside this field — treat as genuine cancel
+  /// but ignore taps that land on the +/- or confirm buttons (within this widget's bounds)
+  void _handleTapOutside(PointerDownEvent event) {
+    if (_isEditing) {
+      // Check if tap is within this widget's bounds (includes +/- and confirm buttons)
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox != null && renderBox.hasSize) {
+        final localPos = renderBox.globalToLocal(event.position);
+        if (renderBox.paintBounds.contains(localPos)) {
+          return; // Tap is on the confirm/+/- button, not truly outside
+        }
+      }
+      _isEditing = false;
+      _controller.text = widget.initialPrice;
+      _focusNode.unfocus();
+    }
+  }
+
   void _handleConfirm() {
+    _isEditing = false; // Clear editing state before unfocus
     final newPrice = double.tryParse(_controller.text);
     if (newPrice != null && newPrice > 0) {
       final actualCurrentPrice = double.tryParse(widget.gtt.d ?? '0') ?? 0;
@@ -1492,8 +1527,7 @@ class _GttPriceFieldState extends State<_GttPriceField> {
       height: 32,
       decoration: BoxDecoration(
         border: Border.all(
-          color: _isFocused ? primaryColor : dividerColor,
-          width: _isFocused ? 1.5 : 1,
+          color: dividerColor,
         ),
         borderRadius: BorderRadius.circular(5),
       ),
@@ -1539,6 +1573,7 @@ class _GttPriceFieldState extends State<_GttPriceField> {
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
               ],
               onSubmitted: (_) => _handleConfirm(),
+              onTapOutside: _handleTapOutside,
             ),
           ),
           // Plus button (hidden when focused) / Tick button (shown when focused)
@@ -1555,13 +1590,8 @@ class _GttPriceFieldState extends State<_GttPriceField> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   border: Border(left: BorderSide(color: dividerColor)),
-                  color: Colors.green.withValues(alpha: 0.08),
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(4),
-                    bottomRight: Radius.circular(4),
-                  ),
                 ),
-                child: const Icon(Icons.check, size: 14, color: Colors.green),
+                child: Icon(Icons.check, size: 14, color: primaryColor),
               ),
             )
           else
@@ -1605,6 +1635,18 @@ class _ScalperPositionTableRow extends ConsumerStatefulWidget {
 
 class _ScalperPositionTableRowState
     extends ConsumerState<_ScalperPositionTableRow> {
+  final ValueNotifier<bool> _isHovered = ValueNotifier(false);
+  // GlobalKeys ensure _GttPriceField state survives parent tree rebuilds
+  // (shadcn.Table reinitializes cells on every rebuild, destroying ValueKey-based state)
+  final GlobalKey _slGttFieldKey = GlobalKey(debugLabel: 'sl_gtt_field');
+  final GlobalKey _targetGttFieldKey = GlobalKey(debugLabel: 'target_gtt_field');
+
+  @override
+  void dispose() {
+    _isHovered.dispose();
+    super.dispose();
+  }
+
   /// Format position quantity - for MCX, divide by lot size (matches main page)
   String _formatPositionQty(PositionBookModel position) {
     final rawQty = int.tryParse(position.netqty?.toString() ?? '0') ?? 0;
@@ -1621,9 +1663,6 @@ class _ScalperPositionTableRowState
     final product = position.sPrdtAli ?? 'N/A';
     final formattedQty = _formatPositionQty(position);
     final actAvg = position.avgPrc ?? '0.00';
-    final ltp = position.lp ?? '0.00';
-    final pnlValue = position.profitNloss ?? '0.00';
-    final pnl = double.tryParse(pnlValue) ?? 0;
     final isClosed = (int.tryParse(position.qty ?? '0') ?? 0) == 0;
 
     final qtyNum = int.tryParse(formattedQty.replaceAll('+', '')) ?? 0;
@@ -1645,15 +1684,6 @@ class _ScalperPositionTableRowState
                 : resolveThemeColor(context,
                     dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
 
-    final pnlColor = pnl > 0
-        ? resolveThemeColor(context,
-            dark: MyntColors.profitDark, light: MyntColors.profit)
-        : pnl < 0
-            ? resolveThemeColor(context,
-                dark: MyntColors.lossDark, light: MyntColors.loss)
-            : resolveThemeColor(context,
-                dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-
     final textStyle = MyntWebTextStyles.para(
       context,
       fontWeight: MyntFonts.medium,
@@ -1674,7 +1704,10 @@ class _ScalperPositionTableRowState
         position.sPrdtAli != "BO" &&
         position.sPrdtAli != "CO";
 
-    final scalper = ref.watch(scalperProvider);
+    // Only rebuild when GTT orders change, not on every scalper state change
+    // ignore: unused_local_variable
+    final gttOrders = ref.watch(scalperProvider.select((s) => s.gttOrders));
+    final scalper = ref.read(scalperProvider);
     final netqty = int.tryParse(position.netqty?.toString() ?? '0') ?? 0;
     final isOpen = !isClosed && netqty != 0;
     // final isExpanded = isOpen && scalper.expandedPositionTokens.contains(position.token);
@@ -1725,7 +1758,23 @@ class _ScalperPositionTableRowState
       );
     }
 
-    return Column(
+    // Row-level hover managed via ValueNotifier to survive rebuilds
+    final hoverBgColor = resolveThemeColor(context,
+        dark: Colors.white.withValues(alpha: 0.04),
+        light: Colors.black.withValues(alpha: 0.04));
+
+    return MouseRegion(
+      onEnter: (_) => _isHovered.value = true,
+      onExit: (_) => _isHovered.value = false,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: _isHovered,
+        builder: (context, hovered, child) {
+          return Container(
+            color: hovered ? hoverBgColor : Colors.transparent,
+            child: child,
+          );
+        },
+        child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
           // Main row using shadcn.Table for column alignment
@@ -1734,6 +1783,8 @@ class _ScalperPositionTableRowState
             defaultRowHeight: const shadcn.FixedTableSize(50),
             rows: [
               shadcn.TableRow(
+                // Suppress Table's internal hover to prevent flicker on rebuilds
+                cellTheme: const shadcn.TableCellTheme(),
                 cells: [
                   // 0: Product
                   cell(
@@ -1824,23 +1875,26 @@ class _ScalperPositionTableRowState
                     ),
                     alignRight: true,
                   ),
-                  // 4: LTP
+                  // 4: LTP — Consumer for per-cell live updates
                   cell(
-                    Text(
-                      ltp,
-                      style: MyntWebTextStyles.tableCell(
-                        context,
-                        darkColor: isClosed ? MyntColors.textSecondaryDark : MyntColors.textPrimaryDark,
-                        lightColor: isClosed ? MyntColors.textSecondary : MyntColors.textPrimary,
-                        fontWeight: MyntFonts.medium,
-                      ),
-                    ),
+                    Consumer(builder: (context, ref, _) {
+                      final liveLtp = ref.watch(portfolioProvider.select((_) => position.lp)) ?? '0.00';
+                      return Text(
+                        liveLtp,
+                        style: MyntWebTextStyles.tableCell(
+                          context,
+                          darkColor: isClosed ? MyntColors.textSecondaryDark : MyntColors.textPrimaryDark,
+                          lightColor: isClosed ? MyntColors.textSecondary : MyntColors.textPrimary,
+                          fontWeight: MyntFonts.medium,
+                        ),
+                      );
+                    }),
                     alignRight: true,
                   ),
                   // 5: Stoploss
                   cell(
                     isOpen
-                        ? _buildGttCell(context, slGtt, 'SL', position, scalper, secondaryColor, textStyle)
+                        ? _buildGttCell(context, slGtt, 'SL', position, scalper, secondaryColor, textStyle, gttFieldKey: _slGttFieldKey)
                         : Text('-', style: textStyle),
                     alignRight: true,
                     verticalPadding: 4,
@@ -1848,21 +1902,30 @@ class _ScalperPositionTableRowState
                   // 6: Target
                   cell(
                     isOpen
-                        ? _buildGttCell(context, targetGtt, 'Target', position, scalper, secondaryColor, textStyle)
+                        ? _buildGttCell(context, targetGtt, 'Target', position, scalper, secondaryColor, textStyle, gttFieldKey: _targetGttFieldKey)
                         : Text('-', style: textStyle),
                     alignRight: true,
                     verticalPadding: 4,
                   ),
-                  // 7: P&L
+                  // 7: P&L — Consumer for per-cell live updates
                   cell(
-                    Text(
-                      pnlValue,
-                      style: MyntWebTextStyles.tableCell(
-                        context,
-                        color: pnlColor,
-                        fontWeight: MyntFonts.medium,
-                      ),
-                    ),
+                    Consumer(builder: (context, ref, _) {
+                      final livePnlStr = ref.watch(portfolioProvider.select((_) => position.profitNloss)) ?? '0.00';
+                      final livePnl = double.tryParse(livePnlStr) ?? 0;
+                      final livePnlColor = livePnl > 0
+                          ? resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)
+                          : livePnl < 0
+                              ? resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)
+                              : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+                      return Text(
+                        livePnlStr,
+                        style: MyntWebTextStyles.tableCell(
+                          context,
+                          color: livePnlColor,
+                          fontWeight: MyntFonts.medium,
+                        ),
+                      );
+                    }),
                     alignRight: true,
                   ),
                   // 8: Actions (Exit button)
@@ -1917,8 +1980,10 @@ class _ScalperPositionTableRowState
           // if (isExpanded)
           //   _buildExpandedGttRow(context, position, netqty, scalper, secondaryColor),
         ],
-      );
-  
+      ),
+      ),
+    );
+
   }
 
   /// Build a SL or Target cell with GTT segment controls
@@ -1929,8 +1994,9 @@ class _ScalperPositionTableRowState
     PositionBookModel position,
     ScalperProvider scalper,
     Color secondaryColor,
-    TextStyle textStyle,
-  ) {
+    TextStyle textStyle, {
+    GlobalKey? gttFieldKey,
+  }) {
     final textColor = resolveThemeColor(context,
         dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
     final hasGtt = gtt != null;
@@ -1974,7 +2040,7 @@ class _ScalperPositionTableRowState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _buildCompactGttSegment(context, label, gtt, scalper, textColor, secondaryColor, position),
+        _buildCompactGttSegment(context, label, gtt, scalper, textColor, secondaryColor, position, gttFieldKey: gttFieldKey),
       ],
     );
   }
@@ -1987,8 +2053,9 @@ class _ScalperPositionTableRowState
     ScalperProvider scalper,
     Color textColor,
     Color secondaryColor,
-    PositionBookModel position,
-  ) {
+    PositionBookModel position, {
+    GlobalKey? gttFieldKey,
+  }) {
     final lossColor = resolveThemeColor(context,
         dark: MyntColors.lossDark, light: MyntColors.loss);
     final labelColor = label == 'SL'
@@ -2026,7 +2093,7 @@ class _ScalperPositionTableRowState
           height: 34,
           width: 160,
           child: _GttPriceField(
-            key: ValueKey('gtt_${gtt.alId}_$label'),
+            key: gttFieldKey ?? ValueKey('gtt_${gtt.alId}_$label'),
             initialPrice: price,
             tickSize: tickSize,
             gtt: gtt,

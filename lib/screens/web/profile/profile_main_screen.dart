@@ -18,10 +18,10 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/routes/route_names.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart' show ScreenType;
 
 import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
+import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/enums.dart';
 import 'Api_key_screen.dart';
 import 'api_key_screen_new.dart';
@@ -803,6 +803,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
 
   Widget _buildPasswordSecurityContent(ThemesProvider theme) {
     final isDark = theme.isDarkMode;
+    final changePassword = ref.watch(changePasswordProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -815,14 +816,212 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 darkColor: MyntColors.textSecondaryDark,
                 lightColor: MyntColors.textSecondary),
           ),
+          const SizedBox(height: 20),
+
+          // Old Password Field
+          Text(
+            'Old Password',
+            style: MyntWebTextStyles.body(context,
+                fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary)),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: 400,
+            child: MyntFormTextField(
+              controller: changePassword.oldPassword,
+              placeholder: 'Enter old password',
+              height: 40,
+              obscureText: changePassword.hideoldpassword,
+              readOnly: changePassword.loading,
+              trailingWidget: IconButton(
+                icon: Icon(
+                  changePassword.hideoldpassword ? Icons.visibility_off : Icons.visibility,
+                  size: 18,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+                onPressed: () {
+                  changePassword.hiddeoldpasswords();
+                  changePassword.activateChangePass();
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              onChanged: (v) {
+                changePassword.validateOldPassword();
+                changePassword.activateChangePass();
+              },
+            ),
+          ),
+          if (changePassword.oldPasswordError != null && changePassword.oldPasswordError!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                changePassword.oldPasswordError!,
+                style: MyntWebTextStyles.caption(context,
+                    color: MyntColors.loss),
+              ),
+            ),
           const SizedBox(height: 16),
-          MyntPrimaryButton(
-            label: "Change Password",
-            onPressed: () {
-              final pref = locator<Preferences>();
-              ref.read(changePasswordProvider).userIdController.text = "${pref.clientId}";
-              Navigator.pushNamed(context, Routes.changePass, arguments: "Yes");
-            },
+
+          // New Password Field
+          Text(
+            'New Password',
+            style: MyntWebTextStyles.body(context,
+                fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary)),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: 400,
+            child: MyntFormTextField(
+              controller: changePassword.newPassword,
+              placeholder: 'Enter new password',
+              height: 40,
+              obscureText: changePassword.hidenewpassword,
+              readOnly: changePassword.loading,
+              trailingWidget: IconButton(
+                icon: Icon(
+                  changePassword.hidenewpassword ? Icons.visibility_off : Icons.visibility,
+                  size: 18,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ),
+                onPressed: () {
+                  changePassword.hiddenewpasswords();
+                  changePassword.activateChangePass();
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              onChanged: (v) {
+                changePassword.validateNewPassword();
+                changePassword.activateChangePass();
+              },
+            ),
+          ),
+          if (changePassword.newPasswordError != null && changePassword.newPasswordError!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 5),
+              child: Text(
+                changePassword.newPasswordError!,
+                style: MyntWebTextStyles.caption(context,
+                    color: MyntColors.loss),
+              ),
+            ),
+          const SizedBox(height: 24),
+
+          // Buttons
+          Row(
+            children: [
+              SizedBox(
+                height: 36,
+                child: OutlinedButton(
+                  onPressed: () {
+                    changePassword.changePassMethod();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    side: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: MyntWebTextStyles.body(context,
+                        fontWeight: MyntFonts.bold,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              SizedBox(
+                height: 36,
+                child: ElevatedButton(
+                  onPressed: changePassword.loading
+                      ? null
+                      : changePassword.oldPassword.text.isEmpty ||
+                              changePassword.newPassword.text.isEmpty
+                          ? () {
+                              changePassword.validateOldPassword();
+                              changePassword.validateNewPassword();
+                            }
+                          : () async {
+                              // Set userId if not already set
+                              if (changePassword.userIdController.text.isEmpty) {
+                                final pref = locator<Preferences>();
+                                changePassword.userIdController.text = "${pref.clientId}";
+                              }
+
+                              // Validate fields
+                              changePassword.validateOldPassword();
+                              changePassword.validateNewPassword();
+                              changePassword.activateChangePass();
+
+                              if ((changePassword.oldPasswordError != null && changePassword.oldPasswordError!.isNotEmpty) ||
+                                  (changePassword.newPasswordError != null && changePassword.newPasswordError!.isNotEmpty)) {
+                                return;
+                              }
+
+                              // Call API with preventNavigation for web
+                              await changePassword.fetchChangePassword(
+                                changePassword.userIdController.text.toUpperCase(),
+                                changePassword.oldPassword.text,
+                                changePassword.newPassword.text,
+                                context,
+                                preventNavigation: true,
+                              );
+
+                              // After successful password change, logout on web
+                              if (changePassword.changepasswordmodel?.stat == "Ok" && mounted) {
+                                ref.read(authProvider).fetchLogout(context);
+                              }
+                            },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? MyntColors.secondary : MyntColors.primary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    elevation: 0,
+                    disabledBackgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.borderMutedDark,
+                        light: MyntColors.borderMuted),
+                  ),
+                  child: changePassword.loading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Set New Password',
+                          style: MyntWebTextStyles.body(context,
+                              fontWeight: MyntFonts.bold,
+                              color: MyntColors.backgroundColor),
+                        ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -224,7 +224,7 @@ class ChangePasswordProvider extends DefaultChangeNotifier {
       oldPassword.text = oldPassword.text.replaceAll(' ', '');
     }
     if (oldPassword.text.trim().isEmpty) {
-      oldPasswordError = "Please enter the Generated Password";
+      oldPasswordError = "Please enter the Old Password";
     } else {
       oldPasswordError = "";
     }

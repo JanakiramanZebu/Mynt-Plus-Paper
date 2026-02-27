@@ -1027,6 +1027,7 @@ class ScalperProvider extends ChangeNotifier {
     final idx = _gttOrders.indexWhere((g) => g.alId == alId);
     if (idx >= 0) {
       _gttOrders[idx].d = newPrice.toStringAsFixed(2);
+      _gttOrders = List.from(_gttOrders); // New reference for select() equality
       notifyListeners();
     }
 

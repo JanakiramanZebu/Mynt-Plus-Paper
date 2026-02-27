@@ -267,7 +267,7 @@ class WebAuthApi {
     required BuildContext context,
   }) async {
     try {
-      final uri = Uri.parse('https://copy.mynt.in/QRlogin');
+      final uri = Uri.parse('https://ws.mynt.in/login/QRlogin');
       
       Map<String, dynamic> data = {
         'unique_id': uniqueId,
