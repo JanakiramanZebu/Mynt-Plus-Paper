@@ -971,9 +971,62 @@ class _CustomizableSplitHomeScreenState
               );
             },
           ),
-          body: _buildNewLayout(theme),
+          body: Column(
+            children: [
+              _buildOldVersionBanner(),
+              Expanded(child: _buildNewLayout(theme)),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  /// Banner to navigate to the old version of the app
+  Widget _buildOldVersionBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: const Color(0xFF1A1D21),
+            light: const Color(0xFFF5F7FA)),
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: const Color(0xFF2A2D31),
+                light: const Color(0xFFE8ECF0)),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Spacer(),
+          InkWell(
+            onTap: () {
+              html.window.open('https://zebu-feuat.web.app', '_blank');
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Mynt by Zebu Web — Old Version is Here!',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,)
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
     );
   }
 
