@@ -675,7 +675,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     try {
       final qty = scalper.totalOrderQuantity.toString();
       // Options (NFO/BFO) use NRML for delivery, not CNC
-      final prd = scalper.isIntraday ? 'I' : 'NRML';
+      final prd = scalper.isIntraday ? 'I' : 'M';
       final prcType = isMarket ? 'MKT' : 'LMT';
 
       final orderInput = PlaceOrderInput(
@@ -698,6 +698,8 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
             : '',
         channel: 'WEB',
       );
+
+      print('Scalper Order Payload: exch=${orderInput.exch}, tsym=${orderInput.tsym}, qty=${orderInput.qty}, prc=${orderInput.prc}, prctype=${orderInput.prctype}, trantype=${orderInput.trantype}, prd=${orderInput.prd}, ret=${orderInput.ret}, amo=${orderInput.amo}, mktProt=${orderInput.mktProt}, channel=${orderInput.channel}');
 
       final result = await ref.read(orderProvider).fetchPlaceOrder(
             context,
