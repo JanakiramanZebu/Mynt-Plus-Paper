@@ -477,9 +477,12 @@ class _PositionHoldingsCardWebState
     // Use currentQty for display (total holdings), saleableQty is for selling
     final currentQty = holding.currentQty ?? 0;
     final saleableQty = holding.saleableQty ?? 0;
+    // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+    final int t1Qty = int.parse(holding.npoadt1qty ?? "0");
+    final int totalQty = currentQty + t1Qty;
 
-    // Show card if there's any holding (currentQty > 0)
-    if (currentQty <= 0) return const SizedBox.shrink();
+    // Show card if there's any holding (totalQty > 0)
+    if (totalQty <= 0) return const SizedBox.shrink();
 
     // Use pre-calculated P&L from provider (more accurate)
     final pnl = double.tryParse(matchingExch.profitNloss ?? '0') ?? 0;
@@ -490,7 +493,7 @@ class _PositionHoldingsCardWebState
     final symbolName = matchingExch.tsym?.replaceAll("-EQ", "") ?? '';
 
     // Calculate investment value
-    final investmentValue = currentQty * avgPrice;
+    final investmentValue = totalQty * avgPrice;
 
     // Get LTP percentage change (daily change)
     final ltpPercentChange = double.tryParse(matchingExch.perChange ?? '0') ?? 0;

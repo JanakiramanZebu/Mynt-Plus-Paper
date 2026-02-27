@@ -181,19 +181,22 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
   void _updateProfitLossValues() {
     final ltp = double.tryParse(_exchTsym.lp ?? "0.0") ?? 0.0;
     final qty = _holdingData.currentQty ?? 0;
+    // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+    final int t1Qty = int.parse(_holdingData.npoadt1qty ?? "0");
+    final int totalQty = qty + t1Qty;
     final avgPrice = double.tryParse(_holdingData.upldprc ?? "0.0") ?? 0.0;
 
-    if (ltp > 0 && qty > 0 && avgPrice > 0) {
+    if (ltp > 0 && totalQty > 0 && avgPrice > 0) {
       // Current value
-      _holdingData.currentValue = (ltp * qty).toStringAsFixed(2);
+      _holdingData.currentValue = (ltp * totalQty).toStringAsFixed(2);
 
       // Profit/Loss
-      final pnl = (ltp - avgPrice) * qty;
+      final pnl = (ltp - avgPrice) * totalQty;
       _exchTsym.profitNloss = pnl.toStringAsFixed(2);
 
       // P&L Percentage
       if (avgPrice > 0) {
-        final pnlPerc = (pnl / (avgPrice * qty)) * 100;
+        final pnlPerc = (pnl / (avgPrice * totalQty)) * 100;
         _exchTsym.pNlChng = pnlPerc.toStringAsFixed(2);
       }
     }
@@ -593,15 +596,17 @@ class _HoldingDetailScreenWebState extends ConsumerState<HoldingDetailScreenWeb>
                   ),
                   _buildInfoRow(
                     "Current Value",
-                    (int.parse("${_holdingData.currentQty ?? 0}") *
+                    ((int.parse("${_holdingData.currentQty ?? 0}") +
+                                int.parse(_holdingData.npoadt1qty ?? "0")) *
                             double.parse(_exchTsym.lp?.toString() ?? "0.0"))
                         .toStringAsFixed(2),
                     theme,
                   ),
-                  if (_holdingData.btstqty != "0") ...[
+                  if (_holdingData.btstqty != "0" ||
+                      int.parse(_holdingData.npoadt1qty ?? "0") > 0) ...[
                     _buildInfoRow(
                       "T1 Qty",
-                      "${_holdingData.btstqty ?? 0}",
+                      "${int.parse(_holdingData.btstqty ?? "0") + int.parse(_holdingData.npoadt1qty ?? "0")}",
                       theme,
                     ),
                   ],

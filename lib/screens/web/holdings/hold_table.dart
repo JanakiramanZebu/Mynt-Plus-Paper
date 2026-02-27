@@ -878,6 +878,8 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                     : null;
                             final token = exchTsym?.token ?? '';
                             final qty = holding.currentQty ?? 0;
+                            // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+                            final totalQty = qty + int.parse(holding.npoadt1qty ?? "0");
                             final avgPrice =
                                 double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
 
@@ -1061,9 +1063,37 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: Text(
-                                      qty > 0 ? '$qty' : '$qty',
-                                      style: _getTextStyle(context),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        // Show T1 badge for both POA (btstqty) and Non-POA (npoadt1qty) clients
+                                        if (int.parse(holding.npoadt1qty ?? "0") > 0 ||
+                                            (holding.btstqty != null && holding.btstqty != "0" && int.parse(holding.btstqty ?? "0") > 0)) ...[
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                            decoration: BoxDecoration(
+                                              color: MyntColors.secondary.withValues(alpha: 0.1),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              'T1: ${int.parse(holding.npoadt1qty ?? "0") + int.parse(holding.btstqty ?? "0")}',
+                                              style: MyntWebTextStyles.para(
+                                                context,
+                                                color: MyntColors.secondary,
+                                                darkColor: MyntColors.secondary,
+                                                lightColor: MyntColors.secondary,
+                                                fontWeight: MyntFonts.medium,
+                                              ).copyWith(fontSize: 10),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        Text(
+                                          '$qty',
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -1133,7 +1163,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                     child: token.isNotEmpty
                                         ? _CurrentValueCell(
                                             token: token,
-                                            qty: qty,
+                                            qty: totalQty,
                                             initialValue:
                                                 holding.currentValue ??
                                                     '0.00',
@@ -1156,7 +1186,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                     child: token.isNotEmpty
                                         ? _DayPnLCell(
                                             token: token,
-                                            qty: qty,
+                                            qty: totalQty,
                                             close: double.tryParse(
                                                     exchTsym?.close ?? '0') ??
                                                 0.0,
@@ -1181,7 +1211,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                     child: token.isNotEmpty
                                         ? _OverallPnLCell(
                                             token: token,
-                                            qty: qty,
+                                            qty: totalQty,
                                             avgPrice: avgPrice,
                                             initialValue:
                                                 exchTsym?.profitNloss ??

@@ -327,16 +327,43 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
 
       case 'Net Qty':
         final qty = holding.currentQty ?? 0;
+        // T1 qty: npoadt1qty for Non-POA clients, btstqty for POA clients
+        final t1Qty = int.parse(holding.npoadt1qty ?? "0") + int.parse(holding.btstqty ?? "0");
         final qtyText = qty > 0 ? '+$qty' : '$qty';
-        return Text(
-          qtyText,
-          style: WebTextStyles.custom(
-            fontSize: 13,
-            isDarkTheme: true,
-            color: _getQtyColor(qty),
-            fontWeight: WebFonts.medium,
-          ),
-          textAlign: TextAlign.right,
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (t1Qty > 0) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: ShadcnDarkColors.mutedForeground.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'T1: $t1Qty',
+                  style: WebTextStyles.custom(
+                    fontSize: 10,
+                    isDarkTheme: true,
+                    color: ShadcnDarkColors.mutedForeground,
+                    fontWeight: WebFonts.medium,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              qtyText,
+              style: WebTextStyles.custom(
+                fontSize: 13,
+                isDarkTheme: true,
+                color: _getQtyColor(qty),
+                fontWeight: WebFonts.medium,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ],
         );
 
       case 'Avg Price':
@@ -363,9 +390,11 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
           return Text(holding.currentValue ?? '0.00',
               textAlign: TextAlign.right);
         }
+        // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+        final int curValTotalQty = (holding.currentQty ?? 0) + int.parse(holding.npoadt1qty ?? "0");
         return _CurrentValueCell(
           token: token,
-          qty: holding.currentQty ?? 0,
+          qty: curValTotalQty,
           initialValue: holding.currentValue ?? '0.00',
         );
 
@@ -391,9 +420,11 @@ class _HoldingsTableShadcnState extends ConsumerState<HoldingsTableShadcn> {
         if (token.isEmpty) {
           return _buildColoredText(exchTsym?.profitNloss ?? '0.00');
         }
+        // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+        final int pnlTotalQty = (holding.currentQty ?? 0) + int.parse(holding.npoadt1qty ?? "0");
         return _OverallPnLCell(
           token: token,
-          qty: holding.currentQty ?? 0,
+          qty: pnlTotalQty,
           avgPrice: double.tryParse(holding.avgPrc ?? '0') ?? 0.0,
           initialValue: exchTsym?.profitNloss ?? '0.00',
         );
