@@ -36,6 +36,7 @@ class DashboardScreenWeb extends ConsumerStatefulWidget {
 
 class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   final ScrollController _indexScrollController = ScrollController();
+  final ScrollController _toolsScrollController = ScrollController();
   final ScrollController _tradeActionScrollController = ScrollController();
   // WebSocket subscription for live position updates
   StreamSubscription? _positionSocketSubscription;
@@ -175,6 +176,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     // No need to unbodyscribe here to avoid double calls
 
     _indexScrollController.dispose();
+    _toolsScrollController.dispose();
     _tradeActionScrollController.dispose();
     super.dispose();
   }
@@ -1055,9 +1057,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
             final availableWidth = constraints.maxWidth;
             const cardSpacing = 12.0;
             const minCardWidth = 280.0;
-            const totalCards = 4;
-            const totalSpacing = cardSpacing * (totalCards - 1);
-            const totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+            final totalCards = tools.length;
+            final totalSpacing = cardSpacing * (totalCards - 1);
+            final totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
 
             double cardWidth;
             bool needsScrolling = false;
@@ -1069,50 +1071,54 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               needsScrolling = true;
             }
 
-            return SizedBox(
-              height: 150,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: needsScrolling
-                    ? const ClampingScrollPhysics()
-                    : const NeverScrollableScrollPhysics(),
-                itemCount: tools.length,
-                itemBuilder: (context, index) {
-                  final tool = tools[index];
-                  final Color accent = tool['accentColor'] as Color;
-                  final String? badge = tool['badge'] as String?;
+            return Stack(
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: SingleChildScrollView(
+                    controller: _toolsScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    child: Row(
+                      children: tools.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final tool = entry.value;
+                        final Color accent = tool['accentColor'] as Color;
+                        final String? badge = tool['badge'] as String?;
 
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () {
-                        (tool['onTap'] as Function).call();
-                      },
-                      child: Container(
-                        width: cardWidth,
-                        margin: EdgeInsets.only(
-                            right:
-                                index < tools.length - 1 ? cardSpacing : 0),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: darkMode
-                              ? accent.withOpacity(0.06)
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: darkMode
-                                ? accent.withOpacity(0.20)
-                                : accent.withOpacity(0.15),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Top row: stacked card icon + title + badge
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
+                        return MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              (tool['onTap'] as Function).call();
+                            },
+                            child: Container(
+                              width: cardWidth,
+                              margin: EdgeInsets.only(
+                                  right: index < tools.length - 1
+                                      ? cardSpacing
+                                      : 0),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: darkMode
+                                    ? accent.withValues(alpha: 0.06)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: darkMode
+                                      ? accent.withValues(alpha: 0.20)
+                                      : accent.withValues(alpha: 0.15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top row: stacked card icon + title + badge
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
                                 // Stacked card icon effect
                                 SizedBox(
                                   width: 64,
@@ -1129,9 +1135,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                             width: 44,
                                             height: 44,
                                             decoration: BoxDecoration(
-                                              color:
-                                                  accent.withOpacity(0.18),
-                                              borderRadius:
+                                                    color: accent
+                                                        .withValues(alpha: 0.18),
+                                                    borderRadius:
                                                   BorderRadius.circular(11),
                                             ),
                                           ),
@@ -1147,9 +1153,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                             width: 44,
                                             height: 44,
                                             decoration: BoxDecoration(
-                                              color:
-                                                  accent.withOpacity(0.35),
-                                              borderRadius:
+                                                    color: accent
+                                                        .withValues(alpha: 0.35),
+                                                     borderRadius:
                                                   BorderRadius.circular(11),
                                             ),
                                           ),
@@ -1169,8 +1175,8 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                             boxShadow: [
                                               BoxShadow(
                                                 color: accent
-                                                    .withOpacity(0.4),
-                                                blurRadius: 8,
+                                                          .withValues(alpha: 0.4),
+                                                      blurRadius: 8,
                                                 offset:
                                                     const Offset(0, 3),
                                               ),
@@ -1288,8 +1294,151 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                       ),
                     ),
                   );
-                },
-              ),
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                // Left arrow
+                if (needsScrolling)
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_toolsScrollController.hasClients) {
+                                final scrollAmount = cardWidth + cardSpacing;
+                                final newOffset =
+                                    (_toolsScrollController.offset -
+                                            scrollAmount)
+                                        .clamp(
+                                  0.0,
+                                  _toolsScrollController
+                                      .position.maxScrollExtent,
+                                );
+                                _toolsScrollController.animateTo(
+                                  newOffset,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .card,
+                                border: Border.all(
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .border,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.arrow_back_ios,
+                                  size: 14,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // Right arrow
+                if (needsScrolling)
+                  Positioned(
+                    right: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_toolsScrollController.hasClients) {
+                                final scrollAmount = cardWidth + cardSpacing;
+                                final newOffset =
+                                    (_toolsScrollController.offset +
+                                            scrollAmount)
+                                        .clamp(
+                                  0.0,
+                                  _toolsScrollController
+                                      .position.maxScrollExtent,
+                                );
+                                _toolsScrollController.animateTo(
+                                  newOffset,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .card,
+                                border: Border.all(
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .border,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             );
           },
         ),

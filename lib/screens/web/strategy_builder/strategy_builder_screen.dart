@@ -1302,6 +1302,37 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     final peOI = double.tryParse(peOption?.oi ?? '0') ?? 0;
     final peOIChange = double.tryParse(peOption?.poi ?? '0') ?? 0;
 
+    // Check if CE/PE at this strike is in the basket
+    final ceToken = ceOption?.token ?? '';
+    final peToken = peOption?.token ?? '';
+    final ceInBasket = ceToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == ceToken).firstOrNull
+        : null;
+    final peInBasket = peToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == peToken).firstOrNull
+        : null;
+
+    // Basket highlight colors
+    Color? ceBasketBg;
+    Color? ceBasketBorder;
+    if (ceInBasket != null) {
+      final isBuy = ceInBasket.buySell == 'BUY';
+      ceBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      ceBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
+    Color? peBasketBg;
+    Color? peBasketBorder;
+    if (peInBasket != null) {
+      final isBuy = peInBasket.buySell == 'BUY';
+      peBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      peBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
     // Format OI display
     String formatOI(double oi, double change) {
       final oiStr = oi > 0 ? oi.toIndianFormat() : '--';
@@ -1330,7 +1361,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: ceBasketBg ?? (isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
@@ -1352,7 +1383,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: ceBasketBg ?? (isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
+                  border: ceBasketBorder != null
+                      ? Border(right: BorderSide(color: ceBasketBorder, width: 3))
+                      : null,
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
@@ -1390,7 +1424,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: peBasketBg ?? (isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
+                  border: peBasketBorder != null
+                      ? Border(left: BorderSide(color: peBasketBorder, width: 3))
+                      : null,
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
@@ -1413,7 +1450,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: peBasketBg ?? (isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
@@ -5346,6 +5383,36 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     // Background Colors
     // final itmColor = isDark ? const Color(0xFF2C2C23) : const Color(0xFFFFFBE6);
 
+    // Check if CE/PE at this strike is in the basket
+    final ceToken = row.callOption?.token ?? '';
+    final peToken = row.putOption?.token ?? '';
+    final ceInBasket = ceToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == ceToken).firstOrNull
+        : null;
+    final peInBasket = peToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == peToken).firstOrNull
+        : null;
+
+    // Basket highlight colors
+    Color? ceBasketBg;
+    Color? ceBasketBorder;
+    if (ceInBasket != null) {
+      final isBuy = ceInBasket.buySell == 'BUY';
+      ceBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      ceBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
+    Color? peBasketBg;
+    Color? peBasketBorder;
+    if (peInBasket != null) {
+      final isBuy = peInBasket.buySell == 'BUY';
+      peBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      peBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
 
     return Consumer(
       builder: (context, ref, child) {
@@ -5374,8 +5441,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               Expanded(
                 flex: 6,
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: null,
+                  decoration: BoxDecoration(
+                    color: ceBasketBg,
+                    border: ceBasketBorder != null
+                        ? Border(right: BorderSide(color: ceBasketBorder, width: 3))
+                        : null,
                   ),
                   child: _buildSideCell(context, provider, row.callOption, callSocketData, isDark, true),
                 ),
@@ -5405,8 +5475,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 flex: 6,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: null,
-                    // No side border
+                    color: peBasketBg,
+                    border: peBasketBorder != null
+                        ? Border(left: BorderSide(color: peBasketBorder, width: 3))
+                        : null,
                   ),
                   child: _buildSideCell(context, provider, row.putOption, putSocketData, isDark, false),
                 ),
@@ -5652,13 +5724,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
         ),
         DataColumn(
-          label: Text(
-            'Lots',
-           style: MyntWebTextStyles.bodySmall(
-              context,
-              darkColor: MyntColors.textPrimaryDark,
-              lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.medium,
+          label: Expanded(
+            child: Text(
+              'Lots',
+              textAlign: TextAlign.center,
+             style: MyntWebTextStyles.bodySmall(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textBlack,
+                fontWeight: MyntFonts.medium,
+              ),
             ),
           ),
         ),

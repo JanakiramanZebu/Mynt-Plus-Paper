@@ -30,7 +30,7 @@ class IpoDetailsSheetWeb extends ConsumerWidget {
     final singlePageData = ipoProvider.iposinglepage?.data;
 
     String companyName = ipo.name ?? '';
-    String? imageLink = ipo.imageLink;
+    String? imageLink;
     String ipoType = ipo is SMEIPO ? "SME" : "IPO";
 
     if (singlePageData != null && singlePageData is Map) {
