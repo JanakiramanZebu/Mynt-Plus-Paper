@@ -201,9 +201,9 @@ class _ScalperOptionChartPanelState
                   decoration: BoxDecoration(
                     color: isCE
                         ? resolveThemeColor(context,
-                            dark: MyntColors.primaryDark, light: MyntColors.primary)
+                            dark: MyntColors.secondary, light: MyntColors.primary)
                         : resolveThemeColor(context,
-                            dark: MyntColors.tertiary, light: MyntColors.tertiary),
+                            dark: MyntColors.errorDark, light: MyntColors.tertiary),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Text(

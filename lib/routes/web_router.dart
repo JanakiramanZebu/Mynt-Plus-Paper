@@ -38,6 +38,7 @@ class WebRoutes {
   static const String portfolioAnalysis = '/portfolio-analysis';
   static const String strategyBuilder = '/strategy-builder';
   static const String scalper = '/scalper';
+  static const String tradingViewWebHook = '/tradingview-webhook';
 }
 
 /// Global GoRouter instance for web
@@ -154,6 +155,14 @@ void initializeWebRouter() {
         path: WebRoutes.strategyBuilder,
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.strategyBuilder,
+        ),
+      ),
+
+      // TradingView WebHook screen
+      GoRoute(
+        path: WebRoutes.tradingViewWebHook,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.tradingViewWebHook,
         ),
       ),
 

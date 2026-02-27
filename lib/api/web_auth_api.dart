@@ -13,8 +13,9 @@ import '../utils/responsive_snackbar.dart';
 /// and includes TOTP generation functionality
 class WebAuthApi {
   // Base URL for login APIs
-  static const String _loginBaseUrl = 'https://ws.mynt.in/login';
-  
+   static const String _loginBaseUrl = 'https://ws.mynt.in/login';
+ static const String _loginBaseUrlWH = 'https://ws.mynt.in/wh';
+
   // Go Mynt URL for TOTP APIs  
   static const String _goMyntUrl = 'https://go.mynt.in/NorenWClientWeb';
   
@@ -329,6 +330,178 @@ class WebAuthApi {
     }
     return null;
   }
+  /// Create Webhook - Registers a webhook for the given symbol
+  static Future<Map<String, dynamic>?> createWebhook({
+    required String clientId,
+    required String token,
+    required String name,
+    required BuildContext context,
+  }) async {
+    try {
+      final uri = Uri.parse('$_loginBaseUrlWH/webhook/create');
+
+      final data = {
+        'clientid': clientId,
+        'token': token,
+        'name': name,
+      };
+
+      log("Create Webhook Request => $data");
+
+      final res = await http.post(
+        uri,
+        headers: _defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("Create Webhook Response => ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      } else {
+        ResponsiveSnackBar.showError(context, "Failed to create webhook. Please try again.");
+      }
+    } catch (e) {
+      debugPrint("Create Webhook error: $e");
+      ResponsiveSnackBar.showError(context, "An error occurred while creating webhook.");
+    }
+    return null;
+  }
+
+  /// List Webhooks - Fetches all webhooks for the client
+  static Future<Map<String, dynamic>?> listWebhooks({
+    required String clientId,
+    required String token,
+  }) async {
+    try {
+      final uri = Uri.parse('$_loginBaseUrlWH/webhook/list');
+
+      final data = {
+        'clientid': clientId,
+        'token': token,
+      };
+
+      log("List Webhooks Request => $data");
+
+      final res = await http.post(
+        uri,
+        headers: _defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("List Webhooks Response => ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("List Webhooks error: $e");
+    }
+    return null;
+  }
+
+  /// Enable Webhook
+  static Future<Map<String, dynamic>?> enableWebhook({
+    required int webhookId,
+    required String clientId,
+    required String token,
+  }) async {
+    try {
+      final uri = Uri.parse('$_loginBaseUrlWH/webhook/enable/$webhookId');
+
+      final data = {
+        'clientid': clientId,
+        'token': token,
+      };
+
+      log("Enable Webhook Request => id: $webhookId, data: $data");
+
+      final res = await http.post(
+        uri,
+        headers: _defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("Enable Webhook Response => ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("Enable Webhook error: $e");
+    }
+    return null;
+  }
+
+  /// Disable Webhook
+  static Future<Map<String, dynamic>?> disableWebhook({
+    required int webhookId,
+    required String clientId,
+    required String token,
+  }) async {
+    try {
+      final uri = Uri.parse('$_loginBaseUrlWH/webhook/disable/$webhookId');
+
+      final data = {
+        'clientid': clientId,
+        'token': token,
+      };
+
+      log("Disable Webhook Request => id: $webhookId, data: $data");
+
+      final res = await http.post(
+        uri,
+        headers: _defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("Disable Webhook Response => ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("Disable Webhook error: $e");
+    }
+    return null;
+  }
+
+  /// Webhook Logs - Fetches webhook execution logs for a date range
+  static Future<Map<String, dynamic>?> webhookLogs({
+    required String clientId,
+    required String token,
+    required String fromDate,
+    required String toDate,
+  }) async {
+    try {
+      final uri = Uri.parse('$_loginBaseUrlWH/webhook/logs');
+
+      final data = {
+        'clientid': clientId,
+        'token': token,
+        'from_date': fromDate,
+        'to_date': toDate,
+      };
+
+      log("Webhook Logs Request => $data");
+
+      final res = await http.post(
+        uri,
+        headers: _defaultHeaders,
+        body: jsonEncode(data),
+      );
+
+      log("Webhook Logs Response => ${res.body}");
+
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("Webhook Logs error: $e");
+    }
+    return null;
+  }
+
   /// Validate Session - Check if existing session is valid
   static Future<Map<String, dynamic>?> validateSession({
     required String clientId,

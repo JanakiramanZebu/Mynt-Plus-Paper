@@ -196,7 +196,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       decoration: BoxDecoration(
         color: resolveThemeColor(
           context,
-          dark: MyntColors.primaryDark.withValues(alpha: 0.04),
+          dark: MyntColors.secondary.withValues(alpha: 0.04),
           light: MyntColors.primary.withValues(alpha: 0.04),
         ),
         border: Border(
@@ -257,12 +257,12 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
   ) {
     final buyColor = resolveThemeColor(
       context,
-      dark: MyntColors.primaryDark,
+      dark: MyntColors.secondary,
       light: MyntColors.primary,
     );
     final sellColor = resolveThemeColor(
       context,
-      dark: MyntColors.tertiary,
+      dark: MyntColors.lossDark,
       light: MyntColors.tertiary,
     );
 
@@ -596,7 +596,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     required int selectedIndex,
     required void Function(int) onTap,
   }) {
-    final primary = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary);
+    final primary = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
     final dividerColor = resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider);
 
     return Container(

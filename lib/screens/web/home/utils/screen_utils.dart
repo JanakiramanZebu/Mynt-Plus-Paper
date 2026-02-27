@@ -53,6 +53,8 @@ class ScreenUtils {
         return 'Notification';
       case ScreenType.portfolioAnalysis:
         return 'Portfolio Analysis';
+        case ScreenType.tradingViewWebHook:
+          return 'WebHook';
     }
   }
 
@@ -107,6 +109,8 @@ class ScreenUtils {
         return Icons.notifications_outlined;
       case ScreenType.portfolioAnalysis:
         return Icons.pie_chart;
+        case ScreenType.tradingViewWebHook:
+          return Icons.web;
     }
   }
 

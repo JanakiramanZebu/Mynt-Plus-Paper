@@ -1411,7 +1411,7 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: resolveThemeColor(context,
-                              dark: MyntColors.primaryDark, light: MyntColors.primary),
+                              dark: MyntColors.secondary, light: MyntColors.primary),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -1954,11 +1954,11 @@ class _ScalperSettingsDialogState
                           Row(
                             children: [
                               Expanded(
-                                child: _buildShortcutRow(context, 'Shift + ↑', 'Buy CE (Left)', resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)),
+                                child: _buildShortcutRow(context, 'Shift + ↑', 'Buy CE (Left)', resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: _buildShortcutRow(context, 'Shift + ↓', 'Sell CE (Left)', resolveThemeColor(context, dark: MyntColors.tertiary, light: MyntColors.tertiary)),
+                                child: _buildShortcutRow(context, 'Shift + ↓', 'Sell CE (Left)', resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)),
                               ),
                             ],
                           ),
@@ -1966,11 +1966,11 @@ class _ScalperSettingsDialogState
                           Row(
                             children: [
                               Expanded(
-                                child: _buildShortcutRow(context, 'Ctrl + ↑', 'Buy PE (Right)', resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)),
+                                child: _buildShortcutRow(context, 'Ctrl + ↑', 'Buy PE (Right)', resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: _buildShortcutRow(context, 'Ctrl + ↓', 'Sell PE (Right)', resolveThemeColor(context, dark: MyntColors.tertiary, light: MyntColors.tertiary)),
+                                child: _buildShortcutRow(context, 'Ctrl + ↓', 'Sell PE (Right)', resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)),
                               ),
                             ],
                           ),

@@ -17,7 +17,9 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/web_colors.dart' as web_colors;
 import 'package:mynt_plus/res/global_font_web.dart';
 import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/routes/web_router.dart';
 import 'package:mynt_plus/screens/web/profile/logged_user_list_web.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' hide Colors;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -369,7 +371,23 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
                 launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
               },
             ),
-
+            // webhook
+            _buildMenuItem(
+              context,
+              icon: Icons.webhook,
+              title: 'WebHook',
+              subtitle: 'TradingView & API Integration',
+              iconColor: iconColor,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              onPressed: (ctx) {
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.tradingViewWebHook);
+                } else {
+                  context.go(WebRoutes.tradingViewWebHook);
+                }
+              },
+            ),
             // Setting
             _buildMenuItem(
               context,

@@ -30,6 +30,7 @@ import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_screen.dart';
+import 'package:mynt_plus/screens/web/webhook/webhook_tradingview_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
@@ -139,6 +140,7 @@ enum ScreenTypeParam {
   tradeAction,
   portfolioAnalysis,
   strategyBuilder,
+  tradingViewWebHook,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -615,6 +617,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenTypeParam.strategyBuilder:
         _handleStrategyBuilderTap();
+        break;
+      case ScreenTypeParam.tradingViewWebHook:
+        _handleWebHookTap();
         break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
@@ -2006,6 +2011,10 @@ class _CustomizableSplitHomeScreenState
     _replaceScreenInPanel(ScreenType.strategyBuilder);
   }
 
+  void _handleWebHookTap() {
+    _replaceScreenInPanel(ScreenType.tradingViewWebHook);
+  }
+
   void _handleScalperTap() {
     setState(() => _isScalperMode = true);
   }
@@ -2635,6 +2644,8 @@ class _CustomizableSplitHomeScreenState
         return const StrategyBuilderPanelWeb();
       case ScreenType.scalper:
         return const ScalperScreenWeb(embedded: true);
+      case ScreenType.tradingViewWebHook:
+        return const WebHookTradingViewScreen();
       // caEvent and cpAction removed
     }
   }
@@ -2694,6 +2705,8 @@ class _CustomizableSplitHomeScreenState
         return 'Strategy Builder';
       case ScreenType.scalper:
         return 'Scalper';
+      case ScreenType.tradingViewWebHook:
+        return 'WebHook';
       // caEvent and cpAction removed
     }
   }
@@ -2753,6 +2766,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.architecture;
       case ScreenType.scalper:
         return Icons.speed;
+      case ScreenType.tradingViewWebHook:
+        return Icons.webhook;
       // caEvent and cpAction removed
     }
   }
@@ -3137,6 +3152,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.cagrCalculator:
       case ScreenType.mfStockDetail:
       case ScreenType.strategyBuilder:
+      case ScreenType.tradingViewWebHook:
         break;
       case ScreenType.scalper:
         setState(() => _isScalperMode = true);
@@ -3939,6 +3955,12 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         urlPath = WebRoutes.reports;
         break;
+      case ScreenType.strategyBuilder:
+        urlPath = WebRoutes.strategyBuilder;
+        break;
+      case ScreenType.tradingViewWebHook:
+        urlPath = WebRoutes.tradingViewWebHook;
+        break;
       case ScreenType.dashboard:
       case ScreenType.watchlist:
         urlPath = WebRoutes.home;
@@ -4160,6 +4182,12 @@ class _CustomizableSplitHomeScreenState
         break;
       case WebRoutes.reports: // '/reports'
         _handleReportsTap();
+        break;
+      case WebRoutes.strategyBuilder: // '/strategy-builder'
+        _handleStrategyBuilderTap();
+        break;
+      case WebRoutes.tradingViewWebHook: // '/tradingview-webhook'
+        _handleWebHookTap();
         break;
       case WebRoutes.optionChain: // '/option-chain'
         // Option chain requires arguments, navigate to dashboard instead
@@ -5062,6 +5090,7 @@ enum ScreenType {
   portfolioAnalysis,
   strategyBuilder,
   scalper,
+  tradingViewWebHook,
 }
 
 // Hoverable navigation item widget

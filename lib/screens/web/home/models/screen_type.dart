@@ -24,4 +24,5 @@ enum ScreenType {
   mfStockDetail,
   notification,
   portfolioAnalysis,
+  tradingViewWebHook,
 }
