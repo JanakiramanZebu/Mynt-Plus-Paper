@@ -7,7 +7,6 @@ import '../../../models/marketwatch_model/opt_chain_model.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import '../../../models/order_book_model/order_book_model.dart';
 import '../../../provider/market_watch_provider.dart';
-import '../../../provider/watchlist_oc_provider.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/res.dart';
 import '../../../res/mynt_web_text_styles.dart';
@@ -398,9 +397,6 @@ class _OCPanelRowState extends ConsumerState<OCPanelRow> {
   }
 
   Future<void> _openDepth(OptionValues option) async {
-    // Collapse OC panel so depth view is visible
-    ref.read(watchlistOCProvider).collapse(context);
-
     final marketWatch = ref.read(marketWatchProvider);
 
     DepthInputArgs depthArgs = DepthInputArgs(

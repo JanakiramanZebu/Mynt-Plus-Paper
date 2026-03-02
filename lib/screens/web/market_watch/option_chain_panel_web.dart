@@ -171,8 +171,8 @@ class _OptionChainPanelWebState extends ConsumerState<OptionChainPanelWeb> {
               child: Padding(
                 padding: const EdgeInsets.all(4),
                 child: Icon(
-                  Icons.keyboard_arrow_down_rounded,
-                  size: 20,
+                  Icons.close_rounded,
+                  size: 18,
                   color: resolveThemeColor(context,
                       dark: MyntColors.textSecondaryDark,
                       light: MyntColors.textSecondary),
