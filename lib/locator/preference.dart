@@ -431,6 +431,38 @@ class Preferences {
       await _prefInstance!.setBool(_isTickerVisible, isVisible);
 
   bool get isTickerVisible => _prefInstance?.getBool(_isTickerVisible) ?? true;
+
+  // Watchlist Option Chain - persisted symbol
+  Future setWatchlistOCSymbol(String symbol) async =>
+      await _prefInstance!.setString(_watchlistOCSymbol, symbol);
+
+  String get watchlistOCSymbol =>
+      _prefInstance?.getString(_watchlistOCSymbol) ?? '26000:NSE:Nifty 50:NFO';
+
+  // Social / Spaces token storage
+  Future setSocialAccessToken(String token) async =>
+      await _prefInstance!.setString(_socialAccessToken, token);
+
+  Future setSocialRefreshToken(String token) async =>
+      await _prefInstance!.setString(_socialRefreshToken, token);
+
+  Future setSocialUserId(String id) async =>
+      await _prefInstance!.setString(_socialUserId, id);
+
+  String? get socialAccessToken =>
+      _prefInstance?.getString(_socialAccessToken) ?? "";
+
+  String? get socialRefreshToken =>
+      _prefInstance?.getString(_socialRefreshToken) ?? "";
+
+  String? get socialUserId =>
+      _prefInstance?.getString(_socialUserId) ?? "";
+
+  Future clearSocialTokens() async {
+    await _prefInstance?.remove(_socialAccessToken);
+    await _prefInstance?.remove(_socialRefreshToken);
+    await _prefInstance?.remove(_socialUserId);
+  }
 }
 
 const String _userTheme = 'userTheme';
@@ -532,3 +564,11 @@ const String _isSipDate = "isSipDate";
 
 ////TICKER VISIBILITY
 const String _isTickerVisible = "isTickerVisible";
+
+////WATCHLIST OPTION CHAIN
+const String _watchlistOCSymbol = "watchlistOCSymbol";
+
+//// SOCIAL / SPACES
+const String _socialAccessToken = "socialAccessToken";
+const String _socialRefreshToken = "socialRefreshToken";
+const String _socialUserId = "socialUserId";

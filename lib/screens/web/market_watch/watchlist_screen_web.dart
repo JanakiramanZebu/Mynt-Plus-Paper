@@ -24,12 +24,15 @@ import '../../../sharedWidget/common_buttons_web.dart';
 import '../../../sharedWidget/common_text_fields_web.dart';
 import '../../../sharedWidget/common_search_fields_web.dart';
 import 'my_stocks/stocks_screen_web.dart';
+import 'my_positions/positions_screen_web.dart';
 import 'watchlist_card_web.dart';
 import 'search_dialog_web.dart';
 import 'edit_scrip_web.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../models/marketwatch_model/get_quotes.dart';
 import 'index/index_bottom_sheet_web.dart';
+import 'option_chain_panel_web.dart';
+import '../../../provider/watchlist_oc_provider.dart';
 
 // Provider to manage delete mode state
 final deleteModeProvider =
@@ -79,6 +82,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
   bool _isDisposed = false;
   bool _canScrollLeft = false;
   bool _canScrollRight = false;
+  bool _wasOCExpanded = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -301,7 +305,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       await marketWatch.requestMWScrip(context: context, isSubscribe: false);
       if (!mounted) return;
 
-      const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
+      final predefined = marketWatch.preDefWL;
       final isPredefined = predefined.contains(newWatchlistName);
 
       await marketWatch.changeWlName(
@@ -419,6 +423,20 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       // Watch delete mode state from provider
       final showDeleteMode = ref.watch(deleteModeProvider);
 
+      // Watch option chain panel expanded state
+      final isOCExpanded =
+          ref.watch(watchlistOCProvider.select((p) => p.isExpanded));
+
+      // Restore PageView position when OC panel collapses
+      if (_wasOCExpanded && !isOCExpanded) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_pageController.hasClients && !_isDisposed) {
+            _pageController.jumpToPage(_currentPageIndex);
+          }
+        });
+      }
+      _wasOCExpanded = isOCExpanded;
+
       return SafeArea(
         child: Container(
           color: resolveThemeColor(context,
@@ -426,17 +444,23 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
               light: MyntColors.backgroundColor),
           child: Column(
             children: [
-              _buildSearchBar(context, ref, wlName, isPreDef,
-                  watchList?.values?.length ?? 0),
-              _buildWatchlistTabs(ref, wlName, watchList),
-              Expanded(
-                child: showDeleteMode
-                    ? EditScripWeb(
-                        wlName: wlName,
-                        showInDialog: false,
-                      )
-                    : _buildPageView(ref, watchList, sortBy),
-              ),
+              if (!isOCExpanded) ...[
+                _buildSearchBar(context, ref, wlName, isPreDef,
+                    watchList?.values?.length ?? 0),
+                _buildWatchlistTabs(ref, wlName, watchList),
+                Expanded(
+                  child: showDeleteMode
+                      ? EditScripWeb(
+                          wlName: wlName,
+                          showInDialog: false,
+                        )
+                      : _buildPageView(ref, watchList, sortBy),
+                ),
+              ],
+              if (isOCExpanded)
+                const Expanded(child: OptionChainPanelWeb())
+              else
+                const OptionChainPanelWeb(),
             ],
           ),
         ),
@@ -512,6 +536,10 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       WidgetRef ref, String pageName, List scrips, String sortBy) {
     if (pageName == 'My Stocks') {
       return const StocksScreenWeb();
+    }
+
+    if (pageName == 'My Positions') {
+      return const PositionsScreenWeb();
     }
 
     if (scrips.isEmpty) {
@@ -977,6 +1005,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
 
   String _formatTabName(String v) {
     if (v == 'My Stocks') return 'Holdings';
+    if (v == 'My Positions') return 'Positions';
     if (v == 'Nifty50') return 'Nifty 50';
     if (v == 'Niftybank') return 'Nifty Bank';
     if (v == 'Sensex') return 'Sensex';
@@ -1516,7 +1545,7 @@ class _WatchListScreenWebState extends State<WatchListScreenWeb>
       await marketWatch.requestMWScrip(context: context, isSubscribe: false);
       if (!mounted) return;
 
-      const predefined = ['My Stocks', 'Nifty50', 'Niftybank', 'Sensex'];
+      final predefined = marketWatch.preDefWL;
       final isPredefined = predefined.contains(watchlistName);
 
       await marketWatch.changeWlName(

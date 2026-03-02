@@ -109,18 +109,31 @@ class MarketWatchProvider extends DefaultChangeNotifier {
 
 //  Pre-defined market watchlist
 
-  final List<String> _preDefWL = [
+  final List<String> _preDefWLBase = [
     "My Stocks",
     "Nifty50",
     "Niftybank",
     "Sensex"
   ];
 
+  List<String> get _preDefWL {
+    final portfolio = ref.read(portfolioProvider);
+    final hasPositions = portfolio.postionBookModel != null &&
+        portfolio.postionBookModel!.isNotEmpty &&
+        (portfolio.postionBookModel![0].stat != "Not_Ok");
+    if (hasPositions) {
+      return ["My Positions", ..._preDefWLBase];
+    }
+    return _preDefWLBase;
+  }
+
   // Restricted names that users cannot use for watchlist names
   // Includes both internal names and display names (case-insensitive)
   static final List<String> _restrictedWatchlistNames = [
     "holdings",
     "my stocks",
+    "positions",
+    "my positions",
     "nifty 50",
     "nifty50",
     "nifty bank",
@@ -1800,8 +1813,16 @@ class MarketWatchProvider extends DefaultChangeNotifier {
         // Sort ONLY user watchlists (before adding predefined)
         updatedValues.sort((a, b) => a.compareTo(b));
 
-        // Now add predefined watchlists at the end
-        updatedValues.addAll(_preDefWL);
+        // If "My Positions" is in the predefined list (i.e. positions exist),
+        // insert it at the very front so it appears as the first tab
+        final preDefToAppend = List<String>.from(_preDefWL);
+        if (preDefToAppend.contains("My Positions")) {
+          preDefToAppend.remove("My Positions");
+          updatedValues.insert(0, "My Positions");
+        }
+
+        // Now add remaining predefined watchlists at the end
+        updatedValues.addAll(preDefToAppend);
 
         // IMPORTANT: After sorting, update the page index to match the new position
         // Find the current watchlist's new index after sorting
@@ -3391,6 +3412,9 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       } else if (wName == "My Stocks") {
         // My Stocks is handled specially through portfolio
         _scrips = [];
+      } else if (wName == "My Positions") {
+        // My Positions is handled specially through portfolio
+        _scrips = [];
       } else {
         // Regular watchlists
         _scrips = wlis ? jsonDecode(_marketWatchScripData[wName]) ?? [] : [];
@@ -3404,12 +3428,19 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       //   _applySavedSorting();
       // }
 
-      // Handle portfolio holdings data if "My Stocks" watchlist
+      // Handle portfolio holdings/positions data
       if (wName == "My Stocks") {
         // Portfolio holdings need different subscription handling
         await ref
             .read(portfolioProvider)
             .requestWSHoldings(context: context, isSubscribe: true);
+      } else if (wName == "My Positions") {
+        // Fetch position book if not already loaded, then subscribe to WS
+        final portfolio = ref.read(portfolioProvider);
+        if (portfolio.postionBookModel == null || portfolio.postionBookModel!.isEmpty) {
+          await portfolio.fetchPositionBook(context, portfolio.isDay);
+        }
+        await portfolio.requestWSPosition(context: context, isSubscribe: true);
       } else {
         // Standard watchlist - subscribe to the scrips
         if (_scrips.isNotEmpty) {
@@ -3586,8 +3617,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
       // Sort only user watchlists
       updatedValues.sort((a, b) => a.compareTo(b));
 
-      // Add predefined watchlists back at the end
-      updatedValues.addAll(_preDefWL);
+      // If "My Positions" exists, insert at front
+      final preDefToAdd = List<String>.from(_preDefWL);
+      if (preDefToAdd.contains("My Positions")) {
+        preDefToAdd.remove("My Positions");
+        updatedValues.insert(0, "My Positions");
+      }
+
+      // Add remaining predefined watchlists back at the end
+      updatedValues.addAll(preDefToAdd);
 
       _marketWatchlist = MarketWatchlist(
         requestTime: _marketWatchlist!.requestTime,
@@ -4912,7 +4950,15 @@ class MarketWatchProvider extends DefaultChangeNotifier {
           // Re-sort custom watchlists
           final customWLs = updatedValues.where((wl) => !_preDefWL.contains(wl)).toList();
           customWLs.sort((a, b) => a.compareTo(b));
-          final finalValues = [...customWLs, ..._preDefWL];
+          // If "My Positions" exists, insert at front
+          final preDefForRename = List<String>.from(_preDefWL);
+          final List<String> finalValues;
+          if (preDefForRename.contains("My Positions")) {
+            preDefForRename.remove("My Positions");
+            finalValues = ["My Positions", ...customWLs, ...preDefForRename];
+          } else {
+            finalValues = [...customWLs, ...preDefForRename];
+          }
 
           _marketWatchlist = MarketWatchlist(
             requestTime: _marketWatchlist!.requestTime,
