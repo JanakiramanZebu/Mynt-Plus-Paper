@@ -284,8 +284,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
         // Only calculate currentValue if we have valid lp AND it changed
         final lpValue = double.tryParse(exchTsym.lp ?? "0.00") ?? 0.0;
         if (lpValue > 0 && (tokenUpdated || !_isInitialized)) {
+          // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+          final int t1Qty = int.parse(holding.npoadt1qty ?? "0");
+          final int totalQty = (holding.currentQty ?? 0) + t1Qty;
           final newCurrentValue =
-              (int.parse("${holding.currentQty ?? 0}") * lpValue)
+              (totalQty * lpValue)
                   .toStringAsFixed(2);
 
           // Only update if actually changed
@@ -300,10 +303,10 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
 
             if (avgCost > 0) {
               holding.invested =
-                  (holding.currentQty! * avgCost).toStringAsFixed(2);
+                  (totalQty * avgCost).toStringAsFixed(2);
             }
 
-            if (holding.currentQty == 0) {
+            if (totalQty == 0) {
               double sellAmt = double.parse(holding.sellAmt ?? "0.00");
               int usedQty = int.parse(holding.usedqty ?? "0");
               double price = usedQty > 0 ? (sellAmt / usedQty) : 0.0;
@@ -328,7 +331,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
             if (double.parse(exchTsym.close ?? "0.00") > 0) {
               exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
                           double.parse(exchTsym.close ?? "0.00")) *
-                      int.parse("${holding.currentQty ?? 0}"))
+                      totalQty)
                   .toStringAsFixed(2);
             } else {
               // Skip calculation if close price is 0
@@ -444,8 +447,11 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
         // Calculate current values
         final lpValue = double.tryParse(exchTsym.lp ?? "0.00") ?? 0.0;
         if (lpValue > 0) {
+          // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+          final int t1Qty = int.parse(holding.npoadt1qty ?? "0");
+          final int totalQty = (holding.currentQty ?? 0) + t1Qty;
           holding.currentValue =
-              (int.parse("${holding.currentQty ?? 0}") * lpValue)
+              (totalQty * lpValue)
                   .toStringAsFixed(2);
 
           // Use the close value for avgCost only if it's valid
@@ -455,10 +461,10 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
 
           if (avgCost > 0) {
             holding.invested =
-                (holding.currentQty! * avgCost).toStringAsFixed(2);
+                (totalQty * avgCost).toStringAsFixed(2);
           }
 
-          if (holding.currentQty == 0) {
+          if (totalQty == 0) {
             double sellAmt = double.parse(holding.sellAmt ?? "0.00");
             int usedQty = int.parse(holding.usedqty ?? "0");
             double price = usedQty > 0 ? (sellAmt / usedQty) : 0.0;
@@ -483,7 +489,7 @@ class _HoldingScreenState extends ConsumerState<HoldingScreen> with TickerProvid
           if (double.parse(exchTsym.close ?? "0.00") > 0) {
             exchTsym.oneDayChg = ((double.parse(exchTsym.lp ?? "0.00") -
                         double.parse(exchTsym.close ?? "0.00")) *
-                    int.parse("${holding.currentQty ?? 0}"))
+                    totalQty)
                 .toStringAsFixed(2);
           } else {
             // Skip calculation if close price is 0

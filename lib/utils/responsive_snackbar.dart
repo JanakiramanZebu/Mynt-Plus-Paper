@@ -588,7 +588,6 @@ class _ToastItemWidgetState extends State<_ToastItemWidget> {
   String _getTypeLabel(SnackBarType type) {
     // If user specifically wants "Event has been created" as title, they need to pass it differently.
     // Assuming they use message for subtitle and type for title, or message is title?
-    // In screenshot: Title = "Event has been created", Subtitle = "Sunday..."
     // Current API: show(message: "...")
     // The previous prompt code snippet had: title: Text('Event has been created'), subtitle: Text(...)
     // Just using mapped labels for now.

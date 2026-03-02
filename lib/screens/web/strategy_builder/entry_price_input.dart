@@ -62,6 +62,12 @@ class _EntryPriceTableInputState extends State<EntryPriceTableInput> {
       borderColor:(resolveThemeColor(context, dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder)),
       backgroundColor: Colors.transparent,
       height: 28,
+      textStyle: MyntWebTextStyles.bodySmall(
+        context,
+        darkColor: MyntColors.textPrimaryDark,
+        lightColor: MyntColors.textBlack,
+        fontWeight: MyntFonts.medium,
+      ).copyWith(fontSize: 12),
       onChanged: (val) {
          final price = double.tryParse(val);
          if (price != null) {

@@ -15,6 +15,7 @@ import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:mynt_plus/sharedWidget/hover_actions_web.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/entry_price_input.dart';
+import 'package:mynt_plus/utils/rupee_convert_format.dart';
 
 
 /// Strategy Builder Screen - Full screen strategy builder with payoff analysis
@@ -58,7 +59,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     });
 
     _strategyTabController.addListener(() {
-      final tabs = ['Bullish', 'Bearish', 'Neutral', 'MyStrategy'];
+      final tabs = ['Bullish', 'Bearish', 'Neutral', 'CustomBuilder'];
       ref.read(strategyBuilderProvider).setStrategyTypeTab(tabs[_strategyTabController.index]);
     });
 
@@ -177,10 +178,21 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 // Basket table (limited height)
                 SizedBox(
                   height: provider.basket.isEmpty ? 100 : (provider.basket.length * 50.0 + 50).clamp(100, 250),
-                  child: _buildBasketTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      _buildBasketTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.basket.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.4),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -215,9 +227,20 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 // Chart or Greeks table (fixed height for small screen)
                 SizedBox(
                   height: 280,
-                  child: provider.payoffTab == 0
-                      ? _buildPayoffChart(context, provider, isDark)
-                      : _buildGreeksTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      provider.payoffTab == 0
+                          ? _buildPayoffChart(context, provider, isDark)
+                          : _buildGreeksTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.payoffData.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -245,19 +268,23 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                       context,
                       fontWeight: MyntFonts.medium,
                     ),
+                    isScrollable: true,
                     tabs: const [
                       Tab(text: 'Bullish'),
                       Tab(text: 'Bearish'),
                       Tab(text: 'Neutral'),
-                      Tab(text: 'My Strategy'),
+                      Tab(text: 'Custom Builder'),
                     ],
                   ),
                   const Divider(height: 1),
-                  // Strategy grid (fixed height)
-                  SizedBox(
-                    height: 200,
-                    child: _buildStrategyGrid(context, provider, isDark),
-                  ),
+                  // Strategy grid
+                  if (provider.strategyTypeTab == 'CustomBuilder')
+                    _buildStrategyGrid(context, provider, isDark)
+                  else
+                    SizedBox(
+                      height: 200,
+                      child: _buildStrategyGrid(context, provider, isDark),
+                    ),
                 ],
               ),
             ),
@@ -301,7 +328,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               _buildMetricItemSmall(
                 context,
                 'NET PREMIUM',
-                provider.netPremium.abs().toStringAsFixed(2),
+                provider.netPremium.abs().toIndianFormat(),
                 provider.netPremium > 0
                     ? (isDark ? MyntColors.profitDark : MyntColors.profit)
                     : provider.netPremium < 0
@@ -311,6 +338,14 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               ),
               const SizedBox(width: 12),
               _buildMetricItemSmall(context, 'MARGIN', provider.totalMargin, null, isDark),
+              const SizedBox(width: 12),
+              _buildMetricItemSmall(
+                context,
+                'MARGIN BENEFIT',
+                provider.marginBenefit,
+                isDark ? MyntColors.profitDark : MyntColors.profit,
+                isDark,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -327,12 +362,17 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           _buildMetricItemSmall(
             context,
             'BREAKEVEN',
-            provider.metrics.breakevens.isNotEmpty
-                ? provider.metrics.breakevens.map((b) => b.toStringAsFixed(2)).join(', ')
-                : '--',
+            '--',
             null,
             isDark,
             fullWidth: true,
+            valueWidget: provider.metrics.breakevens.isNotEmpty
+                ? _buildBreakevenRichText(provider, MyntWebTextStyles.bodySmall(
+                    context,
+                    color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                    fontWeight: MyntFonts.semiBold,
+                  ))
+                : null,
           ),
           const SizedBox(height: 8),
           // Fifth row: Greeks
@@ -357,7 +397,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   }
 
   /// Build compact metric item for small screens
-  Widget _buildMetricItemSmall(BuildContext context, String label, String value, Color? valueColor, bool isDark, {bool fullWidth = false}) {
+  Widget _buildMetricItemSmall(BuildContext context, String label, String value, Color? valueColor, bool isDark, {bool fullWidth = false, Widget? valueWidget}) {
     final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -376,7 +416,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             ),
           ),
           const SizedBox(height: 2),
-          Text(
+          valueWidget ?? Text(
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
@@ -389,6 +429,22 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     );
 
     return fullWidth ? content : Expanded(child: content);
+  }
+
+  Widget _buildBreakevenRichText(StrategyBuilderProvider provider, TextStyle baseStyle) {
+    final spans = <InlineSpan>[];
+    final breakevens = provider.metrics.breakevens;
+    for (int i = 0; i < breakevens.length; i++) {
+      final b = breakevens[i];
+      final pct = provider.spotPrice > 0 ? ((b - provider.spotPrice) / provider.spotPrice) * 100 : 0.0;
+      if (i > 0) spans.add(TextSpan(text: '  |  ', style: baseStyle));
+      spans.add(TextSpan(text: b.toIndianFormat(), style: baseStyle));
+      spans.add(TextSpan(
+        text: ' (${pct >= 0 ? '+' : ''}${pct.toStringAsFixed(2)}%)',
+        style: baseStyle.copyWith(fontSize: (baseStyle.fontSize ?? 14) - 3, color: Colors.grey),
+      ));
+    }
+    return RichText(text: TextSpan(children: spans));
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
@@ -442,7 +498,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '₹${provider.spotPrice.toStringAsFixed(2)}',
+                    '₹${provider.spotPrice.toIndianFormat()}',
                     style: MyntWebTextStyles.body(
                       context,
                       color: MyntColors.profit,
@@ -521,10 +577,21 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 const Divider(height: 1),
                 // Basket table
                 Expanded(
-                  child: _buildBasketTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      _buildBasketTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.basket.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.4),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -555,11 +622,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                       context,
                       fontWeight: MyntFonts.medium,
                     ),
+                    isScrollable: true,
                     tabs: const [
                       Tab(text: 'Bullish'),
                       Tab(text: 'Bearish'),
                       Tab(text: 'Neutral'),
-                      Tab(text: 'My Strategy'),
+                      Tab(text: 'Custom Builder'),
                     ],
                   ),
                   const Divider(height: 1),
@@ -603,7 +671,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                'Spot: ${provider.spotPrice.toStringAsFixed(2)}',
+                'Spot: ${provider.spotPrice.toIndianFormat()}',
                 style: MyntWebTextStyles.bodySmall(
                   context,
                   color: MyntColors.primary,
@@ -791,7 +859,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              watchedProvider.spotPrice.toStringAsFixed(2),
+                              watchedProvider.spotPrice.toIndianFormat(),
                               style: MyntWebTextStyles.bodySmall(
                                 context,
                                 color: MyntColors.primary,
@@ -1093,9 +1161,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     }
     // Convert to readable format (in lakhs)
     if (total >= 100000) {
-      return (total / 100000).toStringAsFixed(2);
+      return (total / 100000).toIndianFormat();
     }
-    return total.toStringAsFixed(2);
+    return total.toIndianFormat();
   }
 
   String _calculatePCR(StrategyBuilderProvider provider) {
@@ -1110,123 +1178,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     }
     if (ceOI == 0) return '0.00';
     return (peOI / ceOI).toStringAsFixed(2);
-  }
-
-  void _showSaveStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: Container(
-          width: 400,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Save Strategy',
-                      style: MyntWebTextStyles.body(
-                        context,
-                        darkColor: MyntColors.textPrimaryDark,
-                        lightColor: Colors.black,
-                      ).copyWith(fontSize: 16, fontWeight: FontWeight.w600), // Fixed fontSize lint
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: isDark ? Colors.grey : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-              
-              // Body
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF2F4F7),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: const Color(0xFF2962FF), // Blue border matching visual
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        controller: nameController,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: 'Enter strategy name',
-                          hintStyle: TextStyle(
-                            color: isDark ? Colors.grey : Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          isDense: true,
-                        ),
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (nameController.text.trim().isNotEmpty) {
-                            provider.saveStrategy(nameController.text, context);
-                            Navigator.pop(context);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0037B7), // Deep blue matching visual
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildOptionChainTable(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
@@ -1322,7 +1273,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            '${provider.spotPrice.toStringAsFixed(2)} (${isPositive ? '' : ''}${pct.toStringAsFixed(2)}%)',
+            '${provider.spotPrice.toIndianFormat()} (${isPositive ? '' : ''}${pct.toStringAsFixed(2)}%)',
             style: MyntWebTextStyles.bodySmall(
               context,
               color: Colors.white,
@@ -1351,10 +1302,41 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     final peOI = double.tryParse(peOption?.oi ?? '0') ?? 0;
     final peOIChange = double.tryParse(peOption?.poi ?? '0') ?? 0;
 
+    // Check if CE/PE at this strike is in the basket
+    final ceToken = ceOption?.token ?? '';
+    final peToken = peOption?.token ?? '';
+    final ceInBasket = ceToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == ceToken).firstOrNull
+        : null;
+    final peInBasket = peToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == peToken).firstOrNull
+        : null;
+
+    // Basket highlight colors
+    Color? ceBasketBg;
+    Color? ceBasketBorder;
+    if (ceInBasket != null) {
+      final isBuy = ceInBasket.buySell == 'BUY';
+      ceBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      ceBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
+    Color? peBasketBg;
+    Color? peBasketBorder;
+    if (peInBasket != null) {
+      final isBuy = peInBasket.buySell == 'BUY';
+      peBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      peBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
     // Format OI display
     String formatOI(double oi, double change) {
-      final oiStr = oi > 0 ? oi.toStringAsFixed(2) : '--';
-      final changeStr = change != 0 ? '(${change >= 0 ? '' : ''}${change.toStringAsFixed(2)})' : '';
+      final oiStr = oi > 0 ? oi.toIndianFormat() : '--';
+      final changeStr = change != 0 ? '(${change >= 0 ? '' : ''}${change.toIndianFormat()})' : '';
       return '$oiStr$changeStr';
     }
 
@@ -1379,7 +1361,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: ceBasketBg ?? (isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
@@ -1401,7 +1383,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: ceBasketBg ?? (isCEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
+                  border: ceBasketBorder != null
+                      ? Border(right: BorderSide(color: ceBasketBorder, width: 3))
+                      : null,
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
@@ -1439,7 +1424,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: peBasketBg ?? (isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
+                  border: peBasketBorder != null
+                      ? Border(left: BorderSide(color: peBasketBorder, width: 3))
+                      : null,
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
@@ -1462,7 +1450,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null,
+                  color: peBasketBg ?? (isPEITM ? (isDark ? const Color(0xFF3D1F1F) : const Color(0xFFFFEBEE)) : null),
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
@@ -1549,6 +1537,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
 
   Widget _buildBasketTable(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     if (provider.basket.isEmpty) {
+      // Show skeleton shimmer rows when loading in analyze mode
+      if (provider.isLoading && provider.isAnalyzeMode) {
+        return _buildBasketTableSkeleton(isDark);
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1745,6 +1737,72 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     );
   }
 
+  /// Skeleton shimmer loader for basket table during analyze mode loading
+  Widget _buildBasketTableSkeleton(bool isDark) {
+    Widget shimmerCell(double width) => MyntShimmerLoader(width: width, height: 14, borderRadius: 4);
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          // Skeleton header row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.dividerDark : MyntColors.divider,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          ),
+          // Skeleton data rows
+          ...List.generate(3, (index) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? const Color(0xFF333333) : const Color(0xFFEEEEEE),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
   DataRow _buildBasketRow(
     BuildContext context,
     StrategyBuilderProvider provider,
@@ -1873,7 +1931,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ],
               ),
             ),
-            itemBuilder: (context) => provider.getStrikesForExpiry(item.expdate)
+            itemBuilder: (context) => provider.getStrikesForExpiry(item.expdate, currentStrike: item.strprc)
                 .map((strike) => PopupMenuItem(
                       value: strike,
                       child: Text(
@@ -1962,7 +2020,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
         // LTP
         DataCell(
           Text(
-            item.ltp.toStringAsFixed(2),
+            item.ltp.toIndianFormat(),
             style: MyntWebTextStyles.bodySmall(
               context,
               darkColor: MyntColors.textPrimaryDark,
@@ -2058,33 +2116,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Save button (hidden in analyze mode)
-              if (!provider.isAnalyzeMode) ...[
-                OutlinedButton(
-                  onPressed: provider.basket.isNotEmpty
-                      ? () => _showSaveStrategyDialog(context, provider, isDark)
-                      : null,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    minimumSize: const Size(70, 36),
-                    side: BorderSide(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  child: Text(
-                    'Save',
-                    style: MyntWebTextStyles.bodySmall(
-                      context,
-                      darkColor: MyntColors.textPrimaryDark,
-                      lightColor: MyntColors.textBlack,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
               // Place Order button
               ElevatedButton(
                 onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
@@ -2123,8 +2154,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
 
   Widget _buildStrategyGrid(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     final strategies = provider.filteredStrategies;
+    final isCustomTab = provider.strategyTypeTab == 'CustomBuilder';
 
-    if (strategies.isEmpty) {
+    if (strategies.isEmpty && !isCustomTab) {
       return Center(
         child: Text(
           'No strategies found.\nCreate a strategy to get started.',
@@ -2138,70 +2170,740 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     }
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: strategies.map((strategy) {
-            final isActive = provider.activePredefinedStrategy == strategy.title;
-            return InkWell(
-              onTap: () => provider.setActivePredefinedStrategy(strategy, context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? MyntColors.primary
-                      : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isActive
-                        ? (isDark ? MyntColors.secondary : MyntColors.primary)
-                        : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Leg builder (only for Custom Builder tab)
+          if (isCustomTab) ...[
+            _buildLegBuilder(context, provider, isDark),
+            _buildLegBuilderBottomActions(context, provider, isDark),
+          ],
+          // Strategy cards
+          if (strategies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: strategies.map((strategy) {
+                  final isActive = provider.activePredefinedStrategy == strategy.title;
+                  final showDelete = strategy.type == 'CustomBuilder';
+                  return InkWell(
+                    onTap: () => provider.setActivePredefinedStrategy(strategy, context),
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? MyntColors.primary
+                                : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isActive
+                                  ? (isDark ? MyntColors.secondary : MyntColors.primary)
+                                  : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Strategy SVG image
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: SvgPicture.asset(
+                                  strategy.image,
+                                  width: 32,
+                                  height: 32,
+                                  placeholderBuilder: (context) => Icon(
+                                    Icons.show_chart,
+                                    color: isActive ? Colors.white : MyntColors.primary,
+                                    size: 24,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                strategy.title,
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: isActive
+                                      ? Colors.white
+                                      : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
+                                  fontWeight: MyntFonts.medium,
+                                ),
+                              ),
+                              // Extra space for delete icon
+                              if (showDelete)
+                                const SizedBox(width: 12),
+                            ],
+                          ),
+                        ),
+                        // Delete button at top-right corner
+                        if (showDelete)
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: InkWell(
+                              onTap: () => _showDeleteCustomStrategyDialog(context, provider, strategy.title, isDark),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: isActive
+                                      ? Colors.white.withValues(alpha: 0.7)
+                                      : (isDark ? Colors.grey : Colors.grey[600]),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            )
+          ,
+        ],
+      ),
+    );
+  }
+
+  /// Leg builder section — shown above strategy tabs when on Custom Builder tab
+  Widget _buildLegBuilder(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    final draftLegs = provider.draftLegs;
+
+    if (draftLegs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              "No legs defined yet.",
+              style: MyntWebTextStyles.body(context, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add legs to build your custom strategy.',
+              style: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => provider.addDraftLeg(),
+              icon: const Icon(Icons.add, size: 16),
+              label: Text(
+                'Add Leg',
+                style: MyntWebTextStyles.body(context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                side: BorderSide(color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    }
+
+    final ScrollController horizontalController = ScrollController();
+    final ScrollController verticalController = ScrollController();
+
+    final dataTable = DataTable(
+      columnSpacing: 10,
+      horizontalMargin: 8,
+      headingRowHeight: 40,
+      headingRowColor: WidgetStateProperty.all(
+        isDark ? MyntColors.dividerDark : MyntColors.divider,
+      ),
+      dataRowMinHeight: 40,
+      dataRowMaxHeight: 48,
+      columns: [
+        DataColumn(
+          label: Checkbox(
+            value: provider.isAllDraftLegsSelected,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            onChanged: (value) => provider.toggleAllDraftLegCheckboxes(value ?? false),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        DataColumn(
+          label: Text('B/S',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('CE/PE',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Lots',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Exp Offset',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Strike Type',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Offset/Premium',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        const DataColumn(label: SizedBox()),
+      ],
+      rows: draftLegs.asMap().entries.map((entry) {
+        final index = entry.key;
+        final draft = entry.value;
+        return _buildDraftLegDataRow(context, provider, index, draft, isDark);
+      }).toList(),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thumbVisibility: WidgetStateProperty.all(true),
+            thickness: WidgetStateProperty.all(8),
+            radius: const Radius.circular(4),
+            thumbColor: WidgetStateProperty.all(Colors.grey.withValues(alpha: 0.6)),
+            trackColor: WidgetStateProperty.all(Colors.grey.withValues(alpha: 0.2)),
+            trackVisibility: WidgetStateProperty.all(true),
+          ),
+          child: Scrollbar(
+            controller: horizontalController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            child: SingleChildScrollView(
+              controller: horizontalController,
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: Scrollbar(
+                  controller: verticalController,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: verticalController,
+                    scrollDirection: Axis.vertical,
+                    child: dataTable,
                   ),
                 ),
-                child: Row(
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  DataRow _buildDraftLegDataRow(BuildContext context, StrategyBuilderProvider provider,
+      int index, CustomStrategyLegDraft draft, bool isDark) {
+    return DataRow(
+      cells: [
+        // Checkbox
+        DataCell(
+          Checkbox(
+            value: draft.checkbox,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            onChanged: (value) {
+              draft.checkbox = value ?? false;
+              provider.updateDraftLeg(index, draft);
+            },
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        // B/S toggle
+        DataCell(
+          InkWell(
+            onTap: () {
+              draft.action = draft.action == 'BUY' ? 'SELL' : 'BUY';
+              provider.updateDraftLeg(index, draft);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: draft.action == 'BUY'
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                draft.action == 'BUY' ? 'B' : 'S',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: draft.action == 'BUY'
+                      ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
+                      : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
+                  fontWeight: MyntFonts.bold,
+                ).copyWith(fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        // CE/PE toggle
+        DataCell(
+          InkWell(
+            onTap: () {
+              draft.optionType = draft.optionType == 'CE' ? 'PE' : 'CE';
+              provider.updateDraftLeg(index, draft);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: draft.optionType == 'CE'
+                    ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.15)
+                    : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                draft.optionType,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: draft.optionType == 'CE'
+                      ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
+                      : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss),
+                  fontWeight: MyntFonts.bold,
+                ).copyWith(fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        // Lots (+/- stepper)
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: draft.ordlot > 1 ? () {
+                  draft.ordlot--;
+                  provider.updateDraftLeg(index, draft);
+                } : null,
+                child: const Icon(Icons.remove, size: 16),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 40,
+                child: Text(
+                  '${draft.ordlot}',
+                  textAlign: TextAlign.center,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                    fontWeight: MyntFonts.medium,
+                  ).copyWith(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  draft.ordlot++;
+                  provider.updateDraftLeg(index, draft);
+                },
+                child: const Icon(Icons.add, size: 16),
+              ),
+            ],
+          ),
+        ),
+        // Expiry Offset (+/- stepper)
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: draft.expiryOffset > 0 ? () {
+                  draft.expiryOffset--;
+                  provider.updateDraftLeg(index, draft);
+                } : null,
+                child: const Icon(Icons.remove, size: 16),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 40,
+                child: Text(
+                  '${draft.expiryOffset}',
+                  textAlign: TextAlign.center,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                    fontWeight: MyntFonts.medium,
+                  ).copyWith(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  draft.expiryOffset++;
+                  provider.updateDraftLeg(index, draft);
+                },
+                child: const Icon(Icons.add, size: 16),
+              ),
+            ],
+          ),
+        ),
+        // Strike Type (PopupMenuButton dropdown)
+        DataCell(
+          PopupMenuButton<String>(
+            tooltip: '',
+            offset: const Offset(0, 30),
+            splashRadius: isDark ? 0 : null,
+            color: isDark ? MyntColors.cardDark : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    draft.strikeType == 'PREMIUM' ? 'P' : draft.strikeType,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ).copyWith(fontSize: 12),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 14,
+                    color: isDark ? Colors.grey : Colors.grey[600],
+                  ),
+                ],
+              ),
+            ),
+            itemBuilder: (context) => ['ATM', 'ITM', 'OTM', 'PREMIUM']
+                .map((type) => PopupMenuItem(
+                      value: type,
+                      child: Text(
+                        type == 'PREMIUM' ? 'P (Premium)' : type,
+                        style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12),
+                      ),
+                    ))
+                .toList(),
+            onSelected: (value) {
+              draft.strikeType = value;
+              if (value == 'PREMIUM') draft.strikeOffset = 0;
+              provider.updateDraftLeg(index, draft);
+            },
+          ),
+        ),
+        // Offset / Premium value
+        DataCell(
+          draft.strikeType == 'PREMIUM'
+              ? SizedBox(
+                  width: 80,
+                  child: EntryPriceTableInput(
+                    value: draft.premiumValue,
+                    onChanged: (price) {
+                      draft.premiumValue = price;
+                      provider.updateDraftLeg(index, draft);
+                    },
+                  ),
+                )
+              : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Strategy SVG image
-                    Container(
+                    InkWell(
+                      onTap: draft.strikeOffset > 0 ? () {
+                        draft.strikeOffset--;
+                        provider.updateDraftLeg(index, draft);
+                      } : null,
+                      child: const Icon(Icons.remove, size: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
                       width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.grey.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: SvgPicture.asset(
-                        strategy.image,
-                        width: 32,
-                        height: 32,
-                        placeholderBuilder: (context) => Icon(
-                          Icons.show_chart,
-                          color: isActive ? Colors.white : MyntColors.primary,
-                          size: 24,
-                        ),
+                      child: Text(
+                        '${draft.strikeOffset}',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textBlack,
+                          fontWeight: MyntFonts.medium,
+                        ).copyWith(fontSize: 12),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      strategy.title,
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        color: isActive
-                            ? Colors.white
-                            : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
-                        fontWeight: MyntFonts.medium,
-                      ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () {
+                        draft.strikeOffset++;
+                        provider.updateDraftLeg(index, draft);
+                      },
+                      child: const Icon(Icons.add, size: 16),
                     ),
                   ],
                 ),
-              ),
-            );
-          }).toList(),
         ),
+        // Delete
+        DataCell(
+          IconButton(
+            onPressed: () => provider.removeDraftLeg(index),
+            icon: const Icon(Icons.delete_outline, size: 20, color: MyntColors.loss),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Bottom actions for the custom strategy leg builder
+  Widget _buildLegBuilderBottomActions(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Add Leg row (similar to Lot Multiplier row)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => provider.addDraftLeg(),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: Text(
+                    'Add Leg',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(70, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          // Clear, Save, Apply row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                OutlinedButton(
+                  onPressed: () => provider.clearDraftLegs(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(60, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Clear',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                OutlinedButton(
+                  onPressed: () => _showSaveCustomStrategyDialog(context, provider, isDark),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(60, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Save',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: provider.isLoading ? null : () => provider.applyCustomStrategy(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+                    disabledBackgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.6),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    minimumSize: const Size(100, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: provider.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Apply',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Save custom strategy dialog
+  void _showSaveCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    final nameController = TextEditingController(text: provider.editingCustomBuilderName ?? '');
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final isUpdateMode = provider.editingCustomBuilderName != null &&
+                nameController.text == provider.editingCustomBuilderName;
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              title: Text(
+                isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
+                style: MyntWebTextStyles.bodyMedium(context,
+                    color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                    fontWeight: MyntFonts.semiBold),
+              ),
+              content: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: nameController,
+                      enabled: !isUpdateMode,
+                      decoration: InputDecoration(
+                        hintText: 'Strategy name',
+                        isDense: true,
+                        border: const OutlineInputBorder(),
+                        hintStyle: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
+                      ),
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  if (isUpdateMode)
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () {
+                        nameController.clear();
+                        setState(() {});
+                      },
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text('Cancel',
+                      style: MyntWebTextStyles.bodySmall(context, color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: nameController.text.trim().isEmpty
+                      ? null
+                      : () {
+                          provider.saveCustomStrategy(nameController.text.trim(), context);
+                          Navigator.pop(dialogContext);
+                        },
+                  child: Text(isUpdateMode ? 'Update' : 'Save',
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: MyntColors.primary, fontWeight: MyntFonts.semiBold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Delete custom strategy dialog
+  void _showDeleteCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, String strategyName, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text('Delete Strategy',
+            style: MyntWebTextStyles.bodyMedium(context,
+                color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                fontWeight: MyntFonts.semiBold)),
+        content: Text('Are you sure you want to delete "$strategyName"?',
+            style: MyntWebTextStyles.bodySmall(context,
+                color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.deleteCustomStrategy(strategyName);
+              Navigator.pop(dialogContext);
+            },
+            child: Text('Delete', style: MyntWebTextStyles.bodySmall(context, color: Colors.red, fontWeight: MyntFonts.semiBold)),
+          ),
+        ],
       ),
     );
   }
@@ -2225,9 +2927,33 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           const Divider(height: 1),
           // Chart or Greeks table
           Expanded(
-            child: provider.payoffTab == 0
-                ? _buildPayoffChart(context, provider, isDark)
-                : _buildGreeksTable(context, provider, isDark),
+            child: Stack(
+              children: [
+                provider.payoffTab == 0
+                    ? _buildPayoffChart(context, provider, isDark)
+                    : _buildGreeksTable(context, provider, isDark),
+                if (provider.isPayoffLoading && provider.payoffData.isNotEmpty)
+                  Positioned.fill(
+                    child: Container(
+                      color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
+                      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Greeks row
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
+                _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
+              ],
+            ),
           ),
           // Chart controls
           _buildChartControls(context, provider, isDark),
@@ -2257,7 +2983,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   context,
                   'NET PREMIUM',
                   // Show absolute value - color indicates if it's credit (green) or debit (red)
-                  provider.netPremium.abs().toStringAsFixed(2),
+                  provider.netPremium.abs().toIndianFormat(),
                   provider.netPremium > 0
                       ? (isDark ? MyntColors.profitDark : MyntColors.profit)
                       : provider.netPremium < 0
@@ -2266,6 +2992,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   isDark,
                 ),
                 _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
+                _buildMetricItem(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
               ],
             ),
             const SizedBox(height: 12),
@@ -2276,24 +3003,18 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 _buildMetricItem(
                   context,
                   'BREAKEVEN',
-                  provider.metrics.breakevens.isNotEmpty
-                      ? provider.metrics.breakevens.map((b) => b.toStringAsFixed(2)).join(', ')
-                      : '--',
+                  '--',
                   null,
                   isDark,
+                  valueWidget: provider.metrics.breakevens.isNotEmpty
+                      ? _buildBreakevenRichText(provider, MyntWebTextStyles.bodySmall(
+                          context,
+                          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                          fontWeight: MyntFonts.medium,
+                        ).copyWith(fontSize: 14))
+                      : null,
                 ),
                 const Expanded(child: SizedBox()),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
-                _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
               ],
             ),
           ],
@@ -2302,7 +3023,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     );
   }
 
-  Widget _buildMetricItem(BuildContext context, String label, String value, Color? valueColor, bool isDark) {
+  Widget _buildMetricItem(BuildContext context, String label, String value, Color? valueColor, bool isDark, {Widget? valueWidget}) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2316,7 +3037,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             ).copyWith(fontSize: 11),
           ),
           const SizedBox(height: 4),
-          Text(
+          valueWidget ?? Text(
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
@@ -2364,7 +3085,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           }),
           const Spacer(),
           // Target Date controls
-          Text('Target Date: ${provider.targetDaysToExpiry}D', style: labelStyle),
+          Text('Target Date: ${provider.daysToExpiry - provider.targetDaysToExpiry}D', style: labelStyle),
           const SizedBox(width: 8),
           InkWell(
             onTap: hasData ? () => provider.setTargetDaysToExpiry(0) : null,
@@ -2456,7 +3177,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       );
     }
 
-    final currentPrice = provider.spotPrice;
+    final currentPrice = provider.isTargetSpotActive ? provider.targetSpotPrice : provider.spotPrice;
 
     // Convert payoff data to lists
     final stockPrices = provider.payoffData.map((p) => p.price).toList();
@@ -2519,8 +3240,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     double maxPrice = stockPrices.reduce((a, b) => a > b ? a : b);
     final priceRange = maxPrice - minPrice;
 
-    // Center around current price
-    final centerPrice = currentPrice > 0 ? currentPrice : (minPrice + maxPrice) / 2;
+    // Center around midpoint of payoff data (stable, not affected by live price ticks)
+    final centerPrice = (minPrice + maxPrice) / 2;
     
     // If SD lines are enabled, expand range to include all SD lines
     double zoomedRange = priceRange * 0.6;
@@ -2972,18 +3693,14 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Underlying Price
-            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toStringAsFixed(2), MyntColors.textBlack),
+            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toIndianFormat(), MyntColors.textBlack),
             const SizedBox(height: 6),
-            // Expiry P&L
-            _buildTooltipRow(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toStringAsFixed(2)}', expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
-            const SizedBox(height: 4),
-            _buildTooltipRow(context, 'Price Change:', '${expiryPayoffPercent >= 0 ? '' : ''}${expiryPayoffPercent.toStringAsFixed(2)}%', expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
+            // Expiry P&L with percentage
+            _buildTooltipRowWithPercent(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toIndianFormat()}', expiryPayoffPercent, expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
             // Target P&L (if available)
             if (payoffsTarget.isNotEmpty) ...[
               const SizedBox(height: 6),
-              _buildTooltipRow(context, 'Target P&L:', '\u20B9${targetPayoff.toStringAsFixed(2)}', targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
-              const SizedBox(height: 4),
-              _buildTooltipRow(context, 'Price Change:', '${targetPayoffPercent >= 0 ? '' : ''}${targetPayoffPercent.toStringAsFixed(2)}%', targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
+              _buildTooltipRowWithPercent(context, 'Target P&L:', '\u20B9${targetPayoff.toIndianFormat()}', targetPayoffPercent, targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
             ],
           ],
         ),
@@ -3009,6 +3726,38 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             context,
             color: valueColor,
             fontWeight: MyntFonts.medium,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTooltipRowWithPercent(BuildContext context, String label, String value, double percent, Color valueColor) {
+    final baseStyle = MyntWebTextStyles.bodySmall(
+      context,
+      color: valueColor,
+      fontWeight: MyntFonts.medium,
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$label ',
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: MyntColors.textBlack,
+            fontWeight: MyntFonts.medium,
+          ),
+        ),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(text: value, style: baseStyle),
+              TextSpan(
+                text: ' (${percent >= 0 ? '+' : ''}${percent.toStringAsFixed(2)}%)',
+                style: baseStyle.copyWith(fontSize: (baseStyle.fontSize ?? 14) - 3, color: Colors.grey),
+              ),
+            ],
           ),
         ),
       ],
@@ -3417,7 +4166,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               Text('${provider.selectedSymbol.split(' ')[0]} Target', style: labelStyle),
               const SizedBox(width: 8),
               InkWell(
-                onTap: hasData ? () => provider.setTargetSpotPrice(provider.spotPrice) : null,
+                onTap: hasData ? () => provider.resetTargetSpotPrice() : null,
                 child: Text('Reset', style: resetStyle),
               ),
               const SizedBox(width: 8),
@@ -3483,19 +4232,22 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           ),
           SliderTheme(
             data: SliderThemeData(
-              trackHeight: 6,
-              activeTrackColor: MyntColors.primary,
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
+              trackHeight: 2,
+              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
               thumbColor: Colors.white,
-              overlayColor: MyntColors.primary.withValues(alpha: 0.1),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+              thumbShape: _TradingSliderThumbShape(
+                enabledThumbRadius: 7,
+                borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              ),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
               trackShape: const RoundedRectSliderTrackShape(),
             ),
             child: Slider(
-              value: provider.targetSpotPrice > 0
+              value: (provider.targetSpotPrice > 0
                   ? provider.targetSpotPrice
-                  : provider.spotPrice,
+                  : provider.spotPrice).clamp(provider.spotPrice * 0.8, provider.spotPrice * 1.2),
               min: provider.spotPrice * 0.8,
               max: provider.spotPrice * 1.2,
               onChanged: hasData ? (value) => provider.setTargetSpotPrice(value) : null,
@@ -3538,46 +4290,61 @@ class _PayoffData {
   _PayoffData({required this.price, required this.payoff});
 }
 
-class _BorderedThumbShape extends RoundSliderThumbShape {
+/// Trading-app style slider thumb with shadow, fill, and accent border ring
+class _TradingSliderThumbShape extends SliderComponentShape {
+  final double enabledThumbRadius;
   final Color borderColor;
   final double borderWidth;
 
-  const _BorderedThumbShape({
-    super.enabledThumbRadius = 8,
-    this.borderColor = Colors.black,
-    this.borderWidth = 2,
+  const _TradingSliderThumbShape({
+    this.enabledThumbRadius = 7,
+    this.borderColor = Colors.blue,
+    this.borderWidth = 2.0,
   });
 
   @override
-  void paint(PaintingContext context, Offset center,
-      {required Animation<double> activationAnimation,
-      required Animation<double> enableAnimation,
-      required bool isDiscrete,
-      required TextPainter labelPainter,
-      required RenderBox parentBox,
-      required SliderThemeData sliderTheme,
-      required TextDirection textDirection,
-      required double value,
-      required double textScaleFactor,
-      required Size sizeWithOverflow}) {
-    super.paint(context, center,
-        activationAnimation: activationAnimation,
-        enableAnimation: enableAnimation,
-        isDiscrete: isDiscrete,
-        labelPainter: labelPainter,
-        parentBox: parentBox,
-        sliderTheme: sliderTheme,
-        textDirection: textDirection,
-        value: value,
-        textScaleFactor: textScaleFactor,
-        sizeWithOverflow: sizeWithOverflow);
-    context.canvas.drawCircle(
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(enabledThumbRadius + 2);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+
+    // Shadow
+    final shadowPath = Path()
+      ..addOval(Rect.fromCircle(center: center.translate(0, 1), radius: enabledThumbRadius + 1));
+    canvas.drawShadow(shadowPath, Colors.black.withValues(alpha: 0.25), 3.0, true);
+
+    // White outer ring/background
+    canvas.drawCircle(
       center,
       enabledThumbRadius,
       Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill,
+    );
+
+    // Inner solid blue core
+    canvas.drawCircle(
+      center,
+      enabledThumbRadius - 2.0, // Create a 2px white ring effect
+      Paint()
         ..color = borderColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth,
+        ..style = PaintingStyle.fill,
     );
   }
 }
@@ -3624,7 +4391,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     });
 
     _strategyTabController.addListener(() {
-      final tabs = ['Bullish', 'Bearish', 'Neutral', 'MyStrategy'];
+      final tabs = ['Bullish', 'Bearish', 'Neutral', 'CustomBuilder'];
       ref.read(strategyBuilderProvider).setStrategyTypeTab(tabs[_strategyTabController.index]);
     });
 
@@ -3678,29 +4445,32 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     // This accounts for watchlist panel taking ~350px on the left
     final isNarrow = screenWidth < 1300;
 
+    final Widget content;
     if (isNarrow) {
-      return _buildNarrowPanelLayout(context, provider, isDark);
+      content = _buildNarrowPanelLayout(context, provider, isDark);
+    } else {
+      content = Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left Panel - Basket & Strategies
+            Expanded(
+              flex: 1,
+              child: _buildLeftPanel(context, provider, isDark),
+            ),
+            const SizedBox(width: 16),
+            // Right Panel - Metrics & Chart
+            Expanded(
+              flex: 1,
+              child: _buildRightPanel(context, provider, isDark),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left Panel - Basket & Strategies
-          Expanded(
-            flex: 1,
-            child: _buildLeftPanel(context, provider, isDark),
-          ),
-          const SizedBox(width: 16),
-          // Right Panel - Metrics & Chart
-          Expanded(
-            flex: 1,
-            child: _buildRightPanel(context, provider, isDark),
-          ),
-        ],
-      ),
-    );
+    return content;
   }
 
   /// Build layout for narrow panels (single column scrollable)
@@ -3727,13 +4497,25 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 else
                   _buildSearchSection(context, provider, isDark),
                 const Divider(height: 1),
+                // Show leg builder when Custom Builder tab is selected, otherwise show basket table
                 // Basket table (limited height)
                 SizedBox(
                   height: provider.basket.isEmpty ? 100 : (provider.basket.length * 50.0 + 50).clamp(100, 200),
-                  child: _buildBasketTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      _buildBasketTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.basket.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.4),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -3768,9 +4550,20 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 // Chart or Greeks table (fixed height)
                 SizedBox(
                   height: 250,
-                  child: provider.payoffTab == 0
-                      ? _buildPayoffChart(context, provider, isDark)
-                      : _buildGreeksTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      provider.payoffTab == 0
+                          ? _buildPayoffChart(context, provider, isDark)
+                          : _buildGreeksTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.payoffData.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -3798,19 +4591,23 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                       context,
                       fontWeight: MyntFonts.medium,
                     ),
+                    isScrollable: true,
                     tabs: const [
                       Tab(text: 'Bullish'),
                       Tab(text: 'Bearish'),
                       Tab(text: 'Neutral'),
-                      Tab(text: 'My Strategy'),
+                      Tab(text: 'Custom Builder'),
                     ],
                   ),
                   const Divider(height: 1),
-                  // Strategy grid (fixed height)
-                  SizedBox(
-                    height: 180,
-                    child: _buildStrategyGrid(context, provider, isDark),
-                  ),
+                  // Strategy grid
+                  if (provider.strategyTypeTab == 'CustomBuilder')
+                    _buildStrategyGrid(context, provider, isDark)
+                  else
+                    SizedBox(
+                      height: 180,
+                      child: _buildStrategyGrid(context, provider, isDark),
+                    ),
                 ],
               ),
             ),
@@ -3825,7 +4622,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
               ),
             ),
-            child: _buildChartControls(context, provider, isDark),
+            child: (provider.isLoading && provider.isAnalyzeMode)
+                ? _buildChartControlsSkeleton(isDark)
+                : _buildChartControls(context, provider, isDark),
           ),
           const SizedBox(height: 60), // Bottom padding
         ],
@@ -3835,6 +4634,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   /// Build compact metrics section for narrow panels
   Widget _buildMetricsSectionNarrow(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildMetricsSkeleton(isDark);
+    }
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -3849,7 +4651,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               _buildMetricItemNarrow(
                 context,
                 'NET PREMIUM',
-                provider.netPremium.abs().toStringAsFixed(2),
+                provider.netPremium.abs().toIndianFormat(),
                 provider.netPremium > 0
                     ? (isDark ? MyntColors.profitDark : MyntColors.profit)
                     : provider.netPremium < 0
@@ -3862,9 +4664,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             ],
           ),
           const SizedBox(height: 8),
-          // Row 2: POP, REWARD/RISK, BREAKEVEN, empty
+          // Row 2: MARGIN BENEFIT, POP, REWARD/RISK, BREAKEVEN
           Row(
             children: [
+              _buildMetricItemNarrow(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
+              const SizedBox(width: 8),
               _buildMetricItemNarrow(context, 'POP', '${provider.metrics.popPercent.toStringAsFixed(0)}%', null, isDark),
               const SizedBox(width: 8),
               _buildMetricItemNarrow(context, 'REWARD/RISK', provider.metrics.riskRewardRatio, null, isDark),
@@ -3872,11 +4676,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               _buildMetricItemNarrow(
                 context,
                 'BREAKEVEN',
-                provider.metrics.breakevens.isNotEmpty
-                    ? provider.metrics.breakevens.map((b) => b.toStringAsFixed(2)).join(', ')
-                    : '--',
+                '--',
                 null,
                 isDark,
+                valueWidget: provider.metrics.breakevens.isNotEmpty
+                    ? _buildBreakevenRichText(provider, MyntWebTextStyles.bodySmall(
+                        context,
+                        color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                        fontWeight: MyntFonts.semiBold,
+                      ).copyWith(fontSize: 14))
+                    : null,
               ),
               const SizedBox(width: 8),
               const Expanded(child: SizedBox()),
@@ -3903,7 +4712,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   }
 
   /// Build compact metric item for narrow panels
-  Widget _buildMetricItemNarrow(BuildContext context, String label, String value, Color? valueColor, bool isDark, {bool isExpanded = true}) {
+  Widget _buildMetricItemNarrow(BuildContext context, String label, String value, Color? valueColor, bool isDark, {bool isExpanded = true, Widget? valueWidget}) {
     final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
@@ -3922,7 +4731,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             ).copyWith(fontSize: 11),
           ),
           const SizedBox(height: 2),
-          Text(
+          valueWidget ?? Text(
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
@@ -3962,10 +4771,21 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 const Divider(height: 1),
                 // Basket table
                 Expanded(
-                  child: _buildBasketTable(context, provider, isDark),
+                  child: Stack(
+                    children: [
+                      _buildBasketTable(context, provider, isDark),
+                      if (provider.isPayoffLoading && provider.basket.isNotEmpty)
+                        Positioned.fill(
+                          child: Container(
+                            color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.4),
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                // Lot multiplier and action buttons
-                if (provider.basket.isNotEmpty)
+                // Lot multiplier and action buttons (hidden in analyze mode)
+                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode)
                   _buildBottomActions(context, provider, isDark),
               ],
             ),
@@ -4002,7 +4822,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                       Tab(text: 'Bullish'),
                       Tab(text: 'Bearish'),
                       Tab(text: 'Neutral'),
-                      Tab(text: 'My Strategy'),
+                      Tab(text: 'Custom Builder'),
                     ],
                   ),
                   const Divider(height: 1),
@@ -4046,7 +4866,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                'Spot: ${provider.spotPrice.toStringAsFixed(2)}',
+                'Spot: ${provider.spotPrice.toIndianFormat()}',
                 style: MyntWebTextStyles.bodySmall(
                   context,
                   color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
@@ -4188,123 +5008,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     );
   }
 
-  void _showSaveStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: isDark ? MyntColors.dialogDark : MyntColors.dialog,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        child: SizedBox(
-          width: 340,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header with title and close button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Save Strategy',
-                      style: MyntWebTextStyles.body(
-                        context,
-                        darkColor: MyntColors.textPrimaryDark,
-                        lightColor: Colors.black,
-                      ).copyWith(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: Icon(
-                        Icons.close,
-                        size: 20,
-                        color: isDark ? Colors.grey : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[200]),
-
-              // Body with text field and button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDark ? MyntColors.transparent : const Color(0xFFF2F4F7),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-                          width: 1,
-                        ),
-                      ),
-                      child: TextField(
-                        controller: nameController,
-                        autofocus: true,
-                        decoration: InputDecoration(
-                          hintText: 'Enter strategy name',
-                          hintStyle: TextStyle(
-                            color: isDark ? Colors.grey : Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                          isDense: true,
-                        ),
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: Colors.black,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Save Button - full width
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (nameController.text.trim().isNotEmpty) {
-                            provider.saveStrategy(nameController.text, context);
-                            Navigator.pop(context);
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Save',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showOptionChainDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     // Show as a side panel using general dialog for custom animation - OPENS FROM LEFT
     showGeneralDialog(
@@ -4357,7 +5060,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  watchedProvider.spotPrice.toStringAsFixed(2),
+                                  watchedProvider.spotPrice.toIndianFormat(),
                                   style: MyntWebTextStyles.bodySmall(
                                     context,
                                     color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
@@ -4544,8 +5247,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         total += double.tryParse(option.oi ?? '0') ?? 0;
       }
     }
-    if (total >= 100000) return (total / 100000).toStringAsFixed(2);
-    return total.toStringAsFixed(2);
+    if (total >= 100000) return (total / 100000).toIndianFormat();
+    return total.toIndianFormat();
   }
 
   String _calculatePCR(StrategyBuilderProvider provider) {
@@ -4661,7 +5364,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            '${provider.spotPrice.toStringAsFixed(2)} (${isPositive ? '' : ''}${pct.toStringAsFixed(2)}%)',
+            '${provider.spotPrice.toIndianFormat()} (${isPositive ? '' : ''}${pct.toStringAsFixed(2)}%)',
             style: MyntWebTextStyles.bodySmall(
               context,
               color: Colors.white,
@@ -4677,13 +5380,39 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   Widget _buildPanelOptionChainRow(BuildContext context, StrategyBuilderProvider provider, _StrategyStrikeRowData row, bool isDark) {
     // final strikePrice = double.tryParse(row.strikePrice) ?? 0;
     
-    // In option chain, usually:
-    // CALL ITM: Strike < Spot (Top Left)
-    // PUT ITM: Strike > Spot (Bottom Right)
-    // The screenshot shows Top Left as Yellow (Call ITM)
     // Background Colors
     // final itmColor = isDark ? const Color(0xFF2C2C23) : const Color(0xFFFFFBE6);
 
+    // Check if CE/PE at this strike is in the basket
+    final ceToken = row.callOption?.token ?? '';
+    final peToken = row.putOption?.token ?? '';
+    final ceInBasket = ceToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == ceToken).firstOrNull
+        : null;
+    final peInBasket = peToken.isNotEmpty
+        ? provider.basket.where((b) => b.token == peToken).firstOrNull
+        : null;
+
+    // Basket highlight colors
+    Color? ceBasketBg;
+    Color? ceBasketBorder;
+    if (ceInBasket != null) {
+      final isBuy = ceInBasket.buySell == 'BUY';
+      ceBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      ceBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
+
+    Color? peBasketBg;
+    Color? peBasketBorder;
+    if (peInBasket != null) {
+      final isBuy = peInBasket.buySell == 'BUY';
+      peBasketBg = isBuy
+          ? (isDark ? const Color(0xFF0D2818) : const Color(0xFFE8F5E9))
+          : (isDark ? const Color(0xFF2D1215) : const Color(0xFFFCE4EC));
+      peBasketBorder = isBuy ? MyntColors.profit : MyntColors.loss;
+    }
 
     return Consumer(
       builder: (context, ref, child) {
@@ -4712,9 +5441,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               Expanded(
                 flex: 6,
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: null,
-                    // No side border as per screenshot
+                  decoration: BoxDecoration(
+                    color: ceBasketBg,
+                    border: ceBasketBorder != null
+                        ? Border(right: BorderSide(color: ceBasketBorder, width: 3))
+                        : null,
                   ),
                   child: _buildSideCell(context, provider, row.callOption, callSocketData, isDark, true),
                 ),
@@ -4744,8 +5475,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 flex: 6,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: null,
-                    // No side border
+                    color: peBasketBg,
+                    border: peBasketBorder != null
+                        ? Border(left: BorderSide(color: peBasketBorder, width: 3))
+                        : null,
                   ),
                   child: _buildSideCell(context, provider, row.putOption, putSocketData, isDark, false),
                 ),
@@ -4768,7 +5501,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     final currentOI = double.tryParse(sData?['oi']?.toString() ?? option.oi ?? "0") ?? 0.0;
     
     // OI in Lakhs
-    final oiLack = (currentOI / 100000).toStringAsFixed(2);
+    final oiLack = (currentOI / 100000).toIndianFormat();
     
     // OI % Change
     final poi = double.tryParse(sData?['poi']?.toString() ?? option.poi ?? "0") ?? 0.0;
@@ -4870,6 +5603,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   Widget _buildBasketTable(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     if (provider.basket.isEmpty) {
+      // Show skeleton shimmer rows when loading in analyze mode
+      if (provider.isLoading && provider.isAnalyzeMode) {
+        return _buildBasketTableSkeleton(isDark);
+      }
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -4987,13 +5724,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
         ),
         DataColumn(
-          label: Text(
-            'Lots',
-           style: MyntWebTextStyles.bodySmall(
-              context,
-              darkColor: MyntColors.textPrimaryDark,
-              lightColor: MyntColors.textBlack,
-              fontWeight: MyntFonts.medium,
+          label: Expanded(
+            child: Text(
+              'Lots',
+              textAlign: TextAlign.center,
+             style: MyntWebTextStyles.bodySmall(
+                context,
+                darkColor: MyntColors.textPrimaryDark,
+                lightColor: MyntColors.textBlack,
+                fontWeight: MyntFonts.medium,
+              ),
             ),
           ),
         ),
@@ -5063,6 +5803,229 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
         );
       },
+    );
+  }
+
+  /// Skeleton shimmer for metrics section (MAX PROFIT, MAX LOSS, etc.)
+  Widget _buildMetricsSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          // Row 1: 4 metric skeletons
+          Row(
+            children: List.generate(4, (i) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: i < 3 ? 8 : 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    MyntShimmerLoader(width: 70, height: 10, borderRadius: 4),
+                    const SizedBox(height: 6),
+                    MyntShimmerLoader(width: 50, height: 16, borderRadius: 4),
+                  ],
+                ),
+              ),
+            )),
+          ),
+          const SizedBox(height: 12),
+          // Row 2: 3 metric skeletons + empty
+          Row(
+            children: [
+              ...List.generate(3, (i) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      MyntShimmerLoader(width: 70, height: 10, borderRadius: 4),
+                      const SizedBox(height: 6),
+                      MyntShimmerLoader(width: 50, height: 16, borderRadius: 4),
+                    ],
+                  ),
+                ),
+              )),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for payoff chart area
+  Widget _buildPayoffChartSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          // Y-axis labels + chart area
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Y-axis shimmer labels
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(5, (_) =>
+                    const MyntShimmerLoader(width: 40, height: 10, borderRadius: 4),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Chart area shimmer
+                Expanded(
+                  child: MyntShimmerLoader(
+                    width: double.infinity,
+                    height: double.infinity,
+                    borderRadius: 8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // X-axis shimmer labels
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(5, (_) =>
+              const MyntShimmerLoader(width: 40, height: 10, borderRadius: 4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for Greeks row (DELTA, THETA, GAMMA, VEGA)
+  Widget _buildGreeksRowSkeleton(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: List.generate(4, (i) => Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < 3 ? 8 : 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                MyntShimmerLoader(width: 60, height: 10, borderRadius: 4),
+                const SizedBox(height: 4),
+                MyntShimmerLoader(width: 50, height: 14, borderRadius: 4),
+              ],
+            ),
+          ),
+        )),
+      ),
+    );
+  }
+
+  /// Skeleton shimmer for chart controls (target price slider + target date slider)
+  Widget _buildChartControlsSkeleton(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Target price row
+          Row(
+            children: [
+              const MyntShimmerLoader(width: 100, height: 12, borderRadius: 4),
+              const SizedBox(width: 8),
+              const MyntShimmerLoader(width: 36, height: 12, borderRadius: 4),
+              const Spacer(),
+              MyntShimmerLoader(width: 90, height: 28, borderRadius: 4),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Slider shimmer
+          const MyntShimmerLoader(width: double.infinity, height: 4, borderRadius: 2),
+          const SizedBox(height: 14),
+          // Target date row
+          Row(
+            children: [
+              const MyntShimmerLoader(width: 140, height: 12, borderRadius: 4),
+              const SizedBox(width: 8),
+              const MyntShimmerLoader(width: 36, height: 12, borderRadius: 4),
+              const Spacer(),
+              MyntShimmerLoader(width: 130, height: 28, borderRadius: 4),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Slider shimmer
+          const MyntShimmerLoader(width: double.infinity, height: 4, borderRadius: 2),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  /// Skeleton shimmer loader for basket table during analyze mode loading
+  Widget _buildBasketTableSkeleton(bool isDark) {
+    Widget shimmerCell(double width) => MyntShimmerLoader(width: width, height: 14, borderRadius: 4);
+
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          // Skeleton header row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark ? MyntColors.overlayBgDark : MyntColors.listItemBg,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          ),
+          // Skeleton data rows
+          ...List.generate(3, (index) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: isDark ? const Color(0xFF333333) : const Color(0xFFEEEEEE),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                shimmerCell(20),
+                const SizedBox(width: 16),
+                shimmerCell(28),
+                const SizedBox(width: 16),
+                shimmerCell(52),
+                const SizedBox(width: 16),
+                shimmerCell(48),
+                const SizedBox(width: 16),
+                shimmerCell(36),
+                const SizedBox(width: 16),
+                shimmerCell(30),
+                const SizedBox(width: 16),
+                Expanded(child: shimmerCell(60)),
+              ],
+            ),
+          )),
+        ],
+      ),
     );
   }
 
@@ -5146,29 +6109,20 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               borderRadius: BorderRadius.circular(4),
             ),
             child: DropdownButtonHideUnderline(
-              child: Builder(
-                builder: (context) {
-                  final strikes = provider.optionChain.map((o) => o.strprc).toSet().toList();
-                  // Ensure the current item's strike is in the list
-                  if (!strikes.contains(item.strprc)) {
-                    strikes.insert(0, item.strprc);
-                  }
-                  return DropdownButton<String>(
-                    value: item.strprc,
-                    isDense: true,
-                    menuMaxHeight: 250,
-                    style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12),
-                    onChanged: (val) {
-                      if (val != null) provider.updateStrike(index, val, context);
-                    },
-                    items: strikes.map((s) {
-                      return DropdownMenuItem(
-                        value: s,
-                        child: Text(s ?? '', style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12)),
-                      );
-                    }).toList(),
-                  );
+              child: DropdownButton<String>(
+                value: item.strprc,
+                isDense: true,
+                menuMaxHeight: 250,
+                style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12),
+                onChanged: (val) {
+                  if (val != null) provider.updateStrike(index, val, context);
                 },
+                items: provider.getStrikesForExpiry(item.expdate, currentStrike: item.strprc)
+                    .map((s) => DropdownMenuItem(
+                          value: s,
+                          child: Text(s, style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12)),
+                        ))
+                    .toList(),
               ),
             ),
           ),
@@ -5244,7 +6198,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         // LTP
         DataCell(
           Text(
-            item.ltp.toStringAsFixed(2),
+            item.ltp.toIndianFormat(),
             style: MyntWebTextStyles.bodySmall(
               context,
               darkColor: MyntColors.textPrimaryDark,
@@ -5359,30 +6313,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   ),
                 ),
                 const Spacer(),
-                if (provider.basket.isNotEmpty && !provider.isAnalyzeMode) ...[
-                  OutlinedButton(
-                    onPressed: () => _showSaveStrategyDialog(context, provider, isDark),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      minimumSize: const Size(60, 36),
-                      side: BorderSide(
-                        color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                    child: Text(
-                      'Save',
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        darkColor: MyntColors.textPrimaryDark,
-                        lightColor: MyntColors.textBlack,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
                 ElevatedButton(
                   onPressed: provider.isOrderLoading ? null : () => provider.placeOrder(context),
                   style: ElevatedButton.styleFrom(
@@ -5421,8 +6351,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
 
   Widget _buildStrategyGrid(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     final strategies = provider.filteredStrategies;
+    final isCustomTab = provider.strategyTypeTab == 'CustomBuilder';
+    final activeColor = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary);
 
-    if (strategies.isEmpty) {
+    if (strategies.isEmpty && !isCustomTab) {
       return Center(
         child: Text(
           'No strategies found.',
@@ -5436,67 +6368,720 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     }
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: strategies.map((strategy) {
-            final isActive = provider.activePredefinedStrategy == strategy.title;
-            return InkWell(
-              onTap: () => provider.setActivePredefinedStrategy(strategy, context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? (isDark ? MyntColors.overlayBgDark   : MyntColors.cardHover)
-                      : (isDark ? MyntColors.cardDark : Colors.white),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isActive
-                        ? (isDark ? MyntColors.primaryDark : MyntColors.primary)
-                        : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Leg builder (only for Custom Builder tab)
+          if (isCustomTab) ...[
+            _buildLegBuilder(context, provider, isDark),
+            _buildLegBuilderBottomActions(context, provider, isDark),
+          ],
+          // Strategy cards
+          if (strategies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: strategies.map((strategy) {
+                  final isActive = provider.activePredefinedStrategy == strategy.title;
+                  final showDelete = strategy.type == 'CustomBuilder';
+                  return InkWell(
+                    onTap: () => provider.setActivePredefinedStrategy(strategy, context),
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? (isDark ? MyntColors.overlayBgDark : MyntColors.cardHover)
+                                : (isDark ? MyntColors.cardDark : Colors.white),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isActive
+                                  ? activeColor
+                                  : (isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Strategy SVG image
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                padding: const EdgeInsets.all(3),
+                                child: SvgPicture.asset(
+                                  strategy.image,
+                                  width: 34,
+                                  height: 34,
+                                  placeholderBuilder: (context) => Icon(
+                                    Icons.show_chart,
+                                    color: isActive ? activeColor : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                strategy.title,
+                                style: MyntWebTextStyles.bodySmall(
+                                  context,
+                                  color: isActive
+                                      ? activeColor
+                                      : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
+                                  fontWeight: MyntFonts.medium,
+                                ),
+                              ),
+                              // Extra space for delete icon
+                              if (showDelete)
+                                const SizedBox(width: 12),
+                            ],
+                          ),
+                        ),
+                        // Delete button at top-right corner
+                        if (showDelete)
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: InkWell(
+                              onTap: () => _showDeleteCustomStrategyDialog(context, provider, strategy.title, isDark),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: isActive
+                                      ? activeColor.withValues(alpha: 0.7)
+                                      : (isDark ? Colors.grey : Colors.grey[600]),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            )
+          ,
+        ],
+      ),
+    );
+  }
+
+  /// Leg builder section — shown above strategy tabs when on Custom Builder tab
+  Widget _buildLegBuilder(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    final draftLegs = provider.draftLegs;
+
+    if (draftLegs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              "No legs defined yet.",
+              style: MyntWebTextStyles.body(context, color: Colors.grey),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add legs to build your custom strategy.',
+              style: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () => provider.addDraftLeg(),
+              icon: const Icon(Icons.add, size: 16),
+              label: Text(
+                'Add Leg',
+                style: MyntWebTextStyles.body(context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                side: BorderSide(color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      );
+    }
+
+    final ScrollController horizontalController = ScrollController();
+    final ScrollController verticalController = ScrollController();
+
+    final dataTable = DataTable(
+      columnSpacing: 10,
+      horizontalMargin: 8,
+      headingRowHeight: 40,
+      headingRowColor: WidgetStateProperty.all(
+        isDark ? MyntColors.dividerDark : MyntColors.divider,
+      ),
+      dataRowMinHeight: 40,
+      dataRowMaxHeight: 48,
+      columns: [
+        DataColumn(
+          label: Checkbox(
+            value: provider.isAllDraftLegsSelected,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            onChanged: (value) => provider.toggleAllDraftLegCheckboxes(value ?? false),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        DataColumn(
+          label: Text('B/S',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('CE/PE',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Lots',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Exp Offset',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Strike Type',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        DataColumn(
+          label: Text('Offset/Premium',
+              style: MyntWebTextStyles.bodySmall(context,
+                  darkColor: MyntColors.textPrimaryDark, lightColor: MyntColors.textBlack, fontWeight: MyntFonts.medium)),
+        ),
+        const DataColumn(label: SizedBox()),
+      ],
+      rows: draftLegs.asMap().entries.map((entry) {
+        final index = entry.key;
+        final draft = entry.value;
+        return _buildDraftLegDataRow(context, provider, index, draft, isDark);
+      }).toList(),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thumbVisibility: WidgetStateProperty.all(true),
+            thickness: WidgetStateProperty.all(8),
+            radius: const Radius.circular(4),
+            thumbColor: WidgetStateProperty.all(Colors.grey.withValues(alpha: 0.6)),
+            trackColor: WidgetStateProperty.all(Colors.grey.withValues(alpha: 0.2)),
+            trackVisibility: WidgetStateProperty.all(true),
+          ),
+          child: Scrollbar(
+            controller: horizontalController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            child: SingleChildScrollView(
+              controller: horizontalController,
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                child: Scrollbar(
+                  controller: verticalController,
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    controller: verticalController,
+                    scrollDirection: Axis.vertical,
+                    child: dataTable,
                   ),
                 ),
-                child: Row(
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  DataRow _buildDraftLegDataRow(BuildContext context, StrategyBuilderProvider provider,
+      int index, CustomStrategyLegDraft draft, bool isDark) {
+    return DataRow(
+      cells: [
+        // Checkbox
+        DataCell(
+          Checkbox(
+            value: draft.checkbox,
+            activeColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            checkColor: isDark ? Colors.white : null,
+            onChanged: (value) {
+              draft.checkbox = value ?? false;
+              provider.updateDraftLeg(index, draft);
+            },
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+        // B/S toggle
+        DataCell(
+          InkWell(
+            onTap: () {
+              draft.action = draft.action == 'BUY' ? 'SELL' : 'BUY';
+              provider.updateDraftLeg(index, draft);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: draft.action == 'BUY'
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                draft.action == 'BUY' ? 'B' : 'S',
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: draft.action == 'BUY'
+                      ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
+                      : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
+                  fontWeight: MyntFonts.bold,
+                ).copyWith(fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        // CE/PE toggle
+        DataCell(
+          InkWell(
+            onTap: () {
+              draft.optionType = draft.optionType == 'CE' ? 'PE' : 'CE';
+              provider.updateDraftLeg(index, draft);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: draft.optionType == 'CE'
+                    ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.15)
+                    : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                draft.optionType,
+                style: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: draft.optionType == 'CE'
+                      ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
+                      : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss),
+                  fontWeight: MyntFonts.bold,
+                ).copyWith(fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        // Lots (+/- stepper)
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: draft.ordlot > 1 ? () {
+                  draft.ordlot--;
+                  provider.updateDraftLeg(index, draft);
+                } : null,
+                child: const Icon(Icons.remove, size: 16),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 40,
+                child: Text(
+                  '${draft.ordlot}',
+                  textAlign: TextAlign.center,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                    fontWeight: MyntFonts.medium,
+                  ).copyWith(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  draft.ordlot++;
+                  provider.updateDraftLeg(index, draft);
+                },
+                child: const Icon(Icons.add, size: 16),
+              ),
+            ],
+          ),
+        ),
+        // Expiry Offset (+/- stepper)
+        DataCell(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              InkWell(
+                onTap: draft.expiryOffset > 0 ? () {
+                  draft.expiryOffset--;
+                  provider.updateDraftLeg(index, draft);
+                } : null,
+                child: const Icon(Icons.remove, size: 16),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 40,
+                child: Text(
+                  '${draft.expiryOffset}',
+                  textAlign: TextAlign.center,
+                  style: MyntWebTextStyles.bodySmall(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textBlack,
+                    fontWeight: MyntFonts.medium,
+                  ).copyWith(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () {
+                  draft.expiryOffset++;
+                  provider.updateDraftLeg(index, draft);
+                },
+                child: const Icon(Icons.add, size: 16),
+              ),
+            ],
+          ),
+        ),
+        // Strike Type (PopupMenuButton dropdown)
+        DataCell(
+          PopupMenuButton<String>(
+            tooltip: '',
+            offset: const Offset(0, 30),
+            splashRadius: isDark ? 0 : null,
+            color: isDark ? MyntColors.cardDark : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    draft.strikeType == 'PREMIUM' ? 'P' : draft.strikeType,
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ).copyWith(fontSize: 12),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 14,
+                    color: isDark ? Colors.grey : Colors.grey[600],
+                  ),
+                ],
+              ),
+            ),
+            itemBuilder: (context) => ['ATM', 'ITM', 'OTM', 'PREMIUM']
+                .map((type) => PopupMenuItem(
+                      value: type,
+                      child: Text(
+                        type == 'PREMIUM' ? 'P (Premium)' : type,
+                        style: MyntWebTextStyles.bodySmall(context).copyWith(fontSize: 12),
+                      ),
+                    ))
+                .toList(),
+            onSelected: (value) {
+              draft.strikeType = value;
+              if (value == 'PREMIUM') draft.strikeOffset = 0;
+              provider.updateDraftLeg(index, draft);
+            },
+          ),
+        ),
+        // Offset / Premium value
+        DataCell(
+          draft.strikeType == 'PREMIUM'
+              ? SizedBox(
+                  width: 80,
+                  child: EntryPriceTableInput(
+                    value: draft.premiumValue,
+                    onChanged: (price) {
+                      draft.premiumValue = price;
+                      provider.updateDraftLeg(index, draft);
+                    },
+                  ),
+                )
+              : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Strategy SVG image
-                    Container(
+                    InkWell(
+                      onTap: draft.strikeOffset > 0 ? () {
+                        draft.strikeOffset--;
+                        provider.updateDraftLeg(index, draft);
+                      } : null,
+                      child: const Icon(Icons.remove, size: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
                       width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      padding: const EdgeInsets.all(3),
-                      child: SvgPicture.asset(
-                        strategy.image,
-                        width: 34,
-                        height: 34,
-                        placeholderBuilder: (context) => Icon(
-                          Icons.show_chart,
-                          color: isActive ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary) : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
-                          size: 18,
-                        ),
+                      child: Text(
+                        '${draft.strikeOffset}',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textBlack,
+                          fontWeight: MyntFonts.medium,
+                        ).copyWith(fontSize: 12),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      strategy.title,
-                      style: MyntWebTextStyles.bodySmall(
-                        context,
-                        color: isActive
-                            ? (isDark ? MyntColors.primaryDark : MyntColors.primary)
-                            : (isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
-                        fontWeight: MyntFonts.medium,
-                      ),
+                    InkWell(
+                      onTap: () {
+                        draft.strikeOffset++;
+                        provider.updateDraftLeg(index, draft);
+                      },
+                      child: const Icon(Icons.add, size: 16),
                     ),
                   ],
                 ),
-              ),
-            );
-          }).toList(),
         ),
+        // Delete
+        DataCell(
+          IconButton(
+            onPressed: () => provider.removeDraftLeg(index),
+            icon: const Icon(Icons.delete_outline, size: 20, color: MyntColors.loss),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Bottom actions for the custom strategy leg builder
+  Widget _buildLegBuilderBottomActions(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0),
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Add Leg row (similar to Lot Multiplier row)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => provider.addDraftLeg(),
+                  icon: const Icon(Icons.add, size: 16),
+                  label: Text(
+                    'Add Leg',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(70, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: isDark ? const Color(0xFF333333) : const Color(0xFFE0E0E0)),
+          // Clear, Save, Apply row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                OutlinedButton(
+                  onPressed: () => provider.clearDraftLegs(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(60, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Clear',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                OutlinedButton(
+                  onPressed: () => _showSaveCustomStrategyDialog(context, provider, isDark),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    minimumSize: const Size(60, 36),
+                    side: BorderSide(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    'Save',
+                    style: MyntWebTextStyles.bodySmall(
+                      context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textBlack,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: provider.isLoading ? null : () => provider.applyCustomStrategy(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+                    disabledBackgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.6),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    minimumSize: const Size(100, 36),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: provider.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Apply',
+                          style: MyntWebTextStyles.bodySmall(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.medium,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Save custom strategy dialog
+  void _showSaveCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    final nameController = TextEditingController(text: provider.editingCustomBuilderName ?? '');
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final isUpdateMode = provider.editingCustomBuilderName != null &&
+                nameController.text == provider.editingCustomBuilderName;
+            return AlertDialog(
+              backgroundColor: isDark ? MyntColors.cardDark : Colors.white,
+              title: Text(isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
+                  style: MyntWebTextStyles.bodyMedium(context,
+                      color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                      fontWeight: MyntFonts.semiBold)),
+              content: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: nameController,
+                      enabled: !isUpdateMode,
+                      decoration: InputDecoration(
+                        hintText: 'Strategy name', isDense: true,
+                        border: const OutlineInputBorder(),
+                        hintStyle: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
+                      ),
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                  if (isUpdateMode)
+                    IconButton(icon: const Icon(Icons.close, size: 18),
+                        onPressed: () { nameController.clear(); setState(() {}); }),
+                ],
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(dialogContext),
+                    child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey))),
+                TextButton(
+                  onPressed: nameController.text.trim().isEmpty ? null : () {
+                    provider.saveCustomStrategy(nameController.text.trim(), context);
+                    Navigator.pop(dialogContext);
+                  },
+                  child: Text(isUpdateMode ? 'Update' : 'Save',
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                          fontWeight: MyntFonts.semiBold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// Delete custom strategy dialog
+  void _showDeleteCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, String strategyName, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? MyntColors.cardDark : Colors.white,
+        title: Text('Delete Strategy',
+            style: MyntWebTextStyles.bodyMedium(context,
+                color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                fontWeight: MyntFonts.semiBold)),
+        content: Text('Are you sure you want to delete "$strategyName"?',
+            style: MyntWebTextStyles.bodySmall(context,
+                color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext),
+              child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey))),
+          TextButton(
+            onPressed: () { provider.deleteCustomStrategy(strategyName); Navigator.pop(dialogContext); },
+            child: Text('Delete', style: MyntWebTextStyles.bodySmall(context, color: Colors.red, fontWeight: MyntFonts.semiBold)),
+          ),
+        ],
       ),
     );
   }
@@ -5520,18 +7105,51 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           const Divider(height: 1),
           // Chart or Greeks table
           Expanded(
-            child: provider.payoffTab == 0
-                ? _buildPayoffChart(context, provider, isDark)
-                : _buildGreeksTable(context, provider, isDark),
+            child: Stack(
+              children: [
+                provider.payoffTab == 0
+                    ? _buildPayoffChart(context, provider, isDark)
+                    : _buildGreeksTable(context, provider, isDark),
+                if (provider.isPayoffLoading && provider.payoffData.isNotEmpty)
+                  Positioned.fill(
+                    child: Container(
+                      color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.5),
+                      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    ),
+                  ),
+              ],
+            ),
           ),
+          // Greeks row
+          const Divider(height: 1),
+          if (provider.isLoading && provider.isAnalyzeMode)
+            _buildGreeksRowSkeleton(isDark)
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
+                  _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
+                ],
+              ),
+            ),
           // Chart controls
-          _buildChartControls(context, provider, isDark),
+          if (provider.isLoading && provider.isAnalyzeMode)
+            _buildChartControlsSkeleton(isDark)
+          else
+            _buildChartControls(context, provider, isDark),
         ],
       ),
     );
   }
 
   Widget _buildMetricsSection(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildMetricsSkeleton(isDark);
+    }
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -5544,7 +7162,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 context,
                 'NET PREMIUM',
                 // Show absolute value - color indicates if it's credit (green) or debit (red)
-                provider.netPremium.abs().toStringAsFixed(2),
+                provider.netPremium.abs().toIndianFormat(),
                 provider.netPremium > 0
                     ? (isDark ? MyntColors.profitDark : MyntColors.profit)
                     : provider.netPremium < 0
@@ -5553,6 +7171,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 isDark,
               ),
               _buildMetricItem(context, 'MARGIN', provider.totalMargin, null, isDark),
+              _buildMetricItem(context, 'MARGIN BENEFIT', provider.marginBenefit, isDark ? MyntColors.profitDark : MyntColors.profit, isDark),
             ],
           ),
           const SizedBox(height: 8),
@@ -5563,24 +7182,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               _buildMetricItem(
                 context,
                 'BREAKEVEN',
-                provider.metrics.breakevens.isNotEmpty
-                    ? provider.metrics.breakevens.map((b) => b.toStringAsFixed(2)).join(', ')
-                    : '--',
+                '--',
                 null,
                 isDark,
+                valueWidget: provider.metrics.breakevens.isNotEmpty
+                    ? _buildBreakevenRichText(provider, MyntWebTextStyles.bodySmall(
+                        context,
+                        color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
+                        fontWeight: MyntFonts.medium,
+                      ).copyWith(fontSize: 14))
+                    : null,
               ),
               const Expanded(child: SizedBox()),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _buildMetricItem(context, '\u0394 DELTA', provider.greeksTotal('delta').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u0398 THETA', provider.greeksTotal('theta').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u0393 GAMMA', provider.greeksTotal('gamma').toStringAsFixed(4), null, isDark),
-              _buildMetricItem(context, '\u03BD VEGA', provider.greeksTotal('vega').toStringAsFixed(4), null, isDark),
             ],
           ),
         ],
@@ -5588,7 +7201,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     );
   }
 
-  Widget _buildMetricItem(BuildContext context, String label, String value, Color? valueColor, bool isDark) {
+  Widget _buildMetricItem(BuildContext context, String label, String value, Color? valueColor, bool isDark, {Widget? valueWidget}) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -5602,7 +7215,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             ).copyWith(fontSize: 11),
           ),
           const SizedBox(height: 2),
-          Text(
+          valueWidget ?? Text(
             value,
             style: MyntWebTextStyles.bodySmall(
               context,
@@ -5613,6 +7226,22 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         ],
       ),
     );
+  }
+
+  Widget _buildBreakevenRichText(StrategyBuilderProvider provider, TextStyle baseStyle) {
+    final spans = <InlineSpan>[];
+    final breakevens = provider.metrics.breakevens;
+    for (int i = 0; i < breakevens.length; i++) {
+      final b = breakevens[i];
+      final pct = provider.spotPrice > 0 ? ((b - provider.spotPrice) / provider.spotPrice) * 100 : 0.0;
+      if (i > 0) spans.add(TextSpan(text: '  |  ', style: baseStyle));
+      spans.add(TextSpan(text: b.toIndianFormat(), style: baseStyle));
+      spans.add(TextSpan(
+        text: ' (${pct >= 0 ? '+' : ''}${pct.toStringAsFixed(2)}%)',
+        style: baseStyle.copyWith(fontSize: (baseStyle.fontSize ?? 14) - 3, color: Colors.grey),
+      ));
+    }
+    return RichText(text: TextSpan(children: spans));
   }
 
   Widget _buildPayoffTabs(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
@@ -5679,6 +7308,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   }
 
   Widget _buildPayoffChart(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
+    if (provider.isLoading && provider.isAnalyzeMode) {
+      return _buildPayoffChartSkeleton(isDark);
+    }
     if (provider.payoffData.isEmpty) {
       return Center(
         child: Text(
@@ -5691,7 +7323,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       );
     }
 
-    final currentPrice = provider.spotPrice;
+    final currentPrice = provider.isTargetSpotActive ? provider.targetSpotPrice : provider.spotPrice;
 
     // Convert payoff data to lists
     final stockPrices = provider.payoffData.map((p) => p.price).toList();
@@ -5754,8 +7386,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     double maxPrice = stockPrices.reduce((a, b) => a > b ? a : b);
     final priceRange = maxPrice - minPrice;
 
-    // Center around current price
-    final centerPrice = currentPrice > 0 ? currentPrice : (minPrice + maxPrice) / 2;
+    // Center around midpoint of payoff data (stable, not affected by live price ticks)
+    final centerPrice = (minPrice + maxPrice) / 2;
     
     // If SD lines are enabled, expand range to include all SD lines
     double zoomedRange = priceRange * 0.6;
@@ -6207,18 +7839,14 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Underlying Price
-            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toStringAsFixed(2), MyntColors.textBlack),
+            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toIndianFormat(), MyntColors.textBlack),
             const SizedBox(height: 6),
-            // Expiry P&L
-            _buildTooltipRow(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toStringAsFixed(2)}', expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
-            const SizedBox(height: 4),
-            _buildTooltipRow(context, 'Price Change:', '${expiryPayoffPercent >= 0 ? '' : ''}${expiryPayoffPercent.toStringAsFixed(2)}%', expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
+            // Expiry P&L with percentage
+            _buildTooltipRowWithPercent(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toIndianFormat()}', expiryPayoffPercent, expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
             // Target P&L (if available)
             if (payoffsTarget.isNotEmpty) ...[
               const SizedBox(height: 6),
-              _buildTooltipRow(context, 'Target P&L:', '\u20B9${targetPayoff.toStringAsFixed(2)}', targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
-              const SizedBox(height: 4),
-              _buildTooltipRow(context, 'Price Change:', '${targetPayoffPercent >= 0 ? '' : ''}${targetPayoffPercent.toStringAsFixed(2)}%', targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
+              _buildTooltipRowWithPercent(context, 'Target P&L:', '\u20B9${targetPayoff.toIndianFormat()}', targetPayoffPercent, targetPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
             ],
           ],
         ),
@@ -6244,6 +7872,38 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             context,
             color: valueColor,
             fontWeight: MyntFonts.medium,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTooltipRowWithPercent(BuildContext context, String label, String value, double percent, Color valueColor) {
+    final baseStyle = MyntWebTextStyles.bodySmall(
+      context,
+      color: valueColor,
+      fontWeight: MyntFonts.medium,
+    );
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '$label ',
+          style: MyntWebTextStyles.bodySmall(
+            context,
+            color: MyntColors.textBlack,
+            fontWeight: MyntFonts.medium,
+          ),
+        ),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(text: value, style: baseStyle),
+              TextSpan(
+                text: ' (${percent >= 0 ? '+' : ''}${percent.toStringAsFixed(2)}%)',
+                style: baseStyle.copyWith(fontSize: (baseStyle.fontSize ?? 14) - 3, color: Colors.grey),
+              ),
+            ],
           ),
         ),
       ],
@@ -6603,7 +8263,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               Text('${provider.selectedSymbol.split(' ')[0]} Target', style: labelStyle),
               const SizedBox(width: 8),
               InkWell(
-                onTap: hasData ? () => provider.setTargetSpotPrice(provider.spotPrice) : null,
+                onTap: hasData ? () => provider.resetTargetSpotPrice() : null,
                 child: Text('Reset', style: resetStyle),
               ),
               const SizedBox(width: 8),
@@ -6669,22 +8329,22 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ),
           SliderTheme(
             data: SliderThemeData(
-            trackHeight: 2,
-            activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
-              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
-              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
-               thumbShape: _BorderedThumbShape(
-                enabledThumbRadius: 10,
-                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
+              trackHeight: 2,
+              activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+              inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
+              thumbColor: Colors.white,
+              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+              thumbShape: _TradingSliderThumbShape(
+                enabledThumbRadius: 7,
+                borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
               ),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
               trackShape: const RoundedRectSliderTrackShape(),
-          ),
+            ),
             child: Slider(
-              value: provider.targetSpotPrice > 0
+              value: (provider.targetSpotPrice > 0
                   ? provider.targetSpotPrice
-                  : provider.spotPrice,
+                  : provider.spotPrice).clamp(provider.spotPrice * 0.8, provider.spotPrice * 1.2),
               min: provider.spotPrice * 0.8,
               max: provider.spotPrice * 1.2,
               onChanged: hasData ? (value) => provider.setTargetSpotPrice(value) : null,
@@ -6704,7 +8364,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       children: [
         Row(
           children: [
-            Text('Target Date: ${provider.targetDaysToExpiry}D - Expiry', style: labelStyle),
+            Text('Target Date: ${provider.daysToExpiry - provider.targetDaysToExpiry}D - Expiry', style: labelStyle),
             const SizedBox(width: 8),
             InkWell(
               onTap: hasData ? () => provider.setTargetDaysToExpiry(0) : null,
@@ -6756,18 +8416,18 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           ],
         ),
         SliderTheme(
-             data: SliderThemeData(
+          data: SliderThemeData(
             trackHeight: 2,
             activeTrackColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-              inactiveTrackColor: isDark ? const Color(0xFF333333) : Colors.grey[300],
-              thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
-              overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.1),
-               thumbShape: _BorderedThumbShape(
-                enabledThumbRadius: 10,
-                borderColor: isDark ? MyntColors.textPrimary : MyntColors.textPrimaryDark,
-              ),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-              trackShape: const RoundedRectSliderTrackShape(),
+            inactiveTrackColor: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
+            thumbColor: resolveThemeColor(context, dark: MyntColors.textWhite, light: MyntColors.textWhite),
+            overlayColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.08),
+            thumbShape: _TradingSliderThumbShape(
+              enabledThumbRadius: 7,
+              borderColor: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+            ),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 18),
+            trackShape: const RoundedRectSliderTrackShape(),
           ),
           child: Slider(
             value: provider.targetDaysToExpiry.toDouble(),

@@ -1493,12 +1493,12 @@ class _LoginScreenWebState extends ConsumerState<LoginScreenWeb> {
                                     : _handleChangePasswordSubmit,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: resolveThemeColor(context,
-                                      dark: MyntColors.primaryDark,
+                                      dark: MyntColors.secondary,
                                       light: MyntColors.primary),
                                   disabledBackgroundColor: resolveThemeColor(
                                       context,
                                       dark:
-                                          MyntColors.primaryDark.withOpacity(0.6),
+                                          MyntColors.secondary.withOpacity(0.6),
                                       light:
                                           MyntColors.primary.withOpacity(0.6)),
                                   shape: RoundedRectangleBorder(

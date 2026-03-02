@@ -43,6 +43,29 @@ class OrderMarginModel {
     data['marginusedtrade']=marginusedtrade;
     return data;
   }
+
+  // Parsed values
+  double get _used => double.tryParse(marginused ?? '0') ?? 0;
+  double get _usedPrev => double.tryParse(marginusedprev ?? '0') ?? 0;
+  double get _usedTrade => double.tryParse(marginusedtrade ?? '0') ?? 0;
+
+  /// Basket margin excluding existing margin = marginused - marginusedprev
+  double get basketMargin => _used - _usedPrev;
+
+  /// Basket margin including existing margin = marginused
+  double get basketMarginWithExisting => _used;
+
+  /// Post trade margin excluding existing = marginusedtrade - marginusedprev
+  double get postTradeMargin => _usedTrade - _usedPrev;
+
+  /// Post trade margin including existing = marginusedtrade
+  double get postTradeMarginWithExisting => _usedTrade;
+
+  /// Existing margin used = marginusedprev
+  double get existingMarginUsed => _usedPrev;
+
+  /// Margin benefit (hedge savings) = marginused - marginusedtrade
+  double get marginBenefit => _used - _usedTrade;
 }
 
 class BrokerageInput {

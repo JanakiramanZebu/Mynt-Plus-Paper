@@ -1,5 +1,6 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'dart:html' as html;
@@ -542,7 +543,10 @@ class _SetAlertWebState extends State<SetAlertWeb> {
                                 child: MyntTextField(
                                   controller: valueCtrl,
                                   placeholder: '0',
-                                  keyboardType: TextInputType.number,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                                  ],
                                   textCapitalization: TextCapitalization.none,
                                   size: MyntTextFieldSize.medium,
                                   leadingIcon: assets.ruppeIcon,

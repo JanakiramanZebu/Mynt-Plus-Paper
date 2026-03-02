@@ -1104,7 +1104,7 @@ class OptionFlashProvider extends DefaultChangeNotifier {
     }
 
     if (successCount > 0) {
-      _showSnackbar(context, '$successCount exit order(s) placed successfully', isError: false);
+      _showSnackbar(context, '$successCount exit order(s) triggered successfully', isError: false);
       // Refresh positions after exit
       Future.delayed(const Duration(seconds: 1), () => fetchPositions(context));
     }

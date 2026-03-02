@@ -131,12 +131,20 @@ class _MFSIPSCREENState extends State<MFSIPSCREENWeb> {
   }
 
   void _onTenureChanged(String value) {
-     if (value.isEmpty) return;
+    if (value.isEmpty) return;
     double? val = double.tryParse(value);
     if (val != null) {
+      final clamped = val.clamp(1.0, 40.0);
       setState(() {
-        _sliderTenureYears = val.clamp(1, 40);
+        _sliderTenureYears = clamped;
       });
+      if (clamped != val) {
+        final clampedText = clamped.toStringAsFixed(0);
+        _tenureCtrl.value = TextEditingValue(
+          text: clampedText,
+          selection: TextSelection.collapsed(offset: clampedText.length),
+        );
+      }
       calculateSIP();
     }
   }

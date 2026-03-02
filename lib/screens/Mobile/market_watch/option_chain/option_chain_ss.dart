@@ -1415,7 +1415,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 text: orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : (double.parse(orderProv.bsktOrderMargin!.marginused ?? '0.00') - double.parse(orderProv.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.basketMargin.toStringAsFixed(2),
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark
@@ -1440,7 +1440,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 text: orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : (double.parse(orderProv.bsktOrderMargin!.marginusedtrade ?? '0.00') - double.parse(orderProv.bsktOrderMargin!.marginusedprev ?? '0.00')).toStringAsFixed(2),
+                    : orderProv.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2),
                 theme: theme.isDarkMode,
                 color: theme.isDarkMode
                     ? colors.textPrimaryDark

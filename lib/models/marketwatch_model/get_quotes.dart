@@ -346,6 +346,7 @@ class DepthInputArgs {
   String expDate;
   String option;
   bool isOption;
+  String? idx;
 
   DepthInputArgs(
       {required this.exch,
@@ -355,5 +356,6 @@ class DepthInputArgs {
       required this.symbol,
       required this.expDate,
       required this.option,
-      this.isOption = false});
+      this.isOption = false,
+      this.idx});
 }

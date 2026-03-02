@@ -43,6 +43,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
   bool _isHoveringDropdown = false;
   Timer? _popoverCloseTimer;
 
+  // Prevent multiple clicks opening multiple detail sheets
+  bool _isNavigating = false;
+
   @override
   void dispose() {
     _cancelPopoverCloseTimer();
@@ -963,7 +966,11 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   Future<void> _onIPOTap(
       BuildContext context, dynamic ipo, IPOProvider ipoProvider) async {
-    await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
+    if (_isNavigating) return;
+    _isNavigating = true;
+
+    try {
+     await ipoProvider.getIpoSinglePage(ipoName: "${ipo.name}");
 
     if (context.mounted) {
       shadcn.openSheet(
@@ -988,6 +995,9 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
           );
         },
       );
+      }
+    } finally {
+      _isNavigating = false;
     }
   }
 

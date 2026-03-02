@@ -525,6 +525,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     : MyntColors.textSecondary,
                               ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+            ],
           textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
@@ -675,6 +678,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                  ],
                   readOnly: orderInput.actPrcType == "Limit" ||
                       orderInput.actPrcType == "SL Limit"
                       ? false
@@ -739,6 +745,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     : MyntColors.textSecondary,
                               ),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+            ],
             textStyle: WebTextStyles.formInput(
                                 isDarkTheme: theme.isDarkMode,
                                 color: theme.isDarkMode
@@ -881,6 +890,9 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                                     ? MyntColors.textPrimaryDark
                                     : MyntColors.textPrimary,
                               ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                  ],
                   readOnly: orderInput.actOcoPrcType == "Limit" ||
                       orderInput.actOcoPrcType == "SL Limit"
                       ? false

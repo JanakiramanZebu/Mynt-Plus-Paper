@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../screens/web/customizable_split_home_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/web/authentication/login/login_web.dart';
-import '../screens/web/strategy_builder/strategy_builder_screen.dart';
 import '../screens/web/scalper/scalper_screen_web.dart';
 import '../utils/custom_navigator.dart';
 import '../main.dart' show registerWebNavigatorKey;
@@ -39,6 +38,7 @@ class WebRoutes {
   static const String portfolioAnalysis = '/portfolio-analysis';
   static const String strategyBuilder = '/strategy-builder';
   static const String scalper = '/scalper';
+  static const String tradingViewWebHook = '/tradingview-webhook';
 }
 
 /// Global GoRouter instance for web
@@ -150,10 +150,20 @@ void initializeWebRouter() {
         ),
       ),
 
-      // Strategy Builder screen
+      // Strategy Builder screen - wrapped in home screen for session validation & web layout
       GoRoute(
         path: WebRoutes.strategyBuilder,
-        builder: (context, state) => const StrategyBuilderScreenWeb(),
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.strategyBuilder,
+        ),
+      ),
+
+      // TradingView WebHook screen
+      GoRoute(
+        path: WebRoutes.tradingViewWebHook,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.tradingViewWebHook,
+        ),
       ),
 
       // Scalper screen - standalone full-screen trading interface

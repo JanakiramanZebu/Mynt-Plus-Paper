@@ -501,7 +501,7 @@ class WebAuthProvider extends ChangeNotifier {
     // Construct QR Image URL
     // URL: {BASE_URL}/get_login_qr?unique_id={UUID}&source=WEB
     // Note: Assuming BASE_URL is https://ws.mynt.in/login based on WebAuthApi
-    _qrLoginImageUrl = "https://copy.mynt.in/get_login_qr?unique_id=$_deviceUuid&source=$_source";
+    _qrLoginImageUrl = "https://ws.mynt.in/login/get_login_qr?unique_id=$_deviceUuid&source=$_source";
     notifyListeners();
     
     // Start polling after 2 seconds

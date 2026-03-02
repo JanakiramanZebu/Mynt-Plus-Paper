@@ -57,6 +57,7 @@ import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'webhook/webhook_tradingview_screen.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
@@ -447,6 +448,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const SizedBox.shrink(); // Strategy Builder opens as separate route
       case ScreenType.scalper:
         return const ScalperScreenWeb(embedded: true);
+      case ScreenType.tradingViewWebHook:
+        return const WebHookTradingViewScreen();
     }
   }
 
@@ -504,6 +507,8 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Strategy Builder';
       case ScreenType.scalper:
         return 'Scalper';
+      case ScreenType.tradingViewWebHook:
+        return 'WebHook';
     }
   }
 

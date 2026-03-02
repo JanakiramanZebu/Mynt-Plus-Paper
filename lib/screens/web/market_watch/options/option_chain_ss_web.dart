@@ -2034,7 +2034,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginusedtrade ?? 0.00}",
+                    : orderProv.bsktOrderMargin!.basketMargin.toStringAsFixed(2),
                 style: TextStyle(
                   fontFamily: 'Geist',
                   fontSize: 13,
@@ -2061,7 +2061,7 @@ class _BasketBottomSheetState extends ConsumerState<_BasketBottomSheet>
                 orderProv.bsktScripList.isEmpty ||
                         orderProv.bsktOrderMargin == null
                     ? "0.00"
-                    : "${orderProv.bsktOrderMargin!.marginused ?? 0.00}",
+                    : orderProv.bsktOrderMargin!.postTradeMargin.toStringAsFixed(2),
                 style: TextStyle(
                   fontFamily: 'Geist',
                   fontSize: 16,

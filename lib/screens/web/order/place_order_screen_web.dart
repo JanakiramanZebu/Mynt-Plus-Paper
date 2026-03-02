@@ -7619,9 +7619,13 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         widget.isBasket == "BasketEdit" ||
         widget.isBasket == "BasketMode") {
       if (widget.isBasket == "BasketEdit") {
+        final rawIndex = widget.orderArg.raw['index'];
+        final bsktIndex = rawIndex is int
+            ? rawIndex
+            : int.tryParse(rawIndex?.toString() ?? '') ?? 0;
         await ref
             .read(orderProvider)
-            .removeBsktScrip(widget.orderArg.raw['index'], bsktName);
+            .removeBsktScrip(bsktIndex, bsktName);
       }
       // Pass false for stay so basket dialog stays open when adding new symbols
       // Only close basket dialog when editing existing basket script

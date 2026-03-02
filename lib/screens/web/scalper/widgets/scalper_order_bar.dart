@@ -196,8 +196,8 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       decoration: BoxDecoration(
         color: resolveThemeColor(
           context,
-          dark: MyntColors.listItemBgDark,
-          light: MyntColors.listItemBg,
+          dark: MyntColors.secondary.withValues(alpha: 0.04),
+          light: MyntColors.primary.withValues(alpha: 0.04),
         ),
         border: Border(
           top: BorderSide(
@@ -255,122 +255,130 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     FocusNode buyPriceFocus,
     FocusNode sellPriceFocus,
   ) {
+    final buyColor = resolveThemeColor(
+      context,
+      dark: MyntColors.secondary,
+      light: MyntColors.primary,
+    );
+    final sellColor = resolveThemeColor(
+      context,
+      dark: MyntColors.lossDark,
+      light: MyntColors.tertiary,
+    );
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Buy column: price input + button
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!isMarket)
-              _buildPriceInput(context, buyPriceController, isLeft ? 'left_buy' : 'right_buy', buyPriceFocus),
-            _buildOrderButton(
-              context: context,
-              label: 'Buy $optType',
-              subLabel: 'ASK: $askPrice',
-              shortcut: isLeft ? 'Shift + ↑' : 'Ctrl + ↑',
-              color: MyntColors.profit,
-              isFilled: true,
-              onPressed: option != null && !_isPlacingOrder
-                  ? () => _placeOrder(option, true, option.optt == 'CE',
-                      limitPrice: !isMarket ? buyPriceController.text : null)
-                  : null,
-            ),
-          ],
+        IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!isMarket)
+                _buildPriceInput(context, buyPriceController, isLeft ? 'left_buy' : 'right_buy', buyPriceFocus),
+              _buildOrderButton(
+                context: context,
+                label: 'Buy $optType',
+                subLabel: 'ASK: $askPrice',
+                shortcut: isLeft ? 'Shift + ↑' : 'Ctrl + ↑',
+                color: buyColor,
+                isFilled: true,
+                onPressed: option != null && !_isPlacingOrder
+                    ? () => _placeOrder(option, true, option.optt == 'CE',
+                        limitPrice: !isMarket ? buyPriceController.text : null)
+                    : null,
+              ),
+            ],
+          ),
         ),
         const SizedBox(width: 8),
-        // Sell column: price input + button
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!isMarket)
-              _buildPriceInput(context, sellPriceController, isLeft ? 'left_sell' : 'right_sell', sellPriceFocus),
-            _buildOrderButton(
-              context: context,
-              label: 'Sell $optType',
-              subLabel: 'BID: $bidPrice',
-              shortcut: isLeft ? 'Shift + ↓' : 'Ctrl + ↓',
-              color: MyntColors.loss,
-              isFilled: true,
-              onPressed: option != null && !_isPlacingOrder
-                  ? () => _placeOrder(option, false, option.optt == 'CE',
-                      limitPrice: !isMarket ? sellPriceController.text : null)
-                  : null,
-            ),
-          ],
+        // Sell column: price input + button (IntrinsicWidth so both match widths)
+        IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!isMarket)
+                _buildPriceInput(context, sellPriceController, isLeft ? 'left_sell' : 'right_sell', sellPriceFocus),
+              _buildOrderButton(
+                context: context,
+                label: 'Sell $optType',
+                subLabel: 'BID: $bidPrice',
+                shortcut: isLeft ? 'Shift + ↓' : 'Ctrl + ↓',
+                color: sellColor,
+                isFilled: true,
+                onPressed: option != null && !_isPlacingOrder
+                    ? () => _placeOrder(option, false, option.optt == 'CE',
+                        limitPrice: !isMarket ? sellPriceController.text : null)
+                    : null,
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildPriceInput(BuildContext context, TextEditingController controller, String priceKey, FocusNode focusNode) {
+    final secondaryColor = resolveThemeColor(
+      context,
+      dark: MyntColors.textSecondaryDark,
+      light: MyntColors.textSecondary,
+    );
+
     return Container(
-      width: 120,
+      height: 30,
       margin: const EdgeInsets.only(bottom: 6),
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        onChanged: (v) => ref.read(scalperProvider).setLimitPrice(priceKey, v),
-        textAlign: TextAlign.center,
-        style: MyntWebTextStyles.body(
+      decoration: BoxDecoration(
+        color: resolveThemeColor(
           context,
-          fontWeight: MyntFonts.semiBold,
+          dark: MyntColors.transparent,
+          light: const Color(0xffF1F3F8),
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
           color: resolveThemeColor(
             context,
-            dark: MyntColors.textPrimaryDark,
-            light: MyntColors.textPrimary,
+            dark: MyntColors.textSecondaryDark,
+            light: MyntColors.primary,
           ),
         ),
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: BorderSide(
-              color: resolveThemeColor(
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: (v) => ref.read(scalperProvider).setLimitPrice(priceKey, v),
+              textAlign: TextAlign.center, 
+              style: MyntWebTextStyles.bodySmall(
                 context,
-                dark: MyntColors.dividerDark,
-                light: MyntColors.divider,
+                darkColor: MyntColors.textWhite,
+                lightColor: MyntColors.textBlack,
+                fontWeight: MyntFonts.medium,
               ),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: BorderSide(
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.dividerDark,
-                light: MyntColors.divider,
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                border: InputBorder.none,
+                hintText: 'Price',
+                hintStyle: MyntWebTextStyles.bodySmall(
+                  context,
+                  color: secondaryColor,
+                ),
               ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+              ],
             ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(6),
-            borderSide: BorderSide(
-              color: resolveThemeColor(
-                context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary,
-              ),
-            ),
-          ),
-          hintText: 'Price',
-          hintStyle: MyntWebTextStyles.para(
-            context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-        ),
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
         ],
       ),
     );
-  }
+  } 
 
   Widget _buildOrderButton({
     required BuildContext context,
@@ -449,17 +457,17 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       children: [
         Text(
           'Lot (Qty: $totalQty)',
-          style: MyntWebTextStyles.caption(
+          style: MyntWebTextStyles.para(
             context,
-            color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+            color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Container(
           height: 32,
           decoration: BoxDecoration(
             border: Border.all(color: dividerColor),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -468,8 +476,8 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
               InkWell(
                 onTap: () => ref.read(scalperProvider).decrementLotQuantity(),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(6),
-                  bottomLeft: Radius.circular(6),
+                  topLeft: Radius.circular(5),
+                  bottomLeft: Radius.circular(5),
                 ),
                 child: Container(
                   width: 32,
@@ -491,7 +499,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
                   controller: _lotController,
                   focusNode: _lotFocusNode,
                   textAlign: TextAlign.center,
-                  style: MyntWebTextStyles.bodySmall(
+                  style: MyntWebTextStyles.body(
                     context,
                     fontWeight: MyntFonts.semiBold,
                     color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
@@ -513,8 +521,8 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
               InkWell(
                 onTap: () => ref.read(scalperProvider).incrementLotQuantity(),
                 borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(6),
-                  bottomRight: Radius.circular(6),
+                  topRight: Radius.circular(5),
+                  bottomRight: Radius.circular(5),
                 ),
                 child: Container(
                   width: 32,
@@ -543,12 +551,12 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       children: [
         Text(
           'Product',
-          style: MyntWebTextStyles.caption(
+          style: MyntWebTextStyles.para(
             context,
-            color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+            color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         _buildSegmentedControl(
           context: context,
           options: ['Intraday', 'Delivery'],
@@ -565,12 +573,12 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
       children: [
         Text(
           'Order Type',
-          style: MyntWebTextStyles.caption(
+          style: MyntWebTextStyles.para(
             context,
-            color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+            color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         _buildSegmentedControl(
           context: context,
           options: ['Market', 'Limit'],
@@ -588,7 +596,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     required int selectedIndex,
     required void Function(int) onTap,
   }) {
-    final primary = resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary);
+    final primary = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
     final dividerColor = resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider);
 
     return Container(
@@ -609,10 +617,10 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
           return InkWell(
             onTap: () => onTap(index),
             borderRadius: BorderRadius.only(
-              topLeft: isFirst ? const Radius.circular(6) : Radius.zero,
-              bottomLeft: isFirst ? const Radius.circular(6) : Radius.zero,
-              topRight: isLast ? const Radius.circular(6) : Radius.zero,
-              bottomRight: isLast ? const Radius.circular(6) : Radius.zero,
+              topLeft: isFirst ? const Radius.circular(5) : Radius.zero,
+              bottomLeft: isFirst ? const Radius.circular(5) : Radius.zero,
+              topRight: isLast ? const Radius.circular(5) : Radius.zero,
+              bottomRight: isLast ? const Radius.circular(5) : Radius.zero,
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -630,7 +638,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
                 label,
                 style: MyntWebTextStyles.para(
                   context,
-                  fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                  fontWeight: isSelected ? MyntFonts.bold : MyntFonts.medium,
                   color: isSelected
                       ? Colors.white
                       : resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
@@ -667,7 +675,7 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
     try {
       final qty = scalper.totalOrderQuantity.toString();
       // Options (NFO/BFO) use NRML for delivery, not CNC
-      final prd = scalper.isIntraday ? 'I' : 'NRML';
+      final prd = scalper.isIntraday ? 'I' : 'M';
       final prcType = isMarket ? 'MKT' : 'LMT';
 
       final orderInput = PlaceOrderInput(
@@ -690,6 +698,8 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
             : '',
         channel: 'WEB',
       );
+
+      print('Scalper Order Payload: exch=${orderInput.exch}, tsym=${orderInput.tsym}, qty=${orderInput.qty}, prc=${orderInput.prc}, prctype=${orderInput.prctype}, trantype=${orderInput.trantype}, prd=${orderInput.prd}, ret=${orderInput.ret}, amo=${orderInput.amo}, mktProt=${orderInput.mktProt}, channel=${orderInput.channel}');
 
       final result = await ref.read(orderProvider).fetchPlaceOrder(
             context,
@@ -726,13 +736,13 @@ class _ScalperOrderBarState extends ConsumerState<ScalperOrderBar> {
 
   void _showSnackbar(BuildContext context, String message,
       {required bool isSuccess}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isSuccess ? MyntColors.profit : MyntColors.loss,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(message),
+    //     backgroundColor: isSuccess ? MyntColors.profit : MyntColors.loss,
+    //     behavior: SnackBarBehavior.floating,
+    //     duration: const Duration(seconds: 3),
+    //   ),
+    // );
   }
 }

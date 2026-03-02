@@ -10,10 +10,14 @@ import '../../../models/marketwatch_model/search_scrip_model.dart';
 import '../../../models/order_book_model/place_order_model.dart';
 import '../../../provider/order_provider.dart';
 import '../../../provider/portfolio_provider.dart';
+import '../../../provider/thems.dart';
 import '../../../provider/websocket_provider.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/mynt_web_text_styles.dart';
+import '../../../res/res.dart';
 import '../../../sharedWidget/common_buttons_web.dart';
+import '../../../sharedWidget/common_search_fields_web.dart';
+import '../../../sharedWidget/common_text_fields_web.dart';
 import '../market_watch/tv_chart/chart_iframe_guard.dart';
 import 'scalper_chart_manager.dart';
 import 'scalper_provider.dart';
@@ -51,6 +55,9 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   /// Only push ticks when the provider's selected token matches this,
   /// preventing cross-contamination during rapid symbol switches.
   String? _chartIndexToken;
+
+  /// Track the current theme state to detect changes for index chart
+  bool? _lastIndexThemeState;
 
   // Search
   final GlobalKey _searchFieldKey = GlobalKey();
@@ -119,12 +126,21 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
     }
   }
 
-  void _updateIndexChart() {
+  void _updateIndexChart({bool forceUpdate = false}) {
     final scalper = ref.read(scalperProvider);
     final index = scalper.selectedIndex;
+    // Use the existing isDarkMode helper
     final isDark = isDarkMode(context);
 
+    // Check if we need to update (symbol change or theme change or forced)
+    final shouldUpdate = forceUpdate ||
+        _chartIndexToken != index.token ||
+        (_lastIndexThemeState != null && _lastIndexThemeState != isDark);
+
+    if (!shouldUpdate) return;
+
     _chartIndexToken = index.token;
+    _lastIndexThemeState = isDark;
 
     // changeSymbol handles clearing old data and fetching new data internally.
     // Do NOT call resetData before changeSymbol — it races with changeSymbol's
@@ -193,8 +209,18 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   @override
   Widget build(BuildContext context) {
     final scalper = ref.watch(scalperProvider);
+    // Watch theme provider to trigger rebuilds when theme changes
+    ref.watch(themeProvider);
+    final isDark = isDarkMode(context);
     final indexToken = scalper.selectedIndex.token;
     final indexData = ref.watch(websocketProvider).socketDatas[indexToken];
+
+    // Update index chart when theme changes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_lastIndexThemeState != null && _lastIndexThemeState != isDark) {
+        _updateIndexChart(forceUpdate: true);
+      }
+    });
 
     // Update LTP from WebSocket when data arrives
     if (indexData != null && indexData['lp'] != null) {
@@ -592,49 +618,59 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(6),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: isSelected
                 ? primary.withValues(alpha: 0.08)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(5),
             border: isSelected
-                ? Border.all(color: primary.withValues(alpha: 0.2))
+                ? Border.all(color: primary.withValues(alpha: 0.08))
                 : null,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
             children: [
               // Index name
               Text(
                 name,
-                style: MyntWebTextStyles.bodySmall(
+                style: MyntWebTextStyles.symbol(
                   context,
-                  fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
-                  color: isSelected
-                      ? primary
-                      : resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                  fontWeight:  MyntFonts.medium,
+                  // isSelected ? MyntFonts.semiBold :
+                  color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+
+                  // isSelected ? primary : 
                 ),
+                 maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(height: 4),
               // LTP + Change stacked
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     ltp,
-                    style: MyntWebTextStyles.bodySmall(
+                    style: MyntWebTextStyles.price(
                       context,
-                      fontWeight: MyntFonts.semiBold,
-                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                      fontWeight: MyntFonts.medium,
+                      color: changeColor 
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     change,
-                    style: MyntWebTextStyles.caption(
+                    style: MyntWebTextStyles.exch(
                       context,
-                      color: changeColor,
+                      color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
                     ),
                   ),
                 ],
@@ -647,84 +683,20 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   }
 
   Widget _buildSearchField() {
-    return Container(
+    return SizedBox(
       key: _searchFieldKey,
-      width: 200,
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: resolveThemeColor(
-          context,
-          dark: MyntColors.searchBgDark,
-          light: MyntColors.searchBg,
-        ),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: resolveThemeColor(
-            context,
-            dark: MyntColors.dividerDark,
-            light: MyntColors.divider,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.search,
-            size: 16,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              onChanged: (_) => _updateSearchOverlay(),
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: MyntWebTextStyles.para(
-                  context,
-                  color: resolveThemeColor(
-                    context,
-                    dark: MyntColors.textSecondaryDark,
-                    light: MyntColors.textSecondary,
-                  ),
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-              ),
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary,
-                ),
-              ),
-            ),
-          ),
-          if (_searchController.text.isNotEmpty)
-            GestureDetector(
-              onTap: () {
-                _searchController.clear();
-                _updateSearchOverlay();
-              },
-              child: Icon(
-                Icons.close,
-                size: 14,
-                color: resolveThemeColor(
-                  context,
-                  dark: MyntColors.textSecondaryDark,
-                  light: MyntColors.textSecondary,
-                ),
-              ),
-            ),
-        ],
+      width: 240,
+      child: MyntSearchTextField.withSmartClear(
+        controller: _searchController,
+        focusNode: _searchFocusNode,
+        placeholder: 'Search',
+        leadingIcon: assets.searchIcon,
+        borderRadius: 6,
+        onChanged: (_) => _updateSearchOverlay(),
+        onClear: () {
+          _searchController.clear();
+          _updateSearchOverlay();
+        },
       ),
     );
   }
@@ -835,14 +807,14 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
           child: PointerInterceptor(
             child: Material(
               elevation: 4,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(5),
               color: bgColor,
               child: Container(
-                width: 280,
+                width: size.width,
                 constraints: const BoxConstraints(maxHeight: 350),
                 decoration: BoxDecoration(
                   border: Border.all(color: borderColor),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -863,10 +835,16 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                         padding: const EdgeInsets.all(16),
                         child: Text(
                           query.isEmpty ? 'No symbols available' : 'No results for "$query"',
-                          style: MyntWebTextStyles.para(
-                            context,
-                            color: secondaryColor,
-                          ),
+                           style: MyntWebTextStyles.para(
+                    context,
+                    fontWeight: FontWeight.w500,
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary,
+                    ),
+                  ),
+                  textAlign: TextAlign.center,
                         ),
                       )
                     // Results list
@@ -896,18 +874,21 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                                           context,
                                           fontWeight: isCurrentlySelected
                                               ? MyntFonts.semiBold
-                                              : MyntFonts.regular,
+                                              : MyntFonts.medium,
                                           color: textColor,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    // const SizedBox(width: 8),
                                     Text(
                                       symbol.exch ?? '',
-                                      style: MyntWebTextStyles.caption(
+                                      style: MyntWebTextStyles.exch(
                                         context,
                                         color: secondaryColor,
+                                        fontWeight: isCurrentlySelected
+                                              ? MyntFonts.semiBold
+                                              : MyntFonts.medium,
                                       ),
                                     ),
                                   ],
@@ -963,62 +944,51 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
   }
 
   Widget _buildExpiryDropdown(ScalperProvider scalper) {
-    final textColor = resolveThemeColor(
-      context,
-      dark: MyntColors.textPrimaryDark,
-      light: MyntColors.textPrimary,
-    );
-    final secondaryColor = resolveThemeColor(
-      context,
-      dark: MyntColors.textSecondaryDark,
-      light: MyntColors.textSecondary,
-    );
-
-    return InkWell(
+    return GestureDetector(
       key: _expiryButtonKey,
       onTap: () => _showExpiryOverlay(scalper),
-      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        width: 160,
+        height: 40,
         decoration: BoxDecoration(
           color: resolveThemeColor(
             context,
-            dark: MyntColors.searchBgDark,
-            light: MyntColors.searchBg,
+            dark: MyntColors.transparent,
+            light: const Color(0xffF1F3F8),
           ),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
             color: resolveThemeColor(
               context,
-              dark: MyntColors.dividerDark,
-              light: MyntColors.divider,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.primary,
             ),
           ),
-          borderRadius: BorderRadius.circular(6),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Expiry',
-              style: MyntWebTextStyles.para(
-                context,
-                color: secondaryColor,
+            Expanded(
+              child: Text(
+                scalper.selectedExpiry?.exd ?? 'Select',
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textWhite,
+                  lightColor: MyntColors.textBlack,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              scalper.selectedExpiry?.exd ?? '',
-              style: MyntWebTextStyles.bodySmall(
-                context,
-                fontWeight: MyntFonts.medium,
-                color: textColor,
-              ),
-            ),
-            const SizedBox(width: 4),
             Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 18,
-              color: secondaryColor,
+              Icons.keyboard_arrow_down,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+              size: 20,
             ),
           ],
         ),
@@ -1040,26 +1010,11 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
 
     _expiryOverlay = OverlayEntry(
       builder: (overlayContext) {
-        final bgColor = resolveThemeColor(
-          context,
-          dark: MyntColors.listItemBgDark,
-          light: Colors.white,
-        );
-        final textColor = resolveThemeColor(
-          context,
-          dark: MyntColors.textPrimaryDark,
-          light: MyntColors.textPrimary,
-        );
-        final selectedBg = resolveThemeColor(
-          context,
-          dark: MyntColors.primaryDark,
-          light: MyntColors.primary,
-        ).withValues(alpha: 0.12);
-        final borderColor = resolveThemeColor(
-          context,
-          dark: MyntColors.dividerDark,
-          light: MyntColors.divider,
-        );
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final bgColor = isDark ? MyntColors.overlayBgDark : Colors.white;
+        final borderColor = isDark
+            ? const Color(0xFF444444)
+            : const Color(0xFFE0E0E0);
 
         return Stack(
           children: [
@@ -1079,51 +1034,78 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
               top: position.dy + size.height + 4,
               child: PointerInterceptor(
                 child: Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(8),
+                  elevation: 8,
+                  borderRadius: BorderRadius.circular(6),
                   color: bgColor,
                   child: Container(
+                    width: size.width,
                     constraints: const BoxConstraints(maxHeight: 300),
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: borderColor),
-                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: scalper.expiryDates.map((exp) {
-                          final isSelected =
-                              exp.exd == scalper.selectedExpiry?.exd;
-                          return InkWell(
-                            onTap: () async {
-                              _removeExpiryOverlay();
-                              _hasLoadedOptionChain = false;
-                              await ref
-                                  .read(scalperProvider)
-                                  .setSelectedExpiry(exp, context);
-                              await ref
-                                  .read(scalperProvider)
-                                  .subscribeToWebSocket(context);
-                            },
-                            child: Container(
-                              width: 200,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                              color: isSelected ? selectedBg : null,
-                              child: Text(
-                                exp.exd ?? '',
-                                style: MyntWebTextStyles.body(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: scalper.expiryDates.map((exp) {
+                            final isSelected =
+                                exp.exd == scalper.selectedExpiry?.exd;
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () async {
+                                  _removeExpiryOverlay();
+                                  _hasLoadedOptionChain = false;
+                                  await ref
+                                      .read(scalperProvider)
+                                      .setSelectedExpiry(exp, context);
+                                  await ref
+                                      .read(scalperProvider)
+                                      .subscribeToWebSocket(context);
+                                },
+                                splashColor: resolveThemeColor(
                                   context,
-                                  fontWeight: isSelected
-                                      ? MyntFonts.semiBold
-                                      : MyntFonts.regular,
-                                  color: textColor,
+                                  dark: MyntColors.rippleDark,
+                                  light: MyntColors.rippleLight,
+                                ),
+                                highlightColor: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.highlightDark,
+                                  light: MyntColors.highlightLight,
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  child: Text(
+                                    exp.exd ?? '',
+                                    style: MyntWebTextStyles.body(
+                                      context,
+                                      fontWeight: isSelected
+                                          ? MyntFonts.semiBold
+                                          : MyntFonts.medium,
+                                      color: isSelected
+                                          ? resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.primaryDark,
+                                              light: MyntColors.primary,
+                                            )
+                                          : resolveThemeColor(
+                                              context,
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary,
+                                            ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
@@ -1381,7 +1363,7 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                         Flexible(
                           child: Text(
                             scalper.selectedIndex.name,
-                            style: MyntWebTextStyles.bodySmall(
+                            style: MyntWebTextStyles.symbol(
                               context,
                               fontWeight: MyntFonts.medium,
                               color: resolveThemeColor(
@@ -1394,23 +1376,27 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         // LTP
                         Text(
                           ltp,
-                          style: MyntWebTextStyles.body(
+                          style: MyntWebTextStyles.price(
                             context,
-                            fontWeight: MyntFonts.bold,
+                            // fontWeight: MyntFonts.bold,
                             color: changeColor,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         // Change
                         Text(
                           '$change ($perChange%)',
-                          style: MyntWebTextStyles.caption(
+                          style: MyntWebTextStyles.exch(
                             context,
-                            color: changeColor,
+                            color: resolveThemeColor(
+                              context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary,
+                            ),
                           ),
                         ),
                       ],
@@ -1425,14 +1411,14 @@ class _ScalperScreenWebState extends ConsumerState<ScalperScreenWeb> {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: resolveThemeColor(context,
-                              dark: MyntColors.primaryDark, light: MyntColors.primary),
+                              dark: MyntColors.secondary, light: MyntColors.primary),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           'INDEX',
                           style: MyntWebTextStyles.caption(
                             context,
-                            fontWeight: MyntFonts.semiBold,
+                            fontWeight: MyntFonts.medium,
                             color: Colors.white,
                           ),
                         ),
@@ -1500,6 +1486,14 @@ class _ScalperSettingsDialogState
   late String _posFilter;
   late bool _shortcutsEnabled;
 
+  final GlobalKey _symbolButtonKey = GlobalKey();
+  OverlayEntry? _symbolOverlay;
+
+  final GlobalKey _callOffsetKey = GlobalKey();
+  final GlobalKey _putOffsetKey = GlobalKey();
+  OverlayEntry? _callOffsetOverlay;
+  OverlayEntry? _putOffsetOverlay;
+
   @override
   void initState() {
     super.initState();
@@ -1523,9 +1517,209 @@ class _ScalperSettingsDialogState
     _callPremiumCtrl.dispose();
     _putPremiumCtrl.dispose();
     _mktProtCtrl.dispose();
+    _removeSymbolOverlay();
+    _removeCallOffsetOverlay();
+    _removePutOffsetOverlay();
     ChartIframeGuard.release();
     _enableScalperCharts();
     super.dispose();
+  }
+
+  void _showSymbolOverlay(Color primary, Color textColor, Color dividerColor) {
+    _removeSymbolOverlay();
+
+    final renderBox = _symbolButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? MyntColors.overlayBgDark : Colors.white;
+    final borderColor = isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0);
+
+    _symbolOverlay = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _removeSymbolOverlay,
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            left: position.dx,
+            top: position.dy + size.height + 4,
+            width: size.width,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(6),
+              color: bgColor,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 240),
+                decoration: BoxDecoration(
+                  border: Border.all(color: borderColor),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: ScalperProvider.indices.asMap().entries.map((e) {
+                        final isSelected = e.key == _defaultSymbol;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() => _defaultSymbol = e.key);
+                              _removeSymbolOverlay();
+                            },
+                            borderRadius: BorderRadius.circular(4),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              child: Text(
+                                e.value.name,
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                                  color: isSelected ? primary : textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Overlay.of(context).insert(_symbolOverlay!);
+  }
+
+  void _removeSymbolOverlay() {
+    _symbolOverlay?.remove();
+    _symbolOverlay = null;
+  }
+
+  void _showOffsetOverlay({
+    required GlobalKey key,
+    required int currentOffset,
+    required Color primary,
+    required Color textColor,
+    required bool isCall,
+    required void Function(int) onSelected,
+  }) {
+    _removeCallOffsetOverlay();
+    _removePutOffsetOverlay();
+
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? MyntColors.overlayBgDark : Colors.white;
+    final borderColor = isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0);
+
+    const options = <int>[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
+    String labelFor(int o) {
+      if (o == 0) return 'ATM';
+      if (o < 0) return 'ITM ${-o}';
+      return 'OTM $o';
+    }
+
+    final entry = OverlayEntry(
+      builder: (_) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: isCall ? _removeCallOffsetOverlay : _removePutOffsetOverlay,
+              behavior: HitTestBehavior.opaque,
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          Positioned(
+            left: position.dx,
+            top: position.dy + size.height + 4,
+            width: size.width,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(6),
+              color: bgColor,
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 300),
+                decoration: BoxDecoration(
+                  border: Border.all(color: borderColor),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: options.map((o) {
+                        final isSelected = o == currentOffset;
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              onSelected(o);
+                              if (isCall) _removeCallOffsetOverlay(); else _removePutOffsetOverlay();
+                            },
+                            borderRadius: BorderRadius.circular(4),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              child: Text(
+                                labelFor(o),
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+                                  color: isSelected ? primary : textColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (isCall) {
+      _callOffsetOverlay = entry;
+    } else {
+      _putOffsetOverlay = entry;
+    }
+    Overlay.of(context).insert(entry);
+  }
+
+  void _removeCallOffsetOverlay() {
+    _callOffsetOverlay?.remove();
+    _callOffsetOverlay = null;
+  }
+
+  void _removePutOffsetOverlay() {
+    _putOffsetOverlay?.remove();
+    _putOffsetOverlay = null;
   }
 
   void _apply() {
@@ -1576,43 +1770,47 @@ class _ScalperSettingsDialogState
                   ),
                 ),
                 // Scrollable content
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.7,
-                  ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.7,
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                         // ─── Default Symbol ─────────────────────────
                         _sectionLabel(context, 'Default Symbol', textColor),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         _buildDefaultSymbolDropdown(context, primary, textColor, secondaryColor, dividerColor),
-                        const SizedBox(height: 20),
-                        Divider(color: dividerColor),
                         const SizedBox(height: 16),
 
                         // ─── Strike Selection ───────────────────────
                         _sectionLabel(context, 'Strike Selection', textColor),
-                        const SizedBox(height: 8),
-                        _buildRadioRow(
-                          context,
-                          value: 'offset',
-                          groupValue: _mode,
-                          label: 'ATM Offset',
-                          primary: primary,
-                          textColor: textColor,
-                          onChanged: (v) => setState(() => _mode = v),
-                        ),
-                        _buildRadioRow(
-                          context,
-                          value: 'premium',
-                          groupValue: _mode,
-                          label: 'Premium',
-                          primary: primary,
-                          textColor: textColor,
-                          onChanged: (v) => setState(() => _mode = v),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            _buildRadioRow(
+                              context,
+                              value: 'offset',
+                              groupValue: _mode,
+                              label: 'ATM Offset',
+                              primary: primary,
+                              textColor: textColor,
+                              onChanged: (v) => setState(() => _mode = v),
+                            ),
+                            const SizedBox(width: 24),
+                            _buildRadioRow(
+                              context,
+                              value: 'premium',
+                              groupValue: _mode,
+                              label: 'Premium',
+                              primary: primary,
+                              textColor: textColor,
+                              onChanged: (v) => setState(() => _mode = v),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 16),
 
@@ -1624,9 +1822,9 @@ class _ScalperSettingsDialogState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _sectionLabel(context, 'Default Call Strike', textColor),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
                                   _buildOffsetDropdown(context, _callOffset, primary, textColor, secondaryColor, dividerColor,
-                                    (v) => setState(() => _callOffset = v)),
+                                    (v) => setState(() => _callOffset = v), isCall: true),
                                 ],
                               )),
                               const SizedBox(width: 16),
@@ -1634,9 +1832,9 @@ class _ScalperSettingsDialogState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _sectionLabel(context, 'Default Put Strike', textColor),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
                                   _buildOffsetDropdown(context, _putOffset, primary, textColor, secondaryColor, dividerColor,
-                                    (v) => setState(() => _putOffset = v)),
+                                    (v) => setState(() => _putOffset = v), isCall: false),
                                 ],
                               )),
                             ],
@@ -1648,7 +1846,7 @@ class _ScalperSettingsDialogState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _sectionLabel(context, 'Call Premium', textColor),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
                                   _buildNumberInput(context, _callPremiumCtrl, dividerColor, textColor, primary),
                                 ],
                               )),
@@ -1657,7 +1855,7 @@ class _ScalperSettingsDialogState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   _sectionLabel(context, 'Put Premium', textColor),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
                                   _buildNumberInput(context, _putPremiumCtrl, dividerColor, textColor, primary),
                                 ],
                               )),
@@ -1669,13 +1867,11 @@ class _ScalperSettingsDialogState
                             style: MyntWebTextStyles.caption(context, color: secondaryColor),
                           ),
                         ],
-                        const SizedBox(height: 20),
-                        Divider(color: dividerColor),
                         const SizedBox(height: 16),
 
                         // ─── Market Protection ──────────────────────
                         _sectionLabel(context, 'Market Protection', textColor),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Row(
                           children: [
                             SizedBox(
@@ -1690,11 +1886,12 @@ class _ScalperSettingsDialogState
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Text('Enable MKT Protection', style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: textColor)),
+                            Text('Enable MKT Protection', style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.regular, color: textColor)),
                             const SizedBox(width: 16),
                             if (_mktProtEnabled)
                               SizedBox(
-                                width: 60,
+                                width: 100,
+                                height: 40,
                                 child: _buildNumberInput(context, _mktProtCtrl, dividerColor, textColor, primary),
                               ),
                           ],
@@ -1704,33 +1901,34 @@ class _ScalperSettingsDialogState
                           'Adds protection points to market orders (max 20).',
                           style: MyntWebTextStyles.caption(context, color: secondaryColor),
                         ),
-                        const SizedBox(height: 20),
-                        Divider(color: dividerColor),
                         const SizedBox(height: 16),
 
                         // ─── Position Filter ────────────────────────
                         _sectionLabel(context, 'Position Filter', textColor),
-                        const SizedBox(height: 8),
-                        _buildRadioRow(
-                          context,
-                          value: 'all',
-                          groupValue: _posFilter,
-                          label: 'All Positions',
-                          primary: primary,
-                          textColor: textColor,
-                          onChanged: (v) => setState(() => _posFilter = v),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            _buildRadioRow(
+                              context,
+                              value: 'all',
+                              groupValue: _posFilter,
+                              label: 'All Positions',
+                              primary: primary,
+                              textColor: textColor,
+                              onChanged: (v) => setState(() => _posFilter = v),
+                            ),
+                            const SizedBox(width: 24),
+                            _buildRadioRow(
+                              context,
+                              value: 'fno',
+                              groupValue: _posFilter,
+                              label: 'FNO Positions Only',
+                              primary: primary,
+                              textColor: textColor,
+                              onChanged: (v) => setState(() => _posFilter = v),
+                            ),
+                          ],
                         ),
-                        _buildRadioRow(
-                          context,
-                          value: 'fno',
-                          groupValue: _posFilter,
-                          label: 'FNO Positions Only',
-                          primary: primary,
-                          textColor: textColor,
-                          onChanged: (v) => setState(() => _posFilter = v),
-                        ),
-                        const SizedBox(height: 20),
-                        Divider(color: dividerColor),
                         const SizedBox(height: 16),
 
                         // ─── Keyboard Shortcuts ─────────────────────
@@ -1738,42 +1936,68 @@ class _ScalperSettingsDialogState
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _sectionLabel(context, 'Keyboard Shortcuts', textColor),
-                            SizedBox(
-                              height: 28,
+                            Transform.scale(
+                              scale: 0.8,
                               child: Switch(
                                 value: _shortcutsEnabled,
                                 onChanged: (val) => setState(() => _shortcutsEnabled = val),
                                 activeTrackColor: primary,
                                 activeThumbColor: Colors.white,
+                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                             ),
                           ],
                         ),
                         if (_shortcutsEnabled) ...[
                           const SizedBox(height: 10),
-                          _buildShortcutRow(context, 'Shift + ↑', 'Buy CE (Left)', resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)),
-                          _buildShortcutRow(context, 'Shift + ↓', 'Sell CE (Left)', resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)),
-                          _buildShortcutRow(context, 'Ctrl + ↑', 'Buy PE (Right)', resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit)),
-                          _buildShortcutRow(context, 'Ctrl + ↓', 'Sell PE (Right)', resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)),
-                        ],
-                        const SizedBox(height: 20),
-
-                        // ─── Apply Button ─────────────────────────
-                        SizedBox(
-                          width: double.infinity,
-                          height: 40,
-                          child: ElevatedButton(
-                            onPressed: _apply,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              elevation: 0,
-                            ),
-                            child: Text('Apply', style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.semiBold, color: Colors.white)),
+                          // Display shortcuts in 2 columns
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildShortcutRow(context, 'Shift + ↑', 'Buy CE (Left)', resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildShortcutRow(context, 'Shift + ↓', 'Sell CE (Left)', resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildShortcutRow(context, 'Ctrl + ↑', 'Buy PE (Right)', resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildShortcutRow(context, 'Ctrl + ↓', 'Sell PE (Right)', resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.tertiary)),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
+                    ),
+                  ),
+                  ),
+                ),
+                
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border(top: BorderSide(color: dividerColor)),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: _apply,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
+                      ),
+                      child: Text('Apply', style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.semiBold, color: Colors.white)),
                     ),
                   ),
                 ),
@@ -1788,7 +2012,7 @@ class _ScalperSettingsDialogState
   // ── Helpers ──────────────────────────────────────────────────────
 
   Widget _sectionLabel(BuildContext context, String text, Color color) {
-    return Text(text, style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.semiBold, color: color));
+    return Text(text, style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: color));
   }
 
   Widget _buildRadioRow(
@@ -1820,7 +2044,7 @@ class _ScalperSettingsDialogState
               ),
             ),
             const SizedBox(width: 10),
-            Text(label, style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: textColor)),
+            Text(label, style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.regular, color: textColor)),
           ],
         ),
       ),
@@ -1831,39 +2055,52 @@ class _ScalperSettingsDialogState
     BuildContext context,
     Color primary, Color textColor, Color secondaryColor, Color dividerColor,
   ) {
-    final current = _defaultSymbol;
-    return PopupMenuButton<int>(
-      onSelected: (v) => setState(() => _defaultSymbol = v),
-      offset: const Offset(0, 36),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-      itemBuilder: (context) {
-        return ScalperProvider.indices.asMap().entries.map((e) {
-          final isSelected = e.key == current;
-          return PopupMenuItem<int>(
-            value: e.key,
-            height: 36,
-            child: Text(
-              e.value.name,
-              style: MyntWebTextStyles.para(context,
-                fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
-                color: isSelected ? primary : textColor),
-            ),
-          );
-        }).toList();
-      },
+    return GestureDetector(
+      key: _symbolButtonKey,
+      onTap: () => _showSymbolOverlay(primary, textColor, dividerColor),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        width: 200,
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: dividerColor),
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.transparent,
+            light: const Color(0xffF1F3F8),
+          ),
           borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.primary,
+            ),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(ScalperProvider.indices[current].name,
-              style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: textColor)),
-            Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: secondaryColor),
+            Expanded(
+              child: Text(
+                ScalperProvider.indices[_defaultSymbol].name,
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textWhite,
+                  lightColor: MyntColors.textBlack,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -1873,45 +2110,69 @@ class _ScalperSettingsDialogState
   Widget _buildOffsetDropdown(
     BuildContext context, int currentOffset,
     Color primary, Color textColor, Color secondaryColor, Color dividerColor,
-    void Function(int) onSelected,
-  ) {
-    final options = <int>[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5];
+    void Function(int) onSelected, {
+    required bool isCall,
+  }) {
     String labelFor(int offset) {
       if (offset == 0) return 'ATM';
       if (offset < 0) return 'ITM ${-offset}';
       return 'OTM $offset';
     }
 
-    return PopupMenuButton<int>(
-      onSelected: onSelected,
-      offset: const Offset(0, 36),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
-      itemBuilder: (context) {
-        return options.map((offset) {
-          final isSelected = offset == currentOffset;
-          return PopupMenuItem<int>(
-            value: offset,
-            height: 36,
-            child: Text(labelFor(offset),
-              style: MyntWebTextStyles.para(context,
-                fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
-                color: isSelected ? primary : textColor)),
-          );
-        }).toList();
-      },
+    final key = isCall ? _callOffsetKey : _putOffsetKey;
+
+    return GestureDetector(
+      onTap: () => _showOffsetOverlay(
+        key: key,
+        currentOffset: currentOffset,
+        primary: primary,
+        textColor: textColor,
+        isCall: isCall,
+        onSelected: onSelected,
+      ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        key: key,
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: dividerColor),
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.transparent,
+            light: const Color(0xffF1F3F8),
+          ),
           borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textSecondaryDark,
+              light: MyntColors.primary,
+            ),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(labelFor(currentOffset),
-              style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium, color: textColor)),
-            Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: secondaryColor),
+            Expanded(
+              child: Text(
+                labelFor(currentOffset),
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textWhite,
+                  lightColor: MyntColors.textBlack,
+                  fontWeight: MyntFonts.medium,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: resolveThemeColor(
+                context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary,
+              ),
+              size: 20,
+            ),
           ],
         ),
       ),
@@ -1922,44 +2183,78 @@ class _ScalperSettingsDialogState
     BuildContext context, TextEditingController controller,
     Color dividerColor, Color textColor, Color primary,
   ) {
-    return TextField(
-      controller: controller,
-      textAlign: TextAlign.center,
-      style: MyntWebTextStyles.body(context, fontWeight: MyntFonts.semiBold, color: textColor),
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: dividerColor)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: dividerColor)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: primary)),
+    return SizedBox(
+      height: 40,
+      child: MyntTextField(
+        controller: controller,
+        placeholder: '0',
+        textAlign: TextAlign.center,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+        backgroundColor: resolveThemeColor(
+          context,
+          dark: const Color(0xFF2A2A2A),
+          light: const Color(0xFFF1F3F8),
+        ),
+        textStyle: MyntWebTextStyles.body(
+          context,
+          fontWeight: MyntFonts.medium,
+          color: textColor,
+        ),
       ),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
     );
   }
 
   Widget _buildShortcutRow(BuildContext context, String shortcut, String description, Color actionColor) {
+    // Parse the shortcut string to extract modifier and key
+    final parts = shortcut.split(' + ');
+    final keys = <LogicalKeyboardKey>[];
+
+    for (var part in parts) {
+      switch (part.trim().toLowerCase()) {
+        case 'shift':
+          keys.add(LogicalKeyboardKey.shift);
+          break;
+        case 'ctrl':
+        case 'control':
+          keys.add(LogicalKeyboardKey.control);
+          break;
+        case 'alt':
+          keys.add(LogicalKeyboardKey.alt);
+          break;
+        case '↑':
+          keys.add(LogicalKeyboardKey.arrowUp);
+          break;
+        case '↓':
+          keys.add(LogicalKeyboardKey.arrowDown);
+          break;
+        case '←':
+          keys.add(LogicalKeyboardKey.arrowLeft);
+          break;
+        case '→':
+          keys.add(LogicalKeyboardKey.arrowRight);
+          break;
+      }
+    }
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Container(
-            width: 86,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: resolveThemeColor(context, dark: MyntColors.searchBgDark, light: MyntColors.searchBg),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider)),
-            ),
-            child: Text(shortcut, textAlign: TextAlign.center,
-              style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.semiBold,
-                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary))),
-          ),
+          // Use shadcn_flutter's built-in KeyboardDisplay
+          shadcn.KeyboardDisplay(
+            keys: keys,
+          ).small(),
           const SizedBox(width: 12),
           Container(width: 8, height: 8, decoration: BoxDecoration(color: actionColor, shape: BoxShape.circle)),
           const SizedBox(width: 8),
-          Text(description, style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium,
-            color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary))),
+          Expanded(
+            child: Text(
+              description,
+              style: MyntWebTextStyles.para(context, fontWeight: MyntFonts.medium,
+                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+            ),
+          ),
         ],
       ),
     );

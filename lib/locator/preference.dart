@@ -432,6 +432,13 @@ class Preferences {
 
   bool get isTickerVisible => _prefInstance?.getBool(_isTickerVisible) ?? true;
 
+  // Saved custom strategies (per-user, stored as JSON string)
+  Future setSavedCustomStrategies(String userId, String data) async =>
+      await _prefInstance!.setString('${_savedCustomStrategies}_$userId', data);
+
+  String? getSavedCustomStrategies(String userId) =>
+      _prefInstance?.getString('${_savedCustomStrategies}_$userId');
+
   // Watchlist Option Chain - persisted symbol
   Future setWatchlistOCSymbol(String symbol) async =>
       await _prefInstance!.setString(_watchlistOCSymbol, symbol);
@@ -564,6 +571,9 @@ const String _isSipDate = "isSipDate";
 
 ////TICKER VISIBILITY
 const String _isTickerVisible = "isTickerVisible";
+
+////SAVED CUSTOM STRATEGIES
+const String _savedCustomStrategies = "savedCustomStrategies";
 
 ////WATCHLIST OPTION CHAIN
 const String _watchlistOCSymbol = "watchlistOCSymbol";

@@ -41,6 +41,7 @@ class ScripNewValue {
   bool? isAdded;
   String? expDate;
   String? option;
+  String? idx;
 
   ScripNewValue({
     this.exch,
@@ -57,6 +58,7 @@ class ScripNewValue {
     this.isAdded,
     this.expDate,
     this.option,
+    this.idx,
   });
 
   ScripNewValue.fromJson(Map<String, dynamic> json) {
@@ -74,6 +76,7 @@ class ScripNewValue {
     isAdded = isAdded == null ? false : json['isAdded'];
     expDate = json['expDate'];
     option = json['option'];
+    idx = json['idx'];
   }
 
   Map<String, dynamic> toJson() {
@@ -92,6 +95,7 @@ class ScripNewValue {
     data['isAdded'] = isAdded;
     data['option'] = option;
     data['expDate'] = expDate;
+    data['idx'] = idx;
     return data;
   }
 }

@@ -56,6 +56,9 @@ class ScalperChartManager {
   String? _callSymbol;
   String? _putSymbol;
 
+  // Track current theme state for each chart (needed to detect theme changes)
+  final Map<String, bool> _chartThemes = {};
+
   // Pending chart creations (queued before library loads)
   final Map<String, Map<String, dynamic>> _pendingCreations = {};
 
@@ -254,8 +257,9 @@ class ScalperChartManager {
       );
 
       _setCurrentSymbol(chartId, symbol);
+      _chartThemes[chartId] = isDarkMode; // Store the theme state
       debugPrint(
-          'ScalperChartManager: Creating $chartId chart with $symbol');
+          'ScalperChartManager: Creating $chartId chart with $symbol (dark: $isDarkMode)');
     } catch (e) {
       debugPrint('ScalperChartManager: Error creating $chartId chart: $e');
     }
@@ -280,18 +284,25 @@ class ScalperChartManager {
       if (bridge == null) return;
 
       final chartExists = bridge.hasChart(containerId);
+      final currentSymbol = _getCurrentSymbol(chartId);
+      final currentTheme = _chartThemes[chartId];
+      final themeChanged = currentTheme != null && currentTheme != isDarkMode;
 
       if (!chartExists) {
         // No chart on this container — create it (handles remount with new div)
         createChart(chartId: chartId, symbol: symbol, isDarkMode: isDarkMode);
-      } else {
-        // Chart exists — only change symbol if different
-        final currentSymbol = _getCurrentSymbol(chartId);
-        if (symbol == currentSymbol) {
-          return;
-        }
+      } else if (themeChanged) {
+        // Theme changed - recreate chart with new theme
+        debugPrint('ScalperChartManager: Theme changed for $chartId ($currentTheme -> $isDarkMode), recreating chart');
+        bridge.removeChart(containerId);
+        createChart(chartId: chartId, symbol: symbol, isDarkMode: isDarkMode);
+      } else if (symbol != currentSymbol) {
+        // Only symbol changed - just update symbol
         bridge.changeSymbol(containerId, symbol);
         debugPrint('ScalperChartManager: Changed $chartId to $symbol');
+      } else {
+        // No changes needed
+        return;
       }
 
       _setCurrentSymbol(chartId, symbol);
@@ -413,6 +424,7 @@ class ScalperChartManager {
 
     _containerIds.clear();
     _pendingCreations.clear();
+    _chartThemes.clear(); // Clear theme tracking
     _indexSymbol = null;
     _callSymbol = null;
     _putSymbol = null;

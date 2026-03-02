@@ -36,6 +36,7 @@ class DashboardScreenWeb extends ConsumerStatefulWidget {
 
 class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
   final ScrollController _indexScrollController = ScrollController();
+  final ScrollController _toolsScrollController = ScrollController();
   final ScrollController _tradeActionScrollController = ScrollController();
   // WebSocket subscription for live position updates
   StreamSubscription? _positionSocketSubscription;
@@ -175,6 +176,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
     // No need to unbodyscribe here to avoid double calls
 
     _indexScrollController.dispose();
+    _toolsScrollController.dispose();
     _tradeActionScrollController.dispose();
     super.dispose();
   }
@@ -197,6 +199,9 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
               const SizedBox(height: 32),
               // Dashboard cards section (Holdings, Position, Orders, Margins)
               _buildDashboardCardsSection(context),
+              const SizedBox(height: 32),
+              // Tools section (Scalper, Strategy Builder, OptionZ)
+              _buildToolsSection(context),
               const SizedBox(height: 32),
               // Today's trade action section
               // _buildFeatureCardsSection(context),
@@ -951,6 +956,494 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         );
       }
     }
+  }
+
+  Widget _buildToolsSection(BuildContext context) {
+    final bool darkMode = isDarkMode(context);
+
+    final List<Map<String, dynamic>> tools = [
+      {
+        'title': 'Equity SIP',
+        'subtitle': 'Systematic Investment Plan',
+        'description':
+            'Create and manage SIP baskets to automate your equity investments with ease.',
+        'accentColor': const Color(0xFF0EA5E9),
+        'badge': 'NEW',
+        'icon': Icons.auto_graph_rounded,
+        'onTap': () {
+          // Navigate to orders screen and switch to SIP tab (index 5)
+          ref.read(orderProvider).changeTabIndex(5, context);
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('orderBook');
+          }
+        },
+      },
+      {
+        'title': 'Scalper',
+        'subtitle': 'F&O • Index Trading',
+        'description':
+            'Ultra-fast one-tap order execution built for high-speed intraday & index traders.',
+        'accentColor': const Color(0xFF3B82F6),
+        'badge': 'NEW',
+        'icon': Icons.rocket_launch_rounded,
+        'onTap': () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('scalper');
+          }
+        },
+      },
+      {
+        'title': 'Strategy Builder',
+        'subtitle': 'Multi-leg • Payoff Analytics',
+        'description':
+            'Design, analyze & visualize complex option strategies with real-time payoff charts.',
+        'accentColor': const Color(0xFF8B5CF6),
+        'badge': 'NEW',
+        'icon': Icons.show_chart,
+        'onTap': () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('strategyBuilder');
+          }
+        },
+      },
+      {
+        'title': 'OptionZ',
+        'subtitle': 'IV • OI • Greeks • Option Chain',
+        'description':
+            'Institution-grade options dashboard with deep analytics & live market insights.',
+        'accentColor': const Color(0xFF10B981),
+        'badge': null,
+        'icon': Icons.bar_chart_rounded,
+        'onTap': () async {
+          final funds = ref.read(fundProvider);
+          await funds.fetchHstoken(context);
+          await funds.openOptionZInNewTab();
+        },
+      },
+      {
+        'title': 'Refer & Earn',
+        'subtitle': 'Instant Rewards • Unlimited Referrals',
+        'description':
+            'Invite friends to Mynt and earn rewards for every successful referral.',
+        'accentColor': const Color(0xFFF59E0B),
+        'badge': null,
+        'icon': Icons.card_giftcard_rounded,
+        'onTap': () {
+          final Preferences pref = locator<Preferences>();
+          final url =
+              'https://profile.zebuetrade.com/refer?uid=${pref.clientId}&token=${pref.token}';
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+        },
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Text(
+          'Tools',
+          style: MyntWebTextStyles.head(
+            context,
+            darkColor: MyntColors.textPrimaryDark,
+            lightColor: MyntColors.textPrimary,
+            fontWeight: MyntFonts.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Tools cards
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth = constraints.maxWidth;
+            const cardSpacing = 12.0;
+            const minCardWidth = 280.0;
+            final totalCards = tools.length;
+            final totalSpacing = cardSpacing * (totalCards - 1);
+            final totalMinWidth = (minCardWidth * totalCards) + totalSpacing;
+
+            double cardWidth;
+            bool needsScrolling = false;
+
+            if (availableWidth >= totalMinWidth) {
+              cardWidth = (availableWidth - totalSpacing) / totalCards;
+            } else {
+              cardWidth = minCardWidth;
+              needsScrolling = true;
+            }
+
+            return Stack(
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: SingleChildScrollView(
+                    controller: _toolsScrollController,
+                    scrollDirection: Axis.horizontal,
+                    physics: const ClampingScrollPhysics(),
+                    child: Row(
+                      children: tools.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final tool = entry.value;
+                        final Color accent = tool['accentColor'] as Color;
+                        final String? badge = tool['badge'] as String?;
+
+                        return MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () {
+                              (tool['onTap'] as Function).call();
+                            },
+                            child: Container(
+                              width: cardWidth,
+                              margin: EdgeInsets.only(
+                                  right: index < tools.length - 1
+                                      ? cardSpacing
+                                      : 0),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: darkMode
+                                    ? accent.withValues(alpha: 0.06)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: darkMode
+                                      ? accent.withValues(alpha: 0.20)
+                                      : accent.withValues(alpha: 0.15),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Top row: stacked card icon + title + badge
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                // Stacked card icon effect
+                                SizedBox(
+                                  width: 64,
+                                  height: 56,
+                                  child: Stack(
+                                    children: [
+                                      // Back card
+                                      Positioned(
+                                        left: 0,
+                                        top: 10,
+                                        child: Transform.rotate(
+                                          angle: -0.18,
+                                          child: Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                                    color: accent
+                                                        .withValues(alpha: 0.18),
+                                                    borderRadius:
+                                                  BorderRadius.circular(11),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Mid card
+                                      Positioned(
+                                        left: 8,
+                                        top: 5,
+                                        child: Transform.rotate(
+                                          angle: -0.09,
+                                          child: Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                                    color: accent
+                                                        .withValues(alpha: 0.35),
+                                                     borderRadius:
+                                                  BorderRadius.circular(11),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Front card with icon
+                                      Positioned(
+                                        left: 16,
+                                        top: 0,
+                                        child: Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            color: accent,
+                                            borderRadius:
+                                                BorderRadius.circular(11),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: accent
+                                                          .withValues(alpha: 0.4),
+                                                      blurRadius: 8,
+                                                offset:
+                                                    const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Center(
+                                            child: Icon(
+                                              tool['icon'] as IconData,
+                                              size: 24,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              tool['title'] as String,
+                                              style:
+                                                  MyntWebTextStyles.body(
+                                                context,
+                                                darkColor: MyntColors
+                                                    .textPrimaryDark,
+                                                lightColor:
+                                                    MyntColors.textPrimary,
+                                                fontWeight:
+                                                    MyntFonts.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          if (badge != null) ...[
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets
+                                                  .symmetric(
+                                                  horizontal: 6,
+                                                  vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: accent,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        5),
+                                              ),
+                                              child: Text(
+                                                'NEW',
+                                                style: MyntWebTextStyles
+                                                    .caption(
+                                                  context,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        tool['subtitle'] as String,
+                                        style: MyntWebTextStyles.para(
+                                          context,
+                                          darkColor: MyntColors
+                                              .textSecondaryDark,
+                                          lightColor:
+                                              MyntColors.textSecondary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            // Divider
+                            Divider(
+                              height: 1,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.dividerDark,
+                                  light: MyntColors.divider),
+                            ),
+                            const SizedBox(height: 10),
+                            // Description
+                            Expanded(
+                              child: Text(
+                                tool['description'] as String,
+                                style: MyntWebTextStyles.para(
+                                  context,
+                                  darkColor:
+                                      MyntColors.textSecondaryDark,
+                                  lightColor:
+                                      MyntColors.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                // Left arrow
+                if (needsScrolling)
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_toolsScrollController.hasClients) {
+                                final scrollAmount = cardWidth + cardSpacing;
+                                final newOffset =
+                                    (_toolsScrollController.offset -
+                                            scrollAmount)
+                                        .clamp(
+                                  0.0,
+                                  _toolsScrollController
+                                      .position.maxScrollExtent,
+                                );
+                                _toolsScrollController.animateTo(
+                                  newOffset,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .card,
+                                border: Border.all(
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .border,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.arrow_back_ios,
+                                  size: 14,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // Right arrow
+                if (needsScrolling)
+                  Positioned(
+                    right: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              if (_toolsScrollController.hasClients) {
+                                final scrollAmount = cardWidth + cardSpacing;
+                                final newOffset =
+                                    (_toolsScrollController.offset +
+                                            scrollAmount)
+                                        .clamp(
+                                  0.0,
+                                  _toolsScrollController
+                                      .position.maxScrollExtent,
+                                );
+                                _toolsScrollController.animateTo(
+                                  newOffset,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: shadcn.Theme.of(context)
+                                    .colorScheme
+                                    .card,
+                                border: Border.all(
+                                  color: shadcn.Theme.of(context)
+                                      .colorScheme
+                                      .border,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: resolveThemeColor(context,
+                                      dark: MyntColors.textPrimaryDark,
+                                      light: MyntColors.textPrimary),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
   }
 
   Widget _buildTodaysTradeActionSection(BuildContext context) {

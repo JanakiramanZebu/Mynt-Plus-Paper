@@ -185,19 +185,22 @@ class _HoldingDetailScreenWebState
   void _updateProfitLossValues() {
     final ltp = double.tryParse(_exchTsym.lp ?? "0.0") ?? 0.0;
     final qty = _holdingData.currentQty ?? 0;
+    // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
+    final int t1Qty = int.parse(_holdingData.npoadt1qty ?? "0");
+    final int totalQty = qty + t1Qty;
     final avgPrice = double.tryParse(_holdingData.upldprc ?? "0.0") ?? 0.0;
 
-    if (ltp > 0 && qty > 0 && avgPrice > 0) {
+    if (ltp > 0 && totalQty > 0 && avgPrice > 0) {
       // Current value
-      _holdingData.currentValue = (ltp * qty).toStringAsFixed(2);
+      _holdingData.currentValue = (ltp * totalQty).toStringAsFixed(2);
 
       // Profit/Loss
-      final pnl = (ltp - avgPrice) * qty;
+      final pnl = (ltp - avgPrice) * totalQty;
       _exchTsym.profitNloss = pnl.toStringAsFixed(2);
 
       // P&L Percentage
       if (avgPrice > 0) {
-        final pnlPerc = (pnl / (avgPrice * qty)) * 100;
+        final pnlPerc = (pnl / (avgPrice * totalQty)) * 100;
         _exchTsym.pNlChng = pnlPerc.toStringAsFixed(2);
       }
     }
@@ -510,12 +513,24 @@ class _HoldingDetailScreenWebState
         _rowOfInfoData(
           "Non POA / Sell",
           Text(
-            "${_holdingData.saleableQty ?? 0} / ${_holdingData.currentQty ?? 0}",
+            "${_holdingData.npoadqty ?? 0} / ${_holdingData.saleableQty ?? 0}",
             style:
                 MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
           ),
           theme,
         ),
+        if (_holdingData.btstqty != "0" ||
+            int.parse(_holdingData.npoadt1qty ?? "0") > 0) ...[
+          _rowOfInfoData(
+            "T1 Qty",
+            Text(
+              "${int.parse(_holdingData.btstqty ?? "0") + int.parse(_holdingData.npoadt1qty ?? "0")}",
+              style:
+                  MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+            ),
+            theme,
+          ),
+        ],
         _rowOfInfoData(
           "Avg price",
           Text(
@@ -546,7 +561,8 @@ class _HoldingDetailScreenWebState
         _rowOfInfoData(
           "Current",
           Text(
-            (int.parse("${_holdingData.currentQty ?? 0}") *
+            ((int.parse("${_holdingData.currentQty ?? 0}") +
+                        int.parse(_holdingData.npoadt1qty ?? "0")) *
                     double.parse(_exchTsym.lp?.toString() ?? "0.0"))
                 .toStringAsFixed(2),
             style:
@@ -554,6 +570,17 @@ class _HoldingDetailScreenWebState
           ),
           theme,
         ),
+        if (_holdingData.rpnl != null && _holdingData.rpnl != "0") ...[
+          _rowOfInfoData(
+            "Realised P&L",
+            Text(
+              "${_holdingData.rpnl ?? 0}",
+              style:
+                  MyntWebTextStyles.body(context, fontWeight: MyntFonts.medium),
+            ),
+            theme,
+          ),
+        ],
         _rowOfInfoData(
           "Pledged Qty",
           Text(
@@ -572,7 +599,7 @@ class _HoldingDetailScreenWebState
           ),
           theme,
           showDivider: false,
-        ),  
+        ),
       ],
     );
   }

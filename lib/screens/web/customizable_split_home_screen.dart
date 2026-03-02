@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,6 +30,7 @@ import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_screen.dart';
+import 'package:mynt_plus/screens/web/webhook/webhook_tradingview_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../locator/constant.dart';
@@ -95,6 +98,7 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'market_watch/tv_chart/chart_iframe_guard.dart';
 import '../../../sharedWidget/dynamic_banner_widget.dart';
 import '../../../models/banner_model/banner_model.dart';
 import '../../../provider/banner_provider.dart';
@@ -135,6 +139,8 @@ enum ScreenTypeParam {
   settings,
   tradeAction,
   portfolioAnalysis,
+  strategyBuilder,
+  tradingViewWebHook,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -209,6 +215,38 @@ class _CustomizableSplitHomeScreenState
     }
     return false;
   }
+
+  // Disable all chart iframes to prevent cursor bleed when dropdown is open
+  void _disableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'none';
+          iframe.style.cursor = 'default';
+        }
+      }
+      html.document.body?.style.cursor = 'default';
+    } catch (e) {
+      debugPrint('Error disabling iframes: $e');
+    }
+  }
+
+  void _enableAllChartIframes() {
+    try {
+      final iframes = html.document.querySelectorAll('iframe');
+      for (var iframe in iframes) {
+        if (iframe is html.IFrameElement && iframe.id.contains('chart-iframe')) {
+          iframe.style.pointerEvents = 'auto';
+          iframe.style.cursor = '';
+        }
+      }
+      html.document.body?.style.cursor = '';
+    } catch (e) {
+      debugPrint('Error enabling iframes: $e');
+    }
+  }
+
   String? _fundsInitialAction; // Track initial action for funds screen
 
   // Track loading states for each screen type
@@ -359,6 +397,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "strategyBuilder") {
             debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
+          } else if (routeName == Routes.scalperScreen ||
+              routeName == "scalper") {
+            debugPrint("Scalper route matched: $routeName");
+            _handleScalperTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -417,6 +459,10 @@ class _CustomizableSplitHomeScreenState
               routeName == "strategyBuilder") {
             debugPrint("Strategy Builder route matched: $routeName");
             _handleStrategyBuilderTap();
+          } else if (routeName == Routes.scalperScreen ||
+              routeName == "scalper") {
+            debugPrint("Scalper route matched: $routeName");
+            _handleScalperTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -568,6 +614,12 @@ class _CustomizableSplitHomeScreenState
         debugPrint('WebRouter: Handling portfolioAnalysis initial panel');
         _handlePortfolioAnalysisTap();
         debugPrint('WebRouter: portfolioAnalysis handler called');
+        break;
+      case ScreenTypeParam.strategyBuilder:
+        _handleStrategyBuilderTap();
+        break;
+      case ScreenTypeParam.tradingViewWebHook:
+        _handleWebHookTap();
         break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
@@ -924,9 +976,62 @@ class _CustomizableSplitHomeScreenState
               );
             },
           ),
-          body: _buildNewLayout(theme),
+          body: Column(
+            children: [
+              _buildOldVersionBanner(),
+              Expanded(child: _buildNewLayout(theme)),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  /// Banner to navigate to the old version of the app
+  Widget _buildOldVersionBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: resolveThemeColor(context,
+            dark: const Color(0xFF1A1D21),
+            light: const Color(0xFFF5F7FA)),
+        border: Border(
+          bottom: BorderSide(
+            color: resolveThemeColor(context,
+                dark: const Color(0xFF2A2D31),
+                light: const Color(0xFFE8ECF0)),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Spacer(),
+          InkWell(
+            onTap: () {
+              html.window.open('https://zebu-feuat.web.app', '_blank');
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Mynt by Zebu Web — Old Version is Here!',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,)
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+        ],
+      ),
     );
   }
 
@@ -1277,6 +1382,10 @@ class _CustomizableSplitHomeScreenState
           onScalperTap: () {
             shadcn.closeDrawer(drawerContext);
             _handleScalperTap();
+          },
+          onStrategyBuilderTap: () {
+            shadcn.closeDrawer(drawerContext);
+            _handleStrategyBuilderTap();
           },
           onThemeToggle: () {
             shadcn.closeDrawer(drawerContext);
@@ -1902,6 +2011,10 @@ class _CustomizableSplitHomeScreenState
     _replaceScreenInPanel(ScreenType.strategyBuilder);
   }
 
+  void _handleWebHookTap() {
+    _replaceScreenInPanel(ScreenType.tradingViewWebHook);
+  }
+
   void _handleScalperTap() {
     setState(() => _isScalperMode = true);
   }
@@ -2033,7 +2146,25 @@ class _CustomizableSplitHomeScreenState
               shadcn.showDropdown(
                 context: context,
                 builder: (context) {
-                  return shadcn.DropdownMenu(
+                  return PointerInterceptor(
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.basic,
+                      onEnter: (_) {
+                        ChartIframeGuard.acquire();
+                        _disableAllChartIframes();
+                      },
+                      onHover: (_) {
+                        _disableAllChartIframes();
+                      },
+                      onExit: (_) {
+                        ChartIframeGuard.release();
+                        _enableAllChartIframes();
+                      },
+                      child: Listener(
+                        onPointerMove: (_) {
+                          _disableAllChartIframes();
+                        },
+                        child: shadcn.DropdownMenu(
                     children: [
                       // OptionZ
                       shadcn.MenuButton(
@@ -2180,6 +2311,9 @@ class _CustomizableSplitHomeScreenState
                         ),
                       ),
                     ],
+                  ),
+                      ),
+                    ),
                   );
                 },
               );
@@ -2510,6 +2644,8 @@ class _CustomizableSplitHomeScreenState
         return const StrategyBuilderPanelWeb();
       case ScreenType.scalper:
         return const ScalperScreenWeb(embedded: true);
+      case ScreenType.tradingViewWebHook:
+        return const WebHookTradingViewScreen();
       // caEvent and cpAction removed
     }
   }
@@ -2569,6 +2705,8 @@ class _CustomizableSplitHomeScreenState
         return 'Strategy Builder';
       case ScreenType.scalper:
         return 'Scalper';
+      case ScreenType.tradingViewWebHook:
+        return 'WebHook';
       // caEvent and cpAction removed
     }
   }
@@ -2628,6 +2766,8 @@ class _CustomizableSplitHomeScreenState
         return Icons.architecture;
       case ScreenType.scalper:
         return Icons.speed;
+      case ScreenType.tradingViewWebHook:
+        return Icons.webhook;
       // caEvent and cpAction removed
     }
   }
@@ -3012,6 +3152,7 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.cagrCalculator:
       case ScreenType.mfStockDetail:
       case ScreenType.strategyBuilder:
+      case ScreenType.tradingViewWebHook:
         break;
       case ScreenType.scalper:
         setState(() => _isScalperMode = true);
@@ -3814,6 +3955,12 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         urlPath = WebRoutes.reports;
         break;
+      case ScreenType.strategyBuilder:
+        urlPath = WebRoutes.strategyBuilder;
+        break;
+      case ScreenType.tradingViewWebHook:
+        urlPath = WebRoutes.tradingViewWebHook;
+        break;
       case ScreenType.dashboard:
       case ScreenType.watchlist:
         urlPath = WebRoutes.home;
@@ -4036,9 +4183,18 @@ class _CustomizableSplitHomeScreenState
       case WebRoutes.reports: // '/reports'
         _handleReportsTap();
         break;
+      case WebRoutes.strategyBuilder: // '/strategy-builder'
+        _handleStrategyBuilderTap();
+        break;
+      case WebRoutes.tradingViewWebHook: // '/tradingview-webhook'
+        _handleWebHookTap();
+        break;
       case WebRoutes.optionChain: // '/option-chain'
         // Option chain requires arguments, navigate to dashboard instead
         _handleDashboardTap();
+        break;
+      case WebRoutes.strategyBuilder: // '/strategy-builder'
+        _handleStrategyBuilderTap();
         break;
       case WebRoutes.home: // '/'
       default:
@@ -4934,6 +5090,7 @@ enum ScreenType {
   portfolioAnalysis,
   strategyBuilder,
   scalper,
+  tradingViewWebHook,
 }
 
 // Hoverable navigation item widget

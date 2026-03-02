@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' as math;
 
@@ -9,12 +10,14 @@ import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
 import 'package:mynt_plus/models/marketwatch_model/linked_scrips.dart';
+import 'package:mynt_plus/utils/rupee_convert_format.dart';
 import 'package:mynt_plus/models/marketwatch_model/opt_chain_model.dart';
 import 'package:mynt_plus/models/order_book_model/place_order_model.dart';
 import 'package:mynt_plus/models/order_book_model/order_margin_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/websocket_provider.dart';
 import 'package:mynt_plus/models/portfolio_model/position_book_model.dart';
+import 'package:mynt_plus/models/strategy_builder_model/select_symbols_model.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 
 final strategyBuilderProvider =
@@ -34,6 +37,10 @@ class StrategyBasketItem {
   double ltp;
   bool checkbox;
   int lotSize;
+
+  // API leg definition — the source of truth for this leg's parameters
+  // (exchange, symbol, option_type, expiry type/offset, strike type/offset)
+  SelectSymbolsLegRequest? apiLeg;
 
   // Greeks
   double? iv;
@@ -55,6 +62,7 @@ class StrategyBasketItem {
     required this.ltp,
     this.checkbox = true,
     this.lotSize = 1,
+    this.apiLeg,
     this.iv,
     this.delta,
     this.gamma,
@@ -75,6 +83,7 @@ class StrategyBasketItem {
     double? ltp,
     bool? checkbox,
     int? lotSize,
+    SelectSymbolsLegRequest? apiLeg,
     double? iv,
     double? delta,
     double? gamma,
@@ -94,6 +103,7 @@ class StrategyBasketItem {
       ltp: ltp ?? this.ltp,
       checkbox: checkbox ?? this.checkbox,
       lotSize: lotSize ?? this.lotSize,
+      apiLeg: apiLeg ?? this.apiLeg,
       iv: iv ?? this.iv,
       delta: delta ?? this.delta,
       gamma: gamma ?? this.gamma,
@@ -109,12 +119,15 @@ class PredefinedStrategy {
   final String type; // Bullish, Bearish, Neutral
   final String image;
   final List<StrategyLeg> legs;
+  // Full API-format legs for saved strategies (used to call /select-symbols on load)
+  final List<Map<String, dynamic>>? savedApiLegs;
 
   PredefinedStrategy({
     required this.title,
     required this.type,
     required this.image,
     required this.legs,
+    this.savedApiLegs,
   });
 }
 
@@ -131,6 +144,51 @@ class StrategyLeg {
     required this.strikeType,
     required this.strikeOffset,
   });
+}
+
+/// Mutable draft model for custom strategy leg builder
+class CustomStrategyLegDraft {
+  String action; // 'BUY' or 'SELL'
+  int ordlot; // lots (default 1)
+  String optionType; // 'CE' or 'PE'
+  int expiryOffset; // 0, 1, 2...
+  String strikeType; // 'ATM', 'ITM', 'OTM', 'PREMIUM'
+  int strikeOffset; // 0, 1, 2... (for ATM/ITM/OTM)
+  double premiumValue; // premium price (for PREMIUM mode)
+  bool checkbox; // selection state for clear
+
+  CustomStrategyLegDraft({
+    this.action = 'BUY',
+    this.ordlot = 1,
+    this.optionType = 'CE',
+    this.expiryOffset = 0,
+    this.strikeType = 'ATM',
+    this.strikeOffset = 0,
+    this.premiumValue = 0,
+    this.checkbox = true,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'action': action,
+        'ordlot': ordlot,
+        'optionType': optionType,
+        'expiryOffset': expiryOffset,
+        'strikeType': strikeType,
+        'strikeOffset': strikeOffset,
+        'premiumValue': premiumValue,
+      };
+
+  factory CustomStrategyLegDraft.fromJson(Map<String, dynamic> json) {
+    return CustomStrategyLegDraft(
+      action: json['action'] ?? 'BUY',
+      ordlot: json['ordlot'] ?? 1,
+      optionType: json['optionType'] ?? 'CE',
+      expiryOffset: json['expiryOffset'] ?? 0,
+      strikeType: json['strikeType'] ?? 'ATM',
+      strikeOffset: json['strikeOffset'] ?? 0,
+      premiumValue: (json['premiumValue'] as num?)?.toDouble() ?? 0,
+    );
+  }
 }
 
 /// Payoff metrics
@@ -206,6 +264,10 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   String? _activePredefinedStrategy;
   String? get activePredefinedStrategy => _activePredefinedStrategy;
 
+  // Name of the saved custom builder strategy currently being edited
+  String? _editingCustomBuilderName;
+  String? get editingCustomBuilderName => _editingCustomBuilderName;
+
   // Lot multiplier
   int _lotMultiplier = 1;
   int get lotMultiplier => _lotMultiplier;
@@ -221,9 +283,17 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   bool _isOrderLoading = false;
   bool get isOrderLoading => _isOrderLoading;
 
+  bool _isPayoffLoading = false;
+  bool get isPayoffLoading => _isPayoffLoading;
+
+  // Monotonic counter to discard stale payoff API responses
+  int _payoffRequestId = 0;
+
   // Target controls
   double _targetSpotPrice = 0;
   double get targetSpotPrice => _targetSpotPrice;
+  bool _isTargetSpotActive = false;
+  bool get isTargetSpotActive => _isTargetSpotActive;
 
   int _targetDaysToExpiry = 0;
   int get targetDaysToExpiry => _targetDaysToExpiry;
@@ -287,12 +357,35 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   PayoffMetrics get metrics => _metrics;
 
   // Margin
-  String _totalMargin = '--';
-  String get totalMargin => _totalMargin;
+  OrderMarginModel? _basketMarginModel;
+  OrderMarginModel? get basketMarginModel => _basketMarginModel;
+  bool _includeExistingMargin = false;
+  bool get includeExistingMargin => _includeExistingMargin;
 
-  // My strategies
-  final List<PredefinedStrategy> _myStrategies = [];
-  List<PredefinedStrategy> get myStrategies => _myStrategies;
+  String get totalMargin {
+    if (_basketMarginModel == null) return '--';
+    if (_includeExistingMargin) {
+      return _basketMarginModel!.basketMarginWithExisting.toIndianRupee();
+    }
+    return _basketMarginModel!.basketMargin.toIndianRupee();
+  }
+
+  String get marginBenefit {
+    if (_basketMarginModel == null) return '--';
+    final benefit = _basketMarginModel!.marginBenefit;
+    return benefit > 1 ? benefit.toIndianRupee() : '--';
+  }
+
+  void toggleIncludeExistingMargin() {
+    _includeExistingMargin = !_includeExistingMargin;
+    notifyListeners();
+  }
+
+  // Custom strategies (API-based leg builder)
+  final List<PredefinedStrategy> _customStrategies = [];
+  List<PredefinedStrategy> get customStrategies => _customStrategies;
+  List<CustomStrategyLegDraft> _draftLegs = [];
+  List<CustomStrategyLegDraft> get draftLegs => _draftLegs;
 
   // Search
   String _searchQuery = '';
@@ -319,6 +412,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   // WebSocket subscription
   final List<String> _subscribedTokens = [];
   Timer? _refreshTimer;
+  Timer? _payoffDebounceTimer;
 
   // Predefined strategies
   List<PredefinedStrategy> get predefinedStrategies {
@@ -466,8 +560,8 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
 
   /// Get filtered strategies by tab
   List<PredefinedStrategy> get filteredStrategies {
-    if (_strategyTypeTab == 'MyStrategy') {
-      return _myStrategies;
+    if (_strategyTypeTab == 'CustomBuilder') {
+      return _customStrategies;
     }
     return predefinedStrategies.where((s) => s.type == _strategyTypeTab).toList();
   }
@@ -476,6 +570,9 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> initialize(BuildContext context) async {
     _isLoading = true;
     notifyListeners();
+
+    // Load saved custom builder strategies from local storage
+    loadSavedCustomStrategies();
 
     try {
       // Fetch initial quote for NIFTY 50
@@ -554,6 +651,198 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     return DateTime.now();
   }
 
+  // ============ Option Strategy API Conversion Helpers ============
+
+  /// Extract the underlying API symbol from trading symbol or display name
+  /// e.g., "NIFTY27FEB25C24000" -> "NIFTY", "BANKNIFTY27FEB25P48000" -> "BANKNIFTY"
+  String _extractUnderlyingSymbol() {
+    // Try from expiry data tsym
+    if (_expiryDataRaw.isNotEmpty) {
+      final tsym = _expiryDataRaw.first.tsym ?? '';
+      final match = RegExp(r'^([A-Z]+)\d').firstMatch(tsym);
+      if (match != null) return match.group(1)!;
+    }
+
+    // Try from basket items
+    if (_basket.isNotEmpty) {
+      final tsym = _basket.first.tsym;
+      final match = RegExp(r'^([A-Z]+)\d').firstMatch(tsym);
+      if (match != null) return match.group(1)!;
+    }
+
+    // Fallback: map known display names
+    const displayNameMap = {
+      'NIFTY 50': 'NIFTY',
+      'NIFTY BANK': 'BANKNIFTY',
+      'BANK NIFTY': 'BANKNIFTY',
+      'NIFTY FIN SERVICE': 'FINNIFTY',
+      'NIFTY MID SELECT': 'MIDCPNIFTY',
+      'SENSEX': 'SENSEX',
+      'BANKEX': 'BANKEX',
+    };
+    return displayNameMap[_selectedSymbol] ??
+        _selectedSymbol.replaceAll(' ', '');
+  }
+
+  /// Determine the options exchange for the underlying
+  String _getOptionsExchange() {
+    if (_basket.isNotEmpty) return _basket.first.exch;
+    switch (_selectedExch) {
+      case 'NSE':
+        return 'NFO';
+      case 'BSE':
+        return 'BFO';
+      case 'MCX':
+        return 'MCX';
+      default:
+        return 'NFO';
+    }
+  }
+
+  /// Determine if a given expiry date is weekly (W) or monthly (M)
+  /// Monthly = last Thursday of the month (within 1-day tolerance for holiday shifts)
+  String _getExpiryType(String expiryDateStr) {
+    final expiryDate = _parseExpiryDate(expiryDateStr);
+
+    // Find the last Thursday of the same month
+    final lastDayOfMonth =
+        DateTime(expiryDate.year, expiryDate.month + 1, 0);
+    DateTime lastThursday = lastDayOfMonth;
+    while (lastThursday.weekday != DateTime.thursday) {
+      lastThursday = lastThursday.subtract(const Duration(days: 1));
+    }
+
+    // If within 1 day of last Thursday (handles holiday shifts), it's monthly
+    final diff = (expiryDate.difference(lastThursday).inDays).abs();
+    return diff <= 1 ? 'M' : 'W';
+  }
+
+  /// Check if the current underlying symbol supports weekly expiries.
+  /// Only NIFTY (NFO) and SENSEX (BFO) have weekly option expiries.
+  bool _hasWeeklyExpiry() {
+    final symbol = _extractUnderlyingSymbol();
+    return symbol == 'NIFTY' || symbol == 'SENSEX';
+  }
+
+  /// Calculate the expiry offset (0=nearest, 1=next, etc.) among same-type expiries
+  int _getExpiryOffset(String expiryDateStr) {
+    final expiryType = _getExpiryType(expiryDateStr);
+    final now = DateTime.now();
+
+    // Filter future expiries of the same type
+    final sameTypeExpiries = _expiryDates.where((dateStr) {
+      final date = _parseExpiryDate(dateStr);
+      return _getExpiryType(dateStr) == expiryType &&
+          date.isAfter(now.subtract(const Duration(days: 1)));
+    }).toList();
+
+    // Sort chronologically
+    sameTypeExpiries.sort(
+        (a, b) => _parseExpiryDate(a).compareTo(_parseExpiryDate(b)));
+
+    final index = sameTypeExpiries.indexOf(expiryDateStr);
+    return index >= 0 ? index : 0;
+  }
+
+  /// Determine strike type (ATM/ITM/OTM) and offset from spot price
+  Map<String, dynamic> _getStrikeTypeAndOffset(
+      String strikePrice, String optionType) {
+    final strike = double.tryParse(strikePrice) ?? 0;
+    if (strike <= 0 || _spotPrice <= 0) {
+      return {'strikeType': 'ATM', 'strikeOffset': 0};
+    }
+
+    // Build sorted unique strikes from option chain
+    final strikes = _optionChain
+        .where((o) => o.strprc != null)
+        .map((o) => double.tryParse(o.strprc!) ?? 0)
+        .where((s) => s > 0)
+        .toSet()
+        .toList()
+      ..sort();
+
+    if (strikes.isEmpty) {
+      return {'strikeType': 'ATM', 'strikeOffset': 0};
+    }
+
+    // Find ATM strike (nearest to spot)
+    double atmStrike = strikes.first;
+    double minDiff = double.infinity;
+    for (final s in strikes) {
+      final diff = (s - _spotPrice).abs();
+      if (diff < minDiff) {
+        minDiff = diff;
+        atmStrike = s;
+      }
+    }
+
+    if (strike == atmStrike) {
+      return {'strikeType': 'ATM', 'strikeOffset': 0};
+    }
+
+    // Count steps from ATM
+    final atmIndex = strikes.indexOf(atmStrike);
+    final strikeIndex = strikes.indexOf(strike);
+
+    if (atmIndex < 0 || strikeIndex < 0) {
+      // Strike not in chain; estimate from step size
+      if (strikes.length >= 2) {
+        final stepSize = strikes[1] - strikes[0];
+        if (stepSize > 0) {
+          final stepsFromAtm = ((strike - atmStrike) / stepSize).round();
+          return _classifyStrike(stepsFromAtm, optionType);
+        }
+      }
+      return {'strikeType': 'ATM', 'strikeOffset': 0};
+    }
+
+    return _classifyStrike(strikeIndex - atmIndex, optionType);
+  }
+
+  /// Classify strike as ITM/ATM/OTM based on steps from ATM and option type
+  Map<String, dynamic> _classifyStrike(int stepsFromAtm, String optionType) {
+    if (stepsFromAtm == 0) {
+      return {'strikeType': 'ATM', 'strikeOffset': 0};
+    }
+
+    // CE: higher strike (positive steps) = OTM, lower (negative) = ITM
+    // PE: lower strike (negative steps) = OTM, higher (positive) = ITM
+    if (optionType == 'CE') {
+      if (stepsFromAtm > 0) {
+        return {'strikeType': 'OTM', 'strikeOffset': stepsFromAtm};
+      } else {
+        return {'strikeType': 'ITM', 'strikeOffset': stepsFromAtm.abs()};
+      }
+    } else {
+      // PE
+      if (stepsFromAtm < 0) {
+        return {'strikeType': 'OTM', 'strikeOffset': stepsFromAtm.abs()};
+      } else {
+        return {'strikeType': 'ITM', 'strikeOffset': stepsFromAtm};
+      }
+    }
+  }
+
+  /// Normalize API expiry format "27-Feb-2025" to provider format "27-FEB-25"
+  String _normalizeExpiryFromApi(String apiExpiry) {
+    if (apiExpiry.isEmpty) return '';
+    try {
+      final parts = apiExpiry.split('-');
+      if (parts.length == 3) {
+        final day = parts[0];
+        final month = parts[1].toUpperCase();
+        String year = parts[2];
+        if (year.length == 4) year = year.substring(2);
+        return '$day-$month-$year';
+      }
+    } catch (e) {
+      log('[StrategyBuilder] _normalizeExpiryFromApi error: $e');
+    }
+    return apiExpiry;
+  }
+
+  // ============ End Option Strategy API Conversion Helpers ============
+
   /// Load option chain
   Future<void> loadOptionChain(BuildContext context) async {
     if (_selectedExpiry.isEmpty) return;
@@ -617,7 +906,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       // Use searchScripForStrategyBuilder with fixed exchange filter
       final results = await api.searchScripForStrategyBuilder(
         searchText: query,
-        exchanges: ["NSE", "NFO", "BSE"],
+        exchanges: ["NSE", "NFO", "BSE","BFO"],
       );
 
       if (results.stat == 'Ok' && results.values != null && results.values!.isNotEmpty) {
@@ -626,7 +915,8 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
             .where((r) =>
                 r.instname == 'UNDIND' ||
                 r.instname == 'INDEX' ||
-                r.exch == 'NSE' // Include NSE stocks that may have F&O
+                r.exch == 'NSE' ||
+                r.exch == 'BSE' // Include NSE stocks that may have F&O
             )
             .map((r) => {
                   'displayName': r.dname ?? r.tsym ?? '',
@@ -712,52 +1002,119 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
 
   /// Set active predefined strategy
   Future<void> setActivePredefinedStrategy(PredefinedStrategy strategy, BuildContext context) async {
+    // Skip if the same strategy is already active
+    if (_activePredefinedStrategy == strategy.title && _basket.isNotEmpty) return;
+
     _activePredefinedStrategy = strategy.title;
     _lotMultiplier = 1;
 
-    // Clear basket and add strategy legs
+    // Track editing state for CustomBuilder
+    _editingCustomBuilderName = strategy.type == 'CustomBuilder' ? strategy.title : null;
+
+    // If saved strategy has full API legs, use the API to resolve correct contracts
+    // This ensures correct expiry, strike etc. even when loaded on a different day
+    if (strategy.savedApiLegs != null && strategy.savedApiLegs!.isNotEmpty) {
+      log('[StrategyBuilder] Loading saved strategy "${strategy.title}" via API with ${strategy.savedApiLegs!.length} legs');
+
+      // Populate draft legs from savedApiLegs for CustomBuilder editing
+      if (strategy.type == 'CustomBuilder') {
+        _draftLegs = strategy.savedApiLegs!.map((entry) {
+          final legJson = entry['leg'] as Map<String, dynamic>? ?? {};
+          return CustomStrategyLegDraft(
+            action: entry['action'] as String? ?? 'BUY',
+            ordlot: entry['ordlot'] as int? ?? 1,
+            optionType: legJson['option_type'] as String? ?? 'CE',
+            expiryOffset: legJson['option_expiry_offset'] as int? ?? 0,
+            strikeType: legJson['strike_type'] as String? ?? 'ATM',
+            strikeOffset: legJson['strike_offset'] as int? ?? 0,
+            premiumValue: (legJson['nearest_price'] as num?)?.toDouble() ?? 0,
+          );
+        }).toList();
+      }
+
+      await loadStrategyFromApiLegs(strategy.savedApiLegs!, context);
+      _activePredefinedStrategy = strategy.title;
+      notifyListeners();
+      return;
+    }
+
+    // Predefined strategies — resolve locally from option chain, add all legs first, then call APIs once
     _basket.clear();
 
     if (_optionChain.isEmpty) {
       await loadOptionChain(context);
     }
 
-    // Find ATM strike
-    double minDiff = double.infinity;
-    int atmIndex = 0;
-    final ceOptions = _optionChain.where((o) => o.optt == 'CE').toList();
-
-    for (int i = 0; i < ceOptions.length; i++) {
-      final strike = double.tryParse(ceOptions[i].strprc ?? '0') ?? 0;
-      final diff = (strike - _spotPrice).abs();
-      if (diff < minDiff) {
-        minDiff = diff;
-        atmIndex = i;
-      }
-    }
-
-    // Add legs
     for (var leg in strategy.legs) {
       final options = _optionChain.where((o) => o.optt == leg.optionType).toList();
       options.sort((a, b) =>
         (double.tryParse(a.strprc ?? '0') ?? 0).compareTo(double.tryParse(b.strprc ?? '0') ?? 0)
       );
 
-      int targetIndex = atmIndex + leg.strikeOffset;
-      if (leg.optionType == 'PE') {
-        // For PE, OTM means lower strike (negative offset from ATM)
-        targetIndex = atmIndex - leg.strikeOffset;
+      // Find ATM index
+      double minDiff = double.infinity;
+      int atmIndex = 0;
+      for (int i = 0; i < options.length; i++) {
+        final strike = double.tryParse(options[i].strprc ?? '0') ?? 0;
+        final diff = (strike - _spotPrice).abs();
+        if (diff < minDiff) {
+          minDiff = diff;
+          atmIndex = i;
+        }
       }
 
-      targetIndex = targetIndex.clamp(0, options.length - 1);
+      int targetIndex = (atmIndex + leg.strikeOffset).clamp(0, options.length - 1);
 
       if (options.isNotEmpty && targetIndex < options.length) {
         final option = options[targetIndex];
-        addToBasket(option, leg.action, context);
+        final cleanLp = (option.lp ?? '0').replaceAll(',', '').replaceAll(' ', '');
+        final ltp = double.tryParse(cleanLp) ?? 0.0;
+        final cleanLs = (option.ls ?? '1').replaceAll(',', '').replaceAll(' ', '');
+        final lotSize = int.tryParse(cleanLs) ?? 1;
+
+        final symbol = _extractUnderlyingSymbol();
+        final exchange = _getOptionsExchange();
+        final expiryType = _getExpiryType(_selectedExpiry);
+        final expiryOffset = _getExpiryOffset(_selectedExpiry);
+        final strikeInfo = _getStrikeTypeAndOffset(option.strprc ?? '0', option.optt ?? 'CE');
+
+        _basket.add(StrategyBasketItem(
+          tsym: option.tsym ?? '',
+          token: option.token ?? '',
+          exch: option.exch ?? 'NFO',
+          strprc: normalizeStrike(option.strprc ?? '0'),
+          optt: option.optt ?? 'CE',
+          expdate: _selectedExpiry,
+          buySell: leg.action,
+          ordlot: 1,
+          entryPrice: ltp,
+          ltp: ltp,
+          lotSize: lotSize,
+          checkbox: true,
+          apiLeg: SelectSymbolsLegRequest(
+            exchange: exchange,
+            symbol: symbol,
+            underlyingType: 'CASH',
+            optionType: option.optt ?? 'CE',
+            optionExpiryType: expiryType,
+            optionExpiryOffset: expiryOffset,
+            strikeType: strikeInfo['strikeType'] as String,
+            strikeOffset: strikeInfo['strikeOffset'] as int,
+          ),
+        ));
       }
     }
 
-    _calculatePayoff();
+    notifyListeners();
+
+    // Call all APIs once for the full basket
+    await Future.wait([
+      _fetchPayoffFromAPI(),
+      _fetchGreeksForAllLegs(),
+      _calculateMargin(context),
+    ]);
+
+    _activePredefinedStrategy = strategy.title;
     notifyListeners();
   }
 
@@ -786,15 +1143,32 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       } else {
         // Opposite direction — replace buy/sell
         _basket[existingIndex].buySell = buySell;
-        _updateItemGreeks(_basket[existingIndex]);
         basketItem = _basket[existingIndex];
       }
     } else {
+      // Build API leg definition for this basket item
+      final symbol = _extractUnderlyingSymbol();
+      final exchange = _getOptionsExchange();
+      final expiryType = _getExpiryType(_selectedExpiry);
+      final expiryOffset = _getExpiryOffset(_selectedExpiry);
+      final strikeInfo = _getStrikeTypeAndOffset(option.strprc ?? '0', option.optt ?? 'CE');
+
+      final apiLeg = SelectSymbolsLegRequest(
+        exchange: exchange,
+        symbol: symbol,
+        underlyingType: 'CASH',
+        optionType: option.optt ?? 'CE',
+        optionExpiryType: expiryType,
+        optionExpiryOffset: expiryOffset,
+        strikeType: strikeInfo['strikeType'] as String,
+        strikeOffset: strikeInfo['strikeOffset'] as int,
+      );
+
       basketItem = StrategyBasketItem(
         tsym: option.tsym ?? '',
         token: option.token ?? '',
         exch: option.exch ?? 'NFO',
-        strprc: option.strprc ?? '0',
+        strprc: normalizeStrike(option.strprc ?? '0'),
         optt: option.optt ?? 'CE',
         expdate: _selectedExpiry,
         buySell: buySell,
@@ -803,6 +1177,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         ltp: ltp,
         lotSize: lotSize,
         checkbox: true,
+        apiLeg: apiLeg,
       );
 
       // Bake current multiplier into existing items' ordlot before resetting
@@ -815,14 +1190,12 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       _basket.add(basketItem);
     }
 
-    // Calculate payoff immediately for instant chart feedback
-    _calculatePayoff();
     notifyListeners();
 
-    // Call APIs for payoff, Greeks, and margin (will update with API data)
+    // Call APIs for payoff, Greeks (all legs), and margin
     await Future.wait([
       _fetchPayoffFromAPI(),
-      _fetchGreeksFromAPI(basketItem),
+      _fetchGreeksForAllLegs(),
       _calculateMargin(context),
     ]);
 
@@ -833,11 +1206,13 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> removeFromBasket(int index, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       _basket.removeAt(index);
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin after removing item
-      await _calculateMargin(context);
+      // Recalculate margin and fetch payoff
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+      ]);
       notifyListeners();
     }
   }
@@ -846,44 +1221,67 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> toggleBuySell(int index, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       _basket[index].buySell = _basket[index].buySell == 'BUY' ? 'SELL' : 'BUY';
-      _updateItemGreeks(_basket[index]); // Recalculate Greeks
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin
-      await _calculateMargin(context);
+      // Recalculate margin, fetch payoff, and update Greeks
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+        _fetchGreeksForAllLegs(),
+      ]);
       notifyListeners();
     }
   }
 
-  /// Toggle CE/PE
+  /// Toggle CE/PE — updates apiLeg option_type and resolves via API
   Future<void> toggleCePe(int index, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       final item = _basket[index];
       final newOptt = item.optt == 'CE' ? 'PE' : 'CE';
 
-      // Find corresponding option in chain
-      final option = _optionChain.firstWhere(
-        (o) => o.strprc == item.strprc && o.optt == newOptt,
-        orElse: () => OptionValues(),
-      );
-
-      if (option.token != null) {
+      // Update the apiLeg with new option type
+      if (item.apiLeg != null) {
         _basket[index] = item.copyWith(
           optt: newOptt,
-          tsym: option.tsym,
-          token: option.token,
-          ltp: double.tryParse(option.lp ?? '0') ?? 0,
-          entryPrice: double.tryParse(option.lp ?? '0') ?? 0,
+          apiLeg: SelectSymbolsLegRequest(
+            exchange: item.apiLeg!.exchange,
+            symbol: item.apiLeg!.symbol,
+            underlyingType: item.apiLeg!.underlyingType,
+            optionType: newOptt,
+            optionExpiryType: item.apiLeg!.optionExpiryType,
+            optionExpiryOffset: item.apiLeg!.optionExpiryOffset,
+            strikeType: item.apiLeg!.strikeType,
+            strikeOffset: item.apiLeg!.strikeOffset,
+            underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
+            underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
+          ),
         );
-        _updateItemGreeks(_basket[index]); // Recalculate Greeks
-        _calculatePayoff();
-        notifyListeners();
-
-        // Recalculate margin
-        await _calculateMargin(context);
-        notifyListeners();
+      } else {
+        // Fallback: find from option chain if no apiLeg
+        final option = _optionChain.firstWhere(
+          (o) => normalizeStrike(o.strprc ?? '') == item.strprc && o.optt == newOptt,
+          orElse: () => OptionValues(),
+        );
+        if (option.token != null) {
+          _basket[index] = item.copyWith(
+            optt: newOptt,
+            tsym: option.tsym,
+            token: option.token,
+            ltp: double.tryParse(option.lp ?? '0') ?? 0,
+            entryPrice: double.tryParse(option.lp ?? '0') ?? 0,
+          );
+        }
       }
+
+      notifyListeners();
+
+      // Recalculate margin, fetch payoff, and update Greeks
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchGreeksForAllLegs(),
+      ]);
+      await _fetchPayoffFromAPI();
+      notifyListeners();
     }
   }
 
@@ -891,12 +1289,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> updateLots(int index, int lots, BuildContext context) async {
     if (index >= 0 && index < _basket.length && lots > 0) {
       _basket[index].ordlot = lots;
-      _updateItemGreeks(_basket[index]); // Recalculate Greeks
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin
-      await _calculateMargin(context);
+      // Recalculate margin, fetch payoff, and update Greeks from API
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+        _fetchGreeksForAllLegs(),
+      ]);
       notifyListeners();
     }
   }
@@ -905,54 +1305,108 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> updateEntryPrice(int index, double price, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       _basket[index].entryPrice = price;
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin
-      await _calculateMargin(context);
+      // Recalculate margin and fetch payoff from API
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+      ]);
       notifyListeners();
     }
   }
 
-  /// Update expiry for basket item
-  void updateExpiry(int index, String expiry, BuildContext context) async {
+  /// Update expiry for basket item — updates apiLeg expiry type/offset and resolves via API
+  Future<void> updateExpiry(int index, String expiry, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       final item = _basket[index];
 
-      // Find option with new expiry
-      // This would require loading option chain for the new expiry
-      _basket[index] = item.copyWith(expdate: expiry);
+      if (item.apiLeg != null) {
+        final newExpiryType = _getExpiryType(expiry);
+        final newExpiryOffset = _getExpiryOffset(expiry);
+
+        _basket[index] = item.copyWith(
+          expdate: expiry,
+          apiLeg: SelectSymbolsLegRequest(
+            exchange: item.apiLeg!.exchange,
+            symbol: item.apiLeg!.symbol,
+            underlyingType: item.apiLeg!.underlyingType,
+            optionType: item.apiLeg!.optionType,
+            optionExpiryType: newExpiryType,
+            optionExpiryOffset: newExpiryOffset,
+            strikeType: item.apiLeg!.strikeType,
+            strikeOffset: item.apiLeg!.strikeOffset,
+            underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
+            underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
+          ),
+        );
+      } else {
+        _basket[index] = item.copyWith(expdate: expiry);
+      }
+
+      notifyListeners();
+
+      // Recalculate margin and fetch payoff
+      await Future.wait([
+        _calculateMargin(context),
+      ]);
+      await _fetchPayoffFromAPI();
       notifyListeners();
     }
   }
 
-  /// Update strike for basket item
+  /// Update strike for basket item — updates apiLeg strike type/offset and resolves via API
   Future<void> updateStrike(int index, String strike, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       final item = _basket[index];
 
-      // Find option with new strike
-      final option = _optionChain.firstWhere(
-        (o) => o.strprc == strike && o.optt == item.optt,
-        orElse: () => OptionValues(),
-      );
+      if (item.apiLeg != null) {
+        // Compute new strike type and offset from the selected strike price
+        final strikeInfo = _getStrikeTypeAndOffset(strike, item.optt);
+        final newStrikeType = strikeInfo['strikeType'] as String;
+        final newStrikeOffset = strikeInfo['strikeOffset'] as int;
 
-      if (option.token != null) {
         _basket[index] = item.copyWith(
-          strprc: strike,
-          tsym: option.tsym,
-          token: option.token,
-          ltp: double.tryParse(option.lp ?? '0') ?? 0,
-          entryPrice: double.tryParse(option.lp ?? '0') ?? 0,
+          strprc: normalizeStrike(strike),
+          apiLeg: SelectSymbolsLegRequest(
+            exchange: item.apiLeg!.exchange,
+            symbol: item.apiLeg!.symbol,
+            underlyingType: item.apiLeg!.underlyingType,
+            optionType: item.apiLeg!.optionType,
+            optionExpiryType: item.apiLeg!.optionExpiryType,
+            optionExpiryOffset: item.apiLeg!.optionExpiryOffset,
+            strikeType: newStrikeType,
+            strikeOffset: newStrikeOffset,
+            underlyingExpiryType: item.apiLeg!.underlyingExpiryType,
+            underlyingExpiryOffset: item.apiLeg!.underlyingExpiryOffset,
+          ),
         );
-        _updateItemGreeks(_basket[index]); // Recalculate Greeks
-        _calculatePayoff();
-        notifyListeners();
-
-        // Recalculate margin
-        await _calculateMargin(context);
-        notifyListeners();
+      } else {
+        // Fallback: find from option chain if no apiLeg
+        final option = _optionChain.firstWhere(
+          (o) => normalizeStrike(o.strprc ?? '') == normalizeStrike(strike) && o.optt == item.optt,
+          orElse: () => OptionValues(),
+        );
+        if (option.token != null) {
+          _basket[index] = item.copyWith(
+            strprc: normalizeStrike(strike),
+            tsym: option.tsym,
+            token: option.token,
+            ltp: double.tryParse(option.lp ?? '0') ?? 0,
+            entryPrice: double.tryParse(option.lp ?? '0') ?? 0,
+          );
+        }
       }
+
+      notifyListeners();
+
+      // Recalculate margin, fetch payoff, and update Greeks
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchGreeksForAllLegs(),
+      ]);
+      await _fetchPayoffFromAPI();
+      notifyListeners();
     }
   }
 
@@ -960,11 +1414,13 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   Future<void> toggleCheckbox(int index, BuildContext context) async {
     if (index >= 0 && index < _basket.length) {
       _basket[index].checkbox = !_basket[index].checkbox;
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin
-      await _calculateMargin(context);
+      // Recalculate margin and fetch payoff from API
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+      ]);
       notifyListeners();
     }
   }
@@ -974,11 +1430,13 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     for (var item in _basket) {
       item.checkbox = value;
     }
-    _calculatePayoff();
     notifyListeners();
 
-    // Recalculate margin
-    await _calculateMargin(context);
+    // Recalculate margin and fetch payoff from API
+    await Future.wait([
+      _calculateMargin(context),
+      _fetchPayoffFromAPI(),
+    ]);
     notifyListeners();
   }
 
@@ -990,17 +1448,226 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _basket.clear();
     _lotMultiplier = 1;
     _activePredefinedStrategy = null;
+    _editingCustomBuilderName = null;
+    _payoffDebounceTimer?.cancel();
     _payoffData = [];
     _targetPayoffData = [];
     _metrics = PayoffMetrics();
-    _totalMargin = '--'; // Reset margin
+    _basketMarginModel = null; // Reset margin
     notifyListeners();
   }
 
-  /// Save current basket as a custom strategy
-  void saveStrategy(String name, BuildContext context) {
-    if (_basket.isEmpty) {
-      ResponsiveSnackBar.showError(context, 'Basket is empty. Add options before saving.');
+  // ============ End Local Storage ============
+
+  // ============ Option Strategy API Save/Load Methods ============
+
+  /// Build a saveable strategy with API-format legs + action/lot metadata
+  List<Map<String, dynamic>> buildSaveableStrategy() {
+    return _basket
+        .where((item) => item.checkbox && item.apiLeg != null)
+        .map((item) => {
+          'leg': item.apiLeg!.toJson(),
+          'action': item.buySell,
+          'ordlot': item.ordlot,
+        })
+        .toList();
+  }
+
+  /// Load a strategy from stored API-format legs.
+  /// Calls /select-symbols to resolve legs to actual contracts, then populates basket.
+  Future<void> loadStrategyFromApiLegs(
+    List<Map<String, dynamic>> savedLegs,
+    BuildContext context,
+  ) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final apiLegs = savedLegs.map((entry) {
+        return SelectSymbolsLegRequest.fromJson(
+          entry['leg'] as Map<String, dynamic>,
+        );
+      }).toList();
+
+      // Call the Option Strategy API
+      final responses = await api.selectSymbols(apiLegs);
+
+      _basket.clear();
+      _lotMultiplier = 1;
+
+      // Update underlying info from first successful response
+      final firstValid = responses.firstWhere(
+        (r) => !r.hasError,
+        orElse: () => responses.first,
+      );
+
+      if (firstValid.undSym != null) {
+        _selectedSymbol = firstValid.undSym!;
+        _selectedToken = firstValid.undTok ?? _selectedToken;
+        _selectedExch = firstValid.undExch ?? _selectedExch;
+      }
+
+      if (firstValid.underlyingPrice != null &&
+          firstValid.underlyingPrice! > 0) {
+        _spotPrice = firstValid.underlyingPrice!;
+        _targetSpotPrice = _spotPrice;
+      }
+
+      // Convert each response to a StrategyBasketItem
+      for (int i = 0; i < responses.length && i < savedLegs.length; i++) {
+        final resp = responses[i];
+        final savedMeta = savedLegs[i];
+
+        if (resp.hasError) {
+          log('[StrategyBuilder] selectSymbols leg $i error: ${resp.error}');
+          continue;
+        }
+
+        final normalizedExpiry = _normalizeExpiryFromApi(resp.expiry ?? '');
+
+        // Restore the API leg definition so future modifications preserve it
+        final apiLeg = SelectSymbolsLegRequest.fromJson(
+          savedMeta['leg'] as Map<String, dynamic>,
+        );
+
+        final item = StrategyBasketItem(
+          tsym: resp.selectedSymbol ?? '',
+          token: resp.token ?? '',
+          exch: resp.exch ?? 'NFO',
+          strprc: normalizeStrike(resp.strike ?? '0'),
+          optt: resp.optionType ?? 'CE',
+          expdate: normalizedExpiry,
+          buySell: savedMeta['action'] as String? ?? 'BUY',
+          ordlot: savedMeta['ordlot'] as int? ?? 1,
+          entryPrice: resp.optionPrice ?? 0.0,
+          ltp: resp.optionPrice ?? 0.0,
+          lotSize: int.tryParse(resp.lotSize ?? '1') ?? 1,
+          checkbox: true,
+          apiLeg: apiLeg,
+        );
+
+        _basket.add(item);
+      }
+
+      // Load expiry dates and option chain
+      await _loadExpiryDates(context);
+
+      if (_basket.isNotEmpty) {
+        _selectedExpiry = _basket.first.expdate;
+        final expiryDate = _parseExpiryDate(_selectedExpiry);
+        _daysToExpiry = expiryDate.difference(DateTime.now()).inDays;
+        if (_daysToExpiry < 0) _daysToExpiry = 0;
+        _targetDaysToExpiry = 0;
+      }
+
+      await loadOptionChain(context);
+
+      _subscribeToIndex();
+      _startRefreshTimer();
+
+      // Fetch API payoff, greeks, and margin
+      await Future.wait([
+        _fetchPayoffFromAPI(),
+        _calculateMargin(context),
+        _fetchGreeksForAllLegs(),
+      ]);
+    } catch (e) {
+      log('[StrategyBuilder] loadStrategyFromApiLegs error: $e');
+      ResponsiveSnackBar.showError(context, 'Failed to load strategy');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ============ End Option Strategy API Save/Load Methods ============
+
+  // ============ Custom Builder (API Leg Builder) Methods ============
+
+  /// Add a new draft leg with defaults
+  void addDraftLeg() {
+    _draftLegs.add(CustomStrategyLegDraft());
+    notifyListeners();
+  }
+
+  /// Remove a draft leg
+  void removeDraftLeg(int index) {
+    if (index >= 0 && index < _draftLegs.length) {
+      _draftLegs.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  /// Update a draft leg (called by UI on each field change)
+  void updateDraftLeg(int index, CustomStrategyLegDraft leg) {
+    if (index >= 0 && index < _draftLegs.length) {
+      _draftLegs[index] = leg;
+      notifyListeners();
+    }
+  }
+
+  /// Whether all draft legs are selected
+  bool get isAllDraftLegsSelected =>
+      _draftLegs.isNotEmpty && _draftLegs.every((leg) => leg.checkbox);
+
+  /// Toggle all draft leg checkboxes
+  void toggleAllDraftLegCheckboxes(bool value) {
+    for (var leg in _draftLegs) {
+      leg.checkbox = value;
+    }
+    notifyListeners();
+  }
+
+  /// Clear checked draft legs (or all if none checked)
+  void clearDraftLegs() {
+    final hasChecked = _draftLegs.any((leg) => leg.checkbox);
+    if (hasChecked) {
+      _draftLegs.removeWhere((leg) => leg.checkbox);
+    } else {
+      _draftLegs.clear();
+    }
+    notifyListeners();
+  }
+
+  /// Apply custom strategy — resolve draft legs via /select-symbols API
+  Future<void> applyCustomStrategy(BuildContext context) async {
+    if (_draftLegs.isEmpty) {
+      ResponsiveSnackBar.showError(context, 'Add at least one leg.');
+      return;
+    }
+
+    final symbol = _extractUnderlyingSymbol();
+    final exchange = _getOptionsExchange();
+    final expiryType = _hasWeeklyExpiry() ? 'W' : 'M';
+
+    final savedLegs = _draftLegs.map((draft) {
+      final apiLeg = SelectSymbolsLegRequest(
+        exchange: exchange,
+        symbol: symbol,
+        underlyingType: 'CASH',
+        optionType: draft.optionType,
+        optionExpiryType: expiryType,
+        optionExpiryOffset: draft.expiryOffset,
+        strikeType: draft.strikeType,
+        strikeOffset: draft.strikeOffset,
+        nearestPrice: draft.strikeType == 'PREMIUM' ? draft.premiumValue : null,
+      );
+
+      return <String, dynamic>{
+        'leg': apiLeg.toJson(),
+        'action': draft.action,
+        'ordlot': draft.ordlot,
+      };
+    }).toList();
+
+    await loadStrategyFromApiLegs(savedLegs, context);
+    notifyListeners();
+  }
+
+  /// Save custom strategy from draft legs
+  Future<void> saveCustomStrategy(String name, BuildContext context) async {
+    if (_draftLegs.isEmpty) {
+      ResponsiveSnackBar.showError(context, 'Add at least one leg before saving.');
       return;
     }
 
@@ -1009,71 +1676,179 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       return;
     }
 
-    // Check if strategy name already exists
-    final existingIndex = _myStrategies.indexWhere((s) => s.title.toLowerCase() == name.toLowerCase());
+    final symbol = _extractUnderlyingSymbol();
+    final exchange = _getOptionsExchange();
+    final expiryType = _hasWeeklyExpiry() ? 'W' : 'M';
 
-    // Convert basket items to strategy legs
-    final legs = _basket.map((item) {
-      // Determine strike type based on position relative to spot
-      final strike = double.tryParse(item.strprc) ?? 0;
-      final diff = strike - _spotPrice;
-      String strikeType;
-      int strikeOffset;
+    final apiLegs = <Map<String, dynamic>>[];
+    final legs = <StrategyLeg>[];
 
-      if (diff.abs() < 50) {
-        strikeType = 'ATM';
-        strikeOffset = 0;
-      } else if ((item.optt == 'CE' && diff > 0) || (item.optt == 'PE' && diff < 0)) {
-        strikeType = 'OTM';
-        strikeOffset = (diff.abs() / 50).round();
-      } else {
-        strikeType = 'ITM';
-        strikeOffset = -(diff.abs() / 50).round();
-      }
-
-      return StrategyLeg(
-        action: item.buySell,
-        optionType: item.optt,
-        strikeType: strikeType,
-        strikeOffset: strikeOffset,
+    for (final draft in _draftLegs) {
+      final apiLeg = SelectSymbolsLegRequest(
+        exchange: exchange,
+        symbol: symbol,
+        underlyingType: 'CASH',
+        optionType: draft.optionType,
+        optionExpiryType: expiryType,
+        optionExpiryOffset: draft.expiryOffset,
+        strikeType: draft.strikeType,
+        strikeOffset: draft.strikeOffset,
+        nearestPrice: draft.strikeType == 'PREMIUM' ? draft.premiumValue : null,
       );
-    }).toList();
+
+      apiLegs.add({
+        'leg': apiLeg.toJson(),
+        'action': draft.action,
+        'ordlot': draft.ordlot,
+      });
+
+      legs.add(StrategyLeg(
+        action: draft.action,
+        optionType: draft.optionType,
+        strikeType: draft.strikeType,
+        strikeOffset: draft.strikeOffset,
+      ));
+    }
+
+    final existingIndex = _customStrategies.indexWhere(
+      (s) => s.title.toLowerCase() == name.trim().toLowerCase(),
+    );
 
     final strategy = PredefinedStrategy(
       title: name.trim(),
-      type: 'MyStrategy',
+      type: 'CustomBuilder',
       image: 'custom_strategy.png',
       legs: legs,
+      savedApiLegs: apiLegs,
     );
 
     if (existingIndex >= 0) {
-      // Update existing strategy
-      _myStrategies[existingIndex] = strategy;
-      ResponsiveSnackBar.showSuccess(context, 'Strategy "$name" updated successfully');
+      _customStrategies[existingIndex] = strategy;
+      ResponsiveSnackBar.showSuccess(context, 'Custom builder "$name" updated');
     } else {
-      // Add new strategy
-      _myStrategies.add(strategy);
-      ResponsiveSnackBar.showSuccess(context, 'Strategy "$name" saved successfully');
+      _customStrategies.add(strategy);
+      ResponsiveSnackBar.showSuccess(context, 'Custom builder "$name" saved');
     }
 
+    _editingCustomBuilderName = name.trim();
+    _activePredefinedStrategy = name.trim();
+
+    await _persistCustomStrategiesToLocal();
     notifyListeners();
   }
 
-  /// Delete a saved strategy
-  void deleteStrategy(String name) {
-    _myStrategies.removeWhere((s) => s.title == name);
+  /// Delete a custom strategy
+  Future<void> deleteCustomStrategy(String name) async {
+    _customStrategies.removeWhere((s) => s.title == name);
+    if (_editingCustomBuilderName == name) {
+      _editingCustomBuilderName = null;
+    }
+    if (_activePredefinedStrategy == name) {
+      _activePredefinedStrategy = null;
+    }
+    await _persistCustomStrategiesToLocal();
     notifyListeners();
   }
+
+  /// Persist custom strategies to SharedPreferences
+  Future<void> _persistCustomStrategiesToLocal() async {
+    try {
+      final userId = pref.clientId ?? '';
+      final strategiesList = _customStrategies.map((strategy) {
+        return {
+          'title': strategy.title,
+          'type': strategy.type,
+          'image': strategy.image,
+          'legs': strategy.legs.map((leg) => {
+            'action': leg.action,
+            'optionType': leg.optionType,
+            'strikeType': leg.strikeType,
+            'strikeOffset': leg.strikeOffset,
+          }).toList(),
+          'savedApiLegs': strategy.savedApiLegs ?? [],
+          // Store draft legs for restoring the leg builder UI
+          'draftLegs': strategy.savedApiLegs?.map((entry) {
+            final legJson = entry['leg'] as Map<String, dynamic>? ?? {};
+            return {
+              'action': entry['action'],
+              'ordlot': entry['ordlot'],
+              'optionType': legJson['option_type'] ?? 'CE',
+              'expiryOffset': legJson['option_expiry_offset'] ?? 0,
+              'strikeType': legJson['strike_type'] ?? 'ATM',
+              'strikeOffset': legJson['strike_offset'] ?? 0,
+              'premiumValue': legJson['nearest_price'] ?? 0,
+            };
+          }).toList() ?? [],
+        };
+      }).toList();
+
+      final jsonStr = jsonEncode(strategiesList);
+      await pref.setSavedCustomStrategies(userId, jsonStr);
+      log('[StrategyBuilder] Persisted ${_customStrategies.length} custom strategies');
+    } catch (e) {
+      log('[StrategyBuilder] _persistCustomStrategiesToLocal error: $e');
+    }
+  }
+
+  /// Load saved custom strategies from SharedPreferences
+  void loadSavedCustomStrategies() {
+    try {
+      final userId = pref.clientId ?? '';
+      final jsonStr = pref.getSavedCustomStrategies(userId);
+      if (jsonStr == null || jsonStr.isEmpty) return;
+
+      final List<dynamic> strategiesList = jsonDecode(jsonStr);
+      _customStrategies.clear();
+
+      for (final entry in strategiesList) {
+        final legsList = (entry['legs'] as List<dynamic>?) ?? [];
+        final legs = legsList.map((legMap) {
+          return StrategyLeg(
+            action: legMap['action'] ?? 'BUY',
+            optionType: legMap['optionType'] ?? 'CE',
+            strikeType: legMap['strikeType'] ?? 'ATM',
+            strikeOffset: legMap['strikeOffset'] ?? 0,
+          );
+        }).toList();
+
+        final savedApiLegsRaw = entry['savedApiLegs'] as List<dynamic>?;
+        final savedApiLegs = savedApiLegsRaw?.map((e) {
+          final map = Map<String, dynamic>.from(e as Map);
+          if (map['leg'] is Map) {
+            map['leg'] = Map<String, dynamic>.from(map['leg'] as Map);
+          }
+          return map;
+        }).toList();
+
+        _customStrategies.add(PredefinedStrategy(
+          title: entry['title'] ?? '',
+          type: 'CustomBuilder',
+          image: entry['image'] ?? 'custom_strategy.png',
+          legs: legs,
+          savedApiLegs: savedApiLegs,
+        ));
+      }
+
+      log('[StrategyBuilder] Loaded ${_customStrategies.length} custom strategies');
+      notifyListeners();
+    } catch (e) {
+      log('[StrategyBuilder] loadSavedCustomStrategies error: $e');
+    }
+  }
+
+  // ============ End Custom Builder Methods ============
 
   /// Set lot multiplier
   Future<void> setLotMultiplier(int multiplier, BuildContext context) async {
     if (multiplier > 0) {
       _lotMultiplier = multiplier;
-      _calculatePayoff();
       notifyListeners();
 
-      // Recalculate margin
-      await _calculateMargin(context);
+      // Recalculate margin and payoff from API
+      await Future.wait([
+        _calculateMargin(context),
+        _fetchPayoffFromAPI(),
+      ]);
       notifyListeners();
     }
   }
@@ -1087,15 +1862,31 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Set target spot price
   void setTargetSpotPrice(double price) {
     _targetSpotPrice = price;
-    _calculatePayoff();
+    _isTargetSpotActive = true;
+    notifyListeners();
+  }
+
+  void resetTargetSpotPrice() {
+    _targetSpotPrice = _spotPrice;
+    _isTargetSpotActive = false;
     notifyListeners();
   }
 
   /// Set target days to expiry
   void setTargetDaysToExpiry(int days) {
     _targetDaysToExpiry = days;
-    _calculatePayoff();
     notifyListeners();
+    _debouncedPayoffApiCall();
+  }
+
+  /// Debounced payoff API call — waits 500ms after last slider change
+  void _debouncedPayoffApiCall() {
+    _payoffDebounceTimer?.cancel();
+    //  _payoffDebounceTimer = Timer(const Duration(seconds: 1), () async {
+    _payoffDebounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      await _fetchPayoffFromAPI();
+      notifyListeners();
+    });
   }
 
   /// Toggle SD lines
@@ -1104,168 +1895,16 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  // ============ Black-Scholes Greeks Calculation ============
-
-  /// Standard normal cumulative distribution function
-  double _normCdf(double x) {
-    const a1 = 0.254829592;
-    const a2 = -0.284496736;
-    const a3 = 1.421413741;
-    const a4 = -1.453152027;
-    const a5 = 1.061405429;
-    const p = 0.3275911;
-
-    final sign = x < 0 ? -1 : 1;
-    x = x.abs() / math.sqrt(2);
-
-    final t = 1.0 / (1.0 + p * x);
-    final y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x);
-
-    return 0.5 * (1.0 + sign * y);
-  }
-
-  /// Standard normal probability density function
-  double _normPdf(double x) {
-    return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi);
-  }
-
-  /// Calculate d1 for Black-Scholes
-  double _calcD1(double S, double K, double T, double r, double sigma) {
-    if (T <= 0 || sigma <= 0) return 0;
-    return (math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * math.sqrt(T));
-  }
-
-  /// Calculate d2 for Black-Scholes
-  double _calcD2(double d1, double T, double sigma) {
-    if (T <= 0 || sigma <= 0) return 0;
-    return d1 - sigma * math.sqrt(T);
-  }
-
-  /// Black-Scholes call price
-  double _bsCallPrice(double S, double K, double T, double r, double sigma) {
-    if (T <= 0) return math.max(0, S - K);
-    final d1 = _calcD1(S, K, T, r, sigma);
-    final d2 = _calcD2(d1, T, sigma);
-    return S * _normCdf(d1) - K * math.exp(-r * T) * _normCdf(d2);
-  }
-
-  /// Black-Scholes put price
-  double _bsPutPrice(double S, double K, double T, double r, double sigma) {
-    if (T <= 0) return math.max(0, K - S);
-    final d1 = _calcD1(S, K, T, r, sigma);
-    final d2 = _calcD2(d1, T, sigma);
-    return K * math.exp(-r * T) * _normCdf(-d2) - S * _normCdf(-d1);
-  }
-
-  /// Calculate Implied Volatility using Newton-Raphson method
-  double _calcIV(double optionPrice, double S, double K, double T, double r, bool isCall) {
-    if (T <= 0 || optionPrice <= 0 || S <= 0 || K <= 0) return 0.15; // Default 15% IV
-
-    // Better initial guess based on approximate formula
-    // IV ≈ sqrt(2 * π / T) * (optionPrice / S)
-    double sigma = math.sqrt(2 * math.pi / T) * (optionPrice / S);
-    sigma = sigma.clamp(0.05, 2.0); // Clamp initial guess between 5% and 200%
-
-    const maxIterations = 100;
-    const tolerance = 0.0001;
-
-    for (int i = 0; i < maxIterations; i++) {
-      final price = isCall ? _bsCallPrice(S, K, T, r, sigma) : _bsPutPrice(S, K, T, r, sigma);
-      final d1 = _calcD1(S, K, T, r, sigma);
-      final vega = S * math.sqrt(T) * _normPdf(d1);
-
-      if (vega.abs() < 1e-10) break;
-
-      final diff = price - optionPrice;
-      if (diff.abs() < tolerance) break;
-
-      sigma = sigma - diff / vega;
-
-      // Keep sigma within reasonable bounds (5% to 300% IV)
-      if (sigma <= 0.05) sigma = 0.05;
-      if (sigma > 3.0) sigma = 3.0;
+  /// Reset all basket items' Greeks to zero (used when API fails)
+  void _resetGreeksToZero() {
+    for (var item in _basket) {
+      item.iv = 0;
+      item.delta = 0;
+      item.gamma = 0;
+      item.theta = 0;
+      item.vega = 0;
     }
-
-    // Ensure minimum IV of 5% for reasonable Greeks
-    return math.max(sigma, 0.05);
   }
-
-  /// Calculate Greeks for an option
-  Map<String, double> _calculateGreeks(double S, double K, double T, double r, double sigma, bool isCall) {
-    if (T <= 0 || sigma <= 0) {
-      return {'delta': 0, 'gamma': 0, 'theta': 0, 'vega': 0};
-    }
-
-    final d1 = _calcD1(S, K, T, r, sigma);
-    final d2 = _calcD2(d1, T, sigma);
-    final sqrtT = math.sqrt(T);
-
-    // Delta
-    double delta;
-    if (isCall) {
-      delta = _normCdf(d1);
-    } else {
-      delta = _normCdf(d1) - 1;
-    }
-
-    // Gamma (same for call and put)
-    final gamma = _normPdf(d1) / (S * sigma * sqrtT);
-
-    // Theta (per day, so divide by 365)
-    double theta;
-    final term1 = -(S * _normPdf(d1) * sigma) / (2 * sqrtT);
-    if (isCall) {
-      theta = (term1 - r * K * math.exp(-r * T) * _normCdf(d2)) / 365;
-    } else {
-      theta = (term1 + r * K * math.exp(-r * T) * _normCdf(-d2)) / 365;
-    }
-
-    // Vega (per 1% move in volatility)
-    final vega = S * sqrtT * _normPdf(d1) / 100;
-
-    return {
-      'delta': delta,
-      'gamma': gamma,
-      'theta': theta,
-      'vega': vega,
-    };
-  }
-
-  /// Calculate and update Greeks for a basket item
-  void _updateItemGreeks(StrategyBasketItem item) {
-    if (_spotPrice <= 0 || _daysToExpiry < 0) return;
-
-    final S = _spotPrice;
-    final K = double.tryParse(item.strprc) ?? 0;
-    if (K <= 0) return;
-
-    // Time to expiry in years (use at least 1 day to avoid division by zero)
-    final T = math.max(_daysToExpiry, 1) / 365.0;
-    const r = 0.07; // Risk-free rate (7% for India)
-    final isCall = item.optt == 'CE';
-
-    // Calculate IV from current option price
-    final iv = _calcIV(item.ltp, S, K, T, r, isCall);
-
-    // Calculate Greeks using Black-Scholes
-    final greeks = _calculateGreeks(S, K, T, r, iv, isCall);
-
-    // Direction multiplier (BUY = +1, SELL = -1)
-    final multiplier = item.buySell == 'SELL' ? -1.0 : 1.0;
-
-    // Store per-option Greeks for display
-    // Delta: per-option delta with direction (0 to 1 for calls, -1 to 0 for puts)
-    // Gamma: change in delta per 1-point move (per option)
-    // Theta: daily decay per option in currency
-    // Vega: change per 1% IV move per option
-    item.iv = iv * 100; // Convert to percentage
-    item.delta = greeks['delta']! * multiplier; // Per-option delta with direction
-    item.gamma = greeks['gamma']!; // Per-option gamma
-    item.theta = greeks['theta']! * multiplier; // Per-option daily theta (NOT multiplied by lotSize)
-    item.vega = greeks['vega']! * multiplier; // Per-option vega (NOT multiplied by lotSize)
-  }
-
-  // ============ End Black-Scholes Greeks Calculation ============
 
   /// Calculate net premium (per contract, not total cost)
   /// For display purposes: shows premium paid/received per contract
@@ -1299,6 +1938,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       _payoffData = [];
       _targetPayoffData = [];
       _metrics = PayoffMetrics();
+      _isPayoffLoading = false;
       return;
     }
 
@@ -1307,8 +1947,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       _payoffData = [];
       _targetPayoffData = [];
       _metrics = PayoffMetrics();
+      _isPayoffLoading = false;
       return;
     }
+
+    // Track this request; discard response if a newer request was fired
+    final requestId = ++_payoffRequestId;
+    _isPayoffLoading = true;
+    notifyListeners();
 
     try {
       // Build legs array for API
@@ -1351,20 +1997,27 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         strategy: "custom",
         isPosition: _isAnalyzeMode,
         spotPrice: _spotPrice.toStringAsFixed(2),
-        daysToExpiry: _daysToExpiry,
+        daysToExpiry: _targetDaysToExpiry > 0 ? (_daysToExpiry - _targetDaysToExpiry) : _daysToExpiry,
         legs: legs,
       );
+
+      // Discard if a newer request has been fired while this one was in flight
+      if (requestId != _payoffRequestId) return;
 
       log('[StrategyBuilder] Payoff API Response: $response');
 
       // Parse response and update payoff data
-      if (response['status'] == 'success' || response['payoffData'] != null) {
+      // Backend response structure:
+      // { "success": true, "metrics": { ... }, "payoffData": { stockPrices, payoffs_expiry, payoffs_target, breakevens } }
+      if (response['success'] == true || response['payoffData'] != null) {
         final payoffData = response['payoffData'] ?? response;
+        final metricsData = response['metrics'] as Map<String, dynamic>?;
 
         // Extract stock prices and payoffs from API response
+        // Backend uses mixed keys: stockPrices (camelCase), payoffs_expiry/payoffs_target (snake_case)
         final stockPrices = (payoffData['stockPrices'] as List?)?.cast<num>() ?? [];
-        final payoffsExpiry = (payoffData['payoffsExpiry'] as List?)?.cast<num>() ?? [];
-        final payoffsTarget = (payoffData['payoffsTarget'] as List?)?.cast<num>() ?? [];
+        final payoffsExpiry = (payoffData['payoffs_expiry'] as List?)?.cast<num>() ?? [];
+        final payoffsTarget = (payoffData['payoffs_target'] as List?)?.cast<num>() ?? [];
         final breakevens = (payoffData['breakevens'] as List?)?.cast<num>() ?? [];
 
         // Convert to PayoffDataPoint list
@@ -1386,43 +2039,51 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         }
 
         if (_payoffData.isEmpty) {
-          log('[StrategyBuilder] API returned empty payoff data, using local calculation');
-          _calculatePayoff();
+          log('[StrategyBuilder] API returned empty payoff data');
           return;
         }
 
-        // Extract metrics
-        final maxProfit = payoffData['maxProfit'];
-        final maxLoss = payoffData['maxLoss'];
-        final pop = payoffData['pop'] ?? 0;
+        // Extract metrics from the separate 'metrics' key in response
+        final maxProfit = metricsData?['maxProfit'];
+        final maxLoss = metricsData?['maxLoss'];
+        final pop = metricsData?['popPercent'] ?? 0;
+        final riskReward = metricsData?['riskRewardRatio'];
+
+        // Format numeric values with Indian format, keep strings like "Unlimited" as-is
+        String formatMetricValue(dynamic value) {
+          if (value == null) return '--';
+          if (value is num) return RupeeFormat.format(value);
+          final parsed = double.tryParse(value.toString());
+          if (parsed != null) return RupeeFormat.format(parsed);
+          return value.toString();
+        }
 
         _metrics = PayoffMetrics(
-          maxProfit: maxProfit?.toString() ?? '--',
-          maxLoss: maxLoss?.toString() ?? '--',
+          maxProfit: formatMetricValue(maxProfit),
+          maxLoss: formatMetricValue(maxLoss),
           popPercent: (pop is num) ? pop.toDouble() : 0,
-          riskRewardRatio: '--',
+          riskRewardRatio: riskReward?.toString() ?? '--',
           breakevens: breakevens.map((e) => e.toDouble()).toList(),
         );
 
-        log('[StrategyBuilder] Parsed ${_payoffData.length} payoff points');
+        log('[StrategyBuilder] Parsed ${_payoffData.length} payoff points, metrics: maxProfit=$maxProfit, maxLoss=$maxLoss, pop=$pop');
       } else {
-        // Fallback to local calculation if API fails
-        log('[StrategyBuilder] API response invalid, using local calculation');
-        _calculatePayoff();
+        log('[StrategyBuilder] API response invalid');
       }
     } catch (e) {
       log('[StrategyBuilder] Payoff API Error: $e');
-      // Fallback to local calculation
-      _calculatePayoff();
+    } finally {
+      _isPayoffLoading = false;
+      notifyListeners();
     }
   }
 
   /// Fetch Greeks from API for a basket item
-  Future<void> _fetchGreeksFromAPI(StrategyBasketItem item) async {
-    if (_spotPrice <= 0 || _daysToExpiry < 0) return;
+  Future<void> _fetchGreeksForAllLegs() async {
+    if (_spotPrice <= 0 || _daysToExpiry < 0 || _basket.isEmpty) return;
 
     try {
-      final options = {
+      final optionsList = _basket.map((item) => <String, dynamic>{
         "exch": item.exch,
         "token": item.token,
         "tsym": item.tsym,
@@ -1455,309 +2116,54 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         "tsyms": _selectedSymbol,
         "inx": DateTime.now().millisecondsSinceEpoch.toDouble(),
         "exp": "${item.strprc} ${item.optt}",
-      };
+      }).toList();
 
       final response = await api.getOptionGreeks(
         spotPrice: _spotPrice.toStringAsFixed(2),
         expiryDay: _daysToExpiry,
-        options: options,
+        options: optionsList,
       );
 
       log('[StrategyBuilder] Greeks API Response: $response');
 
-      // Parse response and update item Greeks
-      if (response['status'] == 'success' || response['delta'] != null || response['greeks'] != null) {
-        final greeks = response['greeks'] ?? response;
+      // Parse response — API returns "GreekValues" list matching basket order
+      final greeksList = response['GreekValues'];
+      if (greeksList is List && greeksList.length == _basket.length) {
+        for (int i = 0; i < _basket.length; i++) {
+          final item = _basket[i];
+          final greeks = greeksList[i] as Map<String, dynamic>? ?? {};
+          final multiplier = item.buySell == 'SELL' ? -1.0 : 1.0;
 
-        // Direction multiplier (BUY = +1, SELL = -1)
-        final multiplier = item.buySell == 'SELL' ? -1.0 : 1.0;
+          item.iv = (greeks['IV'] as num?)?.toDouble() ?? 0;
+          item.delta = ((greeks['delta'] as num?)?.toDouble() ?? 0) * multiplier;
+          item.gamma = (greeks['gamma'] as num?)?.toDouble() ?? 0;
+          item.theta = ((greeks['theta'] as num?)?.toDouble() ?? 0) * multiplier;
+          item.vega = ((greeks['vega'] as num?)?.toDouble() ?? 0) * multiplier;
 
-        item.iv = (greeks['iv'] as num?)?.toDouble() ?? 0;
-        item.delta = ((greeks['delta'] as num?)?.toDouble() ?? 0) * multiplier;
-        item.gamma = (greeks['gamma'] as num?)?.toDouble() ?? 0;
-        item.theta = ((greeks['theta'] as num?)?.toDouble() ?? 0) * multiplier; // Per-option theta
-        item.vega = ((greeks['vega'] as num?)?.toDouble() ?? 0) * multiplier; // Per-option vega
-
-        log('[StrategyBuilder] Updated Greeks for ${item.tsym}');
+          log('[StrategyBuilder] Updated Greeks for ${item.tsym}');
+        }
       } else {
-        // Fallback to local calculation if API fails
-        log('[StrategyBuilder] Greeks API response invalid, using local calculation');
-        _updateItemGreeks(item);
+        log('[StrategyBuilder] Greeks API response format mismatch, resetting Greeks');
+        _resetGreeksToZero();
       }
     } catch (e) {
       log('[StrategyBuilder] Greeks API Error: $e');
-      // Fallback to local calculation
-      _updateItemGreeks(item);
+      _resetGreeksToZero();
     }
   }
 
   // ============ End API-based Calculation ============
 
-  /// Calculate payoff (local fallback)
-  void _calculatePayoff() {
-    if (_basket.isEmpty || _spotPrice == 0) {
-      _payoffData = [];
-      _targetPayoffData = [];
-      _metrics = PayoffMetrics();
-      return;
-    }
-
-    final selectedItems = _basket.where((item) => item.checkbox).toList();
-    if (selectedItems.isEmpty) {
-      _payoffData = [];
-      _targetPayoffData = [];
-      _metrics = PayoffMetrics();
-      return;
-    }
-
-    // Calculate net position to determine unlimited profit/loss potential
-    // Net long calls = unlimited profit on upside
-    // Net short calls = unlimited loss on upside
-    int netCallQty = 0;
-    double totalPremiumPaid = 0; // For long positions
-
-    for (var item in selectedItems) {
-      final qty = item.ordlot * item.lotSize * _lotMultiplier;
-      final premium = item.entryPrice * qty;
-
-      if (item.optt == 'CE') {
-        netCallQty += item.buySell == 'BUY' ? qty : -qty;
-      }
-
-      if (item.buySell == 'BUY') {
-        totalPremiumPaid += premium;
-      }
-    }
-
-    // Determine unlimited profit/loss scenarios
-    bool hasUnlimitedProfit = netCallQty > 0; // Net long calls
-    bool hasUnlimitedLoss = netCallQty < 0; // Net short calls
-
-    // Calculate analytical breakevens for single-leg strategies
-    final List<double> breakevens = [];
-
-    if (selectedItems.length == 1) {
-      final item = selectedItems.first;
-      final strike = double.tryParse(item.strprc) ?? 0;
-      final premium = item.entryPrice;
-
-      if (item.optt == 'CE') {
-        // Call option: breakeven = strike + premium (for both buy and sell)
-        breakevens.add(strike + premium);
-      } else {
-        // Put option: breakeven = strike - premium (for both buy and sell)
-        breakevens.add(strike - premium);
-      }
-    }
-
-    // Calculate price range (±20% from spot) for graph
-    final minPrice = _spotPrice * 0.8;
-    final maxPrice = _spotPrice * 1.2;
-    final step = (_spotPrice * 0.02); // 2% steps
-
-    final List<PayoffDataPoint> expiryPayoff = [];
-    final List<PayoffDataPoint> targetPayoff = [];
-
-    double calculatedMaxProfit = double.negativeInfinity;
-    double calculatedMaxLoss = double.infinity;
-
-    double? prevProfit;
-
-    for (double price = minPrice; price <= maxPrice; price += step) {
-      double totalProfit = 0;
-
-      for (var item in selectedItems) {
-        String cleanStrike = item.strprc.replaceAll(',', '').replaceAll(' ', '');
-        final strike = double.tryParse(cleanStrike) ?? 0;
-        final premium = item.entryPrice;
-        final lots = item.ordlot * _lotMultiplier;
-        final lotSize = item.lotSize;
-        final qty = lots * lotSize;
-
-        double optionValue = 0;
-        if (item.optt == 'CE') {
-          optionValue = math.max(0, price - strike);
-        } else {
-          optionValue = math.max(0, strike - price);
-        }
-
-        double profit;
-        if (item.buySell == 'BUY') {
-          profit = (optionValue - premium) * qty;
-        } else {
-          profit = (premium - optionValue) * qty;
-        }
-
-        totalProfit += profit;
-      }
-
-      expiryPayoff.add(PayoffDataPoint(price, totalProfit));
-
-      // Calculate Target Payoff (T+t) using Black-Scholes
-      double totalTargetProfit = 0;
-      final targetDaysRemaining = math.max(0, _daysToExpiry - _targetDaysToExpiry);
-      final T_target = targetDaysRemaining / 365.0;
-      const r_riskFree = 0.07; // 7% Risk Free Rate
-
-      for (var item in selectedItems) {
-        String cleanStrike = item.strprc.replaceAll(',', '').replaceAll(' ', '');
-        final strike = double.tryParse(cleanStrike) ?? 0;
-        final premium = item.entryPrice;
-        final lots = item.ordlot * _lotMultiplier;
-        final lotSize = item.lotSize;
-        final qty = lots * lotSize;
-        
-        // Handle IV provided as percentage (e.g., 20) vs decimal (0.20)
-        double iv = (item.iv ?? 0) > 0 ? item.iv! : 20.0;
-        if (iv > 1.0) {
-          iv = iv / 100.0;
-        }
-
-        double targetOptionValue = 0;
-        if (item.optt == 'CE') {
-          targetOptionValue = _bsCallPrice(price, strike, T_target, r_riskFree, iv);
-        } else {
-          targetOptionValue = _bsPutPrice(price, strike, T_target, r_riskFree, iv);
-        }
-
-        double profit;
-        if (item.buySell == 'BUY') {
-          profit = (targetOptionValue - premium) * qty;
-        } else {
-          profit = (premium - targetOptionValue) * qty;
-        }
-        totalTargetProfit += profit;
-      }
-      targetPayoff.add(PayoffDataPoint(price, totalTargetProfit));
-
-
-
-      // Track max/min from sampled range
-      if (totalProfit > calculatedMaxProfit) calculatedMaxProfit = totalProfit;
-      if (totalProfit < calculatedMaxLoss) calculatedMaxLoss = totalProfit;
-
-      // Detect breakeven (sign change) for multi-leg strategies
-      if (selectedItems.length > 1 && prevProfit != null && prevProfit * totalProfit < 0) {
-        final prevPrice = price - step;
-        final be = prevPrice + (step * prevProfit.abs() / (prevProfit.abs() + totalProfit.abs()));
-        // Avoid duplicate breakevens
-        if (!breakevens.any((b) => (b - be).abs() < step)) {
-          breakevens.add(be);
-        }
-      }
-      prevProfit = totalProfit;
-    }
-
-    // Determine final max profit/loss considering unlimited scenarios
-    double finalMaxProfit;
-    double finalMaxLoss;
-
-    if (hasUnlimitedProfit) {
-      finalMaxProfit = double.infinity;
-    } else {
-      finalMaxProfit = calculatedMaxProfit;
-    }
-
-    if (hasUnlimitedLoss) {
-      finalMaxLoss = double.negativeInfinity;
-    } else {
-      // For all-long positions, max loss = total premium paid
-      bool allLong = selectedItems.every((item) => item.buySell == 'BUY');
-      if (allLong) {
-        finalMaxLoss = -totalPremiumPaid;
-      } else {
-        finalMaxLoss = calculatedMaxLoss;
-      }
-    }
-
-
-
-    _payoffData = expiryPayoff;
-    _targetPayoffData = targetPayoff;
-
-    // Calculate POP using Black-Scholes probability
-    double pop = 0;
-    if (breakevens.isNotEmpty && _daysToExpiry >= 0) {
-      // Use Black-Scholes probability distribution
-      // POP = probability that spot will be above/below breakeven at expiry
-
-      final T = math.max(_daysToExpiry, 1) / 365.0; // Time to expiry in years
-      const r = 0.07; // Risk-free rate (7% for India)
-
-      // Get average IV from basket items
-      double avgIV = 0.20; // Default 20% IV
-      final itemsWithIV = selectedItems.where((item) => item.iv != null && item.iv! > 0).toList();
-      if (itemsWithIV.isNotEmpty) {
-        avgIV = itemsWithIV.map((item) => item.iv!).reduce((a, b) => a + b) / itemsWithIV.length;
-        // Convert from percentage to decimal if needed
-        if (avgIV > 1.0) avgIV = avgIV / 100.0;
-      }
-
-      if (selectedItems.length == 1) {
-        // Single leg strategy - use analytical POP
-        final item = selectedItems.first;
-        final be = breakevens.first;
-
-        // Calculate d2 for probability: d2 = [ln(S/K) + (r - σ²/2) * T] / (σ * √T)
-        // where K is the breakeven price
-        final d2 = (math.log(_spotPrice / be) + (r - 0.5 * avgIV * avgIV) * T) / (avgIV * math.sqrt(T));
-
-        if (item.optt == 'CE') {
-          // Long Call: profitable if spot > breakeven, POP = N(d2)
-          // Short Call: profitable if spot < breakeven, POP = N(-d2) = 1 - N(d2)
-          pop = item.buySell == 'BUY' ? _normCdf(d2) * 100 : (1 - _normCdf(d2)) * 100;
-        } else {
-          // Long Put: profitable if spot < breakeven, POP = N(-d2) = 1 - N(d2)
-          // Short Put: profitable if spot > breakeven, POP = N(d2)
-          pop = item.buySell == 'BUY' ? (1 - _normCdf(d2)) * 100 : _normCdf(d2) * 100;
-        }
-      } else {
-        // Multi-leg strategy - use Monte Carlo or simplified approach
-        // For simplicity, calculate probability of being in profit zone
-        // based on the weighted average of breakeven probabilities
-        double totalPop = 0;
-        for (final be in breakevens) {
-          final d2 = (math.log(_spotPrice / be) + (r - 0.5 * avgIV * avgIV) * T) / (avgIV * math.sqrt(T));
-          // Check if profit is above or below this breakeven
-          final aboveBe = expiryPayoff.where((p) => p.price > be).toList();
-          bool profitAbove = aboveBe.isNotEmpty && aboveBe.last.profit > 0;
-
-          if (profitAbove) {
-            totalPop += _normCdf(d2);
-          } else {
-            totalPop += (1 - _normCdf(d2));
-          }
-        }
-        pop = breakevens.isNotEmpty ? (totalPop / breakevens.length) * 100 : 0;
-      }
-    }
-
-    // Risk/Reward ratio - only calculate when both are finite
-    String riskReward = 'N/A';
-    if (finalMaxLoss.isFinite && finalMaxLoss.abs() > 0 && finalMaxProfit.isFinite) {
-      final ratio = finalMaxProfit / finalMaxLoss.abs();
-      riskReward = ratio.toStringAsFixed(2);
-    }
-
-    _metrics = PayoffMetrics(
-      maxProfit: finalMaxProfit.isFinite ? finalMaxProfit.toStringAsFixed(2) : 'Unlimited',
-      maxLoss: finalMaxLoss.isFinite ? finalMaxLoss.toStringAsFixed(2) : 'Unlimited',
-      popPercent: pop,
-      riskRewardRatio: riskReward,
-      breakevens: breakevens,
-    );
-  }
-
   /// Calculate margin using GetBasketMargin API
   Future<void> _calculateMargin(BuildContext context) async {
     if (_basket.isEmpty) {
-      _totalMargin = '--';
+      _basketMarginModel = null;
       return;
     }
 
     final selectedItems = _basket.where((item) => item.checkbox).toList();
     if (selectedItems.isEmpty) {
-      _totalMargin = '--';
+      _basketMarginModel = null;
       return;
     }
 
@@ -1804,16 +2210,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       log('[StrategyBuilder] Margin API Response: ${response.stat}');
 
       if (response.stat == 'Ok') {
-        // Parse margin from response
-        final margin = double.tryParse(response.marginused ?? '0') ?? 0;
-        _totalMargin = margin.toStringAsFixed(2);
+        _basketMarginModel = response;
       } else {
-        _totalMargin = '--';
+        _basketMarginModel = null;
         log('[StrategyBuilder] Margin API Error: ${response.emsg}');
       }
     } catch (e) {
       log('[StrategyBuilder] Margin API Error: $e');
-      _totalMargin = '--';
+      _basketMarginModel = null;
     }
   }
 
@@ -1869,7 +2273,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       }
 
       if (successCount > 0) {
-        ResponsiveSnackBar.showSuccess(context, '$successCount order(s) placed successfully');
+        ResponsiveSnackBar.showSuccess(context, '$successCount order(s) triggered successfully');
       }
       if (failCount > 0) {
         ResponsiveSnackBar.showError(context, '$failCount order(s) failed');
@@ -1884,13 +2288,35 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   }
 
   /// Get available strikes for expiry
-  List<String> getStrikesForExpiry(String expiry) {
+  /// Normalize strike string to a canonical format to avoid mismatches
+  /// between different API responses (e.g., "24000" vs "24000.00" vs "24000.0")
+  static String normalizeStrike(String strike) {
+    final num = double.tryParse(strike);
+    if (num == null) return strike;
+    return num == num.truncateToDouble()
+        ? num.toInt().toString()
+        : num.toString();
+  }
+
+  List<String> getStrikesForExpiry(String expiry, {String? currentStrike}) {
     final strikes = <String>{};
+
     for (var option in _optionChain) {
       if (option.strprc != null) {
-        strikes.add(option.strprc!);
+        strikes.add(normalizeStrike(option.strprc!));
       }
     }
+    // Also include strikes from basket items that may be outside the loaded range
+    for (var item in _basket) {
+      if (item.strprc.isNotEmpty) {
+        strikes.add(normalizeStrike(item.strprc));
+      }
+    }
+    // Ensure the current strike is always in the list
+    if (currentStrike != null && currentStrike.isNotEmpty) {
+      strikes.add(normalizeStrike(currentStrike));
+    }
+
     final sortedStrikes = strikes.toList()
       ..sort((a, b) => (double.tryParse(a) ?? 0).compareTo(double.tryParse(b) ?? 0));
     return sortedStrikes;
@@ -1975,7 +2401,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
 
   void _startRefreshTimer() {
     _refreshTimer?.cancel();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       _refreshFromWebSocket();
     });
   }
@@ -2005,6 +2431,10 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
           if (prevClose > 0) {
             _spotPriceChangePercent = (chng / prevClose) * 100;
           }
+        }
+        // Keep target slider in sync with live spot when not actively set by user
+        if (!_isTargetSpotActive) {
+          _targetSpotPrice = newPrice;
         }
         hasUpdates = true;
       }
@@ -2164,7 +2594,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
           tsym: pos.tsym ?? '',
           token: pos.token ?? '',
           exch: pos.exch ?? 'NFO',
-          strprc: strprc,
+          strprc: normalizeStrike(strprc),
           optt: optt,
           expdate: matchedExpiry,
           buySell: buySell,
@@ -2176,9 +2606,6 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         );
 
         _basket.add(item);
-
-        // Calculate Greeks for each item
-        _updateItemGreeks(item);
       }
 
       // Calculate days to expiry from first basket item's expiry (now in API format)
@@ -2190,9 +2617,6 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         _selectedExpiry = _basket.first.expdate;
       }
 
-      // Calculate payoff
-      _calculatePayoff();
-
       // Subscribe to updates
       _subscribeToIndex();
       _startRefreshTimer();
@@ -2201,7 +2625,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       await Future.wait([
         _fetchPayoffFromAPI(),
         _calculateMargin(context),
-        ...basket.map((item) => _fetchGreeksFromAPI(item)),
+        _fetchGreeksForAllLegs(),
       ]);
     } catch (e) {
       log('[StrategyBuilder] loadFromPositions error: $e');
@@ -2220,13 +2644,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _targetPayoffData = [];
     _metrics = PayoffMetrics();
     _activePredefinedStrategy = null;
-    _totalMargin = '--';
+    _basketMarginModel = null;
     notifyListeners();
   }
 
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _payoffDebounceTimer?.cancel();
 
     // Unsubscribe
     if (_subscribedTokens.isNotEmpty) {

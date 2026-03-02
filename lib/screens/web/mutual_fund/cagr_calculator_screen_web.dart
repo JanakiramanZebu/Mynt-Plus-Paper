@@ -23,9 +23,9 @@ class _MFCAGRCALWebState extends State<MFCAGRCALWeb> {
       TextEditingController(text: '10000');
   final TextEditingController _finalAmountCtrl =
       TextEditingController(text: '25000');
-  late TextEditingController _tenureCtrl; // Controller for editable tenure text
-  double _tenureYears = 2.0; // Default matches screenshot
-  String _cagrResult = '58.11'; // Default matches screenshot example
+  late TextEditingController _tenureCtrl;
+  double _tenureYears = 2.0;
+  String _cagrResult = '58.11'; 
 
   @override
   void initState() {
@@ -546,14 +546,22 @@ class _MFCAGRCALWebState extends State<MFCAGRCALWeb> {
     );
   }
   void _onTenureChanged(String value) {
-     if (value.isEmpty) return;
+    if (value.isEmpty) return;
     double? val = double.tryParse(value);
     if (val != null) {
+      final clamped = val.clamp(1.0, 30.0);
       if (mounted) {
-         setState(() {
-          _tenureYears = val.clamp(1, 30);
-         });
-         calculateCAGR();
+        setState(() {
+          _tenureYears = clamped;
+        });
+        if (clamped != val) {
+          final clampedText = clamped.toStringAsFixed(0);
+          _tenureCtrl.value = TextEditingValue(
+            text: clampedText,
+            selection: TextSelection.collapsed(offset: clampedText.length),
+          );
+        }
+        calculateCAGR();
       }
     }
   }

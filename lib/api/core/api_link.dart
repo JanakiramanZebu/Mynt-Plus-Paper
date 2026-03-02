@@ -108,6 +108,10 @@ class ApiLinks {
   String get payoffCalculation => '${bemynt}payoff-calculation';
   String get optionGreeks => '${bemynt}getoptiongreeks';
 
+// Option Strategy API
+  String get optionStrategyBaseURL => 'http://192.168.5.61:8000';
+  String get selectSymbols => '$optionStrategyBaseURL/select-symbols';
+
 // Order
 
   String get orderMargin => '$goMyntURL/GetOrderMargin';
