@@ -4332,6 +4332,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     : 'Lot');
                                                             _showDebouncedWarning(
                                                                 "$fieldName cannot be ${value == "0" ? '0' : 'empty'}");
+                                                                _marginUpdateDebounceTimer?.cancel();
+                                                            ref.read(orderProvider).resetMargin();
                                                           } else {
                                                             String newValue =
                                                                 value.replaceAll(
@@ -4570,10 +4572,14 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                       .isEmpty) {
                                                                     _showDebouncedWarning(
                                                                         "Price cannot be empty");
+                                                                    _marginUpdateDebounceTimer?.cancel();
+                                                                    ref.read(orderProvider).resetMargin();
                                                                   } else if (inputPrice <=
                                                                       0) {
                                                                     _showDebouncedWarning(
                                                                         "Price cannot be 0");
+                                                                    _marginUpdateDebounceTimer?.cancel();
+                                                                    ref.read(orderProvider).resetMargin();
                                                                   } else {
                                                                     _cancelPendingWarning();
                                                                     setState(
@@ -5446,7 +5452,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
                                                                     ),
 
                                                                     Text(
-                                                                      "${orderProvide.orderMarginModel == null ? 0.00 : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? 0.00 : orderProvide.getBrokerageModel!.brkageAmt ?? 0.00}",
+                                                                      "${orderProvide.orderMarginModel == null ? "0.00" : orderProvide.orderMarginModel!.ordermargin}  + ${orderProvide.getBrokerageModel == null ? "0.00" : orderProvide.getBrokerageModel!.brkageAmt ?? "0.00"}",
                                                                       style: WebTextStyles
                                                                           .para(
                                                                         isDarkTheme:

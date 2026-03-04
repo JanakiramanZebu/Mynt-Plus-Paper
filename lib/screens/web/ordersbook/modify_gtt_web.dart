@@ -623,7 +623,10 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                         orderInput.actPrcType == "SL MKT") {
                       orderInput.priceCtrl.text = "Market";
                     } else {
-                      orderInput.priceCtrl.text = "${widget.gttOrderBook.ltp}";
+                      orderInput.priceCtrl.text =
+                          widget.gttOrderBook.placeOrderParams?.prc ??
+                              currentLtp ??
+                              "0.00";
                     }
                   });
                 },
@@ -843,7 +846,10 @@ class _ModifyGttWebState extends ConsumerState<ModifyGttWeb> {
                         orderInput.actOcoPrcType == "SL MKT") {
                       orderInput.ocoPriceCtrl.text = "Market";
                     } else {
-                      orderInput.ocoPriceCtrl.text = "${widget.gttOrderBook.ltp}";
+                      orderInput.ocoPriceCtrl.text =
+                          widget.gttOrderBook.placeOrderParamsLeg2?.prc ??
+                              currentLtp ??
+                              "0.00";
                     }
                   });
                 },
