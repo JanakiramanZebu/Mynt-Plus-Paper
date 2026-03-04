@@ -14,6 +14,7 @@ import '../../../../models/ipo_model/ipo_sme_model.dart';
 import '../../../../provider/iop_provider.dart';
 import '../../../../provider/transcation_provider.dart';
 import '../../../../sharedWidget/functions.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/snack_bar.dart';
 
 // InheritedWidget to pass close callback to child widgets
@@ -658,9 +659,10 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                         padding: const EdgeInsets.all(16.0),
                         child: SizedBox(
                           width: double.infinity,
-                          height: 48,
+                          height: 42,
                           child: ElevatedButton(
-                            onPressed: (_getButtonActiveState(ipo) &&
+                            onPressed: (!ipo.ipoOrderLoading &&
+                                    _getButtonActiveState(ipo) &&
                                     _isTermsAccepted &&
                                     upiProvider.upiid.text.isNotEmpty)
                                 ? () {
@@ -687,8 +689,10 @@ class _UnifiedIpoOrderScreenState extends ConsumerState<UnifiedIpoOrderScreen> {
                                 borderRadius: BorderRadius.circular(5),
                               ),
                             ),
-                            child: TextWidget.titleText(
-                              text: "Continue",
+                            child: ipo.ipoOrderLoading
+                                ? MyntLoader.inline()
+                                : TextWidget.titleText(
+                                     text: "Continue",
                               theme: false,
                               color: colors.colorWhite,
                               fw: 2,

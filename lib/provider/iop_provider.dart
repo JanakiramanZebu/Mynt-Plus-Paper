@@ -36,6 +36,13 @@ class IPOProvider extends DefaultChangeNotifier {
   final TextEditingController quantity = TextEditingController();
   final TextEditingController bidprice = TextEditingController();
 
+  bool _ipoOrderLoading = false;
+  bool get ipoOrderLoading => _ipoOrderLoading;
+  void toggleIpoOrderLoading(bool on) {
+    _ipoOrderLoading = on;
+    notifyListeners();
+  }
+
   bool _isSMEPlaceOrderBtnActive = false;
   bool get isSMEPlaceOrderBtnActive => _isSMEPlaceOrderBtnActive;
 
@@ -1450,7 +1457,7 @@ class IPOProvider extends DefaultChangeNotifier {
       MenuData menudata, List<IposBid> iposbids, String iposupiid,
       {bool isOverlayDialog = false}) async {
     try {
-      toggleLoadingOn(true);
+      toggleIpoOrderLoading(true);
       _upiIdValidationModel = await api.getVerifyUpi(upiId, accno);
       if (_upiIdValidationModel!.data!.verifiedVPAStatus1 == "Available" ||
           _upiIdValidationModel!.data!.verifiedVPAStatus2 == "Available") {
@@ -1483,15 +1490,13 @@ class IPOProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } finally {
-      toggleLoadingOn(false);
+      toggleIpoOrderLoading(false);
     }
   }
 
   Future getipoplaceorder(BuildContext context, MenuData menudata,
       List<IposBid> iposbids, String iposupiid) async {
     try {
-      toggleLoadingOn(true);
-
       _ipoOrderResponcesModel =
           await api.fetchipoplaceorder(menudata, iposbids, iposupiid);
       getipoorderbookmodel(context, true);
@@ -1509,8 +1514,6 @@ class IPOProvider extends DefaultChangeNotifier {
     } catch (e) {
       print("IPOs placeorder error:: $e");
       notifyListeners();
-    } finally {
-      toggleLoadingOn(false);
     }
   }
 

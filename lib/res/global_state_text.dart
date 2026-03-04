@@ -82,7 +82,7 @@ class TextWidget {
       textAlign: align,
       style: GoogleFonts.inter(
           textStyle: TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         color: (color != null)
             ? color
             : theme

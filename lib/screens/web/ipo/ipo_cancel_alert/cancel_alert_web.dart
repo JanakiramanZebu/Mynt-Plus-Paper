@@ -26,92 +26,121 @@ class _IpoCancelAlertState extends ConsumerState<IpoCancelAlert> {
       child: Container(
         width: 400,
         decoration: BoxDecoration(
-          color: resolveThemeColor(context,
-              dark: MyntColors.backgroundColorDark,
-              light: MyntColors.backgroundColor),
-          borderRadius: BorderRadius.circular(10),
+          color: resolveThemeColor(
+            context,
+            dark: MyntColors.dialogDark,
+            light: MyntColors.dialog,
+          ),
+          borderRadius: BorderRadius.circular(8),
         ),
-        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Close button (Top Right)
-            Align(
-              alignment: Alignment.topRight,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => Navigator.of(context).pop(false),
-                  child: Icon(
-                    Icons.close,
-                    size: 24,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary),
+            // Header row with title and close button
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: resolveThemeColor(
+                      context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider,
+                    ),
                   ),
                 ),
               ),
-            ),
-
-            // Text Content
-            const SizedBox(height: 12),
-            RichText(
-              textAlign: TextAlign.center,
-              text: TextSpan(
-                text: 'Are you sure you want to \ncancel this ',
-                style: MyntWebTextStyles.title(
-                  context,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary),
-                ).copyWith(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 18,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextSpan(
-                    text: 'IPO order?',
+                  Text(
+                    'Cancel IPO Order',
                     style: MyntWebTextStyles.title(
                       context,
-                    ).copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => Navigator.of(context).pop(false),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: resolveThemeColor(
+                            context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Button
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: TextButton(
-                onPressed:
-                    _isCancelling ? null : () => _handleCancelOrder(context),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFF0037B7),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: _isCancelling
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        'Delete',
-                        style: MyntWebTextStyles.buttonMd(
-                          context,
-                          color: Colors.white,
-                        ).copyWith(fontSize: 16),
+            // Content area
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Text(
+                    'Are you sure you want to cancel this IPO order? This action cannot be undone.',
+                    textAlign: TextAlign.center,
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: resolveThemeColor(
+                        context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: TextButton(
+                      onPressed: _isCancelling
+                          ? null
+                          : () => _handleCancelOrder(context),
+                      style: TextButton.styleFrom(
+                        backgroundColor: resolveThemeColor(context,
+                            dark: MyntColors.errorDark,
+                            light: MyntColors.tertiary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: _isCancelling
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Cancel Order',
+                              style: MyntWebTextStyles.buttonMd(
+                                context,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
