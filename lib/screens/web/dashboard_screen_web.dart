@@ -963,6 +963,20 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
     final List<Map<String, dynamic>> tools = [
       {
+        'title': 'WebHook Trading',
+        'subtitle': 'TradingView • Auto Alert',
+        'description':
+            'Automate trades via TradingView webhook alerts with real-time order execution.',
+        'accentColor': const Color(0xFFEC4899),
+        'badge': 'NEW',
+        'icon': Icons.webhook,
+        'onTap': () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('tradingViewWebHook');
+          }
+        },
+      },
+      {
         'title': 'Equity SIP',
         'subtitle': 'Systematic Investment Plan',
         'description':

@@ -401,6 +401,8 @@ class _CustomizableSplitHomeScreenState
               routeName == "scalper") {
             debugPrint("Scalper route matched: $routeName");
             _handleScalperTap();
+          } else if (routeName == "tradingViewWebHook") {
+            _handleWebHookTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -463,6 +465,8 @@ class _CustomizableSplitHomeScreenState
               routeName == "scalper") {
             debugPrint("Scalper route matched: $routeName");
             _handleScalperTap();
+          } else if (routeName == "tradingViewWebHook") {
+            _handleWebHookTap();
           } else {
             debugPrint("Unknown route: $routeName");
           }

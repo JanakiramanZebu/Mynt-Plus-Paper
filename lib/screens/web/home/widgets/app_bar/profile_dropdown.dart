@@ -376,7 +376,7 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               context,
               icon: Icons.webhook,
               title: 'WebHook',
-              subtitle: 'TradingView & API Integration',
+              subtitle: 'TradingView & Auto Alerts',
               iconColor: iconColor,
               textColor: textColor,
               subtitleColor: subtitleColor,

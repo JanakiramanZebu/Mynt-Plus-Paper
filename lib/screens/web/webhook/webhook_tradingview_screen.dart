@@ -680,11 +680,19 @@ class _WebHookTradingViewScreenState
                                 border: Border.all(color: borderColor),
                               ),
                               child: SelectableText(
-                                _webhookUrl,
+                                _webhookUrl.isEmpty
+                                    ? 'Click the "Generate" button to create a webhook URL'
+                                    : _webhookUrl,
                                 style: MyntWebTextStyles.body(
                                   context,
-                                  darkColor: MyntColors.textPrimaryDark,
-                                  lightColor: MyntColors.textPrimary,
+                                  darkColor: _webhookUrl.isEmpty
+                                      ? MyntColors.textPrimaryDark
+                                            .withValues(alpha: 0.4)
+                                      : MyntColors.textPrimaryDark,
+                                  lightColor: _webhookUrl.isEmpty
+                                      ? MyntColors.textPrimary
+                                            .withValues(alpha: 0.4)
+                                      : MyntColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -751,7 +759,8 @@ class _WebHookTradingViewScreenState
                         ],
                       ),
                       const SizedBox(height: 10),
-                      if (_isWebhookExpired)
+                      if (_webhookUrl.isNotEmpty) ...[
+                         if (_isWebhookExpired)
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 10),
@@ -768,7 +777,7 @@ class _WebHookTradingViewScreenState
                                   .withValues(alpha: 0.3),
                             ),
                           ),
-                          child: Row(
+                             child: Row(
                             children: [
                               Icon(
                                 Icons.error_outline_rounded,
@@ -792,7 +801,7 @@ class _WebHookTradingViewScreenState
                             ],
                           ),
                         )
-                      else
+                        else
                         Text(
                           'This URL is about to expire tonight. You must create a new webhook URL tomorrow.',
                           style: MyntWebTextStyles.para(
@@ -800,7 +809,9 @@ class _WebHookTradingViewScreenState
                             color: subtitleColor,
                           ),
                         ),
+                      ],
                       const SizedBox(height: 10),
+                      if (_webhookUrl.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
@@ -839,6 +850,7 @@ class _WebHookTradingViewScreenState
                           ],
                         ),
                       ),
+                    ],
                     ],
                   ),
                 ),

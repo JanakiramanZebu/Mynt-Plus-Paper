@@ -908,44 +908,15 @@ class _MainSmeListCardState extends ConsumerState<MainSmeListCard> {
 
   String _formatMinAmount(dynamic ipo) {
     try {
-      String? minValue = ipo.minvalue;
+      final minPrice = double.tryParse(ipo.minPrice ?? "0") ?? 0;
+      final minQty = int.tryParse(ipo.minBidQuantity ?? "0") ?? 0;
 
-      // Check if it's missing or effectively empty
-      if (minValue == null ||
-          minValue.isEmpty ||
-          minValue == "null" ||
-          minValue == "0") {
-        minValue = ipo.minValue;
+      if (minPrice > 0 && minQty > 0) {
+        final amount = (minPrice * minQty).toInt();
+        return "₹${convertCurrencyINRStandard(amount)}";
       }
 
-      // Fallback: Calculate from price and quantity if direct field is missing
-      if (minValue == null ||
-          minValue.isEmpty ||
-          minValue == "null" ||
-          minValue == "0") {
-        final minPrice = double.tryParse(ipo.minPrice ?? "0") ?? 0;
-        // Search for minBidQuantity, fallback to lotSize
-        final minQty =
-            double.tryParse(ipo.minBidQuantity ?? ipo.lotSize ?? "0") ?? 0;
-
-        if (minPrice > 0 && minQty > 0) {
-          minValue = (minPrice * minQty).toString();
-        }
-      }
-
-      if (minValue == null || minValue.isEmpty || minValue == "null") {
-        return "-";
-      }
-
-      double amount = double.tryParse(minValue) ?? 0;
-      if (amount <= 0) return "-";
-
-      // Display as whole number if possible, otherwise 2 decimals
-      String amountStr = amount == amount.toInt()
-          ? amount.toInt().toString()
-          : amount.toStringAsFixed(2);
-
-      return "₹$amountStr";
+      return "-";
     } catch (e) {
       return "-";
     }

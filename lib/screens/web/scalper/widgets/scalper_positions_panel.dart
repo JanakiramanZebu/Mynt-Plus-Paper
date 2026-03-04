@@ -3130,9 +3130,9 @@ class _ScalperGttDialogState extends ConsumerState<_ScalperGttDialog> {
         dark: MyntColors.dividerDark, light: MyntColors.divider);
     final accentColor = _isStoploss
         ? resolveThemeColor(context,
-            dark: MyntColors.tertiary, light: MyntColors.tertiary)
+            dark: MyntColors.lossDark, light: MyntColors.tertiary)
         : resolveThemeColor(context,
-            dark: MyntColors.primaryDark, light: MyntColors.primary);
+            dark: MyntColors.secondary, light: MyntColors.primary);
 
     return PointerInterceptor(
       child: Center(
@@ -3594,7 +3594,7 @@ class _ScalperExitPositionDialogState
                           isLoading: _isLoading,
                           backgroundColor: resolveThemeColor(
                             context,
-                            dark: MyntColors.tertiary,
+                            dark: MyntColors.lossDark,
                             light: MyntColors.tertiary,
                           ),
                           onPressed: _isLoading ? null : _handleExit,
@@ -3756,7 +3756,7 @@ class _ScalperCancelOrdersDialogState
                           isLoading: _isLoading,
                           backgroundColor: resolveThemeColor(
                             context,
-                            dark: MyntColors.tertiary,
+                            dark: MyntColors.lossDark,
                             light: MyntColors.tertiary,
                           ),
                           onPressed: _isLoading ? null : _handleCancel,
