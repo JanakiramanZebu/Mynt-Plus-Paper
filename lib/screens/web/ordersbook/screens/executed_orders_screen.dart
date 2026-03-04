@@ -203,16 +203,44 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
               // Calculate proportional column widths for 8 columns
               final availableWidth = constraints.maxWidth;
 
+              // Minimum column widths to prevent overflow
+              const minTimeWidth = 80.0;
+              const minTypeWidth = 60.0;
+              const minInstrumentWidth = 180.0;
+              const minProductWidth = 70.0;
+              const minQtyWidth = 80.0;
+              const minLtpWidth = 80.0;
+              const minAvgPriceWidth = 80.0;
+              const minStatusWidth = 100.0;
+
+              // Total minimum width required
+              const totalMinWidth = minTimeWidth +
+                  minTypeWidth +
+                  minInstrumentWidth +
+                  minProductWidth +
+                  minQtyWidth +
+                  minLtpWidth +
+                  minAvgPriceWidth +
+                  minStatusWidth;
+
+              // Check if we need horizontal scroll
+              final needsHorizontalScroll = availableWidth < totalMinWidth;
+              final effectiveWidth = needsHorizontalScroll ? totalMinWidth : availableWidth;
+
               // Proportional widths for columns (total = 100%)
-              // Time: 12%, Type: 8%, Instrument: 25%, Product: 12%, Qty: 12%, LTP: 11%, Avg. price: 12%, Status: 8%
-              final timeWidth = availableWidth * 0.12;
-              final typeWidth = availableWidth * 0.08;
-              final instrumentWidth = availableWidth * 0.24; // 25% for instrument - wider to show full names
-              final productWidth = availableWidth * 0.08;
-              final qtyWidth = availableWidth * 0.12;
-              final ltpWidth = availableWidth * 0.11;
-              final avgPriceWidth = availableWidth * 0.12;
-              final statusWidth = availableWidth * 0.13;
+              // Time: 12%, Type: 8%, Instrument: 24%, Product: 8%, Qty: 12%, LTP: 11%, Avg. price: 12%, Status: 13%
+              final timeWidth = (effectiveWidth * 0.12).clamp(minTimeWidth, double.infinity);
+              final typeWidth = (effectiveWidth * 0.08).clamp(minTypeWidth, double.infinity);
+              final instrumentWidth = (effectiveWidth * 0.24).clamp(minInstrumentWidth, double.infinity);
+              final productWidth = (effectiveWidth * 0.08).clamp(minProductWidth, double.infinity);
+              final qtyWidth = (effectiveWidth * 0.12).clamp(minQtyWidth, double.infinity);
+              final ltpWidth = (effectiveWidth * 0.11).clamp(minLtpWidth, double.infinity);
+              final avgPriceWidth = (effectiveWidth * 0.12).clamp(minAvgPriceWidth, double.infinity);
+              final statusWidth = (effectiveWidth * 0.13).clamp(minStatusWidth, double.infinity);
+
+              // Actual total width after clamping (may exceed totalMinWidth due to clamp bump-ups)
+              final actualTotalWidth = timeWidth + typeWidth + instrumentWidth +
+                  productWidth + qtyWidth + ltpWidth + avgPriceWidth + statusWidth;
 
               // Build table content
               Widget buildTableContent() {
@@ -527,6 +555,32 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                         ),
                       ),
                     ],
+                  ),
+                );
+              }
+
+              // Add horizontal scroll when table is wider than available space
+              if (needsHorizontalScroll) {
+                return RawScrollbar(
+                  controller: widget.horizontalScrollController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  trackColor: resolveThemeColor(context,
+                      dark: Colors.grey.withValues(alpha: 0.1),
+                      light: Colors.grey.withValues(alpha: 0.1)),
+                  thumbColor: resolveThemeColor(context,
+                      dark: Colors.grey.withValues(alpha: 0.3),
+                      light: Colors.grey.withValues(alpha: 0.3)),
+                  thickness: 6,
+                  radius: const Radius.circular(3),
+                  interactive: true,
+                  child: SingleChildScrollView(
+                    controller: widget.horizontalScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: actualTotalWidth,
+                      child: buildTableContent(),
+                    ),
                   ),
                 );
               }

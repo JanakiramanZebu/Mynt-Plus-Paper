@@ -23,6 +23,8 @@ import 'screens/trade_book_screen.dart';
 import 'screens/gtt_orders_screen.dart';
 import 'screens/sip_orders_screen_web.dart';
 import '../../../sharedWidget/common_search_fields_web.dart';
+import '../../../models/order_book_model/order_book_model.dart';
+import 'cancel_all_orders_dialog_web.dart';
 
 /// Main Order Book Screen - Now just a coordinator
 /// All table logic is in separate screen widgets
@@ -171,10 +173,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     super.initState();
 
     // Initialize non-blocking components immediately
-    FirebaseAnalytics.instance.logScreenView(
+    try {
+      FirebaseAnalytics.instance.logScreenView(
       screenName: 'Order Book Screen Web',
       screenClass: 'OrderBookScreenWeb',
     );
+    } catch (e) {
+      debugPrint('Analytics logging error: $e');
+    }
 
     // Defer heavy operations until after UI renders
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -534,7 +540,64 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                   },
                 ),
               ),
-              // Gap between search and refresh
+              // Cancel All Button - only show on Open Orders tab (tab index 0)
+              if ((_tabController?.index ?? 0) == 0)
+                Consumer(
+                  builder: (context, ref, _) {
+                    final selectedCount =
+                        ref.watch(orderProvider.select((p) => p.exitOrderQty));
+                    final openOrders =
+                        ref.watch(orderProvider).openOrder ?? [];
+                    final pendingOrders = openOrders.where((o) {
+                      final status = o.status?.toUpperCase() ?? '';
+                      return status == 'PENDING' ||
+                          status == 'OPEN' ||
+                          status == 'TRIGGER_PENDING';
+                    }).toList();
+
+                    // Hide button if no pending orders
+                    if (pendingOrders.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Padding(
+                      padding: EdgeInsets.only(
+                          left: context.responsive<double>(
+                              mobile: 6, tablet: 8, desktop: 12)),
+                      child: SizedBox(
+                        height: 35,
+                        child: ElevatedButton(
+                          onPressed: () => _cancelAllOrders(pendingOrders, selectedCount > 0),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: resolveThemeColor(
+                              context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary,
+                            ),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            selectedCount == 0
+                                ? 'Cancel All'
+                                : 'Cancel ($selectedCount)',
+                            style: MyntWebTextStyles.body(
+                              context,
+                              color: Colors.white,
+                              fontWeight: MyntFonts.semiBold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              // Gap between search/cancel and refresh
               SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
               // Refresh Button - Matching positions page style
               _buildIconButton(
@@ -546,6 +609,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             ],
           );
         },
+      ),
+    );
+  }
+
+  // Cancel all orders dialog
+  void _cancelAllOrders(List<OrderBookModel> openOrders, bool hasSelection) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => CancelAllOrdersDialogWeb(
+        openOrders: openOrders,
+        isCancelAll: !hasSelection,
       ),
     );
   }

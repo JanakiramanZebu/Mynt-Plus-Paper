@@ -306,7 +306,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
             padding: padding ??
@@ -392,7 +392,7 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
           child: Container(
             color: rowIsHovered
                 ? resolveThemeColor(context,
-                        dark: MyntColors.primary, light: MyntColors.primary)
+                        dark: MyntColors.primaryDark, light: MyntColors.primary)
                     .withOpacity(theme.isDarkMode ? 0.06 : 0.10)
                 : Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
@@ -477,7 +477,8 @@ class _OpenOrdersTableState extends ConsumerState<OpenOrdersTable> {
                 _buildMenuButton(
                   icon: Icons.cancel_outlined,
                   title: 'Cancel',
-                  iconColor: MyntColors.tertiary,
+                  iconColor: resolveThemeColor(context,
+                      dark: MyntColors.errorDark, light: MyntColors.tertiary),
                   textColor: textColor,
                   onPressed: (ctx) {
                     _closePopover();

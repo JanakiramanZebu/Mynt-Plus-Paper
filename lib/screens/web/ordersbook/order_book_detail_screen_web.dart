@@ -1190,9 +1190,7 @@ class _OrderBookDetailScreenWebState
             decoration: BoxDecoration(
               color: resolveThemeColor(
                 dialogContext,
-                dark: Colors.black,
-                light: Colors.white,
-              ),
+                dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -1278,7 +1276,7 @@ class _OrderBookDetailScreenWebState
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: resolveThemeColor(context,
+                            backgroundColor: resolveThemeColor(dialogContext,
                                 dark: MyntColors.errorDark,
                                 light: MyntColors.tertiary),
                             shape: RoundedRectangleBorder(

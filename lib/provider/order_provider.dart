@@ -1547,6 +1547,25 @@ class OrderProvider extends DefaultChangeNotifier {
     _isExitAllOrder = false;
   }
 
+  /// Cancel all pending/open orders
+  Future<void> cancelAllPendingOrders(context) async {
+    if (_openOrder == null) return;
+    for (var element in _openOrder!) {
+      final status = element.status?.toUpperCase() ?? '';
+      if (status == 'PENDING' || status == 'OPEN' || status == 'TRIGGER_PENDING') {
+        if ((element.sPrdtAli == "BO" || element.sPrdtAli == "CO") &&
+            element.snonum != null) {
+          await fetchExitSNOOrd(element.snonum.toString(),
+              element.prd.toString(), context, false);
+        } else {
+          await fetchOrderCancel(element.norenordno.toString(), context, false);
+        }
+      }
+    }
+    await fetchOrderBook(context, true);
+    Navigator.pop(context);
+  }
+
   Future fetchOrderCancel(String orderNum, context, bool loop) async {
     try {
       _cancelOrderModel = await api.getCancelOrder(orderNum);
@@ -1672,6 +1691,12 @@ class OrderProvider extends DefaultChangeNotifier {
       notifyListeners();
       print(e);
     } finally {}
+  }
+
+  void resetMargin() {
+    _orderMarginModel = null;
+    _getBrokerageModel = null;
+    notifyListeners();
   }
 
   Future fetchOrderMargin(OrderMarginInput input, BuildContext context) async {

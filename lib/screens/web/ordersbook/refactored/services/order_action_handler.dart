@@ -430,7 +430,7 @@ class OrderActionHandler {
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: resolveThemeColor(context,
+              color: resolveThemeColor(dialogContext,
                   dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -445,7 +445,7 @@ class OrderActionHandler {
                     border: Border(
                       bottom: BorderSide(
                         color: resolveThemeColor(
-                          context,
+                          dialogContext,
                           dark: NewColors.MyntColors.dividerDark,
                           light: NewColors.MyntColors.divider,
                         ),
@@ -458,8 +458,8 @@ class OrderActionHandler {
                       Text(
                         'Cancel Order',
                         style: MyntWebTextStyles.title(
-                          context,
-                          color: resolveThemeColor(context,
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
                               dark: NewColors.MyntColors.textPrimaryDark,
                               light: NewColors.MyntColors.textPrimary),
                         ),
@@ -475,7 +475,7 @@ class OrderActionHandler {
                             child: Icon(
                               Icons.close,
                               size: 20,
-                              color: resolveThemeColor(context,
+                              color: resolveThemeColor(dialogContext,
                                   dark: NewColors.MyntColors.textSecondaryDark,
                                   light: NewColors.MyntColors.textSecondary),
                             ),
@@ -496,8 +496,8 @@ class OrderActionHandler {
                         'Are you sure you want to cancel "$symbol"?',
                         textAlign: TextAlign.center,
                         style: MyntWebTextStyles.body(
-                          context,
-                          color: resolveThemeColor(context,
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
                               dark: NewColors.MyntColors.textPrimaryDark,
                               light: NewColors.MyntColors.textPrimary),
                         ),
@@ -511,7 +511,7 @@ class OrderActionHandler {
                         child: TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: resolveThemeColor(context,
+                            backgroundColor: resolveThemeColor(dialogContext,
                                 dark: NewColors.MyntColors.errorDark,
                                 light: NewColors.MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
@@ -521,7 +521,7 @@ class OrderActionHandler {
                           child: Text(
                             'Cancel',
                             style: MyntWebTextStyles.buttonMd(
-                              context,
+                              dialogContext,
                               color: Colors.white,
                             ),
                           ),
@@ -549,7 +549,7 @@ class OrderActionHandler {
           child: Container(
             width: 400,
             decoration: BoxDecoration(
-              color: resolveThemeColor(context,
+              color: resolveThemeColor(dialogContext,
                   dark: colors.colorBlack, light: colors.colorWhite),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -564,7 +564,7 @@ class OrderActionHandler {
                     border: Border(
                       bottom: BorderSide(
                         color: resolveThemeColor(
-                          context,
+                          dialogContext,
                           dark: NewColors.MyntColors.dividerDark,
                           light: NewColors.MyntColors.divider,
                         ),
@@ -577,8 +577,8 @@ class OrderActionHandler {
                       Text(
                         'Exit Position',
                         style: MyntWebTextStyles.title(
-                          context,
-                          color: resolveThemeColor(context,
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
                               dark: NewColors.MyntColors.textPrimaryDark,
                               light: NewColors.MyntColors.textPrimary),
                         ),
@@ -594,7 +594,7 @@ class OrderActionHandler {
                             child: Icon(
                               Icons.close,
                               size: 20,
-                              color: resolveThemeColor(context,
+                              color: resolveThemeColor(dialogContext,
                                   dark: NewColors.MyntColors.textSecondaryDark,
                                   light: NewColors.MyntColors.textSecondary),
                             ),
@@ -615,8 +615,8 @@ class OrderActionHandler {
                         'Are you sure you want to exit "$symbol" position?',
                         textAlign: TextAlign.center,
                         style: MyntWebTextStyles.body(
-                          context,
-                          color: resolveThemeColor(context,
+                          dialogContext,
+                          color: resolveThemeColor(dialogContext,
                               dark: NewColors.MyntColors.textPrimaryDark,
                               light: NewColors.MyntColors.textPrimary),
                         ),
@@ -631,7 +631,7 @@ class OrderActionHandler {
                           onPressed: () => Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
                             backgroundColor: resolveThemeColor(
-                              context,
+                              dialogContext,
                               dark: NewColors.MyntColors.primaryDark,
                               light: NewColors.MyntColors.primary,
                             ),
@@ -642,7 +642,7 @@ class OrderActionHandler {
                           child: Text(
                             'Exit',
                             style: MyntWebTextStyles.buttonMd(
-                              context,
+                              dialogContext,
                               color: Colors.white,
                             ),
                           ),
