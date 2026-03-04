@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/models/marketwatch_model/opt_chain_model.dart';
@@ -10,6 +11,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -2811,66 +2813,106 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   /// Save custom strategy dialog
   void _showSaveCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     final nameController = TextEditingController(text: provider.editingCustomBuilderName ?? '');
+    final focusNode = FocusNode();
+
+    // Request focus after dialog animation completes
+    Future.delayed(const Duration(milliseconds: 250), () {
+      focusNode.requestFocus();
+      if (provider.editingCustomBuilderName != null && nameController.text.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 50), () {
+          nameController.selection = TextSelection.collapsed(
+            offset: nameController.text.length,
+          );
+        });
+      }
+    });
+
     showDialog(
       context: context,
+      barrierColor: Colors.black54,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setState) {
             final isUpdateMode = provider.editingCustomBuilderName != null &&
                 nameController.text == provider.editingCustomBuilderName;
-            return AlertDialog(
-              backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-              title: Text(
-                isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
-                style: MyntWebTextStyles.bodyMedium(context,
-                    color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
-                    fontWeight: MyntFonts.semiBold),
-              ),
-              content: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: nameController,
-                      enabled: !isUpdateMode,
-                      decoration: InputDecoration(
-                        hintText: 'Strategy name',
-                        isDense: true,
-                        border: const OutlineInputBorder(),
-                        hintStyle: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
-                      ),
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
-                      onChanged: (_) => setState(() {}),
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: shadcn.Card(
+                  borderRadius: BorderRadius.circular(8),
+                  padding: EdgeInsets.zero,
+                  child: Container(
+                    width: 400,
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: shadcn.Theme.of(context).colorScheme.border,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
+                                style: MyntWebTextStyles.title(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              MyntCloseButton(
+                                onPressed: () => Navigator.of(dialogContext).pop(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Content
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                MyntFormTextField(
+                                  controller: nameController,
+                                  focusNode: focusNode,
+                                  placeholder: 'Enter strategy name',
+                                  enabled: !isUpdateMode,
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                                const SizedBox(height: 24),
+                                MyntPrimaryButton(
+                                  size: MyntButtonSize.large,
+                                  label: isUpdateMode ? 'Update' : 'Save',
+                                  isFullWidth: true,
+                                  onPressed: nameController.text.trim().isEmpty
+                                      ? null
+                                      : () {
+                                          provider.saveCustomStrategy(nameController.text.trim(), context);
+                                          Navigator.pop(dialogContext);
+                                        },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (isUpdateMode)
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      onPressed: () {
-                        nameController.clear();
-                        setState(() {});
-                      },
-                    ),
-                ],
+                ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: Text('Cancel',
-                      style: MyntWebTextStyles.bodySmall(context, color: Colors.grey)),
-                ),
-                TextButton(
-                  onPressed: nameController.text.trim().isEmpty
-                      ? null
-                      : () {
-                          provider.saveCustomStrategy(nameController.text.trim(), context);
-                          Navigator.pop(dialogContext);
-                        },
-                  child: Text(isUpdateMode ? 'Update' : 'Save',
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: MyntColors.primary, fontWeight: MyntFonts.semiBold)),
-                ),
-              ],
             );
           },
         );
@@ -2882,29 +2924,98 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   void _showDeleteCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, String strategyName, bool isDark) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-        title: Text('Delete Strategy',
-            style: MyntWebTextStyles.bodyMedium(context,
-                color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
-                fontWeight: MyntFonts.semiBold)),
-        content: Text('Are you sure you want to delete "$strategyName"?',
-            style: MyntWebTextStyles.bodySmall(context,
-                color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey)),
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: shadcn.Card(
+              borderRadius: BorderRadius.circular(8),
+              padding: EdgeInsets.zero,
+              child: Container(
+                width: 400,
+                constraints: const BoxConstraints(maxHeight: 250),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: shadcn.Theme.of(context).colorScheme.border,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Delete Strategy',
+                            style: MyntWebTextStyles.title(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          MyntCloseButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Content
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Are you sure you want to delete "$strategyName"?',
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            MyntButton(
+                              type: MyntButtonType.primary,
+                              size: MyntButtonSize.large,
+                              label: 'Delete',
+                              isFullWidth: true,
+                              backgroundColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.errorDark,
+                                light: MyntColors.tertiary,
+                              ),
+                              onPressed: () {
+                                provider.deleteCustomStrategy(strategyName);
+                                Navigator.pop(dialogContext);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              provider.deleteCustomStrategy(strategyName);
-              Navigator.pop(dialogContext);
-            },
-            child: Text('Delete', style: MyntWebTextStyles.bodySmall(context, color: Colors.red, fontWeight: MyntFonts.semiBold)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -6669,8 +6780,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: draft.optionType == 'CE'
-                    ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.15)
-                    : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss).withValues(alpha: 0.15),
+                    ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary).withValues(alpha: 0.15)
+                    : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -6678,8 +6789,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                 style: MyntWebTextStyles.bodySmall(
                   context,
                   color: draft.optionType == 'CE'
-                      ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)
-                      : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss),
+                      ? resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary)
+                      : resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
                   fontWeight: MyntFonts.bold,
                 ).copyWith(fontSize: 12),
               ),
@@ -6770,7 +6881,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF5F5F5),
+                color: isDark ? MyntColors.cardDark : MyntColors.card,
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: isDark ? const Color(0xFF444444) : const Color(0xFFE0E0E0),
@@ -6864,7 +6975,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
         DataCell(
           IconButton(
             onPressed: () => provider.removeDraftLeg(index),
-            icon: const Icon(Icons.delete_outline, size: 20, color: MyntColors.loss),
+            icon: Icon(Icons.delete_outline, size: 20, color: isDark ? MyntColors.lossDark : MyntColors.loss),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -7006,54 +7117,106 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   /// Save custom strategy dialog
   void _showSaveCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, bool isDark) {
     final nameController = TextEditingController(text: provider.editingCustomBuilderName ?? '');
+    final focusNode = FocusNode();
+
+    // Request focus after dialog animation completes
+    Future.delayed(const Duration(milliseconds: 250), () {
+      focusNode.requestFocus();
+      if (provider.editingCustomBuilderName != null && nameController.text.isNotEmpty) {
+        Future.delayed(const Duration(milliseconds: 50), () {
+          nameController.selection = TextSelection.collapsed(
+            offset: nameController.text.length,
+          );
+        });
+      }
+    });
+
     showDialog(
       context: context,
+      barrierColor: Colors.black54,
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setState) {
             final isUpdateMode = provider.editingCustomBuilderName != null &&
                 nameController.text == provider.editingCustomBuilderName;
-            return AlertDialog(
-              backgroundColor: isDark ? MyntColors.cardDark : Colors.white,
-              title: Text(isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
-                  style: MyntWebTextStyles.bodyMedium(context,
-                      color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
-                      fontWeight: MyntFonts.semiBold)),
-              content: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: nameController,
-                      enabled: !isUpdateMode,
-                      decoration: InputDecoration(
-                        hintText: 'Strategy name', isDense: true,
-                        border: const OutlineInputBorder(),
-                        hintStyle: MyntWebTextStyles.bodySmall(context, color: Colors.grey),
-                      ),
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack),
-                      onChanged: (_) => setState(() {}),
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: shadcn.Card(
+                  borderRadius: BorderRadius.circular(8),
+                  padding: EdgeInsets.zero,
+                  child: Container(
+                    width: 400,
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Header
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: shadcn.Theme.of(context).colorScheme.border,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                isUpdateMode ? 'Update Custom Builder' : 'Save Custom Builder',
+                                style: MyntWebTextStyles.title(
+                                  context,
+                                  color: resolveThemeColor(
+                                    context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              MyntCloseButton(
+                                onPressed: () => Navigator.of(dialogContext).pop(),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Content
+                        Flexible(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                MyntFormTextField(
+                                  controller: nameController,
+                                  focusNode: focusNode,
+                                  placeholder: 'Enter strategy name',
+                                  enabled: !isUpdateMode,
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                                const SizedBox(height: 24),
+                                MyntPrimaryButton(
+                                  size: MyntButtonSize.large,
+                                  label: isUpdateMode ? 'Update' : 'Save',
+                                  isFullWidth: true,
+                                  onPressed: nameController.text.trim().isEmpty
+                                      ? null
+                                      : () {
+                                          provider.saveCustomStrategy(nameController.text.trim(), context);
+                                          Navigator.pop(dialogContext);
+                                        },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (isUpdateMode)
-                    IconButton(icon: const Icon(Icons.close, size: 18),
-                        onPressed: () { nameController.clear(); setState(() {}); }),
-                ],
-              ),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(dialogContext),
-                    child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey))),
-                TextButton(
-                  onPressed: nameController.text.trim().isEmpty ? null : () {
-                    provider.saveCustomStrategy(nameController.text.trim(), context);
-                    Navigator.pop(dialogContext);
-                  },
-                  child: Text(isUpdateMode ? 'Update' : 'Save',
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
-                          fontWeight: MyntFonts.semiBold)),
                 ),
-              ],
+              ),
             );
           },
         );
@@ -7065,24 +7228,98 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   void _showDeleteCustomStrategyDialog(BuildContext context, StrategyBuilderProvider provider, String strategyName, bool isDark) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? MyntColors.cardDark : Colors.white,
-        title: Text('Delete Strategy',
-            style: MyntWebTextStyles.bodyMedium(context,
-                color: isDark ? MyntColors.textPrimaryDark : MyntColors.textBlack,
-                fontWeight: MyntFonts.semiBold)),
-        content: Text('Are you sure you want to delete "$strategyName"?',
-            style: MyntWebTextStyles.bodySmall(context,
-                color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Cancel', style: MyntWebTextStyles.bodySmall(context, color: Colors.grey))),
-          TextButton(
-            onPressed: () { provider.deleteCustomStrategy(strategyName); Navigator.pop(dialogContext); },
-            child: Text('Delete', style: MyntWebTextStyles.bodySmall(context, color: Colors.red, fontWeight: MyntFonts.semiBold)),
+      barrierColor: Colors.black54,
+      builder: (dialogContext) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: shadcn.Card(
+              borderRadius: BorderRadius.circular(8),
+              padding: EdgeInsets.zero,
+              child: Container(
+                width: 400,
+                constraints: const BoxConstraints(maxHeight: 250),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: shadcn.Theme.of(context).colorScheme.border,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Delete Strategy',
+                            style: MyntWebTextStyles.title(
+                              context,
+                              color: resolveThemeColor(
+                                context,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          MyntCloseButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Content
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Are you sure you want to delete "$strategyName"?',
+                              textAlign: TextAlign.center,
+                              style: MyntWebTextStyles.body(
+                                context,
+                                fontWeight: FontWeight.w500,
+                                color: resolveThemeColor(
+                                  context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            MyntButton(
+                              type: MyntButtonType.primary,
+                              size: MyntButtonSize.large,
+                              label: 'Delete',
+                              isFullWidth: true,
+                              backgroundColor: resolveThemeColor(
+                                context,
+                                dark: MyntColors.errorDark,
+                                light: MyntColors.tertiary,
+                              ),
+                              onPressed: () {
+                                provider.deleteCustomStrategy(strategyName);
+                                Navigator.pop(dialogContext);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

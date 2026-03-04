@@ -651,7 +651,7 @@ class _PendingAlertDetailScreenWebState
             width: 400,
             decoration: BoxDecoration(
               color: resolveThemeColor(dialogContext,
-                  dark: const Color(0xFF0F172A), light: Colors.white),
+                  dark: MyntColors.dialogDark, light: MyntColors.dialog),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -730,7 +730,7 @@ class _PendingAlertDetailScreenWebState
                           onPressed: () =>
                               Navigator.of(dialogContext).pop(true),
                           style: TextButton.styleFrom(
-                            backgroundColor: resolveThemeColor(context,
+                            backgroundColor: resolveThemeColor(dialogContext,
                                 dark: MyntColors.errorDark,
                                 light: MyntColors.tertiary),
                             shape: RoundedRectangleBorder(
