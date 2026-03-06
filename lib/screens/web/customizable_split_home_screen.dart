@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:mynt_plus/screens/web/profile/pledge/pledge_unpledge_screen.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,7 +54,8 @@ import '../../../provider/stocks_provider.dart';
 import '../../../provider/mf_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
 import '../../../provider/dashboard_provider.dart';
-import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
+import 'profile/Reports/ca_events_screen_web.dart';
+import 'profile/Reports/client_master_screen_web.dart';
 import '../../../res/res.dart';
 import '../../../provider/sidebar_provider.dart';
 import '../../../res/mynt_web_color_styles.dart';
@@ -65,6 +67,10 @@ import '../../../utils/responsive_snackbar.dart';
 import '../../../utils/rupee_convert_format.dart';
 // import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/Reports/ledger/ledger_screen_web.dart';
+import 'profile/Reports/contract_note_screen_web.dart';
+import 'profile/Reports/tradebook_screen_web.dart';
+import 'profile/Reports/calenderPnl_screen.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
 
 // import 'profile/settings_web.dart';
@@ -78,7 +84,7 @@ import 'trade_action_screen_web.dart';
 import 'portfolio_analysis_web.dart';
 // import '../Mobile/order_book/order_book_screen.dart';
 import 'market_watch/options/option_chain_ss_web.dart';
-import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
+// import '../Mobile/desk_reports/pledge_unpledge_screen.dart';
 // Removed CA Event and CP Action from panel screens
 
 import 'mutual_fund/mf_nfo_screen_web.dart';
@@ -98,6 +104,8 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'profile/refer/refer_screen_web.dart';
+import 'profile/help_support/help_support_screen_web.dart';
 import 'market_watch/tv_chart/chart_iframe_guard.dart';
 import '../../../sharedWidget/dynamic_banner_widget.dart';
 import '../../../models/banner_model/banner_model.dart';
@@ -2595,9 +2603,22 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return const CABuyback();
+        return CAEventsScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.clientMaster:
+        return ClientMasterScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.reports:
-        return const ReportsScreenWeb();
+        return ReportsScreenWeb(
+          onNavigateToScreen: (screenType) {
+            if (screenType is ScreenType) {
+              _showScreenInRightPanel(screenType);
+              _handleScreenTypeChange(screenType);
+            }
+          },
+        );
+      case ScreenType.ledger:
+        return LedgerScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.contractNote:
+        return ContractNoteScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.settings:
         return const ProfileMainScreen(initialIndex: 3);
       case ScreenType.tradeAction:
@@ -2650,6 +2671,14 @@ class _CustomizableSplitHomeScreenState
         return const ScalperScreenWeb(embedded: true);
       case ScreenType.tradingViewWebHook:
         return const WebHookTradingViewScreen();
+      case ScreenType.refer:
+        return const ReferScreenWeb();
+      case ScreenType.helpSupport:
+        return const HelpSupportScreenWeb();
+      case ScreenType.tradebook:
+        return TradebookScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.calendarPnl:
+        return CalenderpnlScreen(onBack: _goBackInRightPanel);
       // caEvent and cpAction removed
     }
   }
@@ -2684,8 +2713,14 @@ class _CustomizableSplitHomeScreenState
         return 'Pledge/Unpledge';
       case ScreenType.corporateActions:
         return 'Corporate Actions';
+      case ScreenType.clientMaster:
+        return 'Client Master';
       case ScreenType.reports:
         return 'Reports';
+      case ScreenType.ledger:
+        return 'Ledger';
+      case ScreenType.contractNote:
+        return 'Contract Note';
       case ScreenType.settings:
         return 'Settings';
       case ScreenType.tradeAction:
@@ -2711,6 +2746,14 @@ class _CustomizableSplitHomeScreenState
         return 'Scalper';
       case ScreenType.tradingViewWebHook:
         return 'WebHook';
+      case ScreenType.refer:
+        return 'Refer & Earn';
+      case ScreenType.helpSupport:
+        return 'Help & Support';
+      case ScreenType.tradebook:
+        return 'Tradebook';
+      case ScreenType.calendarPnl:
+        return 'P&L Summary';
       // caEvent and cpAction removed
     }
   }
@@ -2745,8 +2788,14 @@ class _CustomizableSplitHomeScreenState
         return Icons.security;
       case ScreenType.corporateActions:
         return Icons.business;
+      case ScreenType.clientMaster:
+        return Icons.description;
       case ScreenType.reports:
         return Icons.assessment;
+      case ScreenType.ledger:
+        return Icons.account_balance_wallet;
+      case ScreenType.contractNote:
+        return Icons.description;
       case ScreenType.settings:
         return Icons.settings;
       case ScreenType.tradeAction:
@@ -2772,6 +2821,14 @@ class _CustomizableSplitHomeScreenState
         return Icons.speed;
       case ScreenType.tradingViewWebHook:
         return Icons.webhook;
+      case ScreenType.refer:
+        return Icons.card_giftcard;
+      case ScreenType.helpSupport:
+        return Icons.headset_mic_outlined;
+      case ScreenType.tradebook:
+        return Icons.receipt_long;
+      case ScreenType.calendarPnl:
+        return Icons.calendar_month;
       // caEvent and cpAction removed
     }
   }
@@ -3135,8 +3192,16 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.corporateActions:
         _handleCorporateActionsTap();
         break;
+      case ScreenType.clientMaster:
+        _addScreenAsPanelTab(ScreenType.clientMaster);
+        break;
       case ScreenType.reports:
         _handleReportsTap();
+        break;
+      case ScreenType.ledger:
+        _handleLedgerTap();
+        break;
+      case ScreenType.contractNote:
         break;
       case ScreenType.settings:
         _handleSettingsTap();
@@ -3160,6 +3225,14 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.scalper:
         setState(() => _isScalperMode = true);
+        break;
+      case ScreenType.refer:
+        break;
+      case ScreenType.helpSupport:
+        break;
+      case ScreenType.tradebook:
+        break;
+      case ScreenType.calendarPnl:
         break;
       // caEvent and cpAction removed
     }
@@ -3959,6 +4032,12 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.reports:
         urlPath = WebRoutes.reports;
         break;
+      case ScreenType.ledger:
+        urlPath = '/ledger';
+        break;
+      case ScreenType.contractNote:
+        urlPath = '/contract-note';
+        break;
       case ScreenType.strategyBuilder:
         urlPath = WebRoutes.strategyBuilder;
         break;
@@ -4482,6 +4561,17 @@ class _CustomizableSplitHomeScreenState
       await reportsprovider.getCurrentDate('else');
       reportsprovider.fetchpdfdownload(
           context, reportsprovider.startDate, reportsprovider.today);
+    }
+  }
+
+  // Handle ledger tap
+  void _handleLedgerTap() async {
+    final reportsprovider = ref.read(ledgerProvider);
+
+    await reportsprovider.getCurrentDate('else');
+    if (mounted) {
+      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
+          reportsprovider.endDate, reportsprovider.includeBillMargin);
     }
   }
 
@@ -5095,6 +5185,13 @@ enum ScreenType {
   strategyBuilder,
   scalper,
   tradingViewWebHook,
+  refer,
+  helpSupport,
+  ledger,
+  contractNote,
+  tradebook,
+  calendarPnl,
+  clientMaster,
 }
 
 // Hoverable navigation item widget

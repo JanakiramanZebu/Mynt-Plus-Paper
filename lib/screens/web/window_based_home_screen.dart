@@ -31,13 +31,18 @@ import '../../../provider/iop_provider.dart';
 import '../../../provider/fund_provider.dart';
 import '../../../provider/stocks_provider.dart';
 import '../../../provider/web_subscription_manager.dart';
-import '../Mobile/desk_reports/ca_action/ca_action_buyback.dart';
+import 'profile/Reports/ca_events_screen_web.dart';
+import 'profile/Reports/client_master_screen_web.dart';
 import '../../../res/res.dart';
 import '../../../res/global_font_web.dart';
 import '../../../res/web_colors.dart';
 import '../../../sharedWidget/internet_widget.dart';
 import '../../../sharedWidget/mynt_loader.dart';
 import 'profile/Reports/reports_screen_web.dart';
+import 'profile/Reports/ledger/ledger_screen_web.dart';
+import 'profile/Reports/contract_note_screen_web.dart';
+import 'profile/Reports/tradebook_screen_web.dart';
+import 'profile/Reports/calenderPnl_screen.dart';
 import 'profile/profile_main_screen.dart';
 // import 'profile/settings_web.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -58,6 +63,8 @@ import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
 import 'scalper/scalper_screen_web.dart';
 import 'webhook/webhook_tradingview_screen.dart';
+import 'profile/refer/refer_screen_web.dart';
+import 'profile/help_support/help_support_screen_web.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
@@ -421,9 +428,15 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return const CABuyback();
+        return CAEventsScreenWeb(onBack: () {});
+      case ScreenType.clientMaster:
+        return ClientMasterScreenWeb(onBack: () {});
       case ScreenType.reports:
-        return const ReportsScreenWeb();
+        return ReportsScreenWeb();
+      case ScreenType.ledger:
+        return const LedgerScreenWeb();
+      case ScreenType.contractNote:
+        return const ContractNoteScreenWeb();
       case ScreenType.settings:
         // return const SettingsScreenWeb();
       case ScreenType.tradeAction:
@@ -450,6 +463,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const ScalperScreenWeb(embedded: true);
       case ScreenType.tradingViewWebHook:
         return const WebHookTradingViewScreen();
+      case ScreenType.refer:
+        return const ReferScreenWeb();
+      case ScreenType.helpSupport:
+        return const HelpSupportScreenWeb();
+      case ScreenType.tradebook:
+        return const TradebookScreenWeb();
+      case ScreenType.calendarPnl:
+        return const CalenderpnlScreen();
     }
   }
 
@@ -483,8 +504,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Pledge/Unpledge';
       case ScreenType.corporateActions:
         return 'Corporate Actions';
+      case ScreenType.clientMaster:
+        return 'Client Master';
       case ScreenType.reports:
         return 'Reports';
+      case ScreenType.ledger:
+        return 'Ledger';
+      case ScreenType.contractNote:
+        return 'Contract Note';
       case ScreenType.settings:
         return 'Settings';
       case ScreenType.tradeAction:
@@ -509,6 +536,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Scalper';
       case ScreenType.tradingViewWebHook:
         return 'WebHook';
+      case ScreenType.refer:
+        return 'Refer & Earn';
+      case ScreenType.helpSupport:
+        return 'Help & Support';
+      case ScreenType.tradebook:
+        return 'Tradebook';
+      case ScreenType.calendarPnl:
+        return 'P&L Summary';
     }
   }
 

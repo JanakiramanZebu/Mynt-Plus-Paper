@@ -31,8 +31,14 @@ class ScreenUtils {
         return 'Pledge/Unpledge';
       case ScreenType.corporateActions:
         return 'Corporate Actions';
+      case ScreenType.clientMaster:
+        return 'Client Master';
       case ScreenType.reports:
         return 'Reports';
+      case ScreenType.ledger:
+        return 'Ledger';
+      case ScreenType.contractNote:
+        return 'Contract Note';
       case ScreenType.settings:
         return 'Settings';
       case ScreenType.tradeAction:
@@ -53,8 +59,20 @@ class ScreenUtils {
         return 'Notification';
       case ScreenType.portfolioAnalysis:
         return 'Portfolio Analysis';
-        case ScreenType.tradingViewWebHook:
-          return 'WebHook';
+      case ScreenType.strategyBuilder:
+        return 'Strategy Builder';
+      case ScreenType.scalper:
+        return 'Scalper';
+      case ScreenType.tradingViewWebHook:
+        return 'WebHook';
+      case ScreenType.refer:
+        return 'Refer & Earn';
+      case ScreenType.helpSupport:
+        return 'Help & Support';
+      case ScreenType.tradebook:
+        return 'Tradebook';
+      case ScreenType.calendarPnl:
+        return 'P&L Summary';
     }
   }
 
@@ -87,8 +105,14 @@ class ScreenUtils {
         return Icons.security;
       case ScreenType.corporateActions:
         return Icons.business;
+      case ScreenType.clientMaster:
+        return Icons.description;
       case ScreenType.reports:
         return Icons.assessment;
+      case ScreenType.ledger:
+        return Icons.book;
+      case ScreenType.contractNote:
+        return Icons.description;
       case ScreenType.settings:
         return Icons.settings;
       case ScreenType.tradeAction:
@@ -109,8 +133,20 @@ class ScreenUtils {
         return Icons.notifications_outlined;
       case ScreenType.portfolioAnalysis:
         return Icons.pie_chart;
-        case ScreenType.tradingViewWebHook:
-          return Icons.web;
+      case ScreenType.strategyBuilder:
+        return Icons.architecture;
+      case ScreenType.scalper:
+        return Icons.speed;
+      case ScreenType.tradingViewWebHook:
+        return Icons.web;
+      case ScreenType.refer:
+        return Icons.card_giftcard;
+      case ScreenType.helpSupport:
+        return Icons.help_outline;
+      case ScreenType.tradebook:
+        return Icons.receipt_long;
+      case ScreenType.calendarPnl:
+        return Icons.calendar_month;
     }
   }
 

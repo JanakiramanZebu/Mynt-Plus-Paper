@@ -19,6 +19,7 @@ import 'package:mynt_plus/screens/Mobile/profile_screen/app_webview/ipo_webview.
 import 'package:mynt_plus/screens/web/order/place_order_screen_web.dart';
 import 'package:mynt_plus/screens/web/ordersbook/pending_alert_detail_screen_web.dart';
 import 'package:mynt_plus/screens/web/profile/notification_screens/notification_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/pledge/pledge_approve_list_screen.dart';
 import 'package:mynt_plus/screens/web/trade_action_screen_web.dart';
 import 'package:mynt_plus/screens/web/window_based_home_screen.dart';
 // import 'package:mynt_plus/screens/web/grid_dashboard_web.dart';
@@ -307,7 +308,11 @@ class AppRoutes {
           beginOffset: const Offset(1.0, 0.0),
         );
 
-     
+     case Routes.pledgeapprovelistscreen:
+        return _createRoute(
+          pageBuilder: (_, __, ___) => PledgeApproveListScreen(),
+          beginOffset: const Offset(-1.0, 0.0),
+        );
 
       case Routes.newFundamental:
         return _createRoute(
