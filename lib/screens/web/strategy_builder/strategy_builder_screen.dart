@@ -3001,7 +3001,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                                 light: MyntColors.tertiary,
                               ),
                               onPressed: () {
-                                provider.deleteCustomStrategy(strategyName);
+                                provider.deleteCustomStrategy(strategyName, context);
                                 Navigator.pop(dialogContext);
                               },
                             ),
@@ -5140,9 +5140,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
                 ),
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width < 660
+                  width: MediaQuery.of(context).size.width < 560
                       ? MediaQuery.of(context).size.width * 0.95
-                      : 620,
+                      : 520,
                   height: double.infinity,
                   child: Column(
                     children: [
@@ -5257,11 +5257,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 4),
-                                    Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 8),
-                                    Text('Call', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: MyntFonts.semiBold)),
+                                    // Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
+                                    // const SizedBox(width: 4),
+                                    // Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: FontWeight.bold)),
+                                    // const SizedBox(width: 8),
+                                    Text('CALLS', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.profitDark, light: MyntColors.profit), fontWeight: MyntFonts.semiBold)),
                                   ],
                                 ),
                               ),
@@ -5272,11 +5272,11 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 4),
-                                    Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
-                                    const SizedBox(width: 8),
-                                    Text('Put', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: MyntFonts.semiBold)),
+                                    // Text('<', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
+                                    // const SizedBox(width: 4),
+                                    // Text('>', style: TextStyle(color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: FontWeight.bold)),
+                                    // const SizedBox(width: 8),
+                                    Text('PUTS', style: MyntWebTextStyles.bodySmall(context, color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss), fontWeight: MyntFonts.semiBold)),
                                   ],
                                 ),
                               ),
@@ -7305,7 +7305,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                                 light: MyntColors.tertiary,
                               ),
                               onPressed: () {
-                                provider.deleteCustomStrategy(strategyName);
+                                provider.deleteCustomStrategy(strategyName, context);
                                 Navigator.pop(dialogContext);
                               },
                             ),

@@ -110,8 +110,9 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get optionGreeks => '${bemynt}getoptiongreeks';
 
 // Option Strategy API
-  String get optionStrategyBaseURL => 'http://192.168.5.61:8000';
+  String get optionStrategyBaseURL => 'https://agg.zebuetrade.com';
   String get selectSymbols => '$optionStrategyBaseURL/select-symbols';
+  String get strategies => '$optionStrategyBaseURL/strategies';
 
 // Order
 

@@ -121,6 +121,8 @@ class PredefinedStrategy {
   final List<StrategyLeg> legs;
   // Full API-format legs for saved strategies (used to call /select-symbols on load)
   final List<Map<String, dynamic>>? savedApiLegs;
+  // Server-assigned UUID for CRUD operations
+  final String? strategyId;
 
   PredefinedStrategy({
     required this.title,
@@ -128,6 +130,7 @@ class PredefinedStrategy {
     required this.image,
     required this.legs,
     this.savedApiLegs,
+    this.strategyId,
   });
 }
 
@@ -571,8 +574,8 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    // Load saved custom builder strategies from local storage
-    loadSavedCustomStrategies();
+    // Load saved custom builder strategies from API
+    await loadSavedCustomStrategies(context: context);
 
     try {
       // Fetch initial quote for NIFTY 50
@@ -1664,6 +1667,20 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
+  /// Convert savedApiLegs to the flat leg format for the strategy CRUD API
+  List<Map<String, dynamic>> _buildCrudApiLegs(
+      List<Map<String, dynamic>> savedApiLegs) {
+    return savedApiLegs.map((entry) {
+      final legJson =
+          Map<String, dynamic>.from(entry['leg'] as Map<String, dynamic>? ?? {});
+      return <String, dynamic>{
+        ...legJson,
+        'action': entry['action'],
+        'quantity': entry['ordlot'] ?? 1,
+      };
+    }).toList();
+  }
+
   /// Save custom strategy from draft legs
   Future<void> saveCustomStrategy(String name, BuildContext context) async {
     if (_draftLegs.isEmpty) {
@@ -1679,6 +1696,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     final symbol = _extractUnderlyingSymbol();
     final exchange = _getOptionsExchange();
     final expiryType = _hasWeeklyExpiry() ? 'W' : 'M';
+    final clientId = pref.clientId ?? '';
 
     final apiLegs = <Map<String, dynamic>>[];
     final legs = <StrategyLeg>[];
@@ -1714,13 +1732,40 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       (s) => s.title.toLowerCase() == name.trim().toLowerCase(),
     );
 
-    final strategy = PredefinedStrategy(
+    try {
+      String? strategyId;
+      final crudLegs = _buildCrudApiLegs(apiLegs);
+
+      if (existingIndex >= 0 &&
+          _customStrategies[existingIndex].strategyId != null) {
+        // UPDATE existing strategy
+        final response = await api.updateStrategy(
+          strategyId: _customStrategies[existingIndex].strategyId!,
+          clientId: clientId,
+          name: name.trim(),
+          legs: crudLegs,
+        );
+        strategyId = response['strategy_id'] as String?;
+      } else {
+        // CREATE new strategy
+        final response = await api.createOptionStrategy(
+          clientId: clientId,
+          name: name.trim(),
+          description: '',
+          tags: ['custom_builder'],
+          legs: crudLegs,
+        );
+        strategyId = response['strategy_id'] as String?;
+      }
+
+       final strategy = PredefinedStrategy(
       title: name.trim(),
       type: 'CustomBuilder',
-      image: 'custom_strategy.png',
-      legs: legs,
+        image: '',
+        legs: legs,
       savedApiLegs: apiLegs,
-    );
+        strategyId: strategyId,
+      );
 
     if (existingIndex >= 0) {
       _customStrategies[existingIndex] = strategy;
@@ -1730,109 +1775,106 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       ResponsiveSnackBar.showSuccess(context, 'Custom builder "$name" saved');
     }
 
-    _editingCustomBuilderName = name.trim();
+      _editingCustomBuilderName = name.trim();
     _activePredefinedStrategy = name.trim();
-
-    await _persistCustomStrategiesToLocal();
-    notifyListeners();
+      notifyListeners();
+    } catch (e) {
+      log('[StrategyBuilder] saveCustomStrategy API error: $e');
+      ResponsiveSnackBar.showError(
+          context, 'Failed to save strategy. Please try again.');
+    }
   }
 
   /// Delete a custom strategy
-  Future<void> deleteCustomStrategy(String name) async {
-    _customStrategies.removeWhere((s) => s.title == name);
-    if (_editingCustomBuilderName == name) {
+  Future<void> deleteCustomStrategy(String name, BuildContext context) async {
+    final index = _customStrategies.indexWhere((s) => s.title == name);
+    if (index < 0) return;
+
+    final strategy = _customStrategies[index];
+    final clientId = pref.clientId ?? '';
+
+    try {
+      if (strategy.strategyId != null) {
+        await api.deleteStrategy(
+          strategyId: strategy.strategyId!,
+          clientId: clientId,
+        );
+      }
+
+      _customStrategies.removeAt(index);
+      if (_editingCustomBuilderName == name) {
       _editingCustomBuilderName = null;
     }
     if (_activePredefinedStrategy == name) {
       _activePredefinedStrategy = null;
     }
-    await _persistCustomStrategiesToLocal();
-    notifyListeners();
-  }
-
-  /// Persist custom strategies to SharedPreferences
-  Future<void> _persistCustomStrategiesToLocal() async {
-    try {
-      final userId = pref.clientId ?? '';
-      final strategiesList = _customStrategies.map((strategy) {
-        return {
-          'title': strategy.title,
-          'type': strategy.type,
-          'image': strategy.image,
-          'legs': strategy.legs.map((leg) => {
-            'action': leg.action,
-            'optionType': leg.optionType,
-            'strikeType': leg.strikeType,
-            'strikeOffset': leg.strikeOffset,
-          }).toList(),
-          'savedApiLegs': strategy.savedApiLegs ?? [],
-          // Store draft legs for restoring the leg builder UI
-          'draftLegs': strategy.savedApiLegs?.map((entry) {
-            final legJson = entry['leg'] as Map<String, dynamic>? ?? {};
-            return {
-              'action': entry['action'],
-              'ordlot': entry['ordlot'],
-              'optionType': legJson['option_type'] ?? 'CE',
-              'expiryOffset': legJson['option_expiry_offset'] ?? 0,
-              'strikeType': legJson['strike_type'] ?? 'ATM',
-              'strikeOffset': legJson['strike_offset'] ?? 0,
-              'premiumValue': legJson['nearest_price'] ?? 0,
-            };
-          }).toList() ?? [],
-        };
-      }).toList();
-
-      final jsonStr = jsonEncode(strategiesList);
-      await pref.setSavedCustomStrategies(userId, jsonStr);
-      log('[StrategyBuilder] Persisted ${_customStrategies.length} custom strategies');
+      notifyListeners();
+      ResponsiveSnackBar.showSuccess(context, 'Strategy "$name" deleted');
     } catch (e) {
-      log('[StrategyBuilder] _persistCustomStrategiesToLocal error: $e');
+      log('[StrategyBuilder] deleteCustomStrategy API error: $e');
+      ResponsiveSnackBar.showError(
+          context, 'Failed to delete strategy. Please try again.');
     }
   }
 
-  /// Load saved custom strategies from SharedPreferences
-  void loadSavedCustomStrategies() {
+  /// Load saved custom strategies from API
+  Future<void> loadSavedCustomStrategies({BuildContext? context}) async {
     try {
-      final userId = pref.clientId ?? '';
-      final jsonStr = pref.getSavedCustomStrategies(userId);
-      if (jsonStr == null || jsonStr.isEmpty) return;
+      final clientId = pref.clientId ?? '';
+      if (clientId.isEmpty) return;
 
-      final List<dynamic> strategiesList = jsonDecode(jsonStr);
+      final response = await api.listStrategies(clientId: clientId);
+      final strategiesList =
+          response['strategies'] as List<dynamic>? ?? [];
+
       _customStrategies.clear();
 
       for (final entry in strategiesList) {
-        final legsList = (entry['legs'] as List<dynamic>?) ?? [];
-        final legs = legsList.map((legMap) {
-          return StrategyLeg(
+        final apiLegsRaw = entry['legs'] as List<dynamic>? ?? [];
+        final legs = <StrategyLeg>[];
+        final savedApiLegs = <Map<String, dynamic>>[];
+
+        for (final rawLeg in apiLegsRaw) {
+          final legMap = Map<String, dynamic>.from(rawLeg as Map);
+
+          // Reconstruct the internal wrapped format:
+          // { 'leg': { SelectSymbolsLegRequest fields }, 'action': ..., 'ordlot': ... }
+          final selectSymbolsFields = Map<String, dynamic>.from(legMap);
+          selectSymbolsFields.remove('action');
+          selectSymbolsFields.remove('quantity');
+
+          savedApiLegs.add({
+            'leg': selectSymbolsFields,
+            'action': legMap['action'] ?? 'BUY',
+            'ordlot': legMap['quantity'] ?? 1,
+          });
+
+          legs.add(StrategyLeg(
             action: legMap['action'] ?? 'BUY',
             optionType: legMap['optionType'] ?? 'CE',
             strikeType: legMap['strikeType'] ?? 'ATM',
             strikeOffset: legMap['strikeOffset'] ?? 0,
-          );
-        }).toList();
-
-        final savedApiLegsRaw = entry['savedApiLegs'] as List<dynamic>?;
-        final savedApiLegs = savedApiLegsRaw?.map((e) {
-          final map = Map<String, dynamic>.from(e as Map);
-          if (map['leg'] is Map) {
-            map['leg'] = Map<String, dynamic>.from(map['leg'] as Map);
-          }
-          return map;
-        }).toList();
+          ));
+        }
 
         _customStrategies.add(PredefinedStrategy(
-          title: entry['title'] ?? '',
+          title: entry['name'] ?? '',
           type: 'CustomBuilder',
-          image: entry['image'] ?? 'custom_strategy.png',
+          image: '',
           legs: legs,
           savedApiLegs: savedApiLegs,
+          strategyId: entry['strategy_id'],
         ));
       }
 
-      log('[StrategyBuilder] Loaded ${_customStrategies.length} custom strategies');
+      log('[StrategyBuilder] Loaded ${_customStrategies.length} custom strategies from API');
       notifyListeners();
     } catch (e) {
       log('[StrategyBuilder] loadSavedCustomStrategies error: $e');
+      if (context != null && context.mounted) {
+        ResponsiveSnackBar.showError(
+            context, 'Failed to load saved strategies.');
+      }
     }
   }
 

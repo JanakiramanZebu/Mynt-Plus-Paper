@@ -1188,8 +1188,8 @@ class _WebHookTradingViewScreenState
               decoration: BoxDecoration(
                 color: isActive
                     ? resolveThemeColor(context,
-                        dark: MyntColors.highlightDark,
-                        light: MyntColors.highlightLight)
+                        dark: Colors.white.withValues(alpha: 0.1),
+                        light: Colors.black.withValues(alpha: 0.05))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
               ),

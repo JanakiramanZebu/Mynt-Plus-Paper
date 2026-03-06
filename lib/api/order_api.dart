@@ -874,7 +874,7 @@ mixin OrderAPI on ApiCore {
 
       final res = await apiClient.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: defaultHeaders,
         body: jsonEncode(payload),
       );
 
@@ -906,7 +906,7 @@ mixin OrderAPI on ApiCore {
 
       final res = await apiClient.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: defaultHeaders,
         body: jsonEncode(payload),
       );
 
@@ -932,7 +932,7 @@ mixin OrderAPI on ApiCore {
 
       final res = await apiClient.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: defaultHeaders,
         body: jsonEncode(payload),
       );
 
@@ -945,6 +945,129 @@ mixin OrderAPI on ApiCore {
           .toList();
     } catch (e) {
       log("[SelectSymbols] Error: $e");
+      rethrow;
+    }
+  }
+
+  // / POST /strategies — Create a new custom option strategy
+  Future<Map<String, dynamic>> createOptionStrategy({
+    required String clientId,
+    required String name,
+    required String description,
+    required List<String> tags,
+    required List<Map<String, dynamic>> legs,
+  }) async {
+    try {
+      final uri = Uri.parse(apiLinks.strategies);
+      final payload = {
+        'client_id': clientId,
+        'name': name,
+        'description': description,
+        'tags': tags,
+        'legs': legs,
+      };
+      log("[CreateOptionStrategy] Request: ${jsonEncode(payload)}");
+      final res = await apiClient.post(
+        uri,
+        headers: defaultHeaders,
+        body: jsonEncode(payload),
+      );
+      // log("[CreateOptionStrategy] Response: ${res.body}");
+      if (res.statusCode == 201 || res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      throw Exception('Create option strategy failed: ${res.statusCode} ${res.body}');
+    } catch (e) {
+      log("[CreateOptionStrategy] Error: $e");
+      rethrow;
+    }
+  }
+
+  /// GET /strategies?client_id=X — List all strategies for client
+  Future<Map<String, dynamic>> listStrategies({
+      required String clientId,
+      int page = 1,
+      int pageSize = 100,
+  }) async {
+    try {
+      final uri =
+          Uri.parse(apiLinks.strategies).replace(queryParameters: {
+        'client_id': clientId,
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      });
+      log("[ListStrategies] Request: $uri");
+      final res = await apiClient.get(
+        uri,
+        headers:defaultHeaders,
+      );
+      log("[ListStrategies] Response: ${res.body}");
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      throw Exception(
+          'List strategies failed: ${res.statusCode} ${res.body}');
+    } catch (e) {
+      log("[ListStrategies] Error: $e");
+      rethrow;
+    }
+  }
+
+  /// PUT /strategies/{id} — Update an existing strategy
+  Future<Map<String, dynamic>> updateStrategy({
+    required String strategyId,
+    required String clientId,
+    String? name,
+    String? description,
+    List<String>? tags,
+    List<Map<String, dynamic>>? legs,
+  }) async {
+    try {
+      final uri = Uri.parse('${apiLinks.strategies}/$strategyId');
+      final payload = <String, dynamic>{'client_id': clientId};
+      if (name != null) payload['name'] = name;
+      if (description != null) payload['description'] = description;
+      if (tags != null) payload['tags'] = tags;
+      if (legs != null) payload['legs'] = legs;
+
+      log("[UpdateStrategy] Request: ${jsonEncode(payload)}");
+      final res = await apiClient.put(
+        uri,
+        headers: defaultHeaders,
+        body: jsonEncode(payload),
+      );
+      log("[UpdateStrategy] Response: ${res.body}");
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+      throw Exception(
+          'Update strategy failed: ${res.statusCode} ${res.body}');
+    } catch (e) {
+      log("[UpdateStrategy] Error: $e");
+      rethrow;
+    }
+  }
+
+  /// DELETE /strategies/{id}?client_id=X — Delete a strategy
+  Future<void> deleteStrategy({
+    required String strategyId,
+    required String clientId,
+  }) async {
+    try {
+      final uri = Uri.parse('${apiLinks.strategies}/$strategyId')
+          .replace(queryParameters: {'client_id': clientId});
+      log("[DeleteStrategy] Request: $uri");
+      final res = await apiClient.delete(
+        uri,
+        headers: defaultHeaders,
+      );
+      // log("[DeleteStrategy] Response: ${res.body}");
+      if (res.statusCode != 200) {
+        throw Exception(
+            'Delete strategy failed: ${res.statusCode} ${res.body}');
+      }
+    } catch (e) {
+      log("[DeleteStrategy] Error: $e");
       rethrow;
     }
   }

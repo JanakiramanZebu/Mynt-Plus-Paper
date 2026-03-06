@@ -556,7 +556,7 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.only(right: 16, bottom: 6),
       child: Row(
         children: [
           buildToggleButton(
