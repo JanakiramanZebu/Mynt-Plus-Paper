@@ -522,6 +522,7 @@ class MarketWatchProvider extends DefaultChangeNotifier {
   // Clear pending watchlists (called on logout/account switch)
   Future<void> clearPendingWatchlists() async {
     try {
+      _exarr = [];
       _pendingWatchlists.clear();
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('pending_watchlists');
@@ -983,11 +984,11 @@ class MarketWatchProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  getOptionawait(String exch, String token) {
-    final portfolios = ref.read(portfolioProvider).oplists;
-    bool value = (linkedscript.contains(exch) ||
-        (portfolios.isNotEmpty && portfolios.contains(int.parse(token))));
-    return value;
+getOptionawait(String exch, String token) {
+    final portfolios = _linkedScrips?.optExp?.isNotEmpty ?? false;
+    // bool value = ((portfolios.isNotEmpty));
+    // print("options::::: $exch ::: $token $value");
+    return portfolios;
   }
 
   calldepthApis(BuildContext context, raw, basket,
