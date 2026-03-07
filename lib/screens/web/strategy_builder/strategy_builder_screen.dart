@@ -830,10 +830,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
             backgroundColor: isDark ? MyntColors.searchBgDark : Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: Container(
-              width: MediaQuery.of(context).size.width < 660
+              width: MediaQuery.of(context).size.width < 460
                   ? MediaQuery.of(context).size.width * 0.95
-                  : 620,
-              height: 580,
+                  : 420,
+              height: 620,
               child: Column(
                 children: [
                   // Header Row
@@ -842,13 +842,17 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     child: Row(
                       children: [
                         // Symbol Name
-                        Text(
-                          watchedProvider.selectedSymbol,
-                          style: MyntWebTextStyles.body(
+                        Flexible(
+                          child: Text(
+                            watchedProvider.selectedSymbol,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                            style: MyntWebTextStyles.body(
                             context,
                             darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textBlack,
                             fontWeight: MyntFonts.semiBold,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -1213,9 +1217,10 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       }
     }
 
-    // Limit to 15 strikes above and 15 below spot
-    final int startIndex = (atmIndex - 15).clamp(0, sortedStrikes.length);
-    final int endIndex = (atmIndex + 15).clamp(0, sortedStrikes.length);
+    // Limit strikes above and below spot based on selected strike count
+    final int strikeRange = provider.selectedStrikeCount;
+    final int startIndex = (atmIndex - strikeRange).clamp(0, sortedStrikes.length);
+    final int endIndex = (atmIndex + strikeRange).clamp(0, sortedStrikes.length);
     final limitedStrikes = sortedStrikes.sublist(startIndex, endIndex);
 
     // Build the list with spot price row inserted
@@ -1367,7 +1372,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
-                    _showBuySellMenu(context, provider, ceOption, isDark);
+                    if (ceInBasket != null) {
+                      final idx = provider.basket.indexOf(ceInBasket);
+                      if (idx != -1) provider.removeFromBasket(idx, context);
+                    } else {
+                      _showBuySellMenu(context, provider, ceOption, isDark);
+                    }
                   } : null,
                   child: Text(
                     formatOI(ceOI, ceOIChange),
@@ -1392,7 +1402,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ),
                 child: InkWell(
                   onTap: ceOption != null ? () {
-                    _showBuySellMenu(context, provider, ceOption, isDark);
+                    if (ceInBasket != null) {
+                      final idx = provider.basket.indexOf(ceInBasket);
+                      if (idx != -1) provider.removeFromBasket(idx, context);
+                    } else {
+                      _showBuySellMenu(context, provider, ceOption, isDark);
+                    }
                   } : null,
                   child: Text(
                     ceOption?.lp ?? '--',
@@ -1433,7 +1448,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
-                    _showBuySellMenu(context, provider, peOption, isDark);
+                    if (peInBasket != null) {
+                      final idx = provider.basket.indexOf(peInBasket);
+                      if (idx != -1) provider.removeFromBasket(idx, context);
+                    } else {
+                      _showBuySellMenu(context, provider, peOption, isDark);
+                    }
                   } : null,
                   child: Text(
                     peOption?.lp ?? '--',
@@ -1456,7 +1476,12 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 ),
                 child: InkWell(
                   onTap: peOption != null ? () {
-                    _showBuySellMenu(context, provider, peOption, isDark);
+                    if (peInBasket != null) {
+                      final idx = provider.basket.indexOf(peInBasket);
+                      if (idx != -1) provider.removeFromBasket(idx, context);
+                    } else {
+                      _showBuySellMenu(context, provider, peOption, isDark);
+                    }
                   } : null,
                   child: Text(
                     formatOI(peOI, peOIChange),
@@ -1503,7 +1528,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   onPressed: () {
                     provider.addToBasket(option, 'BUY', context);
                     Navigator.pop(dialogContext);
-                    Navigator.pop(context); // Close option chain dialog
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: MyntColors.profit,
@@ -1519,7 +1543,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   onPressed: () {
                     provider.addToBasket(option, 'SELL', context);
                     Navigator.pop(dialogContext);
-                    Navigator.pop(context); // Close option chain dialog
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: MyntColors.loss,
@@ -2885,12 +2908,37 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                MyntFormTextField(
-                                  controller: nameController,
-                                  focusNode: focusNode,
-                                  placeholder: 'Enter strategy name',
-                                  enabled: !isUpdateMode,
-                                  onChanged: (_) => setState(() {}),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: MyntFormTextField(
+                                        controller: nameController,
+                                        focusNode: focusNode,
+                                        placeholder: 'Enter strategy name',
+                                        enabled: !isUpdateMode,
+                                        onChanged: (_) => setState(() {}),
+                                      ),
+                                    ),
+                                    if (isUpdateMode) ...[
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          nameController.clear();
+                                          focusNode.requestFocus();
+                                          setState(() {});
+                                        },
+                                        child: Icon(
+                                          Icons.close,
+                                          size: 18,
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 const SizedBox(height: 24),
                                 MyntPrimaryButton(
@@ -5140,9 +5188,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   borderRadius: BorderRadius.horizontal(right: Radius.circular(8)),
                 ),
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width < 560
+                   width: MediaQuery.of(context).size.width < 660
                       ? MediaQuery.of(context).size.width * 0.95
-                      : 520,
+                      : 620,
                   height: double.infinity,
                   child: Column(
                     children: [
@@ -5420,9 +5468,10 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       }
     }
 
-    // Limit to 15 strikes above and 15 below spot
-    final int startIndex = (atmIndex - 15).clamp(0, sortedStrikes.length);
-    final int endIndex = (atmIndex + 15).clamp(0, sortedStrikes.length);
+    // Limit strikes above and below spot based on selected strike count
+    final int strikeRange = provider.selectedStrikeCount;
+    final int startIndex = (atmIndex - strikeRange).clamp(0, sortedStrikes.length);
+    final int endIndex = (atmIndex + strikeRange).clamp(0, sortedStrikes.length);
     final limitedStrikes = sortedStrikes.sublist(startIndex, endIndex);
 
     final List<_StrategyStrikeRowData> strikeRows = [];
@@ -7189,12 +7238,37 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                MyntFormTextField(
-                                  controller: nameController,
-                                  focusNode: focusNode,
-                                  placeholder: 'Enter strategy name',
-                                  enabled: !isUpdateMode,
-                                  onChanged: (_) => setState(() {}),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: MyntFormTextField(
+                                        controller: nameController,
+                                        focusNode: focusNode,
+                                        placeholder: 'Enter strategy name',
+                                        enabled: !isUpdateMode,
+                                        onChanged: (_) => setState(() {}),
+                                      ),
+                                    ),
+                                    if (isUpdateMode) ...[
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          nameController.clear();
+                                          focusNode.requestFocus();
+                                          setState(() {});
+                                        },
+                                        child: Icon(
+                                          Icons.close,
+                                          size: 18,
+                                          color: resolveThemeColor(
+                                            context,
+                                            dark: MyntColors.textSecondaryDark,
+                                            light: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 const SizedBox(height: 24),
                                 MyntPrimaryButton(
