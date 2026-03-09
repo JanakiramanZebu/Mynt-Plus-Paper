@@ -619,8 +619,10 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         _expiryDataRaw = sortedExpiries;
         _expiryDates = sortedExpiries.map((e) => e.exd ?? '').toSet().toList();
 
-        if (_expiryDates.isNotEmpty && _selectedExpiry.isEmpty) {
-          _selectedExpiry = _expiryDates[0];
+        if (_expiryDates.isNotEmpty) {
+          if (_selectedExpiry.isEmpty || !_expiryDates.contains(_selectedExpiry)) {
+            _selectedExpiry = _expiryDates[0];
+          }
           await loadOptionChain(context);
         }
       }
@@ -1140,8 +1142,14 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     if (existingIndex != -1) {
       final existing = _basket[existingIndex];
       if (existing.buySell == buySell) {
-        // Same direction already exists — block duplicate
-        ResponsiveSnackBar.show(context: context, message: '${option.tsym ?? ''} is already added');
+        // Same direction clicked again — deselect (remove from basket)
+        _basket.removeAt(existingIndex);
+        notifyListeners();
+        await Future.wait([
+          _calculateMargin(context),
+          _fetchPayoffFromAPI(),
+        ]);
+        notifyListeners();
         return;
       } else {
         // Opposite direction — replace buy/sell
