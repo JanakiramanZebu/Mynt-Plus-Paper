@@ -71,6 +71,10 @@ import 'profile/Reports/ledger/ledger_screen_web.dart';
 import 'profile/Reports/contract_note_screen_web.dart';
 import 'profile/Reports/tradebook_screen_web.dart';
 import 'profile/Reports/calenderPnl_screen.dart';
+import 'profile/Reports/pdf_download_screen_web.dart';
+import 'profile/Reports/position_screen.dart';
+import 'profile/Reports/tax_pnl_screen_web.dart';
+import 'profile/Reports/notional_pnl_screen_web.dart';
 import 'profile/notification_screens/notification_screen_web.dart';
 
 // import 'profile/settings_web.dart';
@@ -2679,6 +2683,14 @@ class _CustomizableSplitHomeScreenState
         return TradebookScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.calendarPnl:
         return CalenderpnlScreen(onBack: _goBackInRightPanel);
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: _goBackInRightPanel);
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.notionalPnl:
+        return NotionalPnlScreenWeb(onBack: _goBackInRightPanel);
       // caEvent and cpAction removed
     }
   }
@@ -2754,6 +2766,14 @@ class _CustomizableSplitHomeScreenState
         return 'Tradebook';
       case ScreenType.calendarPnl:
         return 'P&L Summary';
+      case ScreenType.reportPositions:
+        return 'Positions';
+      case ScreenType.pdfDownload:
+        return 'PDF Download';
+      case ScreenType.taxPnl:
+        return 'Tax P&L';
+      case ScreenType.notionalPnl:
+        return 'Notional P&L';
       // caEvent and cpAction removed
     }
   }
@@ -2829,6 +2849,14 @@ class _CustomizableSplitHomeScreenState
         return Icons.receipt_long;
       case ScreenType.calendarPnl:
         return Icons.calendar_month;
+      case ScreenType.reportPositions:
+        return Icons.trending_up;
+      case ScreenType.pdfDownload:
+        return Icons.picture_as_pdf;
+      case ScreenType.taxPnl:
+        return Icons.receipt_long;
+      case ScreenType.notionalPnl:
+        return Icons.bar_chart;
       // caEvent and cpAction removed
     }
   }
@@ -3233,6 +3261,15 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.tradebook:
         break;
       case ScreenType.calendarPnl:
+        break;
+      case ScreenType.reportPositions:
+        ref.read(ledgerProvider).fetchposition(context);
+        break;
+      case ScreenType.pdfDownload:
+        break;
+      case ScreenType.taxPnl:
+        break;
+      case ScreenType.notionalPnl:
         break;
       // caEvent and cpAction removed
     }
@@ -5192,6 +5229,10 @@ enum ScreenType {
   tradebook,
   calendarPnl,
   clientMaster,
+  reportPositions,
+  pdfDownload,
+  taxPnl,
+  notionalPnl,
 }
 
 // Hoverable navigation item widget

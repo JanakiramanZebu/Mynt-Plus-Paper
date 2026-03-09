@@ -43,6 +43,10 @@ import 'profile/Reports/ledger/ledger_screen_web.dart';
 import 'profile/Reports/contract_note_screen_web.dart';
 import 'profile/Reports/tradebook_screen_web.dart';
 import 'profile/Reports/calenderPnl_screen.dart';
+import 'profile/Reports/pdf_download_screen_web.dart';
+import 'profile/Reports/position_screen.dart';
+import 'profile/Reports/tax_pnl_screen_web.dart';
+import 'profile/Reports/notional_pnl_screen_web.dart';
 import 'profile/profile_main_screen.dart';
 // import 'profile/settings_web.dart';
 import 'market_watch/watchlist_screen_web.dart';
@@ -471,6 +475,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const TradebookScreenWeb();
       case ScreenType.calendarPnl:
         return const CalenderpnlScreen();
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: () {});
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: () {});
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: () {});
+      case ScreenType.notionalPnl:
+        return NotionalPnlScreenWeb(onBack: () {});
     }
   }
 
@@ -544,6 +556,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Tradebook';
       case ScreenType.calendarPnl:
         return 'P&L Summary';
+      case ScreenType.reportPositions:
+        return 'Positions';
+      case ScreenType.pdfDownload:
+        return 'PDF Download';
+      case ScreenType.taxPnl:
+        return 'Tax P&L';
+      case ScreenType.notionalPnl:
+        return 'Notional P&L';
     }
   }
 

@@ -14,7 +14,6 @@ import '../../../../provider/fund_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/user_profile_provider.dart';
 import '../../../../res/res.dart';
-import '../../../../routes/route_names.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/list_divider.dart';
 import '../../customizable_split_home_screen.dart' show ScreenType;
@@ -40,7 +39,7 @@ class ReportsScreenWeb extends ConsumerWidget {
     final reportsItems = [
       {'title': 'P&L Summary'},
       {'title': 'Tax P&L'},
-
+      {'title': 'Notional P&L'},
       {'title': 'Ledger'},
       {'title': 'Tradebook'},
       {'title': 'Contract Note'},
@@ -49,6 +48,7 @@ class ReportsScreenWeb extends ConsumerWidget {
       // {'title': 'DP Holdings & Transcation'},
       // {'title': 'Corporate Actions'},
       {'title': 'CA Events'},
+      {'title': 'PDF Download'},
       // {'title': 'Pledge & Unpledge'},
     ];
 
@@ -172,73 +172,14 @@ class ReportsScreenWeb extends ConsumerWidget {
                             }
 
                           case 'Tax P&L':
-                            // await ledgerdate.getYearlistTaxpnl();
-                            // if (ledgerdate.taxpnldercomcur == null &&
-                            //     ledgerdate.taxpnleq == null) {
-                            //   await ledgerdate.getYearlistTaxpnl();
-                            //   ledgerdate.getCurrentDate('');
-                            //   ledgerdate.fetchtaxpnleqdata(
-                            //       context, ledgerdate.yearforTaxpnl);
-
-                            //   ledgerdate.taxpnlExTabchange(0);
-                            //   ledgerdate.chargesforeqtaxpnl(
-                            //       context, ledgerdate.yearforTaxpnl);
-                            // }
-
-                            // Navigator.pushNamed(context, Routes.taxpnlscreen,
-                            //     arguments: "DDDDD");
-
-                            // await showModalBottomSheet(
-                            //   isScrollControlled: true,
-                            //   shape: const RoundedRectangleBorder(
-                            //     borderRadius: BorderRadius.only(
-                            //       topLeft: Radius.circular(16),
-                            //       topRight: Radius.circular(16),
-                            //     ),
-                            //   ),
-                            //   isDismissible: true,
-                            //   enableDrag: false,
-                            //   useSafeArea: true,
-                            //   context: context,
-                            //   builder: (context) => Container(
-                            //       decoration: BoxDecoration(
-                            //         borderRadius: const BorderRadius.only(
-                            //           topLeft: Radius.circular(16),
-                            //           topRight: Radius.circular(16),
-                            //         ),
-                            //         color: theme.isDarkMode
-                            //             ? colors.colorBlack
-                            //             : colors.colorWhite,
-                            //         border: Border(
-                            //           top: BorderSide(
-                            //             color: theme.isDarkMode
-                            //                 ? colors.textSecondaryDark
-                            //                     .withOpacity(0.5)
-                            //                 : colors.colorWhite,
-                            //           ),
-                            //           left: BorderSide(
-                            //             color: theme.isDarkMode
-                            //                 ? colors.textSecondaryDark
-                            //                     .withOpacity(0.5)
-                            //                 : colors.colorWhite,
-                            //           ),
-                            //           right: BorderSide(
-                            //             color: theme.isDarkMode
-                            //                 ? colors.textSecondaryDark
-                            //                     .withOpacity(0.5)
-                            //                 : colors.colorWhite,
-                            //           ),
-                            //         ),
-                            //       ),
-                            //       padding: EdgeInsets.only(
-                            //         bottom: MediaQuery.of(context)
-                            //             .viewInsets
-                            //             .bottom,
-                            //       ),
-                            //       child: TaxPnlScreen()
-                            //       ),
-                            // );
-
+                            if (onNavigateToScreen != null) {
+                              onNavigateToScreen!(ScreenType.taxPnl);
+                            }
+                            break;
+                          case 'Notional P&L':
+                            if (onNavigateToScreen != null) {
+                              onNavigateToScreen!(ScreenType.notionalPnl);
+                            }
                             break;
                           case 'Ledger':
                             if (onNavigateToScreen != null) {
@@ -471,9 +412,9 @@ class ReportsScreenWeb extends ConsumerWidget {
                           //       arguments: "DDDDD");
                           //   break;
                           case 'Positions':
-                            ledgerdate.fetchposition(context);
-                            Navigator.pushNamed(context, Routes.positionscreen,
-                                arguments: "DDDDD");
+                            if (onNavigateToScreen != null) {
+                              onNavigateToScreen!(ScreenType.reportPositions);
+                            }
                             break;
                           // case 'Profit & Loss':
                           //   // ledgerdate.fetchposition(context);
@@ -512,6 +453,11 @@ class ReportsScreenWeb extends ConsumerWidget {
                           case 'CA Events':
                             if (onNavigateToScreen != null) {
                               onNavigateToScreen!(ScreenType.corporateActions);
+                            }
+                            break;
+                          case 'PDF Download':
+                            if (onNavigateToScreen != null) {
+                              onNavigateToScreen!(ScreenType.pdfDownload);
                             }
                             break;
                           // case 'Positions':

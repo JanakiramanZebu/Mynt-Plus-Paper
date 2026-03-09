@@ -150,6 +150,14 @@ class LDProvider extends DefaultChangeNotifier {
   PdfDownloadModel? _pdfdownload;
   PdfDownloadModel? get pdfdownload => _pdfdownload;
 
+  // PDF Download screen (all documents, no filter)
+  PdfDownloadModel? _allPdfDownloads;
+  PdfDownloadModel? get allPdfDownloads => _allPdfDownloads;
+  PdfDownloadModel? _allPdfDownloadsDummy;
+  PdfDownloadModel? get allPdfDownloadsDummy => _allPdfDownloadsDummy;
+  bool _allPdfLoading = false;
+  bool get allPdfLoading => _allPdfLoading;
+
   PledgeAndUnpledgeModel? _pledgeandunpledge;
   PledgeAndUnpledgeModel? get pledgeandunpledge => _pledgeandunpledge;
 
@@ -661,12 +669,20 @@ class LDProvider extends DefaultChangeNotifier {
 
   String _startDate = "";
   String get startDate => _startDate;
+  set startDate(String val) {
+    _startDate = val;
+    notifyListeners();
+  }
 
   String _lastweekdate = "";
   String get lastweekdate => _lastweekdate;
 
   String _today = "";
   String get today => _today;
+  set today(String val) {
+    _today = val;
+    notifyListeners();
+  }
 
   String _endDate = "";
   String get endDate => _endDate;
@@ -1611,11 +1627,46 @@ class LDProvider extends DefaultChangeNotifier {
     }
   }
 
+  Future downloadDocForWeb(
+      BuildContext context, String recno, String filename) async {
+    try {
+      _pdfdownloadloading = true;
+      notifyListeners();
+      final result = await api.downloadDocWeb(recno, filename);
+      if (result == 'File downloaded successfully') {
+        successMessage(context, 'PDF Downloaded');
+      } else {
+        warningMessage(context, result);
+      }
+      _pdfdownloadloading = false;
+      notifyListeners();
+    } catch (e) {
+      _pdfdownloadloading = false;
+      notifyListeners();
+      debugPrint("downloadDocForWeb error: $e");
+    }
+  }
+
   String _selectedFormat = "PDF";
   String get selectedFormat => _selectedFormat;
   void selectedFormatFunction(String value) {
     _selectedFormat = value;
     notifyListeners();
+  }
+
+  Future downloadTaxPnlForWeb(BuildContext context, int year, String format) async {
+    try {
+      _taxpnlloading = true;
+      notifyListeners();
+      final result = await api.downloadTaxPnlWeb(year, format);
+      _taxpnlloading = false;
+      notifyListeners();
+      return result;
+    } catch (e) {
+      _taxpnlloading = false;
+      notifyListeners();
+      debugPrint("Error downloading tax pnl: $e");
+    }
   }
 
   Future pdfdownloadfortaxpnl(
@@ -1743,6 +1794,39 @@ class LDProvider extends DefaultChangeNotifier {
       //   );
       // }
     }
+  }
+
+  Future fetchAllPdfDownloads(BuildContext context, String from, String to) async {
+    try {
+      _allPdfLoading = true;
+      notifyListeners();
+      _allPdfDownloads = await api.getpdfdownload(from, to);
+      _allPdfDownloadsDummy = PdfDownloadModel(
+        data: List.from(_allPdfDownloads?.data ?? []),
+      );
+      _allPdfLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _allPdfLoading = false;
+      notifyListeners();
+      debugPrint("fetchAllPdfDownloads error: $e");
+    }
+  }
+
+  void filterAllPdfDownloads(String? docType) {
+    if (_allPdfDownloadsDummy == null) return;
+    if (docType == null || docType == 'All') {
+      _allPdfDownloads = PdfDownloadModel(
+        data: List.from(_allPdfDownloadsDummy!.data ?? []),
+      );
+    } else {
+      _allPdfDownloads = PdfDownloadModel(
+        data: (_allPdfDownloadsDummy!.data ?? [])
+            .where((doc) => doc.docType == docType)
+            .toList(),
+      );
+    }
+    notifyListeners();
   }
 
   refreshforfilterdata() {

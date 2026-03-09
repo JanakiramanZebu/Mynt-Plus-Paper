@@ -34,4 +34,7 @@ enum ScreenType {
   tradebook,
   calendarPnl,
   clientMaster,
+  reportPositions,
+  pdfDownload,
+  taxPnl,
 }

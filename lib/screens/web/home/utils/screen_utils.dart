@@ -73,6 +73,12 @@ class ScreenUtils {
         return 'Tradebook';
       case ScreenType.calendarPnl:
         return 'P&L Summary';
+      case ScreenType.reportPositions:
+        return 'Positions';
+      case ScreenType.pdfDownload:
+        return 'PDF Download';
+      case ScreenType.taxPnl:
+        return 'Tax P&L';
     }
   }
 
@@ -147,6 +153,12 @@ class ScreenUtils {
         return Icons.receipt_long;
       case ScreenType.calendarPnl:
         return Icons.calendar_month;
+      case ScreenType.reportPositions:
+        return Icons.trending_up;
+      case ScreenType.pdfDownload:
+        return Icons.picture_as_pdf;
+      case ScreenType.taxPnl:
+        return Icons.receipt_long;
     }
   }
 

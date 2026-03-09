@@ -26,6 +26,9 @@ import 'package:mynt_plus/screens/web/profile/Reports/ca_events_screen_web.dart'
 import 'package:mynt_plus/screens/web/profile/Reports/client_master_screen_web.dart';
 import 'package:mynt_plus/screens/Mobile/desk_reports/pledge_unpledge_screen.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/mf_main_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/pdf_download_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/position_screen.dart';
+import 'package:mynt_plus/screens/web/profile/Reports/tax_pnl_screen_web.dart';
 
 import '../../../../../models/marketwatch_model/get_quotes.dart';
 
@@ -174,6 +177,12 @@ class PanelContentBuilder {
         return const TradebookScreenWeb();
       case ScreenType.calendarPnl:
         return const CalenderpnlScreen();
+      case ScreenType.reportPositions:
+        return PositionScreen(ddd: "DDDDD", onBack: () {});
+      case ScreenType.pdfDownload:
+        return PdfDownloadScreenWeb(onBack: () {});
+      case ScreenType.taxPnl:
+        return TaxPnlScreenWeb(onBack: () {});
     }
   }
 }

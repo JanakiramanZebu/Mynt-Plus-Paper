@@ -1,11 +1,15 @@
 class DercomcurModel {
   Data? data;
+  Map<String, dynamic>? details;
 
-  DercomcurModel({this.data});
+  DercomcurModel({this.data, this.details});
 
   DercomcurModel.fromJson(Map<String, dynamic> json) {
     data =
         json['data'] != null ? Data.fromJson(json['data']['data']) : null;
+    if (json['data'] != null && json['data']['details'] != null && json['data']['details'] is Map) {
+      details = Map<String, dynamic>.from(json['data']['details']);
+    }
   }
 }
 

@@ -1,5 +1,8 @@
 import 'dart:developer';
 // import 'dart:io';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+import 'dart:typed_data';
 
 import 'package:mynt_plus/models/desk_reports_model/contract_note_model.dart';
 import 'package:mynt_plus/models/desk_reports_model/pdf_download_model.dart';
@@ -567,6 +570,73 @@ mixin LedgerApi on ApiCore {
       return "File downloaded successfully";
     } catch (e) {
       print("Error downloading file: $e");
+      rethrow;
+    }
+  }
+
+  Future<String> downloadDocWeb(String recno, String filename) async {
+    try {
+      final uri = Uri.parse('${apiLinks.reportsapi}/downloaddoc');
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "cc": "${prefs.clientId}",
+            "recno": recno,
+          }));
+
+      if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
+        final blob = html.Blob(
+            [Uint8List.fromList(res.bodyBytes)], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download',
+              filename.isNotEmpty ? filename : 'document.pdf')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        return "File downloaded successfully";
+      } else {
+        return "Error: Empty response";
+      }
+    } catch (e) {
+      print("Error downloading doc: $e");
+      rethrow;
+    }
+  }
+
+  Future<String> downloadTaxPnlWeb(int year, String format) async {
+    try {
+      final isPdf = format == 'PDF';
+      final uri = Uri.parse(
+          '${apiLinks.reportsapi}/${isPdf ? 'taxpnl_pdf' : 'tax_p_l_excel'}');
+      final fromapi = '01/04/$year';
+      final toapi = '31/03/${year + 1}';
+
+      final res = await apiClient.post(uri,
+          headers: funddefaultHeaders,
+          body: jsonEncode({
+            "client_code": "${prefs.clientId}",
+            "from_date": fromapi,
+            "to_date": toapi,
+          }));
+
+      if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
+        final mimeType = isPdf
+            ? 'application/pdf'
+            : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        final ext = isPdf ? 'pdf' : 'xlsx';
+        final blob =
+            html.Blob([Uint8List.fromList(res.bodyBytes)], mimeType);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'TaxPnL_${year}_${year + 1}.$ext')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        return "File downloaded successfully";
+      } else {
+        return "Error: Empty response";
+      }
+    } catch (e) {
+      print("Error downloading tax pnl: $e");
       rethrow;
     }
   }

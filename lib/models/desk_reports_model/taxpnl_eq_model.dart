@@ -23,6 +23,7 @@ class Data {
   String? shortermTotal;
   String? tradingTotal;
   String? tradingTurnover;
+  Map<String, dynamic>? details;
   List<ASSETS>? aSSETS;
   List<LIABILITIES>? lIABILITIES;
   List<SHORTTERM>? sHORTTERM;
@@ -38,6 +39,7 @@ class Data {
     this.shortermTotal,
     this.tradingTotal,
     this.tradingTurnover,
+    this.details,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,9 @@ class Data {
     shortermTotal = json['shorterm_Total']?.toString();
     tradingTotal = json['trading_Total']?.toString();
     tradingTurnover = json['trading_Turnover']?.toString();
+    if (json['details'] != null && json['details'] is Map) {
+      details = Map<String, dynamic>.from(json['details']);
+    }
 
 
     print("json data ${ double.parse(tradingTurnover!) + double.parse(tradingTotal!)}");
@@ -86,6 +91,9 @@ class Data {
     data['shorterm_Total'] = shortermTotal ;
     data['trading_Total'] = tradingTotal ;
     data['trading_Turnover'] = tradingTurnover ;
+    if (details != null) {
+      data['details'] = details;
+    }
     if (aSSETS != null) {
       
       data['ASSETS'] = aSSETS!.map((v) => v.toJson()).toList();
