@@ -57,8 +57,8 @@ class ReportsScreenWeb extends ConsumerWidget {
         elevation: 0,
         centerTitle: false,
         leadingWidth: 48,
-        titleSpacing: 0,
-        leading: const CustomBackBtn(),
+        titleSpacing: 2,
+        // leading: const CustomBackBtn(),
         title: TextWidget.titleText(
           text: "Reports",
           theme: false,
