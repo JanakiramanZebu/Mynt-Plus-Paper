@@ -5542,33 +5542,51 @@ class _AppBarLivePriceWidgetState
   }
 
   @override
-  Widget build(BuildContext context) {
+ Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
-    // Use Wrap - stays on same line when space available, wraps when not
-    return Wrap(
-      spacing: 6,
-      runSpacing: 2,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLaptop = screenWidth < 1600;
+
+    final priceWidget = Text(
+      _ltp,
+      style: MyntWebTextStyles.price(
+        context,
+        color: changeColor,
+        fontWeight: MyntFonts.medium,
+      ),
+    );
+    final changeWidget = Text(
+      "$_change ($_perChange%)",
+      style: MyntWebTextStyles.exch(
+        context,
+        color: resolveThemeColor(
+          context,
+          dark: MyntColors.textSecondaryDark,
+          light: MyntColors.textSecondary,
+        ),
+      ),
+    );
+
+    if (isLaptop) {
+      // Laptop: fixed 2 lines (price + change stacked) — no dancing
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          priceWidget,
+          const SizedBox(height: 2),
+          changeWidget,
+        ],
+      );
+    }
+
+    // Big screen: single row
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          _ltp,
-          style: MyntWebTextStyles.price(
-            context,
-            color: changeColor,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-        Text(
-          "$_change ($_perChange%)",
-          style: MyntWebTextStyles.exch(
-            context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ),
-        ),
+        priceWidget,
+        const SizedBox(width: 6),
+        changeWidget,
       ],
     );
   }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/locator/constant.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import '../../../../provider/thems.dart';
@@ -823,63 +822,21 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                                     ),
                                                   );
                                                 } else if (isNetBanking) {
-                                                  // Net Banking Success – open WebView
-                                                  // Navigator.pop(context);
-              
+                                                  // Net Banking – open in new tab and show status polling dialog
                                                   final url = Uri.parse(
                                                       'https://v3.mynt.in/mfapi${upiResponse.file!}');
-                                                  Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          Scaffold(
-                                                        appBar: AppBar(
-                                                          title: const Text(
-                                                              "Net Banking"),
-                                                          leading: IconButton(
-                                                            icon: const Icon(Icons
-                                                                .arrow_back_ios_new),
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context);
-                                                              Navigator.pop(
-                                                                  context);
-                                                              mfOrder
-                                                                  .threeSecondTimer
-                                                                  ?.cancel();
-                                                              mfOrder.autoPopTimer
-                                                                  ?.cancel();
-                                                            },
-                                                          ),
-                                                        ),
-                                                        body: WillPopScope(
-                                                          onWillPop: () async {
-                                                            Navigator.pop(context);
-                                                            Navigator.pop(context);
-                                                            mfOrder.threeSecondTimer
-                                                                ?.cancel();
-                                                            mfOrder.autoPopTimer
-                                                                ?.cancel();
-                                                            return true;
-                                                          },
-                                                          child: InAppWebView(
-                                                            initialUrlRequest:
-                                                                URLRequest(
-                                                                    url: WebUri(url
-                                                                        .toString())),
-                                                            initialOptions:
-                                                                InAppWebViewGroupOptions(
-                                                              crossPlatform:
-                                                                  InAppWebViewOptions(),
-                                                            ),
-                                                            onWebViewCreated:
-                                                                (controller) {
-                                                              ConstantName
-                                                                      .webViewController =
-                                                                  controller;
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ),
+                                                  // Open net banking page in a new browser tab
+                                                  await launchUrl(url, mode: LaunchMode.platformDefault, webOnlyWindowName: '_blank');
+                                                  // Close the order bottom sheet
+                                                  Navigator.pop(context);
+                                                  // Show processing dialog that polls for payment status
+                                                  showDialog(
+                                                    context: context,
+                                                    barrierDismissible: false,
+                                                    builder: (context) => MfUPIProcessingScreenWeb(
+                                                      data: widget.condval == 'reinitiatefromportfolio'
+                                                          ? widget.data.orderId
+                                                          : mfOrder.mfPlaceOrderResponces!.orderId,
                                                     ),
                                                   );
                                                 }
