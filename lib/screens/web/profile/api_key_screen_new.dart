@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 import 'package:mynt_plus/provider/api_key_provider.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/sharedWidget/cust_text_formfield.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 
@@ -113,87 +115,89 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
     showDialog(
       context: context,
       builder: (BuildContext ctx) {
-        return AlertDialog(
-          backgroundColor: resolveThemeColor(ctx,
-              dark: MyntColors.backgroundColorDark,
-              light: MyntColors.backgroundColor),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          actionsPadding: const EdgeInsets.only(bottom: 16, right: 16, left: 16, top: 8),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-          title: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+        return Center(
+          child: shadcn.Card(
+            borderRadius: BorderRadius.circular(8),
+            padding: EdgeInsets.zero,
+            child: Container(
+              width: 400,
+              constraints: const BoxConstraints(maxHeight: 250),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(ctx),
-                      borderRadius: BorderRadius.circular(20),
-                      splashColor: resolveThemeColor(ctx,
-                          dark: MyntColors.rippleDark,
-                          light: MyntColors.rippleLight),
-                      highlightColor: resolveThemeColor(ctx,
-                          dark: MyntColors.highlightDark,
-                          light: MyntColors.highlightLight),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 22,
-                          color: resolveThemeColor(ctx,
-                              dark: MyntColors.textPrimaryDark,
-                              light: MyntColors.textPrimary),
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: shadcn.Theme.of(ctx).colorScheme.border,
                         ),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Regenerate Secret Code',
+                          style: MyntWebTextStyles.title(
+                            ctx,
+                            color: resolveThemeColor(
+                              ctx,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        MyntCloseButton(
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Content
+                  Flexible(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Are you sure you want to regenerate the secret code? This will generate a new secret code and the old one will no longer work.",
+                            textAlign: TextAlign.center,
+                            style: MyntWebTextStyles.body(
+                              ctx,
+                              fontWeight: FontWeight.w500,
+                              color: resolveThemeColor(
+                                ctx,
+                                dark: MyntColors.textPrimaryDark,
+                                light: MyntColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          MyntButton(
+                            type: MyntButtonType.primary,
+                            size: MyntButtonSize.large,
+                            label: 'Regenerate',
+                            isFullWidth: true,
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              ref.read(apikeyprovider).generateNewSecretCode();
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Are you sure you want to regenerate the secret code? This will generate a new secret code and the old one will no longer work.",
-                textAlign: TextAlign.center,
-                style: MyntWebTextStyles.bodySmall(ctx,
-                    darkColor: MyntColors.textPrimaryDark,
-                    lightColor: MyntColors.textPrimary,
-                    fontWeight: MyntFonts.medium),
-              ),
-            ],
-          ),
-          actions: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  ref.read(apikeyprovider).generateNewSecretCode();
-                },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(0, 45),
-                  backgroundColor: MyntColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: Text(
-                  "Regenerate",
-                  style: MyntWebTextStyles.bodySmall(ctx,
-                      color: Colors.white,
-                      fontWeight: MyntFonts.semiBold),
-                ),
-              ),
             ),
-          ],
+          ),
         );
       },
     );
@@ -246,6 +250,7 @@ class _ApiKeyScreenNewState extends ConsumerState<ApiKeyScreenNew>
     );
 
     if (result?.stat == "Ok") {
+      await provider.fetchgenerateapikeynew(context);
       successMessage(context, "API Key updated successfully");
     } else {
       error(context, result?.emsg ?? "");

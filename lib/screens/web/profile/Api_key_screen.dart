@@ -56,17 +56,17 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen>
           border: Border(
             top: BorderSide(
               color: resolveThemeColor(context,
-                  dark: MyntColors.dividerDark,
+                  dark: MyntColors.backgroundColorDark,
                   light: MyntColors.backgroundColor),
             ),
             left: BorderSide(
               color: resolveThemeColor(context,
-                  dark: MyntColors.dividerDark,
+                  dark: MyntColors.backgroundColorDark,
                   light: MyntColors.backgroundColor),
             ),
             right: BorderSide(
               color: resolveThemeColor(context,
-                  dark: MyntColors.dividerDark,
+                  dark: MyntColors.backgroundColorDark,
                   light: MyntColors.backgroundColor),
             ),
           ),
@@ -89,8 +89,8 @@ class _TotpScreenState extends ConsumerState<ApiKeyScreen>
                       apikeys.apikeyres!.apistatus ?? '--',
                       isStatus: true,
                       statusColor: apikeys.apikeyres!.apistatus == "VALID"
-                          ? MyntColors.profit
-                          : MyntColors.loss,
+                          ? resolveThemeColor(context, dark: MyntColors.profit, light: MyntColors.profit)
+                          : resolveThemeColor(context, dark: MyntColors.loss, light: MyntColors.loss),
                     ),
                     const SizedBox(height: 8),
                     _buildInfoRow(

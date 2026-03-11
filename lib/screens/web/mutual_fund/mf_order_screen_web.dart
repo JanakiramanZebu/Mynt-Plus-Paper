@@ -1156,8 +1156,12 @@ class _SIPCalendarState extends State<_SIPCalendar> {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: const Color(0xffF1F3F8),
+                color: widget.theme.isDarkMode ? MyntColors.listItemBgDark : const Color(0xffF1F3F8),
                 borderRadius: BorderRadius.circular(2),
+                border: Border.all(
+                  color: widget.theme.isDarkMode ? MyntColors.dividerDark : const Color(0xFFD6DAE1),
+                  width: 1,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -1174,8 +1178,12 @@ class _SIPCalendarState extends State<_SIPCalendar> {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
+                color: widget.theme.isDarkMode ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0),
                 borderRadius: BorderRadius.circular(2),
+                border: Border.all(
+                  color: widget.theme.isDarkMode ? const Color(0xFF3A3A3A) : const Color(0xFFD0D0D0),
+                  width: 1,
+                ),
               ),
             ),
             const SizedBox(width: 4),
@@ -1226,16 +1234,21 @@ class _SIPCalendarState extends State<_SIPCalendar> {
 
     Color bgColor;
     Color textColor;
+    Color borderColor;
+    final bool isDark = widget.theme.isDarkMode;
 
     if (!isAvailable) {
-      bgColor = const Color(0xFFE0E0E0);
-      textColor = const Color(0xFFBDBDBD);
+      bgColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE0E0E0);
+      textColor = isDark ? const Color(0xFF555555) : const Color(0xFFBDBDBD);
+      borderColor = isDark ? const Color(0xFF3A3A3A) : const Color(0xFFD0D0D0);
     } else if (isSelected) {
       bgColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
       textColor = colors.colorWhite;
+      borderColor = resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary);
     } else {
-      bgColor = const Color(0xffF1F3F8);
-      textColor = colors.colorBlack;
+      bgColor = isDark ? MyntColors.listItemBgDark : const Color(0xffF1F3F8);
+      textColor = isDark ? colors.textPrimaryDark : colors.colorBlack;
+      borderColor = isDark ? MyntColors.dividerDark : const Color(0xFFD6DAE1);
     }
 
     return GestureDetector(
@@ -1252,6 +1265,7 @@ class _SIPCalendarState extends State<_SIPCalendar> {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(color: borderColor, width: 1),
           ),
           child: Center(
             child: TextWidget.paraText(
