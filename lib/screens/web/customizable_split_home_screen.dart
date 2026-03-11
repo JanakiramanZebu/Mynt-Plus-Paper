@@ -982,7 +982,7 @@ class _CustomizableSplitHomeScreenState
           ),
           body: Column(
             children: [
-              _buildOldVersionBanner(),
+              // _buildOldVersionBanner(),
               Expanded(child: _buildNewLayout(theme)),
             ],
           ),
