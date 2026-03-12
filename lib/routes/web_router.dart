@@ -178,6 +178,20 @@ void initializeWebRouter() {
         path: WebRoutes.pledge,
         builder: (context, state) => const PledgenUnpledge( ddd: 'args', ),
       ),
+
+      // Profile details screen (also handles Digilocker callback with ?code=&state=)
+      GoRoute(
+        path: WebRoutes.profile,
+        builder: (context, state) {
+          final code = state.uri.queryParameters['code'];
+          final stateParam = state.uri.queryParameters['state'];
+          return CustomizableSplitHomeScreen(
+            initialRightPanel: ScreenTypeParam.profileDetails,
+            digilockerCode: code,
+            digilockerState: stateParam,
+          );
+        },
+      ),
     ],
 
     // Handle unknown routes - redirect to home

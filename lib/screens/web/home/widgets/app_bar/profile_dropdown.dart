@@ -283,10 +283,10 @@ class _ProfileDropdownMenuState extends ConsumerState<ProfileDropdownMenu> {
               iconColor: iconColor,
               textColor: textColor,
               subtitleColor: subtitleColor,
-              onPressed: (ctx) async {
-                await funds.fetchHstoken(widget.parentContext);
-                final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
-                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+              onPressed: (ctx) {
+                if (widget.onNavigateToScreen != null) {
+                  widget.onNavigateToScreen!(ScreenType.myAccount);
+                }
               },
             ),
 

@@ -79,6 +79,26 @@ class ScreenUtils {
         return 'PDF Download';
       case ScreenType.taxPnl:
         return 'Tax P&L';
+      case ScreenType.notionalPnl:
+        return 'Notional P&L';
+      case ScreenType.myAccount:
+        return 'My Account';
+      case ScreenType.tradingPreferences:
+        return 'Trading Preferences';
+      case ScreenType.profileDetails:
+        return 'Profile Details';
+      case ScreenType.bankDetails:
+        return 'Bank';
+      case ScreenType.depositoryDetails:
+        return 'Depository';
+      case ScreenType.mtfDetails:
+        return 'Margin Trading Facility (MTF)';
+      case ScreenType.nomineeDetails:
+        return 'Nominee';
+      case ScreenType.formDownload:
+        return 'Form Download';
+      case ScreenType.closureDetails:
+        return 'Closure';
     }
   }
 
@@ -159,6 +179,26 @@ class ScreenUtils {
         return Icons.picture_as_pdf;
       case ScreenType.taxPnl:
         return Icons.receipt_long;
+      case ScreenType.notionalPnl:
+        return Icons.bar_chart;
+      case ScreenType.myAccount:
+        return Icons.person_outline;
+      case ScreenType.tradingPreferences:
+        return Icons.tune;
+      case ScreenType.profileDetails:
+        return Icons.person;
+      case ScreenType.bankDetails:
+        return Icons.account_balance;
+      case ScreenType.depositoryDetails:
+        return Icons.inventory;
+      case ScreenType.mtfDetails:
+        return Icons.trending_up;
+      case ScreenType.nomineeDetails:
+        return Icons.people;
+      case ScreenType.formDownload:
+        return Icons.download;
+      case ScreenType.closureDetails:
+        return Icons.cancel;
     }
   }
 

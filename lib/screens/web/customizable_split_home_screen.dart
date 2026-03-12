@@ -30,6 +30,11 @@ import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
 import 'package:mynt_plus/screens/web/ordersbook/order_book_screen_web.dart';
 import 'package:mynt_plus/screens/web/funds/secure_fund_web.dart';
 import 'package:mynt_plus/screens/web/profile/profile_main_screen.dart';
+import 'package:mynt_plus/screens/web/profile/trading_preferences_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/nominee_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/form_download_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_details_screen_web.dart';
+import 'package:mynt_plus/screens/web/profile/profile_section_screen_web.dart';
 import 'package:mynt_plus/screens/web/strategy_builder/strategy_builder_screen.dart';
 import 'package:mynt_plus/screens/web/webhook/webhook_tradingview_screen.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
@@ -153,6 +158,7 @@ enum ScreenTypeParam {
   portfolioAnalysis,
   strategyBuilder,
   tradingViewWebHook,
+  profileDetails,
 }
 
 class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
@@ -160,9 +166,15 @@ class CustomizableSplitHomeScreen extends ConsumerStatefulWidget {
   /// Used by GoRouter for URL-based navigation
   final ScreenTypeParam? initialRightPanel;
 
+  /// Digilocker callback params (from /profile?code=xxx&state=yyy redirect)
+  final String? digilockerCode;
+  final String? digilockerState;
+
   const CustomizableSplitHomeScreen({
     super.key,
     this.initialRightPanel,
+    this.digilockerCode,
+    this.digilockerState,
   });
 
   @override
@@ -640,6 +652,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenTypeParam.tradingViewWebHook:
         _handleWebHookTap();
+        break;
+      case ScreenTypeParam.profileDetails:
+        _replaceScreenInPanel(ScreenType.profileDetails);
         break;
       case ScreenTypeParam.dashboard:
       case ScreenTypeParam.watchlist:
@@ -2413,6 +2428,13 @@ class _CustomizableSplitHomeScreenState
       }
     }
 
+    // Save current screen for back navigation
+    final currentScreen = _panels[targetPanelIndex].screenType;
+    if (currentScreen != null) {
+      _panelScreenHistory[targetPanelIndex] ??= [];
+      _panelScreenHistory[targetPanelIndex]!.add(currentScreen);
+    }
+
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
       _panels[targetPanelIndex].screens = [screenType];
@@ -2695,6 +2717,31 @@ class _CustomizableSplitHomeScreenState
         return TaxPnlScreenWeb(onBack: _goBackInRightPanel);
       case ScreenType.notionalPnl:
         return NotionalPnlScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.myAccount:
+        return ProfileMainScreen(
+          initialIndex: 0,
+          onNavigateToScreen: (screenType) => _navigateToScreen(screenType),
+        );
+      case ScreenType.tradingPreferences:
+        return TradingPreferencesScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.profileDetails:
+        return ProfileDetailsScreenWeb(
+          onBack: _goBackInRightPanel,
+          digilockerCode: widget.digilockerCode,
+          digilockerState: widget.digilockerState,
+        );
+      case ScreenType.bankDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Bank', onBack: _goBackInRightPanel);
+      case ScreenType.depositoryDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Depository', onBack: _goBackInRightPanel);
+      case ScreenType.mtfDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Margin Trading Facility (MTF)', onBack: _goBackInRightPanel);
+      case ScreenType.nomineeDetails:
+        return NomineeScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.formDownload:
+        return FormDownloadScreenWeb(onBack: _goBackInRightPanel);
+      case ScreenType.closureDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Closure', onBack: _goBackInRightPanel);
       // caEvent and cpAction removed
     }
   }
@@ -2778,6 +2825,24 @@ class _CustomizableSplitHomeScreenState
         return 'Tax P&L';
       case ScreenType.notionalPnl:
         return 'Notional P&L';
+      case ScreenType.myAccount:
+        return 'My Account';
+      case ScreenType.tradingPreferences:
+        return 'Trading Preferences';
+      case ScreenType.profileDetails:
+        return 'Profile Details';
+      case ScreenType.bankDetails:
+        return 'Bank';
+      case ScreenType.depositoryDetails:
+        return 'Depository';
+      case ScreenType.mtfDetails:
+        return 'Margin Trading Facility (MTF)';
+      case ScreenType.nomineeDetails:
+        return 'Nominee';
+      case ScreenType.formDownload:
+        return 'Form Download';
+      case ScreenType.closureDetails:
+        return 'Closure';
       // caEvent and cpAction removed
     }
   }
@@ -2861,6 +2926,24 @@ class _CustomizableSplitHomeScreenState
         return Icons.receipt_long;
       case ScreenType.notionalPnl:
         return Icons.bar_chart;
+      case ScreenType.myAccount:
+        return Icons.person_outline;
+      case ScreenType.tradingPreferences:
+        return Icons.tune;
+      case ScreenType.profileDetails:
+        return Icons.person;
+      case ScreenType.bankDetails:
+        return Icons.account_balance;
+      case ScreenType.depositoryDetails:
+        return Icons.inventory;
+      case ScreenType.mtfDetails:
+        return Icons.trending_up;
+      case ScreenType.nomineeDetails:
+        return Icons.people;
+      case ScreenType.formDownload:
+        return Icons.download;
+      case ScreenType.closureDetails:
+        return Icons.cancel;
       // caEvent and cpAction removed
     }
   }
@@ -3274,6 +3357,24 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.taxPnl:
         break;
       case ScreenType.notionalPnl:
+        break;
+      case ScreenType.myAccount:
+        break;
+      case ScreenType.tradingPreferences:
+        break;
+      case ScreenType.profileDetails:
+        break;
+      case ScreenType.bankDetails:
+        break;
+      case ScreenType.depositoryDetails:
+        break;
+      case ScreenType.mtfDetails:
+        break;
+      case ScreenType.nomineeDetails:
+        break;
+      case ScreenType.formDownload:
+        break;
+      case ScreenType.closureDetails:
         break;
       // caEvent and cpAction removed
     }
@@ -5237,6 +5338,15 @@ enum ScreenType {
   pdfDownload,
   taxPnl,
   notionalPnl,
+  myAccount,
+  tradingPreferences,
+  profileDetails,
+  bankDetails,
+  depositoryDetails,
+  mtfDetails,
+  nomineeDetails,
+  formDownload,
+  closureDetails,
 }
 
 // Hoverable navigation item widget

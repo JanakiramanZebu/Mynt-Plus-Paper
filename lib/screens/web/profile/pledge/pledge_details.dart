@@ -82,7 +82,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
       List<DropdownItem> dropdownItems = [];
 
      final segmentMap = {
-        'Margin': ['NSE_FNO', 'BSE_FNO', 'MCX'],
+        'Futures And Options': ['NSE_FNO', 'BSE_FNO'],
         'Commodities': ['MCX'],
         'Currencies': ['CD_NSE', 'CD_BSE'],
       };

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:mynt_plus/api/core/api_export.dart';
 import 'package:mynt_plus/locator/locator.dart';
 import 'package:mynt_plus/locator/preference.dart';
+import 'dart:typed_data';
+import 'package:mynt_plus/models/client_profile_all_details/details_change_current_status_model.dart';
 import 'package:mynt_plus/models/client_profile_all_details/profile_all_details_model.dart';
 import 'package:mynt_plus/provider/core/default_change_notifier.dart';
 import 'package:mynt_plus/provider/fund_provider.dart';
@@ -158,9 +160,6 @@ class ProfileProvider extends DefaultChangeNotifier {
   clearProfilePop(BuildContext context, String type) {
     if (type == "email") {
       _responseval = "";
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Some error occurred")),
-      );
     }
     if (type == "emailotp") {
       _emilotpres = "";
@@ -341,6 +340,88 @@ class ProfileProvider extends DefaultChangeNotifier {
 
 
 
+  // ─── Segment Change Status ───
+  DetailsChangeCurrentStatus? _mobEmailStatus;
+  DetailsChangeCurrentStatus? get mobEmailStatus => _mobEmailStatus;
+
+  bool _segmentSubmitting = false;
+  bool get segmentSubmitting => _segmentSubmitting;
+
+  Future fetchMobEmailStatus() async {
+    try {
+      _mobEmailStatus = await api.fetchMobEmailStatusApi();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("error fetchMobEmailStatus :::: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>?> submitSegmentChange({
+    required List<String> newSegments,
+    required List<String> existingSegments,
+    required String addingSegments,
+    required String reActiveSegments,
+    required bool equitySelected,
+    required bool fnoSelected,
+    required bool currencySelected,
+    required bool commoditySelected,
+    Uint8List? proofBytes,
+    String? proofFileName,
+    required String passwordRequired,
+    required String password,
+  }) async {
+    _segmentSubmitting = true;
+    notifyListeners();
+    try {
+      final clientData = _clientAllDetails?.clientData;
+      final result = await api.addSegmentApi(
+        newSegments: newSegments,
+        existingSegments: existingSegments,
+        dpCode: clientData?.cLIENTDPCODE ?? '',
+        addingSegments: addingSegments,
+        reActiveSegments: reActiveSegments,
+        clientId: pref.clientId ?? '',
+        equitySelected: equitySelected,
+        fnoSelected: fnoSelected,
+        currencySelected: currencySelected,
+        commoditySelected: commoditySelected,
+        clientEmail: clientData?.cLIENTIDMAIL ?? '',
+        clientName: clientData?.cLIENTNAME ?? '',
+        address: clientData?.cLRESIADD1 ?? '',
+        proofBytes: proofBytes,
+        proofFileName: proofFileName,
+        passwordRequired: passwordRequired,
+        password: password,
+      );
+      await fetchMobEmailStatus();
+      return result;
+    } catch (e) {
+      debugPrint("error submitSegmentChange :::: $e");
+      return null;
+    } finally {
+      _segmentSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> reportFiledownload({
+    required String fileId,
+    required String response,
+    required String type,
+  }) async {
+    try {
+      await api.filedownloadApi(
+        clientId: pref.clientId ?? '',
+        fileId: fileId,
+        response: response,
+        type: type,
+      );
+      await fetchMobEmailStatus();
+    } catch (e) {
+      debugPrint("error reportFiledownload :::: $e");
+    }
+  }
+
   Future emaileotpfun(String newEmail, String oldEmail, String clientName,
       String dpcode) async {
     try {
@@ -413,102 +494,383 @@ class ProfileProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future ddpiledgerbaapi() async {
+  Future<dynamic> ddpiledgerbaapi() async {
     try {
-      String response = await api.ledgerbalanceapi();
-      // _ddpiledgerbalace = response;
+      var response = await api.ledgerbalanceapi();
       notifyListeners();
-
-      print("ddpiledgerbaapi $response");
+      return response;
     } catch (e) {
-      // debugPrint("$e");
-    } finally {
-      notifyListeners();
+      debugPrint("ddpiledgerbaapi error: $e");
+      return 0;
     }
   }
 
-  Future ddpifinalstep(fulldataprf) async {
+  Future<Map<String, dynamic>?> ddpifinalstep(fulldataprf) async {
     try {
-      String response = await api.finalddpisubmitapi(fulldataprf);
-      // _ddpiesignfile = response;
+      var response = await api.finalddpisubmitapi(fulldataprf);
       notifyListeners();
-
-      print("ddpifinalstep $response");
+      return response is Map<String, dynamic> ? response : null;
     } catch (e) {
-      // debugPrint("$e");
-    } finally {
-      notifyListeners();
+      debugPrint("ddpifinalstep error: $e");
+      return null;
     }
   }
 
-  Future mtfenbprovi(fulldataprf) async {
+  Future<dynamic> mtfenbprovi(fulldataprf) async {
     try {
-      String response = await api.mtfenabapipage(fulldataprf);
-      // _mtfenabrespoce = response;
+      final response = await api.mtfenabapipage(fulldataprf);
       notifyListeners();
-
       print("mtfenbprovi $response");
+      return response;
     } catch (e) {
-      // debugPrint("$e");
+      debugPrint("mtfenbprovi error: $e");
+      return null;
     } finally {
       notifyListeners();
     }
   }
 
-  Future incomeotpsenpro(mobilno) async {
+  Future<String?> incomeotpsenpro(mobilno) async {
     try {
       String response = await api.incomeotesendapi(mobilno);
-      // _imcomeptsenres = response;
       notifyListeners();
-
       print("incomeotpsenpro $response");
+      return response;
     } catch (e) {
-      // debugPrint("$e");
+      print("incomeotpsenpro error: $e");
+      return null;
     } finally {
       notifyListeners();
     }
   }
 
-  Future incomeotpverpro(otpno, fulldataprf, chipval, file, proftye) async {
+  Future<String?> incomeotpverpro(otpno, fulldataprf, chipval,
+      {List<int>? fileBytes, String? fileName, String? proftye}) async {
     try {
       String response = await api.incomeotpverfapi(
-          otpno, fulldataprf, chipval, file, proftye);
-      // _incomeotpverres = response;
+          otpno, fulldataprf, chipval, "", proftye ?? "");
       notifyListeners();
-
       print("incomeotpverpro $response");
+      if (response == "otp valid") {
+        // Submit income update after OTP verified
+        final result = await api.incomeupdateaapi(
+          fulldataprf, chipval, proftye ?? "",
+          fileBytes: fileBytes, fileName: fileName,
+        );
+        await fetchMobEmailStatus();
+        return result?['msg'];
+      }
+      return response;
     } catch (e) {
-      // debugPrint("$e");
+      print("incomeotpverpro error: $e");
+      return null;
     } finally {
       notifyListeners();
     }
   }
 
-  Future incomupprov(
-      fulldataprf, String chipval, String filepath, String proftye) async {
+  Future<dynamic> pdfLockCheck({required List<int> fileBytes, required String fileName}) async {
     try {
-      String response =
-          await api.incomeupdateaapi(fulldataprf, chipval, filepath, proftye);
-      // _incomupdaqres = response;
-      notifyListeners();
-
-      print("incomupprov $response");
+      return await api.pdfLockCheckApi(fileBytes: fileBytes, fileName: fileName);
     } catch (e) {
-      // debugPrint("$e");
-    } finally {
-      notifyListeners();
+      print("pdfLockCheck error: $e");
+      return null;
+    }
+  }
+
+  Future<dynamic> pdfPasswordCheck({
+    required List<int> fileBytes,
+    required String fileName,
+    required String password,
+  }) async {
+    try {
+      return await api.pdfPasswordCheckApi(
+        fileBytes: fileBytes, fileName: fileName, password: password,
+      );
+    } catch (e) {
+      print("pdfPasswordCheck error: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Mobile OTP verify only (no auto file_write) ───
+  Future<String?> mobileOtpVerifyWeb(String newMobile, String otp, dynamic clientData) async {
+    try {
+      return await api.mobileOtpVerifyWebApi(newMobile, otp, clientData);
+    } catch (e) {
+      print("mobileOtpVerifyWeb error: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Email OTP verify only (no auto file_write) ───
+  Future<String?> emailOtpVerifyWeb(String otp, String newEmail) async {
+    try {
+      return await api.emailOtpVerifyWebApi(otp, newEmail);
+    } catch (e) {
+      print("emailOtpVerifyWeb error: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Mobile file write ───
+  Future<Map<String, dynamic>?> mobileFileWriteWeb(String newMobile, dynamic clientData) async {
+    try {
+      final result = await api.mobileFileWriteWebApi(newMobile, clientData);
+      if (result != null && result['fileid'] != null) {
+        await fetchMobEmailStatus();
+      }
+      return result;
+    } catch (e) {
+      print("mobileFileWriteWeb error: $e");
+      return null;
+    }
+  }
+
+  // ─── Web: Email file write ───
+  Future<Map<String, dynamic>?> emailFileWriteWeb(String newEmail, String oldEmail, String dpCode) async {
+    try {
+      final result = await api.emailFileWriteWebApi(newEmail, oldEmail, dpCode);
+      if (result != null && result['fileid'] != null) {
+        await fetchMobEmailStatus();
+      }
+      return result;
+    } catch (e) {
+      print("emailFileWriteWeb error: $e");
+      return null;
+    }
+  }
+
+  // ─── KRA Image Check ───
+  Future<String?> kraImageCheck() async {
+    try {
+      return await api.kraImageCheckApi();
+    } catch (e) {
+      print("kraImageCheck error: $e");
+      return null;
+    }
+  }
+
+  // ─── KRA Image Upload ───
+  Future<String?> uploadKraSelfie({required List<int> imageBytes}) async {
+    try {
+      return await api.imgUploadApi(imageBytes: imageBytes);
+    } catch (e) {
+      print("uploadKraSelfie error: $e");
+      return null;
     }
   }
 
   Future ifscapiporov(String ifsccode) async {
     try {
       String response = await api.ifsccodecheckapi(ifsccode);
-      // _ifsccoderess = response;
       notifyListeners();
-
       print("ifscapiporov $response");
     } catch (e) {
       // debugPrint("$e");
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  // IFSC lookup returning full data
+  Future<Map<String, dynamic>?> ifscLookup(String ifscCode) async {
+    try {
+      return await api.ifscLookupApi(ifscCode);
+    } catch (e) {
+      print("ifscLookup error: $e");
+      return null;
+    }
+  }
+
+  // Pincode lookup
+  Future<Map<String, dynamic>?> pincodeLookup(String pincode) async {
+    try {
+      return await api.pincodeLookupApi(pincode);
+    } catch (e) {
+      print("pincodeLookup error: $e");
+      return null;
+    }
+  }
+
+  // Address change web
+  Future<Map<String, dynamic>?> addressChangeWeb({
+    required String newAddress,
+    required String pincode,
+    required String district,
+    required String state,
+    required String country,
+    required String proofType,
+    List<int>? proofBytes,
+    String? proofFileName,
+  }) async {
+    try {
+      final clientData = clientAllDetails.clientData;
+      if (clientData == null) return null;
+
+      final result = await api.addressChangeApiWeb(
+        newAddress: newAddress,
+        pincode: pincode,
+        district: district,
+        state: state,
+        country: country,
+        proofType: proofType,
+        clientData: clientData,
+        proofBytes: proofBytes,
+        proofFileName: proofFileName,
+      );
+
+      if (result != null) {
+        await fetchMobEmailStatus();
+        await fetchClientProfileAllDetails();
+      }
+
+      return result;
+    } catch (e) {
+      print("addressChangeWeb error: $e");
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  // Aadhaar/Digilocker address change
+  Future<Map<String, dynamic>?> addressChangeDigilocker({
+    required String code,
+    required String state,
+  }) async {
+    try {
+      final clientData = clientAllDetails.clientData;
+      if (clientData == null) return null;
+
+      final result = await api.addressChangeDigilockerApiWeb(
+        code: code,
+        state: state,
+        clientData: clientData,
+      );
+
+      if (result != null) {
+        await fetchMobEmailStatus();
+        await fetchClientProfileAllDetails();
+      }
+
+      return result;
+    } catch (e) {
+      print("addressChangeDigilocker error: $e");
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  NOMINEE
+  // ═══════════════════════════════════════════════════════════════
+
+  Map<String, dynamic>? _nomineeStatus;
+  Map<String, dynamic>? get nomineeStatus => _nomineeStatus;
+
+  /// Nominee status data from nom_stat[0]
+  Map<String, dynamic>? get nomineeStatusData {
+    if (_nomineeStatus == null) return null;
+    final nomStat = _nomineeStatus!['nom_stat'];
+    if (nomStat is List && nomStat.isNotEmpty) {
+      return nomStat[0] as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  /// Whether nominee account is active (can modify)
+  bool get isNomineeActive => _nomineeStatus?['acc_sgt_atve_sts'] == 'active';
+
+  /// Fetch nominee status from /nom_stat
+  Future<void> fetchNomineeStatus() async {
+    try {
+      _nomineeStatus = await api.nomineeStatusApi();
+      notifyListeners();
+    } catch (e) {
+      debugPrint("fetchNomineeStatus error: $e");
+    }
+  }
+
+  /// Submit nominee form to /nominee
+  Future<Map<String, dynamic>?> submitNominee({
+    required Map<String, String> fields,
+  }) async {
+    try {
+      final result = await api.nomineeSubmitApi(fields: fields);
+      if (result != null && result['msg'] == 'Success') {
+        await fetchNomineeStatus();
+        await fetchClientProfileAllDetails();
+      }
+      return result;
+    } catch (e) {
+      debugPrint("submitNominee error: $e");
+      return null;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  // Build existing banks list for API
+  List<Map<String, String>> _buildExistingBanksList() {
+    final banks = clientAllDetails.bankData ?? [];
+    return banks.map((b) => {
+      'acc_no': b.bankAcNo ?? '',
+      'ifsc_no': b.iFSCCode ?? '',
+    }).toList();
+  }
+
+  // Web bank operations (add/edit/delete/set-primary)
+  Future<Map<String, dynamic>?> addBankWeb({
+    required String option,
+    required String accountNo,
+    required String bankName,
+    required String ifsc,
+    required String branch,
+    required String bankAccountType,
+    required String setDefault,
+    required String micr,
+    String? proffType,
+    List<int>? proofBytes,
+    String? proofFileName,
+    String? passwordRequired,
+    String? password,
+  }) async {
+    try {
+      final clientData = clientAllDetails.clientData;
+      if (clientData == null) return null;
+
+      final result = await api.addBankApiWeb(
+        option: option,
+        accountNo: accountNo,
+        bankName: bankName,
+        ifsc: ifsc,
+        branch: branch,
+        bankAccountType: bankAccountType,
+        setDefault: setDefault,
+        micr: micr,
+        dpCode: clientData.cLIENTDPCODE ?? '',
+        mobile: clientData.mOBILENO ?? '',
+        clientEmail: clientData.cLIENTIDMAIL ?? '',
+        existingBanks: _buildExistingBanksList(),
+        proffType: proffType,
+        proofBytes: proofBytes,
+        proofFileName: proofFileName,
+        passwordRequired: passwordRequired,
+        password: password,
+      );
+
+      if (result != null && !result.containsKey('msg')) {
+        // Success - refresh data
+        await fetchMobEmailStatus();
+        await fetchClientProfileAllDetails();
+      }
+
+      return result;
+    } catch (e) {
+      print("addBankWeb error: $e");
+      return null;
     } finally {
       notifyListeners();
     }
@@ -553,27 +915,31 @@ class ProfileProvider extends DefaultChangeNotifier {
     }
   }
 
-  Future closeaccnalprov(String resaqon, fulldataprf) async {
+  Future<dynamic> closeaccnalprov(String resaqon, fulldataprf) async {
     try {
       dynamic chackaccbalace = await api.closeacbalapi(resaqon, fulldataprf);
       notifyListeners();
       print("_banksumbres $chackaccbalace");
+      return chackaccbalace;
     } catch (e) {
       debugPrint("$e");
+      return null;
     } finally {
       notifyListeners();
     }
   }
 
-  Future closeaccfinalspro(String dpid, String boid, String filepath,
+  Future<dynamic> closeaccfinalspro(String dpid, String boid, String filepath,
       String reason, fulldataprf, bankdata) async {
     try {
       dynamic chackaccClosureResp = await api.acccloserapi(
           dpid, boid, filepath, reason, fulldataprf, bankdata);
       notifyListeners();
       print("_banksumbres $chackaccClosureResp");
+      return chackaccClosureResp;
     } catch (e) {
       debugPrint("$e");
+      return null;
     } finally {
       notifyListeners();
     }

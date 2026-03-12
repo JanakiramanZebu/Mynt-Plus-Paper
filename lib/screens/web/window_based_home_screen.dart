@@ -48,6 +48,11 @@ import 'profile/Reports/position_screen.dart';
 import 'profile/Reports/tax_pnl_screen_web.dart';
 import 'profile/Reports/notional_pnl_screen_web.dart';
 import 'profile/profile_main_screen.dart';
+import 'profile/trading_preferences_screen_web.dart';
+import 'profile/profile_details_screen_web.dart';
+import 'profile/nominee_screen_web.dart';
+import 'profile/form_download_screen_web.dart';
+import 'profile/profile_section_screen_web.dart';
 // import 'profile/settings_web.dart';
 import 'market_watch/watchlist_screen_web.dart';
 import 'holdings/holding_screen_web.dart';
@@ -432,9 +437,9 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.pledgeUnpledge:
         return const PledgenUnpledge(ddd: "DDDDD");
       case ScreenType.corporateActions:
-        return CAEventsScreenWeb(onBack: () {});
+        return CAEventsScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.clientMaster:
-        return ClientMasterScreenWeb(onBack: () {});
+        return ClientMasterScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.reports:
         return ReportsScreenWeb();
       case ScreenType.ledger:
@@ -476,13 +481,34 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
       case ScreenType.calendarPnl:
         return const CalenderpnlScreen();
       case ScreenType.reportPositions:
-        return PositionScreen(ddd: "DDDDD", onBack: () {});
+        return PositionScreen(ddd: "DDDDD", onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.pdfDownload:
-        return PdfDownloadScreenWeb(onBack: () {});
+        return PdfDownloadScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.taxPnl:
-        return TaxPnlScreenWeb(onBack: () {});
+        return TaxPnlScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
       case ScreenType.notionalPnl:
-        return NotionalPnlScreenWeb(onBack: () {});
+        return NotionalPnlScreenWeb(onBack: () => _showScreenInWindow(ScreenType.reports));
+      case ScreenType.myAccount:
+        return ProfileMainScreen(
+          initialIndex: 0,
+          onNavigateToScreen: (screenType) => _handleScreenTypeChange(screenType),
+        );
+      case ScreenType.tradingPreferences:
+        return TradingPreferencesScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.profileDetails:
+        return ProfileDetailsScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.bankDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Bank', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.depositoryDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Depository', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.mtfDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Margin Trading Facility (MTF)', onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.nomineeDetails:
+        return NomineeScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.formDownload:
+        return FormDownloadScreenWeb(onBack: () => _showScreenInWindow(ScreenType.myAccount));
+      case ScreenType.closureDetails:
+        return ProfileSectionScreenWeb(sectionTitle: 'Closure', onBack: () => _showScreenInWindow(ScreenType.myAccount));
     }
   }
 
@@ -564,6 +590,24 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Tax P&L';
       case ScreenType.notionalPnl:
         return 'Notional P&L';
+      case ScreenType.myAccount:
+        return 'My Account';
+      case ScreenType.tradingPreferences:
+        return 'Trading Preferences';
+      case ScreenType.profileDetails:
+        return 'Profile Details';
+      case ScreenType.bankDetails:
+        return 'Bank';
+      case ScreenType.depositoryDetails:
+        return 'Depository';
+      case ScreenType.mtfDetails:
+        return 'Margin Trading Facility (MTF)';
+      case ScreenType.nomineeDetails:
+        return 'Nominee';
+      case ScreenType.formDownload:
+        return 'Form Download';
+      case ScreenType.closureDetails:
+        return 'Closure';
     }
   }
 
