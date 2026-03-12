@@ -1754,7 +1754,7 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           orderProv.frezQtyOrderSliceMaxLimit) {
         ResponsiveSnackBar.showWarning(
           context,
-          "Basket limit reached. Please create a new basket as you are exceeding the ${orderProv.frezQtyOrderSliceMaxLimit} item limit.",
+          "Basket is full. Maximum ${orderProv.frezQtyOrderSliceMaxLimit} items allowed per basket.",
         );
         return;
       }
@@ -2679,7 +2679,12 @@ class _BasketScripListState extends ConsumerState<BasketScripList>
           ),
         );
       case 'Qty.':
-        final totalQty = item["qty"]?.toString() ?? '0';
+        final rawQty = int.tryParse(item["qty"]?.toString() ?? '0') ?? 0;
+        final ls = int.tryParse(item["ls"]?.toString() ?? '1') ?? 1;
+        // For MCX, display qty as lots (divide by lot size) to match place order screen
+        final totalQty = item["exch"] == 'MCX' && ls > 1
+            ? (rawQty ~/ ls).toString()
+            : rawQty.toString();
         return SizedBox.expand(
           child: Align(
             alignment: Alignment.centerRight,
