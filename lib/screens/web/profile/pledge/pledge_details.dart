@@ -9,8 +9,6 @@ import '../../../../provider/mf_provider.dart';
 import '../../../../provider/portfolio_provider.dart';
 // import '../../mutual_fund/mf_stock_detail_screen.dart';
 import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
@@ -46,7 +44,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
     double notional = 0.0;
 
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final theme = ref.read(themeProvider);
+      ref.read(themeProvider);
       final ledgerdata = ref.watch(ledgerProvider);
       final marketwatch = ref.watch(marketWatchProvider);
       final mfPortfolio = ref.read(mfProvider);
@@ -83,8 +81,10 @@ class _PledgeDeytails extends State<PledgeDeytails> {
               : (widget.data.cOLQTY as double).toInt();
       List<DropdownItem> dropdownItems = [];
 
-      final segmentMap = {
+     final segmentMap = {
         'Margin': ['NSE_FNO', 'BSE_FNO', 'MCX'],
+        'Commodities': ['MCX'],
+        'Currencies': ['CD_NSE', 'CD_BSE'],
       };
 
       final eligibleSegments = widget.data.eligibleSegments!;
@@ -237,7 +237,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+              color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
             ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,12 +249,8 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     child: InkWell(
                       customBorder: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            splashColor: theme.isDarkMode
-                                            ? colors.splashColorDark
-                                            : colors.splashColorLight,
-                                        highlightColor: theme.isDarkMode
-                                            ? colors.highlightDark
-                                            : colors.highlightLight,
+                            splashColor: resolveThemeColor(context, dark: MyntColors.rippleDark, light: MyntColors.rippleLight),
+                                        highlightColor: resolveThemeColor(context, dark: MyntColors.highlightDark, light: MyntColors.highlightLight),
                                             onTap: (){},
                             // onTap: widget.data.sERIES == "GR" ? () async {
                             //         final isin = widget.data.iSIN?.toString() ?? "";
@@ -342,46 +338,36 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                   children: [
                                     SizedBox(
                                       width: widget.data.sERIES == "GR" ? screenWidth * 0.65 : null,
-                                      child: TextWidget.titleText(
-                                          text: widget.data.sERIES == "GR" && mfname.isNotEmpty ? mfname : widget.data.nSESYMBOL.toString(),
-                                          color: theme.isDarkMode
-                                              ? colors.textPrimaryDark
-                                              : colors.textPrimaryLight,
-                                          // textOverflow: TextOverflow.ellipsis,
-                                          theme: theme.isDarkMode,
+                                      child: Text(
+                                          widget.data.sERIES == "GR" && mfname.isNotEmpty ? mfname : widget.data.nSESYMBOL.toString(),
                                           maxLines: 2,
-                                          fw: 1),
+                                          style: MyntWebTextStyles.title(context,
+                                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                              fontWeight: MyntFonts.semiBold),
+                                      ),
                                     ),
                                     SizedBox(height: 8.0),
                                     ledgerdata.screenpledge == 'pledge'
-                                        ? TextWidget.paraText(
-                                            text:
-                                                "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            fw: 0)
-                                        : TextWidget.paraText(
-                                            text:
-                                                "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
-                                            textOverflow: TextOverflow.ellipsis,
-                                            theme: theme.isDarkMode,
-                                            color: theme.isDarkMode
-                                                ? colors.textPrimaryDark
-                                                : colors.textPrimaryLight,
-                                            fw: 0),
+                                        ? Text(
+                                            "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: MyntWebTextStyles.para(context,
+                                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                          )
+                                        : Text(
+                                            "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
+                                            overflow: TextOverflow.ellipsis,
+                                            style: MyntWebTextStyles.para(context,
+                                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                          ),
                                   ],
                                 ),
-                                TextWidget.titleText(
-                                    text: netValue.toString(),
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    fw: 0),
+                                Text(
+                                    netValue.toString(),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: MyntWebTextStyles.title(context,
+                                        color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                ),
                               ])),
                     ),
                   ),
@@ -516,24 +502,20 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextWidget.subText(
-                            text:
-                                "${ledgerdata.screenpledge == 'pledge' ? 'Pledge' : 'Unpledge'} Qty up to ${netValue.toString()}",
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            color: theme.isDarkMode
-                                ? colors.textPrimaryDark
-                                : colors.textPrimaryLight,
-                            fw: 1),
+                        Text(
+                            "${ledgerdata.screenpledge == 'pledge' ? 'Pledge' : 'Unpledge'} Qty up to ${netValue.toString()}",
+                            overflow: TextOverflow.ellipsis,
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
+                                fontWeight: MyntFonts.semiBold),
+                        ),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Container(
                               height: 44,
                               child: CustomTextFormField(
                                   textAlign: TextAlign.start,
-                                  fillColor: theme.isDarkMode
-                                      ? colors.darkGrey
-                                      : const Color(0xffF1F3F8),
+                                  fillColor: resolveThemeColor(context, dark: MyntColors.inputBgDark, light: MyntColors.inputBg),
                                   hintText: '0',
                                   keyboardType: TextInputType.number,
                                   inputFormate: [
@@ -542,19 +524,11 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     LengthLimitingTextInputFormatter(
                                         15), // Limit to 15 characters
                                   ],
-                                  hintStyle: TextWidget.textStyle(
-                                    fontSize: 14,
-                                    theme: theme.isDarkMode,
-                                    color: (theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight).withOpacity(0.4),
-                                        fw: 0,
+                                  hintStyle: MyntWebTextStyles.para(context,
+                                    color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary).withValues(alpha: 0.4),
                                   ),
-                                  style: TextWidget.textStyle(
-                                    fontSize: 16,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    theme: theme.isDarkMode,
-                                    fw: 0,
+                                  style: MyntWebTextStyles.body(context,
+                                    color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                                   ),
                                   textCtrl: ledgerdata.selectnetpledge,
                                   onChanged: (value) {
@@ -568,14 +542,12 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 8.0, bottom: 8),
-                          child: TextWidget.captionText(
-                              text: ledgerdata.pledgeerrormsg,
-                              textOverflow: TextOverflow.ellipsis,
-                              theme: theme.isDarkMode,
-                              color: theme.isDarkMode
-                                  ? colors.lossDark
-                                  : colors.lossLight,
-                              fw: 0),
+                          child: Text(
+                              ledgerdata.pledgeerrormsg,
+                              overflow: TextOverflow.ellipsis,
+                              style: MyntWebTextStyles.caption(context,
+                                  color: resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss)),
+                          ),
                         ),
                         if (ledgerdata.screenpledge == 'pledge') ...[
                           Text(
@@ -718,7 +690,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                 vertical: 10, horizontal: 12),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              color: theme.isDarkMode
+                              color: isDarkMode(context)
                                   ? MyntColors.textSecondaryDark
                                       .withValues(alpha: 0.1)
                                   : const Color(0xffFCEFD4),
@@ -746,17 +718,14 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     vertical: 8, horizontal: 8),
                                 decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(6),
-                                     color: theme.isDarkMode ?  colors.textSecondaryDark.withOpacity(0.2) :  const Color(0xffFCEFD4)),
-                                child: TextWidget.paraText(
-                                    text:
-                                        "Note: Pledge requests process on exchange working days, submissions on weekends or exchange holidays are handled the next working day.",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
+                                     color: isDarkMode(context) ? MyntColors.textSecondaryDark.withValues(alpha: 0.2) : const Color(0xffFCEFD4)),
+                                child: Text(
+                                    "Note: Pledge requests process on exchange working days, submissions on weekends or exchange holidays are handled the next working day.",
+                                    overflow: TextOverflow.ellipsis,
                                     maxLines: 7,
-                                    fw: 0),
+                                    style: MyntWebTextStyles.para(context,
+                                        color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)),
+                                ),
                               )
                             : SizedBox(),
                         SafeArea(
@@ -775,10 +744,8 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                                   (ledgerdata.pledgesubtn == false ||
                                                       widget.data.segmentselect.toString() ==
                                                           "null")))
-                                          ? colors.colorbluegrey
-                                          : theme.isDarkMode
-                                              ? colors.primaryDark
-                                              : colors.primaryLight,
+                                          ? resolveThemeColor(context, dark: MyntColors.borderMutedDark, light: MyntColors.borderMuted)
+                                          : resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(5))),
@@ -836,11 +803,10 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                       Navigator.pop(context);
                                     }
                                   },
-                                  child: TextWidget.subText
-                                  (text: "Submit",                                       
-                                      theme: theme.isDarkMode,
-                                      color: colors.colorWhite,
-                                      fw: 2))),
+                                  child: Text("Submit",
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          color: MyntColors.textWhite,
+                                          fontWeight: MyntFonts.semiBold)))),
                         ),
                       ],
                     ),
@@ -855,7 +821,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: (theme.isDarkMode ? colors.colorBlack : colors.colorWhite).withOpacity(0.6),
+                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor).withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Center(

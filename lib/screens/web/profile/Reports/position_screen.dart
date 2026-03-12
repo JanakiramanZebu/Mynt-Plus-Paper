@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../provider/ledger_provider.dart';
@@ -9,6 +8,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/functions.dart';
 import '../../../../utils/rupee_convert_format.dart';
@@ -236,19 +236,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
   Widget _buildHeaderBar(BuildContext context, ThemesProvider theme) {
     return Row(
       children: [
-        IconButton(
-          onPressed: widget.onBack,
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-          ),
-          splashRadius: 20,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
+        CustomBackBtn(onBack: widget.onBack),
         const SizedBox(width: 8),
         Text(
           'Positions',
@@ -267,45 +255,68 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         Text(
           'P&L',
           style: MyntWebTextStyles.body(context,
-              darkColor: !_showMtm
-                  ? MyntColors.textPrimaryDark
-                  : MyntColors.textSecondaryDark,
-              lightColor: !_showMtm
-                  ? MyntColors.textPrimary
-                  : MyntColors.textSecondary,
+              color: !_showMtm
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
               fontWeight:
-                  !_showMtm ? MyntFonts.semiBold : MyntFonts.regular),
+                  !_showMtm ? MyntFonts.semiBold : MyntFonts.medium),
         ),
-        Transform.scale(
-          scale: 0.7,
-          child: Switch(
-            value: _showMtm,
-            onChanged: (val) {
-              ledger.clickchangemtmandpnl = !val;
-              setState(() {
-                _showMtm = val;
-              });
-            },
-            activeTrackColor: resolveThemeColor(context,
-                dark: MyntColors.primaryDark, light: MyntColors.primary),
-            inactiveTrackColor: resolveThemeColor(context,
-                dark: MyntColors.primaryDark, light: MyntColors.primary),
-            thumbColor: WidgetStateProperty.all(Colors.white),
-            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () {
+            final newVal = !_showMtm;
+            ledger.clickchangemtmandpnl = !newVal;
+            setState(() {
+              _showMtm = newVal;
+            });
+          },
+          child: Container(
+            width: 36,
+            height: 20,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: _showMtm
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.secondary, light: MyntColors.primary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.secondary, light: MyntColors.primary),
+            ),
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  left: _showMtm ? 18 : 2,
+                  top: 2,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           'MTM',
           style: MyntWebTextStyles.body(context,
-              darkColor: _showMtm
-                  ? MyntColors.textPrimaryDark
-                  : MyntColors.textSecondaryDark,
-              lightColor: _showMtm
-                  ? MyntColors.textPrimary
-                  : MyntColors.textSecondary,
+              color: _showMtm
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
               fontWeight:
-                  _showMtm ? MyntFonts.semiBold : MyntFonts.regular),
+                  _showMtm ? MyntFonts.semiBold : MyntFonts.medium),
         ),
         const SizedBox(width: 12),
         // Script count
@@ -334,38 +345,39 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         ),
         const SizedBox(width: 8),
         // Filter button
-        Builder(
-          builder: (buttonContext) {
-            return SizedBox(
-              width: 40,
-              height: 40,
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () => _showFilterPopover(buttonContext),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        'assets/icon/search-filter.svg',
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          resolveThemeColor(context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+        // Builder(
+        //   builder: (buttonContext) {
+        //     return SizedBox(
+        //       width: 40,
+        //       height: 40,
+        //       child: MouseRegion(
+        //         cursor: SystemMouseCursors.click,
+        //         child: GestureDetector(
+        //           onTap: () => _showFilterPopover(buttonContext),
+        //           child: Container(
+        //             decoration: BoxDecoration(
+        //               borderRadius: BorderRadius.circular(8),
+        //             ),
+        //             child: Center(
+        //               child: SvgPicture.asset(
+        //                 'assets/icon/search-filter.svg',
+        //                 width: 18,
+        //                 height: 18,
+        //                 colorFilter: ColorFilter.mode(
+        //                   resolveThemeColor(context,
+        //                       dark: MyntColors.textSecondaryDark,
+        //                       light: MyntColors.textSecondary),
+        //                   BlendMode.srcIn,
+        //                 ),
+        //               ),
+        //             ),
+        //           ),
+        //         ),
+        //       ),
+        //     );
+        //   },
+        // ),
+        // const SizedBox(width: 8),
         const SizedBox(width: 8),
         InkWell(
           onTap: () => ledger.fetchposition(context),
@@ -656,8 +668,8 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         '${parsed["symbol"]}'.replaceAll('-EQ', '');
     final expText = '${parsed["expDate"]}';
     final optionText = '${parsed["option"]}';
-    final displaySymbol = '$symbolText $expText $optionText'.trim();
     final exchange = p.exch?.toString() ?? '';
+    final displaySymbol = '$symbolText $expText $optionText'.trim();
 
     final netqty = _safeDouble(p.netqty);
     final avgPrice = _showMtm
@@ -696,23 +708,23 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         _buildDataCell(
           rowIndex: index,
           columnIndex: 0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                displaySymbol,
-                style: _getTextStyle(context, fontWeight: MyntFonts.semiBold),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-              Text(
-                exchange,
-                style: MyntWebTextStyles.caption(context,
-                    darkColor: MyntColors.textSecondaryDark,
-                    lightColor: MyntColors.textSecondary),
-              ),
-            ],
+          child: RichText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: displaySymbol,
+                  style: _getTextStyle(context, fontWeight: MyntFonts.semiBold),
+                ),
+                TextSpan(
+                  text: ' $exchange',
+                  style: MyntWebTextStyles.caption(context,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary),
+                ),
+              ],
+            ),
           ),
         ),
         // Qty
@@ -947,7 +959,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
                       light: MyntColors.primary,
                     ).withValues(alpha: 0.08)
                   : null,
-              alignment: alignRight ? Alignment.topRight : null,
+              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
             );
           },

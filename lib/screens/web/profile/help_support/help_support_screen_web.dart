@@ -477,7 +477,8 @@ class _HelpSupportScreenWebState extends ConsumerState<HelpSupportScreenWeb> {
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitEnquiry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: resolveThemeColor(context,
+                    dark: MyntColors.secondary, light: MyntColors.primary),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

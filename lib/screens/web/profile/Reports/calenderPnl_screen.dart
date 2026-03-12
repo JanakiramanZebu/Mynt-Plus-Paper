@@ -13,6 +13,7 @@ import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 
 class CalenderpnlScreen extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -23,9 +24,16 @@ class CalenderpnlScreen extends ConsumerStatefulWidget {
   ConsumerState<CalenderpnlScreen> createState() => _CalenderpnlScreenState();
 }
 
-class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
+class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
+    with ScrollToLoadMixin {
+  final ScrollController _tableScrollController = ScrollController();
+
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
+
   bool _isInitialized = false;
   int _selectedSegmentIndex = 0;
+  bool _isDateWiseView = true;
 
   // Expandable date rows
   final Set<DateTime> _expandedDates = {};
@@ -46,6 +54,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
   @override
   void initState() {
     super.initState();
+    initScrollToLoad();
     // Initialize dates from provider
     final lp = ref.read(ledgerProvider);
     _startDate = lp.startTaxDate;
@@ -95,6 +104,8 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
 
   @override
   void dispose() {
+    disposeScrollToLoad();
+    _tableScrollController.dispose();
     _hoveredRowKey.dispose();
     super.dispose();
   }
@@ -180,6 +191,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
     setState(() {
       _selectedSegmentIndex = index;
       _expandedDates.clear();
+      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
     });
     ledgerprovider.switchToSegment(
       context,
@@ -207,14 +219,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
             Expanded(
               child: Stack(
                 children: [
-                  MyntLoaderOverlay(
-                    isLoading: isLoading,
-                    child: ledgerprovider.calenderpnlAllData == null &&
-                            !isLoading
-                        ? const Center(
+                  isLoading
+                      ? Center(child: MyntLoader.simple())
+                      : ledgerprovider.calenderpnlAllData == null
+                          ? const Center(
                             child: NoDataFound(secondaryEnabled: false))
                         : _buildBody(context, theme, ledgerprovider),
-                  ),
                   // Date picker overlay
                   if (_showDatePickerPopup) ...[
                     Positioned.fill(
@@ -249,7 +259,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'P&L Summary',
+              'Calender P&L',
               style: MyntWebTextStyles.head(context,
                   darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textPrimary,
@@ -325,6 +335,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
     final double netValue = (data?.realized ?? 0.0) - (data?.totalCharges ?? 0.0);
 
     return SingleChildScrollView(
+      controller: _tableScrollController,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -356,11 +367,20 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Date-wise list with expandable rows
+          // Date Wise / Script Wise tabs
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _buildDateWiseSection(
-                context, sortedDates, ledgerprovider, isCommodity),
+            child: _buildViewTabs(context),
+          ),
+          const SizedBox(height: 16),
+          // Table content based on selected tab
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _isDateWiseView
+                ? _buildDateWiseSection(
+                    context, sortedDates, ledgerprovider, isCommodity)
+                : _buildScriptWiseSection(
+                    context, sortedDates, ledgerprovider, isCommodity),
           ),
           const SizedBox(height: 24),
         ],
@@ -423,62 +443,389 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-              child: _buildSummaryCard(
-                  context, 'Realised P&L', realized, _getPnlColor(context, realized))),
-          const SizedBox(width: 12),
-          Expanded(
-              child: _buildSummaryCard(context, 'Unrealised P&L', unrealized,
-                  _getPnlColor(context, unrealized))),
-          const SizedBox(width: 12),
-          Expanded(
-              child: _buildSummaryCard(context, 'Charges & Taxes', charges,
-                  resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary))),
-          const SizedBox(width: 12),
-          Expanded(
-              child: _buildSummaryCard(
-                  context, 'Net Realised P&L', netValue, _getPnlColor(context, netValue))),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final columns = constraints.maxWidth >= 800 ? 4 : 2;
+          return GridView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: columns,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              mainAxisExtent: 115,
+            ),
+            children: [
+              _buildSummaryCard(context, 'Realised P&L', realized),
+              _buildSummaryCard(context, 'Unrealised P&L', unrealized),
+              _buildSummaryCard(context, 'Charges & Taxes', charges,
+                  isNeutral: true),
+              _buildSummaryCard(context, 'Net Realised P&L', netValue),
+            ],
+          );
+        },
       ),
     );
   }
 
   Widget _buildSummaryCard(
-      BuildContext context, String title, double value, Color valueColor) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: resolveThemeColor(context,
-              dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder),
+      BuildContext context, String label, double value,
+      {bool isNeutral = false}) {
+    final valueColor = isNeutral || value == 0
+        ? resolveThemeColor(context,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
+        : _getPnlColor(context, value);
+
+    return shadcn.Theme(
+      data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
+      child: shadcn.Card(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              const SizedBox(width: 1),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      _formatAmount(value),
+                      style: MyntWebTextStyles.head(
+                        context,
+                        color: valueColor,
+                        fontWeight: MyntFonts.medium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-        color: resolveThemeColor(
-            context, dark: MyntColors.cardDark, light: MyntColors.card),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: MyntWebTextStyles.para(context,
-                darkColor: MyntColors.textSecondaryDark,
-                lightColor: MyntColors.textSecondary),
+    );
+  }
+
+  // --- Date Wise / Script Wise Tabs ---
+  Widget _buildViewTabs(BuildContext context) {
+    return Row(
+      children: [
+        _buildViewTab('Date Wise', _isDateWiseView),
+        const SizedBox(width: 24),
+        _buildViewTab('Script Wise', !_isDateWiseView),
+      ],
+    );
+  }
+
+  Widget _buildViewTab(String label, bool isActive) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _isDateWiseView = label == 'Date Wise';
+            displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isActive
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary)
+                    : Colors.transparent,
+                width: 2,
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            _formatAmount(value),
-            style: MyntWebTextStyles.title(context,
-                darkColor: valueColor,
-                lightColor: valueColor,
-                fontWeight: FontWeight.w600),
+          child: Text(
+            label,
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight: isActive ? MyntFonts.semiBold : MyntFonts.medium,
+            ).copyWith(
+              color: isActive
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+            ),
           ),
-        ],
+        ),
       ),
+    );
+  }
+
+  // --- Script Wise Section ---
+  Widget _buildScriptWiseSection(BuildContext context, List<DateTime> sortedDates,
+      LDProvider ledgerprovider, bool isCommodity) {
+    // Aggregate trades by symbol
+    final Map<String, _ScriptWiseRowData> scriptMap = {};
+
+    if (isCommodity && ledgerprovider.calenderpnlAllData?.symbolWise != null) {
+      // Use symbolWise data from commodity response
+      (ledgerprovider.calenderpnlAllData!.symbolWise as Map)
+          .forEach((symbol, symbolData) {
+        final buyQty = (symbolData['buy_qty'] ?? 0).toDouble();
+        final buyAmt = (symbolData['buy_amt'] ?? 0).toDouble();
+        final sellQty = (symbolData['sell_qty'] ?? 0).toDouble();
+        final sellAmt = (symbolData['sell_amt'] ?? 0).toDouble();
+        final netQty = (symbolData['net_qty'] ?? 0).toDouble();
+        final closePrice = (symbolData['close_price'] ?? 0).toDouble();
+        final realisedPnl = (symbolData['realised_pnl'] ?? 0).toDouble();
+
+        scriptMap[symbol] = _ScriptWiseRowData(
+          symbol: symbol,
+          buyQty: buyQty,
+          buyRate: buyQty > 0 ? buyAmt / buyQty : 0,
+          buyAmt: buyAmt,
+          sellQty: sellQty,
+          sellRate: sellQty > 0 ? sellAmt / sellQty : 0,
+          sellAmt: sellAmt,
+          netQty: netQty,
+          closePrice: closePrice,
+          realisedPnl: realisedPnl,
+        );
+      });
+    } else {
+      // Aggregate from trades list for equity/FNO
+      for (final dateKey in sortedDates) {
+        final trades = ledgerprovider.grouped[dateKey] ?? [];
+        for (final trade in trades) {
+          final symbol = trade.sCRIPSYMBOL ?? '';
+          if (symbol.isEmpty) continue;
+
+          final existing = scriptMap[symbol];
+          final buyQty = trade.safeBuyQty.toDouble();
+          final buyRate = trade.safeBuyRate;
+          final buyAmt = double.tryParse(trade.bAMT ?? '0') ?? (buyQty * buyRate);
+          final sellQty = trade.safeSellQty.toDouble();
+          final sellRate = trade.safeSellRate;
+          final sellAmt = double.tryParse(trade.sAMT ?? '0') ?? (sellQty * sellRate);
+          final netQty = trade.safeNetQty.toDouble();
+          final closePrice = double.tryParse(trade.cLOSINGPRICE ?? '0') ?? 0;
+          final pnl = trade.safeRealisedPnl;
+
+          if (existing != null) {
+            scriptMap[symbol] = _ScriptWiseRowData(
+              symbol: symbol,
+              buyQty: existing.buyQty + buyQty,
+              buyRate: 0, // recalculate below
+              buyAmt: existing.buyAmt + buyAmt,
+              sellQty: existing.sellQty + sellQty,
+              sellRate: 0, // recalculate below
+              sellAmt: existing.sellAmt + sellAmt,
+              netQty: existing.netQty + netQty,
+              closePrice: closePrice,
+              realisedPnl: existing.realisedPnl + pnl,
+            );
+          } else {
+            scriptMap[symbol] = _ScriptWiseRowData(
+              symbol: symbol,
+              buyQty: buyQty,
+              buyRate: buyRate,
+              buyAmt: buyAmt,
+              sellQty: sellQty,
+              sellRate: sellRate,
+              sellAmt: sellAmt,
+              netQty: netQty,
+              closePrice: closePrice,
+              realisedPnl: pnl,
+            );
+          }
+        }
+      }
+      // Recalculate avg rates
+      for (final key in scriptMap.keys) {
+        final row = scriptMap[key]!;
+        scriptMap[key] = _ScriptWiseRowData(
+          symbol: row.symbol,
+          buyQty: row.buyQty,
+          buyRate: row.buyQty > 0 ? row.buyAmt / row.buyQty : 0,
+          buyAmt: row.buyAmt,
+          sellQty: row.sellQty,
+          sellRate: row.sellQty > 0 ? row.sellAmt / row.sellQty : 0,
+          sellAmt: row.sellAmt,
+          netQty: row.netQty,
+          closePrice: row.closePrice,
+          realisedPnl: row.realisedPnl,
+        );
+      }
+    }
+
+    final scriptRows = scriptMap.values.toList();
+
+    if (scriptRows.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.only(top: 30),
+          child: NoDataFound(secondaryEnabled: false),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double totalWidth = constraints.maxWidth;
+        final columnWidths = {
+          0: shadcn.FixedTableSize(totalWidth * 0.22),
+          1: shadcn.FixedTableSize(totalWidth * 0.10),
+          2: shadcn.FixedTableSize(totalWidth * 0.11),
+          3: shadcn.FixedTableSize(totalWidth * 0.10),
+          4: shadcn.FixedTableSize(totalWidth * 0.11),
+          5: shadcn.FixedTableSize(totalWidth * 0.10),
+          6: shadcn.FixedTableSize(totalWidth * 0.12),
+          7: shadcn.FixedTableSize(totalWidth * 0.14),
+        };
+
+        return shadcn.OutlinedContainer(
+          child: shadcn.Table(
+            defaultRowHeight: const shadcn.FixedTableSize(57),
+            columnWidths: columnWidths,
+            rows: [
+              shadcn.TableHeader(
+                cells: [
+                  _buildTableHeaderCell('Script Symbol'),
+                  _buildTableHeaderCell('Buy qty', alignRight: true),
+                  _buildTableHeaderCell('Buy rate', alignRight: true),
+                  _buildTableHeaderCell('Sell qty', alignRight: true),
+                  _buildTableHeaderCell('Sell rate', alignRight: true),
+                  _buildTableHeaderCell('Net Qty', alignRight: true),
+                  _buildTableHeaderCell('Close Price', alignRight: true),
+                  _buildTableHeaderCell('Realisedpnl', alignRight: true),
+                ],
+              ),
+              ...takeDisplayed(scriptRows).asMap().entries.map((entry) {
+                final row = entry.value;
+                final rowKey = 'script_${entry.key}_${row.symbol}';
+
+                return shadcn.TableRow(
+                  cells: [
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      child: Tooltip(
+                        message: row.symbol,
+                        child: GestureDetector(
+                          onTap: () => _showSymbolPnlDialog(context, row.symbol, row.symbol),
+                          child: Text(
+                            row.symbol,
+                            style: _getTextStyle(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary)),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Text(
+                        row.buyQty.toStringAsFixed(2),
+                        style: _getTextStyle(context),
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            row.buyRate.toStringAsFixed(2),
+                            style: _getTextStyle(context),
+                          ),
+                          Text(
+                            row.buyAmt.toStringAsFixed(2),
+                            style: MyntWebTextStyles.caption(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Text(
+                        row.sellQty.toStringAsFixed(2),
+                        style: _getTextStyle(context),
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            row.sellRate.toStringAsFixed(2),
+                            style: _getTextStyle(context),
+                          ),
+                          Text(
+                            row.sellAmt.toStringAsFixed(2),
+                            style: MyntWebTextStyles.caption(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Text(
+                        row.netQty.toStringAsFixed(2),
+                        style: _getTextStyle(context),
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Text(
+                        row.closePrice.toStringAsFixed(2),
+                        style: _getTextStyle(context),
+                      ),
+                    ),
+                    _buildTableDataCell(
+                      rowKey: rowKey,
+                      alignRight: true,
+                      child: Text(
+                        _formatAmount(row.realisedPnl),
+                        style: _getTextStyle(context,
+                            color: _getPnlColor(context, row.realisedPnl)),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -546,7 +893,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
             children: [
               // Header row as shadcn Table
               shadcn.Table(
-                defaultRowHeight: const shadcn.FixedTableSize(44),
+                defaultRowHeight: const shadcn.FixedTableSize(57),
                 columnWidths: columnWidths,
                 rows: [
                   shadcn.TableHeader(
@@ -561,12 +908,19 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                 ],
               ),
               // Data rows
-              ...dateRows.asMap().entries.map((entry) {
+              ...takeDisplayed(dateRows).asMap().entries.map((entry) {
                 final index = entry.key;
                 final row = entry.value;
 
                 return Column(
                   children: [
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
                     // Date row as shadcn Table
                     InkWell(
                       onTap: () {
@@ -579,7 +933,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                         });
                       },
                       child: shadcn.Table(
-                        defaultRowHeight: const shadcn.FixedTableSize(44),
+                        defaultRowHeight: const shadcn.FixedTableSize(50),
                         columnWidths: columnWidths,
                         rows: [
                           shadcn.TableRow(
@@ -690,21 +1044,26 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
     );
   }
 
-  // --- Date row cell with hover ---
+  // --- Date row cell ---
   shadcn.TableCell _buildDateRowCell({
     required int rowIndex,
     required Widget child,
     bool alignRight = false,
   }) {
     return shadcn.TableCell(
-      theme: const shadcn.TableCellTheme(
-        border: shadcn.WidgetStatePropertyAll(
+      theme: shadcn.TableCellTheme(
+        border: const shadcn.WidgetStatePropertyAll(
           shadcn.Border(
             top: shadcn.BorderSide.none,
             bottom: shadcn.BorderSide.none,
             left: shadcn.BorderSide.none,
             right: shadcn.BorderSide.none,
           ),
+        ),
+        backgroundColor: shadcn.WidgetStatePropertyAll(
+          isDarkMode(context)
+              ? MyntColors.transparent
+              : MyntColors.overlayBg,
         ),
       ),
       child: Container(
@@ -1019,32 +1378,22 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth;
         // 8 columns: Symbol, Buy Qty, Buy Rate, Sell Qty, Sell Rate, Net Qty, Close Price, Realised P&L
-        final double symbolWidth = totalWidth * 0.22;
-        final double buyQtyWidth = totalWidth * 0.10;
-        final double buyRateWidth = totalWidth * 0.11;
-        final double sellQtyWidth = totalWidth * 0.10;
-        final double sellRateWidth = totalWidth * 0.11;
-        final double netQtyWidth = totalWidth * 0.10;
-        final double closePriceWidth = totalWidth * 0.12;
-        final double realisedWidth = totalWidth * 0.14;
-
         final columnWidths = {
-          0: shadcn.FixedTableSize(symbolWidth),
-          1: shadcn.FixedTableSize(buyQtyWidth),
-          2: shadcn.FixedTableSize(buyRateWidth),
-          3: shadcn.FixedTableSize(sellQtyWidth),
-          4: shadcn.FixedTableSize(sellRateWidth),
-          5: shadcn.FixedTableSize(netQtyWidth),
-          6: shadcn.FixedTableSize(closePriceWidth),
-          7: shadcn.FixedTableSize(realisedWidth),
+          0: shadcn.FixedTableSize(totalWidth * 0.24),
+          1: shadcn.FixedTableSize(totalWidth * 0.09),
+          2: shadcn.FixedTableSize(totalWidth * 0.12),
+          3: shadcn.FixedTableSize(totalWidth * 0.09),
+          4: shadcn.FixedTableSize(totalWidth * 0.12),
+          5: shadcn.FixedTableSize(totalWidth * 0.09),
+          6: shadcn.FixedTableSize(totalWidth * 0.11),
+          7: shadcn.FixedTableSize(totalWidth * 0.14),
         };
 
         return Container(
           color: resolveThemeColor(context,
               dark: MyntColors.cardDark, light: MyntColors.cardHover),
-          padding: const EdgeInsets.only(left: 0, right: 0, bottom: 0),
           child: shadcn.Table(
-            defaultRowHeight: const shadcn.FixedTableSize(42),
+            defaultRowHeight: const shadcn.FixedTableSize(57),
             columnWidths: columnWidths,
             rows: [
               // Header
@@ -1064,23 +1413,75 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
               ...trades.asMap().entries.map((entry) {
                 final index = entry.key;
                 final trade = entry.value;
-                final symbol = (trade.sCRIPSYMBOL ?? '')
-                    .replaceFirst(RegExp(r'^\d+\s+'), '');
+                final scripName = trade.sCRIPNAME ?? '';
+                final scripSymbol = trade.sCRIPSYMBOL ?? '';
+                final displaySymbol = scripSymbol.isNotEmpty ? scripSymbol : scripName;
                 final realisedPnl =
                     double.tryParse(trade.realisedpnl ?? '0') ?? 0.0;
-                final rowKey = '${trade.tRADEDATE}_${index}_$symbol';
+                final rowKey = '${trade.tRADEDATE}_${index}_$scripSymbol';
+                final openQty = trade.safeOpenQty;
+                final openRate = trade.safeOpenRate;
+                final buyAmt = double.tryParse(trade.bAMT ?? '0') ?? (trade.safeBuyQty * trade.safeBuyRate);
+                final sellAmt = double.tryParse(trade.sAMT ?? '0') ?? (trade.safeSellQty * trade.safeSellRate);
 
                 return shadcn.TableRow(
                   cells: [
+                    // Symbol cell with company code + open qty badge
                     _buildTableDataCell(
                       rowKey: rowKey,
-                      child: Text(
-                        symbol.isNotEmpty ? symbol : '--',
-                        style: _getTextStyle(context),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                      child: Tooltip(
+                        message: displaySymbol.isNotEmpty ? displaySymbol : '--',
+                        child: GestureDetector(
+                        onTap: () => _showSymbolPnlDialog(context, scripSymbol, displaySymbol),
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  displaySymbol.isNotEmpty ? displaySymbol : '--',
+                                  style: _getTextStyle(context,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textPrimaryDark,
+                                          light: MyntColors.textPrimary)),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              if (openQty != 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.profitDark,
+                                          light: MyntColors.profit),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '${openQty.abs()} @ ${openRate.toStringAsFixed(4)}',
+                                    style: MyntWebTextStyles.caption(context,
+                                        color: resolveThemeColor(context,
+                                            dark: MyntColors.profitDark,
+                                            light: MyntColors.profit),
+                                        fontWeight: MyntFonts.medium),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                      ),
                       ),
                     ),
+                    // Buy Qty
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
@@ -1089,14 +1490,29 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                         style: _getTextStyle(context),
                       ),
                     ),
+                    // Buy Rate — rate on top, amount below
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
-                      child: Text(
-                        _formatPrice(trade.bRATE),
-                        style: _getTextStyle(context),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _formatPrice(trade.bRATE),
+                            style: _getTextStyle(context),
+                          ),
+                          Text(
+                            buyAmt.toStringAsFixed(2),
+                            style: MyntWebTextStyles.caption(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    // Sell Qty
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
@@ -1105,14 +1521,29 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                         style: _getTextStyle(context),
                       ),
                     ),
+                    // Sell Rate — rate on top, amount below
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
-                      child: Text(
-                        _formatPrice(trade.sRATE),
-                        style: _getTextStyle(context),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            _formatPrice(trade.sRATE),
+                            style: _getTextStyle(context),
+                          ),
+                          Text(
+                            sellAmt.toStringAsFixed(2),
+                            style: MyntWebTextStyles.caption(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    // Net Qty
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
@@ -1121,6 +1552,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                         style: _getTextStyle(context),
                       ),
                     ),
+                    // Close Price
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
@@ -1129,11 +1561,12 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                         style: _getTextStyle(context),
                       ),
                     ),
+                    // Realised P&L
                     _buildTableDataCell(
                       rowKey: rowKey,
                       alignRight: true,
                       child: Text(
-                        _formatAmount(realisedPnl),
+                        realisedPnl == 0 ? '0' : _formatAmount(realisedPnl),
                         style: _getTextStyle(context,
                             color: _getPnlColor(context, realisedPnl)),
                       ),
@@ -1142,6 +1575,305 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen> {
                 );
               }),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  // --- Symbol P&L Insights Dialog ---
+  void _showSymbolPnlDialog(
+      BuildContext context, String scripSymbol, String displaySymbol) {
+    final ledgerprovider = ref.read(ledgerProvider);
+    // Collect all trades for this symbol across all dates
+    final List<TradeData> symbolTrades = [];
+    ledgerprovider.grouped.forEach((date, trades) {
+      for (final trade in trades) {
+        if ((trade.sCRIPSYMBOL ?? '') == scripSymbol) {
+          symbolTrades.add(trade);
+        }
+      }
+    });
+
+    if (symbolTrades.isEmpty) return;
+
+    // Sort by trade date
+    symbolTrades.sort((a, b) =>
+        (a.tRADEDATE ?? '').compareTo(b.tRADEDATE ?? ''));
+
+    final dark = isDarkMode(context);
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor:
+              dark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100, maxHeight: 600),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 16, 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'P&L Insights',
+                              style: MyntWebTextStyles.title(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Straight to the point about profit and loss analysis.',
+                              style: MyntWebTextStyles.caption(
+                                context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textSecondaryDark,
+                                    light: MyntColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        icon: Icon(Icons.close,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Table
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double totalWidth = constraints.maxWidth;
+                        final columnWidths = {
+                          0: shadcn.FixedTableSize(totalWidth * 0.22),
+                          1: shadcn.FixedTableSize(totalWidth * 0.09),
+                          2: shadcn.FixedTableSize(totalWidth * 0.12),
+                          3: shadcn.FixedTableSize(totalWidth * 0.09),
+                          4: shadcn.FixedTableSize(totalWidth * 0.12),
+                          5: shadcn.FixedTableSize(totalWidth * 0.10),
+                          6: shadcn.FixedTableSize(totalWidth * 0.12),
+                          7: shadcn.FixedTableSize(totalWidth * 0.14),
+                        };
+                        return shadcn.Table(
+                          defaultRowHeight: const shadcn.FixedTableSize(57),
+                          columnWidths: columnWidths,
+                          rows: [
+                            shadcn.TableHeader(
+                              cells: [
+                                _buildTableHeaderCell('Script Symbol'),
+                                _buildTableHeaderCell('Buy qty',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Buy rate',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Sell qty',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Sell rate',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Net Qty',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Close Price',
+                                    alignRight: true),
+                                _buildTableHeaderCell('Realisedpnl',
+                                    alignRight: true),
+                              ],
+                            ),
+                            ...symbolTrades.asMap().entries.map((entry) {
+                              final idx = entry.key;
+                              final t = entry.value;
+                              final rKey = 'dialog_${idx}_$scripSymbol';
+                              final buyAmt = double.tryParse(t.bAMT ?? '0') ??
+                                  (t.safeBuyQty * t.safeBuyRate);
+                              final sellAmt =
+                                  double.tryParse(t.sAMT ?? '0') ??
+                                      (t.safeSellQty * t.safeSellRate);
+                              final netQty = t.safeNetQty;
+                              final netAmt = double.tryParse(t.nRATE ?? '0') ?? 0.0;
+                              final realisedPnl = t.safeRealisedPnl;
+                              final tradeDate = t.tRADEDATE != null ? t.tRADEDATE!.split('T').first : '';
+
+                              return shadcn.TableRow(
+                                cells: [
+                                  // Symbol + date
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    child: Tooltip(
+                                      message: displaySymbol,
+                                      child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          displaySymbol,
+                                          style: _getTextStyle(context,
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors
+                                                      .textPrimaryDark,
+                                                  light: MyntColors
+                                                      .textPrimary)),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                        if (tradeDate.isNotEmpty)
+                                          Text(
+                                            tradeDate,
+                                            style: MyntWebTextStyles.caption(context,
+                                              darkColor: MyntColors.textSecondaryDark,
+                                              lightColor: MyntColors.textSecondary,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    ),
+                                  ),
+                                  // Buy Qty
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Text(
+                                      t.safeBuyQty.toStringAsFixed(2),
+                                      style: _getTextStyle(context),
+                                    ),
+                                  ),
+                                  // Buy Rate + amount
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          _formatPrice(t.bRATE),
+                                          style: _getTextStyle(context),
+                                        ),
+                                        Text(
+                                          buyAmt.toStringAsFixed(2),
+                                          style: MyntWebTextStyles.caption(context,
+                                            darkColor: MyntColors.textSecondaryDark,
+                                            lightColor: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Sell Qty
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Text(
+                                      t.safeSellQty.toStringAsFixed(2),
+                                      style: _getTextStyle(context),
+                                    ),
+                                  ),
+                                  // Sell Rate + amount
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          _formatPrice(t.sRATE),
+                                          style: _getTextStyle(context),
+                                        ),
+                                        Text(
+                                          sellAmt.toStringAsFixed(2),
+                                          style: MyntWebTextStyles.caption(context,
+                                            darkColor: MyntColors.textSecondaryDark,
+                                            lightColor: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Net Qty + amount
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          netQty.toStringAsFixed(2),
+                                          style: _getTextStyle(context),
+                                        ),
+                                        Text(
+                                          netAmt.toStringAsFixed(2),
+                                          style: MyntWebTextStyles.caption(context,
+                                            darkColor: MyntColors.textSecondaryDark,
+                                            lightColor: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Close Price
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Text(
+                                      _formatPrice(t.cLOSINGPRICE),
+                                      style: _getTextStyle(context),
+                                    ),
+                                  ),
+                                  // Realised P&L
+                                  _buildTableDataCell(
+                                    rowKey: rKey,
+                                    alignRight: true,
+                                    child: Text(
+                                      realisedPnl == 0
+                                          ? '0'
+                                          : _formatAmount(realisedPnl),
+                                      style: _getTextStyle(context,
+                                          color: _getPnlColor(
+                                              context, realisedPnl)),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -1323,7 +2055,8 @@ class _WebCalendarTabsState extends State<_WebCalendarTabs> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: resolveThemeColor(context,
-              dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder),
+              // dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder),
+              dark: MyntColors.transparent, light: MyntColors.transparent),
         ),
         color: resolveThemeColor(
             context, dark: MyntColors.cardDark, light: MyntColors.card),
@@ -1334,9 +2067,9 @@ class _WebCalendarTabsState extends State<_WebCalendarTabs> {
           // Monthly / Daily toggle
           Row(
             children: [
-              _buildTabButton('Monthly', widget.isMonthly),
-              const SizedBox(width: 8),
               _buildTabButton('Daily', !widget.isMonthly),
+              const SizedBox(width: 8),
+              _buildTabButton('Monthly', widget.isMonthly),
             ],
           ),
           const SizedBox(height: 16),
@@ -1357,30 +2090,31 @@ class _WebCalendarTabsState extends State<_WebCalendarTabs> {
   }
 
   Widget _buildTabButton(String label, bool isActive) {
-    return InkWell(
-      onTap: () => widget.onTabChanged(label == 'Monthly'),
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => widget.onTabChanged(label == 'Monthly'),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+           decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(6),
           color: isActive
-              ? resolveThemeColor(context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary)
-                  .withValues(alpha: 0.1)
-              : null,
-        ),
-        child: Text(
-          label,
-          style: MyntWebTextStyles.para(
-            context,
-            darkColor: isActive
-                ? MyntColors.primaryDark
-                : MyntColors.textSecondaryDark,
-            lightColor:
-                isActive ? MyntColors.primary : MyntColors.textSecondary,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                ? (isDarkMode(context)
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05))
+                : Colors.transparent,
+          ),
+          child: Text(
+            label,
+            style: MyntWebTextStyles.body(
+              context,
+              fontWeight:
+                  isActive ? MyntFonts.semiBold : MyntFonts.medium,
+            ).copyWith(
+              color: isActive
+                  ? shadcn.Theme.of(context).colorScheme.foreground
+                  : shadcn.Theme.of(context).colorScheme.mutedForeground,
+            ),
           ),
         ),
       ),
@@ -1398,8 +2132,8 @@ class _WebCalendarTabsState extends State<_WebCalendarTabs> {
 
     // 4 columns per row
     final rows = <List<DateTime>>[];
-    for (int i = 0; i < months.length; i += 4) {
-      final endIndex = (i + 4 > months.length) ? months.length : (i + 4);
+    for (int i = 0; i < months.length; i += 6) {
+      final endIndex = (i + 6 > months.length) ? months.length : (i + 6);
       rows.add(months.sublist(i, endIndex));
     }
 
@@ -1416,7 +2150,7 @@ class _WebCalendarTabsState extends State<_WebCalendarTabs> {
               }),
               // Fill remaining slots
               ...List.generate(
-                4 - row.length,
+                6 - row.length,
                 (_) => const Expanded(child: SizedBox()),
               ),
             ],
@@ -1614,15 +2348,13 @@ class _WebDailyCalendar extends StatelessWidget {
           if (value == null) {
             bgColor = emptyColor;
           } else if (value < 0) {
-            final intensity = _getIntensity(value.abs());
+            // final intensity = _getIntensity(value.abs());
             bgColor = resolveThemeColor(context,
-                    dark: MyntColors.lossDark, light: MyntColors.loss)
-                .withValues(alpha: intensity);
+                    dark: MyntColors.lossDark, light: MyntColors.loss).withAlpha(900);
           } else {
-            final intensity = _getIntensity(value.abs());
+            // final intensity = _getIntensity(value.abs());
             bgColor = resolveThemeColor(context,
-                    dark: MyntColors.profitDark, light: MyntColors.profit)
-                .withValues(alpha: intensity);
+                    dark: MyntColors.profitDark, light: MyntColors.profit).withAlpha(900);
           }
 
           return Tooltip(
@@ -1787,5 +2519,31 @@ class _DateRowData {
     required this.totalRealisedPnl,
     required this.dateString,
     required this.isExpanded,
+  });
+}
+
+class _ScriptWiseRowData {
+  final String symbol;
+  final double buyQty;
+  final double buyRate;
+  final double buyAmt;
+  final double sellQty;
+  final double sellRate;
+  final double sellAmt;
+  final double netQty;
+  final double closePrice;
+  final double realisedPnl;
+
+  const _ScriptWiseRowData({
+    required this.symbol,
+    required this.buyQty,
+    required this.buyRate,
+    required this.buyAmt,
+    required this.sellQty,
+    required this.sellRate,
+    required this.sellAmt,
+    required this.netQty,
+    required this.closePrice,
+    required this.realisedPnl,
   });
 }

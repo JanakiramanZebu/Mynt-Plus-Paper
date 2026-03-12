@@ -4,7 +4,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/screens/web/profile/pledge/pledge_approve_list_screen.dart';
 import 'package:mynt_plus/screens/web/profile/pledge/pledge_history_main_screen.dart';
@@ -161,37 +160,39 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
       if (ledgerprovider.cdslWebWaiting && !ledgerprovider.cdslWebShowReport) {
         return Scaffold(
           appBar: AppBar(
-            backgroundColor:
-                theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            backgroundColor: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             leadingWidth: 41,
             titleSpacing: 6,
             centerTitle: false,
-            elevation: 0.2,
+            elevation: 0,
+          surfaceTintColor: Colors.transparent,
             leading: const SizedBox(),
-            title: TextWidget.titleText(
-                text: "CDSL Verification",
-                textOverflow: TextOverflow.ellipsis,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
-                fw: 1),
+            title: Text(
+                "CDSL Verification",
+                overflow: TextOverflow.ellipsis,
+                style: MyntWebTextStyles.title(context,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textPrimaryDark,
+                        light: MyntColors.textPrimary),
+                    fontWeight: MyntFonts.semiBold)),
           ),
           body: Container(
-            color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     'Awaiting CDSL confirmation',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                    ),
+                    style: MyntWebTextStyles.title(context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.semiBold),
                   ),
                   const SizedBox(height: 24),
                   // Animated dots
@@ -214,9 +215,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                   height: 8,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
+                                    color: resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark,
+                                        light: MyntColors.textSecondary),
                                   ),
                                 ),
                               ),
@@ -229,12 +230,10 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                   const SizedBox(height: 16),
                   Text(
                     'This will take a few seconds.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
-                    ),
+                    style: MyntWebTextStyles.bodySmall(context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary)),
                   ),
                   const SizedBox(height: 32),
                   SizedBox(
@@ -243,9 +242,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
-                        backgroundColor: theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight,
+                        backgroundColor: resolveThemeColor(context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -253,11 +252,10 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                       onPressed: () {
                         ledgerprovider.cancelCdslWebFlow();
                       },
-                      child: TextWidget.subText(
-                          text: "Cancel Transaction",
-                          color: colors.colorWhite,
-                          theme: theme.isDarkMode,
-                          fw: 2),
+                      child: Text("Cancel Transaction",
+                          style: MyntWebTextStyles.bodySmall(context,
+                              color: MyntColors.textWhite,
+                              fontWeight: MyntFonts.semiBold)),
                     ),
                   ),
                 ],
@@ -275,26 +273,27 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
 
       return Scaffold(
         appBar: AppBar(
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           // leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
           // leading: CustomBackBtn(onBack: () => context.go(WebRoutes.home)),
-          elevation: 0.2,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 16.0),
-                child: TextWidget.titleText(
-                    text: "Pledge",
-                    textOverflow: TextOverflow.ellipsis,
-                    color: theme.isDarkMode
-                        ? colors.textPrimaryDark
-                        : colors.textPrimaryLight,
-                    theme: theme.isDarkMode,
-                    fw: 1),
+                child: Text("Pledge",
+                    overflow: TextOverflow.ellipsis,
+                    style: MyntWebTextStyles.title(context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.semiBold)),
               ),
               Row(
                 children: [
@@ -304,12 +303,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
                       customBorder: const RoundedRectangleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
+                      splashColor: resolveThemeColor(context,
+                          dark: MyntColors.rippleDark,
+                          light: MyntColors.rippleLight),
+                      highlightColor: resolveThemeColor(context,
+                          dark: MyntColors.highlightDark,
+                          light: MyntColors.highlightLight),
                       onTap: () async {
                         ledgerprovider.fetchunpledgehistory(context);
                         ledgerprovider.fetchpledgehistory(context);
@@ -321,14 +320,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
-                        child: TextWidget.subText(
-                          text: "History",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.secondaryDark
-                              : colors.secondaryLight,
-                          fw: 2,
-                        ),
+                        child: Text("History",
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary),
+                                fontWeight: MyntFonts.semiBold)),
                       ),
                     ),
                   ),
@@ -339,12 +336,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                     clipBehavior: Clip.hardEdge,
                     child: InkWell(
                       customBorder: const RoundedRectangleBorder(),
-                      splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
-                      highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
+                      splashColor: resolveThemeColor(context,
+                          dark: MyntColors.rippleDark,
+                          light: MyntColors.rippleLight),
+                      highlightColor: resolveThemeColor(context,
+                          dark: MyntColors.highlightDark,
+                          light: MyntColors.highlightLight),
                       onTap: () async {
                         ledgerprovider.fetchapprovepledge();
                         setState(() {
@@ -354,14 +351,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
-                        child: TextWidget.subText(
-                          text: "Approve Securities",
-                          theme: false,
-                          color: theme.isDarkMode
-                              ? colors.secondaryDark
-                              : colors.secondaryLight,
-                          fw: 2,
-                        ),
+                        child: Text("Approve Securities",
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary),
+                                fontWeight: MyntFonts.semiBold)),
                       ),
                     ),
                   ),
@@ -373,9 +368,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
         body: ledgerprovider.pledgeloader
             ? Center(
                 child: Container(
-                  color: theme.isDarkMode
-                      ? colors.colorBlack
-                      : colors.colorWhite,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.backgroundColorDark,
+                      light: MyntColors.backgroundColor),
                   child: CircularLoaderImage(),
                 ),
               )
@@ -404,9 +399,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                         Divider(
                           height: 1,
                           thickness: 0.5,
-                          color: theme.isDarkMode
-                              ? colors.darkColorDivider
-                              : colors.colorDivider,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.dividerDark,
+                              light: MyntColors.divider),
                         ),
 
                         // ── Table ──
@@ -433,14 +428,14 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.backgroundColorDark,
+                                light: MyntColors.backgroundColor),
                             border: Border(
                               top: BorderSide(
-                                color: theme.isDarkMode
-                                    ? MyntColors.cardBorderDark
-                                    : MyntColors.cardBorder,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.cardBorderDark,
+                                    light: MyntColors.cardBorder),
                               ),
                             ),
                           ),
@@ -466,17 +461,14 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                   style:
                                       ElevatedButton.styleFrom(
                                     elevation: 0,
-                                    backgroundColor: theme
-                                            .isDarkMode
-                                        ? colors.textSecondaryDark
-                                            .withValues(
-                                                alpha: 0.6)
-                                        : colors.btnBg,
-                                    side: theme.isDarkMode
+                                    backgroundColor: resolveThemeColor(context,
+                                        dark: MyntColors.textSecondaryDark
+                                            .withValues(alpha: 0.6),
+                                        light: MyntColors.backgroundColor),
+                                    side: isDarkMode(context)
                                         ? null
                                         : BorderSide(
-                                            color: colors
-                                                .primaryLight,
+                                            color: MyntColors.primary,
                                             width: 1,
                                           ),
                                     padding: const EdgeInsets.symmetric(
@@ -488,13 +480,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                               5),
                                     ),
                                   ),
-                                  child: TextWidget.subText(
-                                      text: "Cancel",
-                                      color: theme.isDarkMode
-                                          ? colors.colorWhite
-                                          : colors.primaryLight,
-                                      theme: theme.isDarkMode,
-                                      fw: 2),
+                                  child: Text("Cancel",
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          color: resolveThemeColor(context,
+                                              dark: MyntColors.textWhite,
+                                              light: MyntColors.primary),
+                                          fontWeight: MyntFonts.semiBold)),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -506,10 +497,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                     elevation: 0,
                                     shadowColor:
                                         Colors.transparent,
-                                    backgroundColor: theme
-                                            .isDarkMode
-                                        ? colors.primaryDark
-                                        : colors.primaryLight,
+                                    backgroundColor: resolveThemeColor(context,
+                                        dark: MyntColors.primaryDark,
+                                        light: MyntColors.primary),
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 24),
                                     shape:
@@ -585,11 +575,10 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                               }
                                             }
                                           },
-                                  child: TextWidget.subText(
-                                      text: "Submit",
-                                      color: colors.colorWhite,
-                                      theme: theme.isDarkMode,
-                                      fw: 2),
+                                  child: Text("Submit",
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          color: MyntColors.textWhite,
+                                          fontWeight: MyntFonts.semiBold)),
                                 ),
                               ),
                             ],
@@ -677,28 +666,31 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
     final isDark = theme.isDarkMode;
     final borderColor =
         isDark ? MyntColors.cardBorderDark : MyntColors.cardBorder;
-    final textPrimary =
-        isDark ? colors.textPrimaryDark : colors.textPrimaryLight;
-    final textSecondary =
-        isDark ? colors.textSecondaryDark : colors.textSecondaryLight;
+    final textPrimary = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+    final textSecondary = resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: isDark ? colors.colorBlack : colors.colorWhite,
+        backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark,
+            light: MyntColors.backgroundColor),
         leadingWidth: 41,
         titleSpacing: 6,
         centerTitle: false,
-        elevation: 0.2,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: Material(
           color: Colors.transparent,
           shape: const CircleBorder(),
           clipBehavior: Clip.hardEdge,
           child: InkWell(
             customBorder: const CircleBorder(),
-            splashColor:
-                isDark ? colors.splashColorDark : colors.splashColorLight,
-            highlightColor:
-                isDark ? colors.highlightDark : colors.highlightLight,
+            splashColor: resolveThemeColor(context,
+                dark: MyntColors.rippleDark, light: MyntColors.rippleLight),
+            highlightColor: resolveThemeColor(context,
+                dark: MyntColors.highlightDark, light: MyntColors.highlightLight),
             onTap: () {
               ledgerprovider.resetCdslWebReport(context);
             },
@@ -714,12 +706,11 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
             ),
           ),
         ),
-        title: TextWidget.titleText(
-            text: "Pledge Report Details",
-            textOverflow: TextOverflow.ellipsis,
-            color: textPrimary,
-            theme: isDark,
-            fw: 1),
+        title: Text("Pledge Report Details",
+            overflow: TextOverflow.ellipsis,
+            style: MyntWebTextStyles.title(context,
+                color: textPrimary,
+                fontWeight: MyntFonts.semiBold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -791,12 +782,12 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                     borderRadius:
                                         BorderRadius.circular(4),
                                     color: status == '0'
-                                        ? colors.profitDark
+                                        ? MyntColors.profitDark
                                             .withValues(alpha: 0.15)
                                         : status == '1'
-                                            ? colors.lossDark
+                                            ? MyntColors.lossDark
                                                 .withValues(alpha: 0.15)
-                                            : colors.pending
+                                            : MyntColors.pending
                                                 .withValues(alpha: 0.15),
                                   ),
                                   child: Text(
@@ -805,19 +796,17 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                         : status == '1'
                                             ? 'Rejected'
                                             : 'Pending',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: status == '0'
-                                          ? isDark
-                                              ? colors.profitDark
-                                              : colors.profitLight
-                                          : status == '1'
-                                              ? isDark
-                                                  ? colors.lossDark
-                                                  : colors.lossLight
-                                              : colors.pending,
-                                    ),
+                                    style: MyntWebTextStyles.para(context,
+                                        fontWeight: MyntFonts.semiBold,
+                                        color: status == '0'
+                                            ? resolveThemeColor(context,
+                                                dark: MyntColors.profitDark,
+                                                light: MyntColors.profit)
+                                            : status == '1'
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.lossDark,
+                                                    light: MyntColors.loss)
+                                                : MyntColors.pending),
                                   ),
                                 ),
                               ],
@@ -918,26 +907,24 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                       borderRadius:
                                           BorderRadius.circular(4),
                                       color: isCompleted
-                                          ? colors.profitDark
+                                          ? MyntColors.profitDark
                                               .withValues(alpha: 0.15)
-                                          : colors.lossDark
+                                          : MyntColors.lossDark
                                               .withValues(alpha: 0.15),
                                     ),
                                     child: Text(
                                       isCompleted
                                           ? 'Completed'
                                           : 'Rejected',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: isCompleted
-                                            ? isDark
-                                                ? colors.profitDark
-                                                : colors.profitLight
-                                            : isDark
-                                                ? colors.lossDark
-                                                : colors.lossLight,
-                                      ),
+                                      style: MyntWebTextStyles.para(context,
+                                          fontWeight: MyntFonts.semiBold,
+                                          color: isCompleted
+                                              ? resolveThemeColor(context,
+                                                  dark: MyntColors.profitDark,
+                                                  light: MyntColors.profit)
+                                              : resolveThemeColor(context,
+                                                  dark: MyntColors.lossDark,
+                                                  light: MyntColors.loss)),
                                     ),
                                   ),
                                 ),
@@ -1193,9 +1180,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isActive
-                ? (theme.isDarkMode
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05))
+                ? resolveThemeColor(context,
+                    dark: Colors.white.withValues(alpha: 0.1),
+                    light: Colors.black.withValues(alpha: 0.05))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
@@ -1381,9 +1368,9 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
           message: tooltipLines,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: theme.isDarkMode
-                ? const Color(0xFF2A2A2A)
-                : colors.colorWhite,
+            color: resolveThemeColor(context,
+                dark: MyntColors.overlayBgDark,
+                light: MyntColors.overlayBg),
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
@@ -1488,26 +1475,27 @@ class _PledgeListDetailsState extends State<PledgeListDetails> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
-      final theme = ref.watch(themeProvider);
+      ref.watch(themeProvider);
       final ledgerprovider = ref.watch(ledgerProvider);
 
       return Scaffold(
         appBar: AppBar(
-          backgroundColor:
-              theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.backgroundColorDark,
+              light: MyntColors.backgroundColor),
           leadingWidth: 41,
           titleSpacing: 6,
           centerTitle: false,
           leading: const CustomBackBtn(),
-          elevation: 0.2,
-          title: TextWidget.titleText(
-              text: widget.title,
-              textOverflow: TextOverflow.ellipsis,
-              color: theme.isDarkMode
-                  ? colors.textPrimaryDark
-                  : colors.textPrimaryLight,
-              theme: theme.isDarkMode,
-              fw: 1),
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          title: Text(widget.title,
+              overflow: TextOverflow.ellipsis,
+              style: MyntWebTextStyles.title(context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                  fontWeight: MyntFonts.semiBold)),
         ),
         body: SafeArea(
           child: Column(

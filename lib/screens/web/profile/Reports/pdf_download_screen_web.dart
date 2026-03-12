@@ -9,6 +9,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 
 class PdfDownloadScreenWeb extends ConsumerStatefulWidget {
@@ -344,19 +345,7 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
   Widget _buildHeaderBar(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: widget.onBack,
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-          ),
-          splashRadius: 20,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
+        CustomBackBtn(onBack: widget.onBack),
         const SizedBox(width: 8),
         Text(
           'PDF Download',
@@ -476,15 +465,20 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
   void _showFilterPopover(BuildContext buttonContext) {
     shadcn.showPopover(
       context: buttonContext,
-      alignment: Alignment.topCenter,
+      alignment: Alignment.bottomCenter,
       offset: const Offset(0, 8),
       overlayBarrier: shadcn.OverlayBarrier(
-        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+        borderRadius: shadcn.Theme.of(buttonContext).borderRadiusLg,
       ),
       builder: (popoverContext) {
         return Container(
+          width: 180,
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.15),
@@ -494,52 +488,53 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
               ),
             ],
           ),
-          child: shadcn.ModalContainer(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: SizedBox(
-              width: 180,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: _filterOptions.map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                        ref
-                            .read(ledgerProvider)
-                            .filterAllPdfDownloads(filter);
-                        shadcn.closeOverlay(popoverContext);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _filterOptions.map((filter) {
+              final isSelected = _selectedFilter == filter;
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedFilter = filter;
+                  });
+                  ref.read(ledgerProvider).filterAllPdfDownloads(filter);
+                  shadcn.closeOverlay(popoverContext);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  color: isSelected
+                      ? resolveThemeColor(context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary)
+                          .withValues(alpha: 0.1)
+                      : null,
+                  child: Row(
+                    children: [
+                      Expanded(
                         child: Text(
                           filter,
-                          style: MyntWebTextStyles.bodySmall(
-                            context,
-                            color: isSelected
-                                ? resolveThemeColor(context,
-                                    dark: MyntColors.primaryDark,
-                                    light: MyntColors.primary)
-                                : resolveThemeColor(context,
-                                    dark: MyntColors.textPrimaryDark,
-                                    light: MyntColors.textPrimary),
-                            fontWeight: isSelected
-                                ? MyntFonts.semiBold
-                                : MyntFonts.regular,
-                          ),
+                          style: MyntWebTextStyles.bodySmall(context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                              fontWeight: isSelected
+                                  ? MyntFonts.semiBold
+                                  : MyntFonts.medium),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
+                      if (isSelected)
+                        Icon(Icons.check,
+                            size: 16,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         );
       },
@@ -668,12 +663,17 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
                     .read(ledgerProvider)
                     .downloadDocForWeb(context, recno, docFileName);
               },
-              child: Text(
-                docFileName,
-                style: _getTextStyle(context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.primaryDark,
-                        light: MyntColors.primary)),
+              child: Tooltip(
+                message: 'Click to download',
+                preferBelow: true,
+                verticalOffset: 10,
+                child: Text(
+                  docFileName,
+                  style: _getTextStyle(context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary)),
+                ),
               ),
             ),
           ),

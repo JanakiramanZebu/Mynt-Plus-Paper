@@ -10,7 +10,9 @@ import '../../../../provider/thems.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 import '../../../../models/desk_reports_model/contract_note_model.dart';
 
 class ContractNoteScreenWeb extends ConsumerStatefulWidget {
@@ -22,19 +24,18 @@ class ContractNoteScreenWeb extends ConsumerStatefulWidget {
       _ContractNoteScreenWebState();
 }
 
-class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
+class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
+    with ScrollToLoadMixin {
   final ScrollController _tableScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
 
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
+
   // Sorting state
   int? _sortColumnIndex;
   bool _sortAscending = true;
-
-  // Lazy loading
-  static const int _itemsPerPage = 20;
-  int _displayedItemCount = 20;
-  bool _isLoadingMore = false;
 
   // Calendar state
   late DateTime _calendarMonth;
@@ -44,31 +45,25 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
   @override
   void initState() {
     super.initState();
-    _tableScrollController.addListener(_onScroll);
-    _calendarMonth = DateTime.now();
+    initScrollToLoad();
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    _calendarMonth = DateTime(yesterday.year, yesterday.month);
+    _selectedDate = yesterday;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ledgerprovider = ref.read(ledgerProvider);
+      final dateStr =
+          '${yesterday.day.toString().padLeft(2, '0')}/${yesterday.month.toString().padLeft(2, '0')}/${yesterday.year}';
+      ledgerprovider.fetchContractNote(dateStr, dateStr);
+    });
   }
 
   @override
   void dispose() {
-    _tableScrollController.removeListener(_onScroll);
+    disposeScrollToLoad();
     _tableScrollController.dispose();
     _horizontalScrollController.dispose();
     _hoveredRowIndex.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_isLoadingMore) return;
-    final maxScroll = _tableScrollController.position.maxScrollExtent;
-    final currentScroll = _tableScrollController.position.pixels;
-    final threshold = maxScroll * 0.8;
-    if (currentScroll >= threshold) {
-      setState(() {
-        _isLoadingMore = true;
-        _displayedItemCount += _itemsPerPage;
-        _isLoadingMore = false;
-      });
-    }
   }
 
   void _onSort(int columnIndex) {
@@ -108,7 +103,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
         '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     setState(() {
       _selectedDate = date;
-      _displayedItemCount = _itemsPerPage;
+      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
       _showCalendar = false;
     });
     ledgerprovider.fetchContractNote(dateStr, dateStr);
@@ -138,27 +133,47 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                   const SizedBox(height: 12),
                 ],
                 _buildToolbar(context, theme, ledgerprovider),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Stack(
                     children: [
-                      // Trade table (left)
-                      Expanded(
+                      // Trade table (full width always)
+                      Positioned.fill(
                         child: ledgerprovider.isContractNoteLoading
                             ? Center(child: MyntLoader.simple())
                             : _buildTradeTable(
                                 context, theme, ledgerprovider),
                       ),
-                      // Calendar + Settlement (right) — only when toggled
-                      if (_showCalendar) ...[
-                        const SizedBox(width: 16),
-                        SizedBox(
+                      // Calendar overlay (right) — only when toggled
+                      if (_showCalendar)
+                        Positioned(
+                          top: 0,
+                          right: 0,
                           width: 300,
-                          child: _buildRightPanel(
-                              context, theme, ledgerprovider),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.backgroundColorDark,
+                                  light: MyntColors.backgroundColor),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(-4, 0),
+                                ),
+                              ],
+                              border: Border.all(
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.dividerDark,
+                                    light: MyntColors.divider),
+                              ),
+                            ),
+                            child: _buildCalendar(
+                               context, theme, ledgerprovider),
+                          ),
                         ),
-                      ],
                     ],
                   ),
                 ),
@@ -175,19 +190,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
   Widget _buildHeaderBar(BuildContext context, ThemesProvider theme) {
     return Row(
       children: [
-        IconButton(
-          onPressed: widget.onBack,
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-          ),
-          splashRadius: 20,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
+        CustomBackBtn(onBack: widget.onBack),
         const SizedBox(width: 8),
         Text(
           'Contract Note',
@@ -204,8 +207,6 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
       BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
     return Row(
       children: [
-        // Filter toggle: Combine / MCX
-        _buildFilterToggle(theme, ledgerprovider),
         const Spacer(),
         // Date picker button — click to toggle calendar
         InkWell(
@@ -272,58 +273,57 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
     );
   }
 
-  Widget _buildFilterToggle(ThemesProvider theme, LDProvider ledgerprovider) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: resolveThemeColor(context,
-            dark: MyntColors.cardDark, light: const Color(0xffF1F3F8)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: ledgerprovider.contractFilterOptions.map((filter) {
-          final isSelected =
-              ledgerprovider.selectedContractFilter == filter;
-          String displayName = filter == 'CN'
-              ? 'MCX'
-              : (filter == 'Contract' ? 'Combine' : filter);
-          return GestureDetector(
-            onTap: () {
-              ledgerprovider.setContractFilter(filter);
-            },
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? resolveThemeColor(context,
-                        dark: MyntColors.primaryDark,
-                        light: MyntColors.primary)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              child: Text(
-                displayName,
-                style: MyntWebTextStyles.para(
-                  context,
-                  color: isSelected ? Colors.white : null,
-                  fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.regular,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+  // Widget _buildFilterToggle(ThemesProvider theme, LDProvider ledgerprovider) {
+  //   return Row(
+  //     mainAxisSize: MainAxisSize.min,
+  //     children: ledgerprovider.contractFilterOptions.map((filter) {
+  //       final isSelected =
+  //           ledgerprovider.selectedContractFilter == filter;
+  //       String displayName = filter == 'CN'
+  //           ? 'MCX'
+  //           : (filter == 'Contract' ? 'Combine' : filter);
+  //       return MouseRegion(
+  //         cursor: SystemMouseCursors.click,
+  //         child: GestureDetector(
+  //           onTap: () {
+  //             ledgerprovider.setContractFilter(filter);
+  //           },
+  //           child: Container(
+  //             margin: const EdgeInsets.only(right: 8),
+  //             padding:
+  //                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //             decoration: BoxDecoration(
+  //               color: isSelected
+  //                   ? (theme.isDarkMode
+  //                       ? Colors.white.withValues(alpha: 0.1)
+  //                       : Colors.black.withValues(alpha: 0.05))
+  //                   : Colors.transparent,
+  //               borderRadius: BorderRadius.circular(6),
+  //             ),
+  //             child: Text(
+  //               displayName,
+  //               style: MyntWebTextStyles.body(
+  //                 context,
+  //                 fontWeight: isSelected ? MyntFonts.semiBold : MyntFonts.medium,
+  //               ).copyWith(
+  //                 color: isSelected
+  //                     ? shadcn.Theme.of(context).colorScheme.foreground
+  //                     : shadcn.Theme.of(context).colorScheme.mutedForeground,
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     }).toList(),
+  //   );
+  // }
 
   void _handleDownload(LDProvider ledgerprovider) {
     if (_selectedDate == null) return;
     final docs = ledgerprovider.contractDocumentDetails[_selectedDate!] ?? [];
-    final selectedType = ledgerprovider.selectedContractFilter;
+    // final selectedType = ledgerprovider.selectedContractFilter;
     final doc = docs.cast<DocumentDetail?>().firstWhere(
-          (d) => d != null && d.docType == selectedType,
+          (d) => d != null && d.docType == 'Contract',
           orElse: () => null,
         );
     if (doc != null) {
@@ -339,10 +339,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
     final allTrades = contractData?.common ?? [];
 
     // Filter by selected filter type
-    final selectedFilter = ledgerprovider.selectedContractFilter;
-    final trades = selectedFilter == 'CN'
-        ? allTrades.where((t) => (t.tradeExchange ?? '').toUpperCase().contains('MCX')).toList()
-        : allTrades; // 'Contract' = Combine (show all)
+    // final selectedFilter = ledgerprovider.selectedContractFilter;
+    // final trades = selectedFilter == 'CN'
+    //     ? allTrades.where((t) => (t.tradeExchange ?? '').toUpperCase().contains('MCX')).toList()
+    //     : allTrades; // 'Contract' = Combine (show all)
+    final trades = allTrades;
 
     // Sorting
     List<ContractNoteTrade> sortedTrades = List.from(trades);
@@ -419,7 +420,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
       );
     }
 
-    final hasSettlement = contractData?.settlement != null && contractData!.settlement!.isNotEmpty;
+    // Check settlement from Data level first, then top-level model
+    final settlementData = (contractData?.settlement != null && contractData!.settlement!.isNotEmpty)
+        ? contractData.settlement!
+        : ledgerprovider.contractNoteModel?.settlement;
+    final hasSettlement = settlementData != null && settlementData.isNotEmpty;
 
     return Column(
       children: [
@@ -429,16 +434,16 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final double totalWidth = constraints.maxWidth;
-              final double col0 = totalWidth * 0.15; // Symbol
-              final double col1 = totalWidth * 0.08; // Exchange
-              final double col2 = totalWidth * 0.09; // Order No
-              final double col3 = totalWidth * 0.09; // Trade No
-              final double col4 = totalWidth * 0.06; // B/S
-              final double col5 = totalWidth * 0.08; // Qty
+              final double col0 = totalWidth * 0.10; // Symbol
+              final double col1 = totalWidth * 0.05; // Exchange
+              final double col2 = totalWidth * 0.14; // Order No
+              final double col3 = totalWidth * 0.10; // Trade No
+              final double col4 = totalWidth * 0.04; // B/S
+              final double col5 = totalWidth * 0.05; // Qty
               final double col6 = totalWidth * 0.12; // Gross Rate
               final double col7 = totalWidth * 0.10; // Brokerage
-              final double col8 = totalWidth * 0.11; // Net Rate
-              final double col9 = totalWidth * 0.12; // Net Total
+              final double col8 = totalWidth * 0.15; // Net Rate
+              final double col9 = totalWidth * 0.15; // Net Total
 
               final columnWidths = {
                 0: shadcn.FixedTableSize(col0),
@@ -498,7 +503,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                             const shadcn.FixedTableSize(50),
                                         columnWidths: columnWidths,
                                         rows: sortedTrades
-                                            .take(_displayedItemCount)
+                                            .take(displayedItemCount)
                                             .toList()
                                             .asMap()
                                             .entries
@@ -561,8 +566,9 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 totalColumns: 10,
                                                 child: Text(
                                                   item.tradeExchange ?? '',
-                                                  style: _getTextStyle(
-                                                      context),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -571,8 +577,9 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 totalColumns: 10,
                                                 child: Text(
                                                   item.orderNumber ?? '',
-                                                  style: _getTextStyle(
-                                                      context),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -581,8 +588,9 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 totalColumns: 10,
                                                 child: Text(
                                                   item.tradeNumber ?? '',
-                                                  style: _getTextStyle(
-                                                      context),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -591,6 +599,8 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 totalColumns: 10,
                                                 child: Text(
                                                   item.buySale ?? '',
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                   style: _getTextStyle(
                                                     context,
                                                     color: isBuy
@@ -616,8 +626,9 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 alignRight: true,
                                                 child: Text(
                                                   item.quantity ?? '',
-                                                  style: _getTextStyle(
-                                                      context),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -627,12 +638,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 alignRight: true,
                                                 child: Text(
                                                   isBuy
-                                                      ? (item.buyPrice ??
-                                                          '')
-                                                      : (item.sellPrice ??
-                                                          ''),
-                                                  style: _getTextStyle(
-                                                      context),
+                                                      ? (item.buyPrice ?? '')
+                                                      : (item.sellPrice ?? ''),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -641,10 +651,10 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 totalColumns: 10,
                                                 alignRight: true,
                                                 child: Text(
-                                                  item.tradeBrokerage ??
-                                                      '',
-                                                  style: _getTextStyle(
-                                                      context),
+                                                  item.tradeBrokerage ?? '',
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -654,12 +664,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 alignRight: true,
                                                 child: Text(
                                                   isBuy
-                                                      ? (item.netBuyPrice ??
-                                                          '')
-                                                      : (item.netSellPrice ??
-                                                          ''),
-                                                  style: _getTextStyle(
-                                                      context),
+                                                      ? (item.netBuyPrice ?? '')
+                                                      : (item.netSellPrice ?? ''),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                               _buildCellWithHover(
@@ -669,12 +678,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                                                 alignRight: true,
                                                 child: Text(
                                                   isBuy
-                                                      ? (item.buyAmount ??
-                                                          '')
-                                                      : (item.sellAmount ??
-                                                          ''),
-                                                  style: _getTextStyle(
-                                                      context),
+                                                      ? (item.buyAmount ?? '')
+                                                      : (item.sellAmount ?? ''),
+                                                  style: _getTextStyle(context),
+                                                  softWrap: false,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
@@ -704,7 +712,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
             Expanded(
               flex: 2,
               child: SingleChildScrollView(
-                child: _buildSettlementTable(context, contractData.settlement!),
+                child: _buildSettlementTable(context, settlementData),
               ),
             ),
           ],
@@ -904,16 +912,16 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
 
   // ─── Right Panel (Calendar) ──────────────────────────────────────────
 
-  Widget _buildRightPanel(
-      BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildCalendar(context, theme, ledgerprovider),
-        ],
-      ),
-    );
-  }
+  // Widget _buildRightPanel(
+  //     BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
+  //   return SingleChildScrollView(
+  //     child: Column(
+  //       children: [
+  //         _buildCalendar(context, theme, ledgerprovider),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // ─── Calendar ─────────────────────────────────────────────────────────
 
@@ -1165,7 +1173,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb> {
                             light: MyntColors.primary)
                         .withValues(alpha: 0.08)
                     : null,
-                alignment: alignRight ? Alignment.centerRight : null,
+                alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                 child: child,
               ),
             );

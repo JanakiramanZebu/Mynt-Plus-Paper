@@ -1,12 +1,38 @@
 class ContractNoteModel {
   ContractNoteData? data;
+  Map<String, List<ContractNoteNet>>? net;
+  Map<String, List<ContractNoteSettlement>>? settlement;
 
-  ContractNoteModel({this.data});
+  ContractNoteModel({this.data, this.net, this.settlement});
 
   ContractNoteModel.fromJson(Map<String, dynamic> json) {
     data = json['Data'] != null
         ? ContractNoteData.fromJson(json['Data'] as Map<String, dynamic>)
         : null;
+
+    // Parse top-level Net
+    if (json['Net'] != null) {
+      net = {};
+      (json['Net'] as Map<String, dynamic>).forEach((key, value) {
+        net![key] = <ContractNoteNet>[];
+        (value as List).forEach((v) {
+          net![key]!.add(ContractNoteNet.fromJson(v as Map<String, dynamic>));
+        });
+      });
+    }
+
+    // Parse top-level settlement
+    final settlementJson = json['settlement'] ?? json['Settlement'];
+    if (settlementJson != null) {
+      settlement = {};
+      (settlementJson as Map<String, dynamic>).forEach((key, value) {
+        settlement![key] = <ContractNoteSettlement>[];
+        (value as List).forEach((v) {
+          settlement![key]!
+              .add(ContractNoteSettlement.fromJson(v as Map<String, dynamic>));
+        });
+      });
+    }
   }
 }
 

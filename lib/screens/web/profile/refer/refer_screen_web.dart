@@ -254,7 +254,7 @@ class _ReferScreenWebState extends ConsumerState<ReferScreenWeb> {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                   minimumSize: const Size(0, 48),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 14),

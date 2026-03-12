@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:async';
-
 import 'package:flutter/material.dart' hide Table, TableRow, TableCell;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +14,7 @@ import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 
 class TradebookScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -27,14 +26,13 @@ class TradebookScreenWeb extends ConsumerStatefulWidget {
       _TradebookScreenWebState();
 }
 
-class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
+class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
+    with ScrollToLoadMixin {
   late ScrollController _horizontalScrollController;
   late ScrollController _tableScrollController;
 
-  // Lazy loading state
-  static const int _itemsPerPage = 20;
-  int _displayedItemCount = 20;
-  bool _isLoadingMore = false;
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
 
   // Sorting state
   int? _sortColumnIndex;
@@ -52,11 +50,6 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
   // Filter state
   String _exchangeFilter = 'All'; // All, Equities, Future & Options, Commodities, Currencies
   String _tradeTypeFilter = 'All'; // All, Buy, Sell
-  bool _showFilterPopup = false;
-
-  // Temp filter state (for popup)
-  String _tempExchangeFilter = 'All';
-  String _tempTradeTypeFilter = 'All';
 
   // Custom date picker state
   bool _showDatePickerPopup = false;
@@ -71,7 +64,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
     super.initState();
     _horizontalScrollController = ScrollController();
     _tableScrollController = ScrollController();
-    _tableScrollController.addListener(_onScroll);
+    initScrollToLoad();
 
     // Init calendar months
     final now = DateTime.now();
@@ -87,7 +80,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
   @override
   void dispose() {
     _horizontalScrollController.dispose();
-    _tableScrollController.removeListener(_onScroll);
+    disposeScrollToLoad();
     _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
     _searchController.dispose();
@@ -99,25 +92,6 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
     final to = DateFormat('dd/MM/yyyy').format(_endDate);
     ledger.fetchtradebookdata(context, from, to);
-  }
-
-  void _onScroll() {
-    if (_isLoadingMore) return;
-    final maxScroll = _tableScrollController.position.maxScrollExtent;
-    final currentScroll = _tableScrollController.position.pixels;
-    final threshold = maxScroll * 0.8;
-
-    if (currentScroll >= threshold) {
-      _loadMoreItems();
-    }
-  }
-
-  void _loadMoreItems() {
-    setState(() {
-      _isLoadingMore = true;
-      _displayedItemCount += _itemsPerPage;
-      _isLoadingMore = false;
-    });
   }
 
   void _onSort(int columnIndex) {
@@ -236,7 +210,6 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
         _leftMonth = DateTime(_rightMonth.year, _rightMonth.month - 1);
       }
       _showDatePickerPopup = !_showDatePickerPopup;
-      _showFilterPopup = false;
     });
   }
 
@@ -273,7 +246,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
         // Apply and fetch
         _startDate = start;
         _endDate = end;
-        _displayedItemCount = _itemsPerPage;
+        displayedItemCount = ScrollToLoadMixin.itemsPerPage;
         _showDatePickerPopup = false;
         _fetchData();
       }
@@ -284,7 +257,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
     setState(() {
       _endDate = DateTime.now();
       _startDate = _endDate.subtract(Duration(days: days));
-      _displayedItemCount = _itemsPerPage;
+      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
       _showDatePickerPopup = false;
     });
     _fetchData();
@@ -306,25 +279,9 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
             Expanded(
               child: Stack(
                 children: [
-                  MyntLoaderOverlay(
-                    isLoading: ledger.tradebookloading,
-                    child: _buildTable(context, theme, filteredList),
-                  ),
-                  // Filter popup overlay with outside tap to close
-                  if (_showFilterPopup) ...[
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showFilterPopup = false;
-                          });
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: const SizedBox.expand(),
-                      ),
-                    ),
-                    _buildFilterOverlay(context, theme),
-                  ],
+                  ledger.tradebookloading
+                      ? Center(child: MyntLoader.simple())
+                      : _buildTable(context, theme, filteredList),
                   // Date picker overlay
                   if (_showDatePickerPopup) ...[
                     Positioned.fill(
@@ -454,22 +411,20 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
-                  _displayedItemCount = _itemsPerPage;
+                  displayedItemCount = ScrollToLoadMixin.itemsPerPage;
                 });
               },
             ),
           ),
-       
-         _buildIconButton(
-            icon: Icons.tune,
-            tooltip: 'Filter',
-            isActive: _exchangeFilter != 'All' || _tradeTypeFilter != 'All',
-            onTap: () {
-              setState(() {
-                _tempExchangeFilter = _exchangeFilter;
-                _tempTradeTypeFilter = _tradeTypeFilter;
-                _showFilterPopup = !_showFilterPopup;
-              });
+        const SizedBox(width: 8),
+          Builder(
+            builder: (buttonContext) {
+              return _buildIconButton(
+                icon: Icons.tune,
+                tooltip: 'Filter',
+                isActive: _exchangeFilter != 'All' || _tradeTypeFilter != 'All',
+                onTap: () => _showFilterPopover(buttonContext),
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -516,160 +471,165 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
     );
   }
 
-  Widget _buildFilterOverlay(BuildContext context, ThemesProvider theme) {
-    return Positioned(
-      top: 0,
-      right: 16,
-      child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(12),
-        color: resolveThemeColor(context,
-            dark: MyntColors.cardDark, light: MyntColors.card),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          width: 300,
+  void _showFilterPopover(BuildContext buttonContext) {
+    final exchangeOptions = ['All', 'Equities', 'Future & Options', 'Commodities', 'Currencies'];
+    final tradeTypeOptions = ['All', 'Buy', 'Sell'];
+
+    shadcn.showPopover(
+      context: buttonContext,
+      alignment: Alignment.bottomCenter,
+      offset: const Offset(0, 8),
+      overlayBarrier: shadcn.OverlayBarrier(
+        borderRadius: shadcn.Theme.of(buttonContext).borderRadiusLg,
+      ),
+      builder: (popoverContext) {
+        return Container(
+          width: 200,
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: resolveThemeColor(context,
-                  dark: MyntColors.cardBorderDark,
-                  light: MyntColors.cardBorder),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Exchange filter
-              _buildRadioGroup(
-                options: [
-                  'All',
-                  'Equities',
-                  'Future & Options',
-                  'Commodities',
-                  'Currencies'
-                ],
-                selected: _tempExchangeFilter,
-                onChanged: (value) {
-                  setState(() {
-                    _tempExchangeFilter = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              // Trade type filter
-              _buildRadioGroup(
-                options: ['All', 'Buy', 'Sell'],
-                selected: _tempTradeTypeFilter,
-                onChanged: (value) {
-                  setState(() {
-                    _tempTradeTypeFilter = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              // Submit button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _exchangeFilter = _tempExchangeFilter;
-                      _tradeTypeFilter = _tempTradeTypeFilter;
-                      _showFilterPopup = false;
-                      _displayedItemCount = _itemsPerPage;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: resolveThemeColor(context,
-                        dark: MyntColors.primaryDark,
-                        light: MyntColors.primary),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  child: Text(
-                    'Submit',
-                    style: MyntWebTextStyles.tableCell(context,
-                        darkColor: Colors.white,
-                        lightColor: Colors.white,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRadioGroup({
-    required List<String> options,
-    required String selected,
-    required ValueChanged<String> onChanged,
-    int itemsPerRow = 3,
-  }) {
-    // Chunk options into rows
-    final List<List<String>> rows = [];
-    for (int i = 0; i < options.length; i += itemsPerRow) {
-      rows.add(options.sublist(
-          i, i + itemsPerRow > options.length ? options.length : i + itemsPerRow));
-    }
-
-    return Column(
-      children: rows.map((row) {
-        return Row(
-          children: [
-            ...row.map((option) {
-              final isSelected = option == selected;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(option),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Radio<String>(
-                        value: option,
-                        groupValue: selected,
-                        onChanged: (value) {
-                          if (value != null) onChanged(value);
-                        },
-                        activeColor: resolveThemeColor(context,
-                            dark: MyntColors.primaryDark,
-                            light: MyntColors.primary),
-                        materialTapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      Flexible(
-                        child: Text(
-                          option,
-                          style: MyntWebTextStyles.para(context,
-                              darkColor: isSelected
-                                  ? MyntColors.textPrimaryDark
-                                  : MyntColors.textSecondaryDark,
-                              lightColor: isSelected
-                                  ? MyntColors.textPrimary
-                                  : MyntColors.textSecondary),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Exchange section header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: Text(
+                  'Exchange',
+                  style: MyntWebTextStyles.bodySmall(context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                      fontWeight: MyntFonts.semiBold),
                 ),
-              );
-            }),
-            // Fill remaining slots with empty Expanded to keep even sizing
-            ...List.generate(
-              itemsPerRow - row.length,
-              (_) => const Expanded(child: SizedBox()),
-            ),
-          ],
+              ),
+              ...exchangeOptions.map((f) {
+                final isSelected = _exchangeFilter == f;
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _exchangeFilter = f;
+                      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                    });
+                    shadcn.closeOverlay(popoverContext);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    color: isSelected
+                        ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            .withValues(alpha: 0.1)
+                        : null,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            f,
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                                fontWeight: isSelected
+                                    ? MyntFonts.semiBold
+                                    : MyntFonts.medium),
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(Icons.check,
+                              size: 16,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary)),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              // Divider
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Divider(
+                  height: 1,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark,
+                      light: MyntColors.divider),
+                ),
+              ),
+              // Trade Type section header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: Text(
+                  'Trade Type',
+                  style: MyntWebTextStyles.bodySmall(context,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                      fontWeight: MyntFonts.semiBold),
+                ),
+              ),
+              ...tradeTypeOptions.map((f) {
+                final isSelected = _tradeTypeFilter == f;
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _tradeTypeFilter = f;
+                      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                    });
+                    shadcn.closeOverlay(popoverContext);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    color: isSelected
+                        ? resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            .withValues(alpha: 0.1)
+                        : null,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            f,
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.textPrimaryDark,
+                                    light: MyntColors.textPrimary),
+                                fontWeight: isSelected
+                                    ? MyntFonts.semiBold
+                                    : MyntFonts.medium),
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(Icons.check,
+                              size: 16,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.primaryDark,
+                                  light: MyntColors.primary)),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -1165,7 +1125,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
                                       columnWidths: columnWidths,
                                       rows: [
                                         ...sortedList
-                                            .take(_displayedItemCount)
+                                            .take(displayedItemCount)
                                             .toList()
                                             .asMap()
                                             .entries
@@ -1272,7 +1232,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb> {
                                       ],
                                     ),
                                     // Loading indicator
-                                    if (_displayedItemCount <
+                                    if (displayedItemCount <
                                         sortedList.length)
                                       Padding(
                                         padding: const EdgeInsets.all(16.0),

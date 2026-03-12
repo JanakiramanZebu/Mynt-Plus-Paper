@@ -14,6 +14,7 @@ import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 
 class CAEventsScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -24,7 +25,13 @@ class CAEventsScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<CAEventsScreenWeb> createState() => _CAEventsScreenWebState();
 }
 
-class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
+class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
+    with ScrollToLoadMixin {
+  final ScrollController _tableScrollController = ScrollController();
+
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
+
   int _selectedTabIndex = 0;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -54,6 +61,7 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
   @override
   void initState() {
     super.initState();
+    initScrollToLoad();
     final now = DateTime.now();
     _rightMonth = DateTime(now.year, now.month);
     _leftMonth = DateTime(now.year, now.month - 1);
@@ -65,12 +73,15 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
 
   @override
   void dispose() {
+    disposeScrollToLoad();
+    _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
   void _fetchData() {
+    resetDisplayCount();
     final ledger = ref.read(ledgerProvider);
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
     final to = DateFormat('dd/MM/yyyy').format(_endDate);
@@ -143,13 +154,13 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
             Expanded(
               child: Stack(
                 children: [
-                  MyntLoaderOverlay(
-                    isLoading: isLoading,
-                    child: ledgerprovider.caeventalldata == null && !isLoading
-                        ? const Center(
-                            child: NoDataFound(secondaryEnabled: false))
-                        : _buildBody(context, ledgerprovider),
-                  ),
+                  if (isLoading)
+                    Center(child: MyntLoader.simple())
+                  else if (ledgerprovider.caeventalldata == null)
+                    const Center(
+                        child: NoDataFound(secondaryEnabled: false))
+                  else
+                    _buildBody(context, ledgerprovider),
                   if (_showDatePickerPopup) ...[
                     Positioned.fill(
                       child: GestureDetector(
@@ -247,7 +258,10 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
               placeholder: 'Search',
               height: 36,
               onChanged: (value) {
-                setState(() => _searchQuery = value);
+                setState(() {
+                  _searchQuery = value;
+                  displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                });
               },
             ),
           ),
@@ -270,7 +284,10 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
           return MouseRegion(
             cursor: SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: () => setState(() => _selectedTabIndex = index),
+              onTap: () => setState(() {
+                _selectedTabIndex = index;
+                displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+              }),
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding:
@@ -363,36 +380,19 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(52),
-                      columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                    controller: _tableScrollController,
+                    child: Column(
+                      children: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
-                        return shadcn.TableRow(cells: [
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                              item.companyName ?? '--',
-                              style: _textStyle(context,
-                                  fontWeight: MyntFonts.semiBold),
-                            ),
-                          ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                              item.boardMeetingDate ?? '--',
-                              style: _textStyle(context),
-                            ),
-                          ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: _tooltipText(
-                              context,
-                              (item.agenda ?? '--').trim(),
-                            ),
-                          ),
-                        ]);
+                        return _boardMeetingRow(
+                          context,
+                          rowIndex: i,
+                          totalWidth: totalWidth,
+                          companyName: item.companyName ?? '--',
+                          date: item.boardMeetingDate ?? '--',
+                          agenda: (item.agenda ?? '--').trim(),
+                        );
                       }).toList(),
                     ),
                   ),
@@ -439,36 +439,19 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(52),
-                      columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                    controller: _tableScrollController,
+                    child: Column(
+                      children: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
-                        return shadcn.TableRow(cells: [
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                              item.companyName ?? '--',
-                              style: _textStyle(context,
-                                  fontWeight: MyntFonts.semiBold),
-                            ),
-                          ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                              item.eGMDate ?? '--',
-                              style: _textStyle(context),
-                            ),
-                          ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: _tooltipText(
-                              context,
-                              (item.agenda ?? '--').trim(),
-                            ),
-                          ),
-                        ]);
+                        return _boardMeetingRow(
+                          context,
+                          rowIndex: i,
+                          totalWidth: totalWidth,
+                          companyName: item.companyName ?? '--',
+                          date: item.eGMDate ?? '--',
+                          agenda: (item.agenda ?? '--').trim(),
+                        );
                       }).toList(),
                     ),
                   ),
@@ -492,11 +475,11 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth - 32;
         final columnWidths = {
-          0: shadcn.FixedTableSize(totalWidth * 0.30),
-          1: shadcn.FixedTableSize(totalWidth * 0.18),
-          2: shadcn.FixedTableSize(totalWidth * 0.22),
-          3: shadcn.FixedTableSize(totalWidth * 0.15),
-          4: shadcn.FixedTableSize(totalWidth * 0.15),
+          0: shadcn.FixedTableSize(totalWidth * 0.35),
+          1: shadcn.FixedTableSize(totalWidth * 0.20),
+          2: shadcn.FixedTableSize(totalWidth * 0.25),
+          3: shadcn.FixedTableSize(totalWidth * 0.20),
+          // 4: shadcn.FixedTableSize(totalWidth * 0.15),
         };
 
         return Padding(
@@ -510,19 +493,20 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                   rows: [
                     shadcn.TableHeader(cells: [
                       _headerCell('Company name'),
-                      _headerCell('Ex Bonus Date'),
+                      // _headerCell('Source Date'),
                       _headerCell('Ratio'),
                       _headerCell('Record Date'),
-                      _headerCell('Source Date'),
+                      _headerCell('Ex Bonus Date'),
                     ]),
                   ],
                 ),
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _tableScrollController,
                     child: shadcn.Table(
                       defaultRowHeight: const shadcn.FixedTableSize(52),
                       columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                      rows: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
                         return shadcn.TableRow(cells: [
@@ -536,16 +520,30 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                           ),
                           _dataCell(
                             rowIndex: i,
-                            child: Text(
-                              item.exBonusDate ?? '--',
-                              style: _textStyle(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${_cutDecimal(item.ratioN)} : ${_cutDecimal(item.ratioD)}',
+                                  style: _textStyle(context),
+                                ),
+                                if (item.ratioN != null && item.ratioD != null) ...[
+                                  const SizedBox(width: 6),
+                                  Tooltip(
+                                    message: 'For every ${_cutDecimal(item.ratioD)} shares you own,\nyou will get ${_cutDecimal(item.ratioN)} extra share.',
+                                    preferBelow: true,
+                                    verticalOffset: 16,
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
-                          ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                                '${item.ratioN ?? '-'} : ${item.ratioD ?? '-'}',
-                                style: _textStyle(context)),
                           ),
                           _dataCell(
                             rowIndex: i,
@@ -554,10 +552,17 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                               style: _textStyle(context),
                             ),
                           ),
+                          // _dataCell(
+                          //   rowIndex: i,
+                          //   child: Text(
+                          //     item.sourceDate ?? '--',
+                          //     style: _textStyle(context),
+                          //   ),
+                          // ),
                           _dataCell(
                             rowIndex: i,
                             child: Text(
-                              item.sourceDate ?? '--',
+                              item.exBonusDate ?? '--',
                               style: _textStyle(context),
                             ),
                           ),
@@ -614,10 +619,11 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _tableScrollController,
                     child: shadcn.Table(
                       defaultRowHeight: const shadcn.FixedTableSize(52),
                       columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                      rows: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
                         return shadcn.TableRow(cells: [
@@ -688,13 +694,13 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth - 32;
         final columnWidths = {
-          0: shadcn.FixedTableSize(totalWidth * 0.22),
-          1: shadcn.FixedTableSize(totalWidth * 0.13),
-          2: shadcn.FixedTableSize(totalWidth * 0.13),
-          3: shadcn.FixedTableSize(totalWidth * 0.13),
-          4: shadcn.FixedTableSize(totalWidth * 0.13),
-          5: shadcn.FixedTableSize(totalWidth * 0.13),
-          6: shadcn.FixedTableSize(totalWidth * 0.13),
+          0: shadcn.FixedTableSize(totalWidth * 0.25),
+          1: shadcn.FixedTableSize(totalWidth * 0.20),
+          2: shadcn.FixedTableSize(totalWidth * 0.20),
+          3: shadcn.FixedTableSize(totalWidth * 0.18),
+          4: shadcn.FixedTableSize(totalWidth * 0.17),
+          // 5: shadcn.FixedTableSize(totalWidth * 0.0),
+          // 6: shadcn.FixedTableSize(totalWidth * 0.10),
         };
 
         return Padding(
@@ -708,21 +714,22 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                   rows: [
                     shadcn.TableHeader(cells: [
                       _headerCell('Company name'),
-                      _headerCell('Ex Rights Date'),
-                      _headerCell('Offer Price'),
+                      // _headerCell('Offer Price'),
+                      _headerCell('Rights Ratio'),
                       _headerCell('Premium'),
-                      _headerCell('Ratio'),
+                      // _headerCell('Source Date'),
                       _headerCell('Record Date'),
-                      _headerCell('Source Date'),
+                      _headerCell('Ex Rights Date'),
                     ]),
                   ],
                 ),
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _tableScrollController,
                     child: shadcn.Table(
                       defaultRowHeight: const shadcn.FixedTableSize(52),
                       columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                      rows: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
                         return shadcn.TableRow(cells: [
@@ -734,20 +741,40 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                                   fontWeight: MyntFonts.semiBold),
                             ),
                           ),
-                          _dataCell(
+                           _dataCell(
                             rowIndex: i,
-                            child: Text(
-                              item.exRightsDate ?? '--',
-                              style: _textStyle(context),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${_cutDecimal(item.ratioN)} : ${_cutDecimal(item.rationD)}',
+                                  style: _textStyle(context),
+                                ),
+                                if (item.ratioN != null && item.rationD != null) ...[
+                                  const SizedBox(width: 6),
+                                  Tooltip(
+                                    message: 'For every ${_cutDecimal(item.rationD)} shares you currently own,\nyou are entitled to ${_cutDecimal(item.ratioN)} additional right.',
+                                    preferBelow: true,
+                                    verticalOffset: 16,
+                                    child: Icon(
+                                      Icons.info_outline,
+                                      size: 16,
+                                      color: resolveThemeColor(context,
+                                          dark: MyntColors.textSecondaryDark,
+                                          light: MyntColors.textSecondary),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                              item.offerPrice ?? '--',
-                              style: _textStyle(context),
-                            ),
-                          ),
+                          // _dataCell(
+                          //   rowIndex: i,
+                          //   child: Text(
+                          //     item.offerPrice ?? '--',
+                          //     style: _textStyle(context),
+                          //   ),
+                          // ),
                           _dataCell(
                             rowIndex: i,
                             child: Text(
@@ -755,12 +782,7 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                               style: _textStyle(context),
                             ),
                           ),
-                          _dataCell(
-                            rowIndex: i,
-                            child: Text(
-                                '${item.ratioN ?? '-'} : ${item.rationD ?? '-'}',
-                                style: _textStyle(context)),
-                          ),
+                         
                           _dataCell(
                             rowIndex: i,
                             child: Text(
@@ -768,10 +790,17 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                               style: _textStyle(context),
                             ),
                           ),
+                          // _dataCell(
+                          //   rowIndex: i,
+                          //   child: Text(
+                          //     item.sourceDate ?? '--',
+                          //     style: _textStyle(context),
+                          //   ),
+                          // ),
                           _dataCell(
                             rowIndex: i,
                             child: Text(
-                              item.sourceDate ?? '--',
+                              item.exRightsDate ?? '--',
                               style: _textStyle(context),
                             ),
                           ),
@@ -826,10 +855,11 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _tableScrollController,
                     child: shadcn.Table(
                       defaultRowHeight: const shadcn.FixedTableSize(52),
                       columnWidths: columnWidths,
-                      rows: filtered.asMap().entries.map((entry) {
+                      rows: takeDisplayed(filtered).asMap().entries.map((entry) {
                         final i = entry.key;
                         final item = entry.value;
                         return shadcn.TableRow(cells: [
@@ -879,6 +909,65 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
           ),
         );
       },
+    );
+  }
+
+  Widget _boardMeetingRow(
+    BuildContext context, {
+    required int rowIndex,
+    required double totalWidth,
+    required String companyName,
+    required String date,
+    required String agenda,
+  }) {
+    return MouseRegion(
+      onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+      onExit: (_) => _hoveredRowIndex.value = null,
+      child: ValueListenableBuilder<int?>(
+        valueListenable: _hoveredRowIndex,
+        builder: (context, hoveredIndex, _) {
+          final isRowHovered = hoveredIndex == rowIndex;
+          return Container(
+            color: isRowHovered
+                ? resolveThemeColor(context,
+                        dark: MyntColors.primaryDark,
+                        light: MyntColors.primary)
+                    .withValues(alpha: 0.06)
+                : null,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(
+                    width: totalWidth * 0.30,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                      child: Text(
+                        companyName,
+                        style: _textStyle(context,
+                            fontWeight: MyntFonts.semiBold),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: totalWidth * 0.15,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                      child: Text(date, style: _textStyle(context)),
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                      child: Text(agenda, style: _textStyle(context)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -981,6 +1070,13 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb> {
       lightColor: MyntColors.textPrimary,
       fontWeight: fontWeight ?? MyntFonts.medium,
     );
+  }
+
+  String _cutDecimal(String? value) {
+    if (value == null) return '-';
+    final parsed = double.tryParse(value);
+    if (parsed != null) return parsed.toInt().toString();
+    return value;
   }
 
   // ==================== Date Picker ====================

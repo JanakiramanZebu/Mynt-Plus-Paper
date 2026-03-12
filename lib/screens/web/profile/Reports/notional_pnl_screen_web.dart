@@ -12,7 +12,9 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 import '../../../../utils/rupee_convert_format.dart';
 import '../../../../models/desk_reports_model/pnl_model.dart';
 import '../../../../models/desk_reports_model/pnl_summary_model.dart';
@@ -26,7 +28,10 @@ class NotionalPnlScreenWeb extends ConsumerStatefulWidget {
       _NotionalPnlScreenWebState();
 }
 
-class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
+class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
+    with ScrollToLoadMixin {
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
   final ScrollController _tableScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
   final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
@@ -37,9 +42,6 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
   bool _withOpen = true;
   int _sortColumnIndex = 0;
   bool _sortAscending = true;
-
-  // Charges dialog state
-  bool _showCharges = false;
 
   // Date range picker state
   bool _showDatePicker = false;
@@ -53,6 +55,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
   @override
   void initState() {
     super.initState();
+    initScrollToLoad();
     final now = DateTime.now();
     final fyStartYear = now.month >= 4 ? now.year : now.year - 1;
     _leftMonth = DateTime(fyStartYear, 4);
@@ -65,6 +68,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
   @override
   void dispose() {
     _removeDatePickerOverlay();
+    disposeScrollToLoad();
     _tableScrollController.dispose();
     _horizontalScrollController.dispose();
     _hoveredRowIndex.dispose();
@@ -187,6 +191,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
   }
 
   void _fetchData() {
+    resetDisplayCount();
     final ledger = ref.read(ledgerProvider);
     ledger.fetchpnldata(
       context,
@@ -253,23 +258,15 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
           // Title row
           Row(
             children: [
+              if (widget.onBack != null) ...[
+                CustomBackBtn(onBack: widget.onBack),
+                const SizedBox(width: 8),],
               if (widget.onBack != null)
-                IconButton(
-                  icon: Icon(Icons.arrow_back,
-                      size: 20,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary)),
-                  onPressed: widget.onBack,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              if (widget.onBack != null) const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Notional P&L',
-                      style: MyntWebTextStyles.body(context,
+                      style: MyntWebTextStyles.title(context,
                           fontWeight: MyntFonts.semiBold,
                           color: resolveThemeColor(context,
                               dark: MyntColors.textPrimaryDark,
@@ -284,12 +281,12 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
               ),
               const Spacer(),
               // Symbol count
-              // Text('$symbolCount Symbols',
-              //     style: MyntWebTextStyles.body(context,
-              //         fontWeight: MyntFonts.semiBold,
-              //         color: resolveThemeColor(context,
-              //             dark: MyntColors.textPrimaryDark,
-              //             light: MyntColors.textPrimary))),
+              Text('$symbolCount Symbols',
+                  style: MyntWebTextStyles.body(context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textPrimaryDark,
+                          light: MyntColors.textPrimary))),
               const SizedBox(width: 16),
               // Download button
               // IconButton(
@@ -347,7 +344,10 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
                   controller: _searchController,
                   placeholder: 'Search',
                   leadingIcon: 'assets/icon/search.svg',
-                  onChanged: (val) => setState(() => _searchQuery = val),
+                  onChanged: (val) => setState(() {
+                    _searchQuery = val;
+                    displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                  }),
                 ),
               ),
               const SizedBox(width: 8),
@@ -393,7 +393,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
   }
 
   void _showFilterPopover(BuildContext buttonContext) {
-    final filters = ['All', 'NSE_CASH', 'BSE_CASH', 'NSE_FNO', 'COMM', 'CDS'];
+    final filters = ['All', 'NSE_CASH', 'BSE_CASH', 'NSE_FNO', /* 'COMM', */ 'CDS'];
     shadcn.showPopover(
       context: buttonContext,
       alignment: Alignment.bottomCenter,
@@ -410,6 +410,14 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
                 dark: MyntColors.backgroundColorDark,
                 light: MyntColors.backgroundColor),
             borderRadius: BorderRadius.circular(8),
+           boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -417,7 +425,10 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
               final isSelected = _selectedFilter == f;
               return InkWell(
                 onTap: () {
-                  setState(() => _selectedFilter = f);
+                  setState(() {
+                    _selectedFilter = f;
+                    displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                  });
                   shadcn.closeOverlay(popoverContext);
                 },
                 child: Container(
@@ -481,7 +492,10 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
                 child: Checkbox(
                   value: _withOpen,
                   onChanged: (val) {
-                    setState(() => _withOpen = val ?? true);
+                    setState(() {
+                      _withOpen = val ?? true;
+                      displayedItemCount = ScrollToLoadMixin.itemsPerPage;
+                    });
                     _fetchData();
                   },
                   activeColor: resolveThemeColor(context,
@@ -497,8 +511,8 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
                           light: MyntColors.textPrimary))),
               const Spacer(),
               Text('* Buy rate and Sell rate is inclusive of brokerage',
-                  style: MyntWebTextStyles.caption(context,
-                      color: Colors.red, fontWeight: MyntFonts.medium)),
+                  style: MyntWebTextStyles.bodyMedium(context,
+                      color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error), fontWeight: MyntFonts.medium)),
             ],
           ),
           const SizedBox(height: 12),
@@ -518,7 +532,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
     // Calculate segment totals
     double equityTotal = 0;
     double fnoTotal = 0;
-    double commodityTotal = 0;
+    // double commodityTotal = 0;
     double currencyTotal = 0;
 
     for (final t in transactions) {
@@ -528,8 +542,8 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         equityTotal += pnl;
       } else if (code == 'NSE_FNO' || code == 'BSE_FNO') {
         fnoTotal += pnl;
-      } else if (code == 'COMM') {
-        commodityTotal += pnl;
+      // } else if (code == 'COMM') {
+      //   commodityTotal += pnl;
       } else if (code == 'CDS') {
         currencyTotal += pnl;
       }
@@ -544,7 +558,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 900 ? 6 : 3;
+        final columns = constraints.maxWidth >= 900 ? 5 : 3;
         return GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -558,7 +572,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
             _statCard(context, 'Net Notional', netNotional),
             _statCard(context, 'Equity', equityTotal),
             _statCard(context, 'FNO', fnoTotal),
-            _statCard(context, 'Commodity', commodityTotal),
+            // _statCard(context, 'Commodity', commodityTotal),
             _statCard(context, 'Currency', currencyTotal),
             _statCard(context, 'All Charges & taxes', chargesTotal,
                 isCharges: true),
@@ -574,14 +588,14 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         ? resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
         : value < 0
-            ? Colors.red
-            : Colors.green;
+            ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+            : resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success);
 
     return MouseRegion(
       cursor: isCharges ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: isCharges
-            ? () => setState(() => _showCharges = !_showCharges)
+            ? () => _showChargesDialog(context)
             : null,
         child: shadcn.Theme(
           data: shadcn.Theme.of(context).copyWith(radius: () => 0.3),
@@ -712,11 +726,6 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
       return Center(child: NoDataFound(secondaryEnabled: false));
     }
 
-    // If charges view is shown
-    if (_showCharges) {
-      return _buildChargesTable(context, pnlData);
-    }
-
     final headers = [
       'Symbol',
       'Buy Qty',
@@ -732,12 +741,20 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        final symbolWidth = availableWidth * 0.14;
-        final colWidth = (availableWidth - symbolWidth) / 8;
-
+        // Symbol gets more space for long derivative names
+        // Symbol gets more space for long derivative names (22%)
+        // Rate+Amount columns (2-line) get 11%, Qty columns get 7%
+        // Total: 22+7+11+7+11+7+11+10+14 = 100%
         final columnWidths = <int, shadcn.TableSize>{
-          0: shadcn.FixedTableSize(symbolWidth),
-          for (int i = 1; i < 9; i++) i: shadcn.FixedTableSize(colWidth),
+          0: shadcn.FixedTableSize(availableWidth * 0.22), // Symbol
+          1: shadcn.FixedTableSize(availableWidth * 0.07), // Buy Qty
+          2: shadcn.FixedTableSize(availableWidth * 0.11), // Buy Rate + Amt
+          3: shadcn.FixedTableSize(availableWidth * 0.07), // Sell Qty
+          4: shadcn.FixedTableSize(availableWidth * 0.11), // Sell Rate + Amt
+          5: shadcn.FixedTableSize(availableWidth * 0.07), // Net Qty
+          6: shadcn.FixedTableSize(availableWidth * 0.11), // Net Rate + Amt
+          7: shadcn.FixedTableSize(availableWidth * 0.10), // Close Price
+          8: shadcn.FixedTableSize(availableWidth * 0.14), // Notional
         };
 
         return shadcn.OutlinedContainer(
@@ -765,12 +782,14 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
                   child: shadcn.Table(
                     defaultRowHeight: const shadcn.FixedTableSize(55),
                     columnWidths: columnWidths,
-                    rows: filtered.asMap().entries.map((entry) {
+                    rows: takeDisplayed(filtered).asMap().entries.map((entry) {
                       return _buildDataRow(entry.key, entry.value);
                     }).toList(),
                   ),
                 ),
               ),
+              // // Totals footer
+              // _buildTotalsFooter(context, filtered),
             ],
           ),
         );
@@ -854,6 +873,8 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
     final netAmt = _parseDbl(t.nETAMOUNT);
     final closePrice = _parseDbl(t.cLOSINGPRICE);
     final notional = _parseDbl(t.nOTPROFIT);
+    final openQty = _parseDbl(t.openQUANTITY);
+    final openAmt = _parseDbl(t.openAMOUNT);
 
     return shadcn.TableRow(
       cells: [
@@ -862,9 +883,37 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
           child: InkWell(
             onTap: () => _showDetailedPnlDialog(context, t),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(t.sCRIPSYMBOL ?? '', style: _getTextStyle(context, fontWeight: MyntFonts.semiBold)),
+                Flexible(
+                  child: Text(t.sCRIPSYMBOL ?? '',
+                      style: _getTextStyle(context, fontWeight: MyntFonts.semiBold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1),
+                ),
+                if (openQty != 0) ...[
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message: 'Open Quantity',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        '${_formatQty(openQty)} @${_formatRate(openAmt)}',
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary),
+                            fontWeight: MyntFonts.medium),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(width: 4),
                 Icon(Icons.play_arrow,
                     size: 12,
@@ -879,7 +928,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         ),
         // Buy Qty
         _buildCell(
-          child: Text(_formatQty(buyQty), style: _getTextStyle(context)),
+          child: Text(_formatQty(buyQty), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
           rowIndex: index,
           columnIndex: 1,
           alignRight: true,
@@ -890,12 +939,12 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_formatRate(buyRate), style: _getTextStyle(context)),
+              Text(_formatRate(buyRate), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
               Text(_formatRate(buyAmt),
+                  softWrap: false, overflow: TextOverflow.ellipsis,
                   style: MyntWebTextStyles.caption(context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary))),
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary)),
             ],
           ),
           rowIndex: index,
@@ -904,7 +953,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         ),
         // Sell Qty
         _buildCell(
-          child: Text(_formatQty(sellQty), style: _getTextStyle(context)),
+          child: Text(_formatQty(sellQty), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
           rowIndex: index,
           columnIndex: 3,
           alignRight: true,
@@ -915,12 +964,12 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_formatRate(sellRate), style: _getTextStyle(context)),
+              Text(_formatRate(sellRate), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
               Text(_formatRate(sellAmt),
+                  softWrap: false, overflow: TextOverflow.ellipsis,
                   style: MyntWebTextStyles.caption(context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary))),
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary)),
             ],
           ),
           rowIndex: index,
@@ -929,7 +978,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         ),
         // Net Qty
         _buildCell(
-          child: Text(_formatQty(netQty), style: _getTextStyle(context)),
+          child: Text(_formatQty(netQty), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
           rowIndex: index,
           columnIndex: 5,
           alignRight: true,
@@ -940,12 +989,12 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_formatRate(netRate), style: _getTextStyle(context)),
+              Text(_formatRate(netRate), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
               Text(_formatRate(netAmt),
+                  softWrap: false, overflow: TextOverflow.ellipsis,
                   style: MyntWebTextStyles.caption(context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textSecondaryDark,
-                          light: MyntColors.textSecondary))),
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary)),
             ],
           ),
           rowIndex: index,
@@ -954,7 +1003,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         ),
         // Close Price
         _buildCell(
-          child: Text(_formatRate(closePrice), style: _getTextStyle(context)),
+          child: Text(_formatRate(closePrice), style: _getTextStyle(context), softWrap: false, overflow: TextOverflow.ellipsis),
           rowIndex: index,
           columnIndex: 7,
           alignRight: true,
@@ -963,11 +1012,12 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         _buildCell(
           child: Text(
             _formatRate(notional),
+            softWrap: false, overflow: TextOverflow.ellipsis,
             style: _getTextStyle(context,
                 color: notional < 0
-                    ? Colors.red
+                    ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
                     : notional > 0
-                        ? Colors.green
+                        ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
                         : null),
           ),
           rowIndex: index,
@@ -1042,123 +1092,267 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
     );
   }
 
-  // ─── Charges Table ───────────────────────────────────────────────────
+  // ─── Totals Footer ─────────────────────────────────────────────────
 
-  Widget _buildChargesTable(BuildContext context, PnlModel pnlData) {
-    final expenses = pnlData.expenses ?? [];
-    if (expenses.isEmpty) {
-      return Center(child: NoDataFound(secondaryEnabled: false));
+  Widget _buildTotalsFooter(BuildContext context, List<Transactions> filtered) {
+    double totalBuyQty = 0;
+    double totalBuyAmt = 0;
+    double totalSellQty = 0;
+    double totalSellAmt = 0;
+
+    for (final t in filtered) {
+      totalBuyQty += _parseDbl(t.bUYQUANTITY);
+      totalBuyAmt += _parseDbl(t.bUYAMOUNT);
+      totalSellQty += _parseDbl(t.sALEQUANTITY);
+      totalSellAmt += _parseDbl(t.sALEAMOUNT);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Back button
-        Row(
-          children: [
-            InkWell(
-              onTap: () => setState(() => _showCharges = false),
-              borderRadius: BorderRadius.circular(4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.arrow_back,
-                      size: 16,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary)),
-                  const SizedBox(width: 4),
-                  Text('Back to Transactions',
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: resolveThemeColor(context,
-                              dark: MyntColors.primaryDark,
-                              light: MyntColors.primary),
-                          fontWeight: MyntFonts.medium)),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final w = constraints.maxWidth;
-              final columnWidths = <int, shadcn.TableSize>{
-                0: shadcn.FixedTableSize(w * 0.4),
-                1: shadcn.FixedTableSize(w * 0.3),
-                2: shadcn.FixedTableSize(w * 0.3),
-              };
+    final totalBuyRate = totalBuyQty > 0 ? totalBuyAmt / totalBuyQty : 0.0;
+    final totalSellRate = totalSellQty > 0 ? totalSellAmt / totalSellQty : 0.0;
+    final netTotal = totalSellAmt - totalBuyAmt;
 
-              return shadcn.OutlinedContainer(
-                child: Column(
-                  children: [
-                    shadcn.Table(
-                      defaultRowHeight: const shadcn.FixedTableSize(44),
-                      columnWidths: columnWidths,
-                      rows: [
-                        shadcn.TableHeader(
-                          cells: [
-                            _buildHeaderCell('Charge Type', 0),
-                            _buildHeaderCell('Amount', 1, true),
-                            _buildHeaderCell('Net Profit', 2, true),
-                          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder),
+          ),
+        ),
+        color: resolveThemeColor(context,
+            dark: MyntColors.cardDark, light: const Color(0xFFF6F8FA)),
+      ),
+      child: Row(
+        children: [
+          Text(
+            'Total Buy:  ${totalBuyQty.toStringAsFixed(0)} @ ${totalBuyRate.toStringAsFixed(4)} = ${totalBuyAmt.toStringAsFixed(4)}',
+            style: MyntWebTextStyles.bodySmall(context,
+                fontWeight: MyntFonts.medium),
+          ),
+          const Spacer(),
+          Text(
+            'Total Sell :  ${totalSellQty.toStringAsFixed(0)} @ ${totalSellRate.toStringAsFixed(4)} = ${totalSellAmt.toStringAsFixed(4)}',
+            style: MyntWebTextStyles.bodySmall(context,
+                fontWeight: MyntFonts.medium),
+          ),
+          const Spacer(),
+          Text(
+            'Net : ${netTotal.toStringAsFixed(4)}',
+            style: MyntWebTextStyles.bodySmall(context,
+                fontWeight: MyntFonts.semiBold,
+                color: netTotal >= 0
+                    ? resolveThemeColor(context,
+                        dark: MyntColors.successDark, light: MyntColors.success)
+                    : resolveThemeColor(context,
+                        dark: MyntColors.errorDark, light: MyntColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Charges Dialog ─────────────────────────────────────────────────
+
+  void _showChargesDialog(BuildContext context) {
+    final ledger = ref.read(ledgerProvider);
+    final pnlData = ledger.pnlAllData;
+    final expenses = pnlData?.expenses ?? [];
+
+    final secondaryColor = resolveThemeColor(context,
+        dark: MyntColors.textSecondaryDark,
+        light: MyntColors.textSecondary);
+    final borderColor = resolveThemeColor(context,
+        dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+    final textColor = resolveThemeColor(context,
+        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+
+    double totalCharges = 0;
+    for (final e in expenses) {
+      totalCharges += _parseDbl(e.nOTPROFIT);
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.cardDark, light: MyntColors.card),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: Container(
+            width: 600,
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Row(
+                    children: [
+                      Text('All Charges & Taxes',
+                          style: MyntWebTextStyles.head(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary,
+                              fontWeight: FontWeight.w600)),
+                      const Spacer(),
+                      InkWell(
+                        onTap: () => Navigator.pop(dialogContext),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Icons.close,
+                              size: 24, color: secondaryColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Table
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Column(
+                      children: [
+                        // Table header
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                bottom: BorderSide(color: borderColor)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text('Charge Type',
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor:
+                                            MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                        fontWeight: FontWeight.w500)),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text('Amount',
+                                    textAlign: TextAlign.right,
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor:
+                                            MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                        fontWeight: FontWeight.w500)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Rows
+                        if (expenses.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text('No data available',
+                                style: MyntWebTextStyles.body(context,
+                                    color: secondaryColor)),
+                          )
+                        else
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 450),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: expenses.length,
+                              separatorBuilder: (context, index) =>
+                                  Divider(height: 1, color: borderColor),
+                              itemBuilder: (context, index) {
+                                final e = expenses[index];
+                                final profit = _parseDbl(e.nOTPROFIT);
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                            e.sCRIPSYMBOL ?? '',
+                                            style: MyntWebTextStyles.body(
+                                                context,
+                                                darkColor: MyntColors
+                                                    .textPrimaryDark,
+                                                lightColor:
+                                                    MyntColors.textPrimary,
+                                                fontWeight:
+                                                    MyntFonts.medium)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                            '${profit < 0 ? '- ' : ''}${profit.abs().toStringAsFixed(2)}',
+                                            textAlign: TextAlign.right,
+                                            style: MyntWebTextStyles.body(
+                                                context,
+                                                color: profit < 0
+                                                    ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+                                                    : profit > 0
+                                                        ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
+                                                        : textColor,
+                                                fontWeight:
+                                                    MyntFonts.medium)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        // Total row
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                top: BorderSide(color: borderColor)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text('Total',
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.semiBold)),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                    '${totalCharges < 0 ? '- ' : ''}${totalCharges.abs().toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: MyntWebTextStyles.body(context,
+                                        color: totalCharges < 0
+                                            ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+                                            : totalCharges > 0
+                                                ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
+                                                : textColor,
+                                        fontWeight: MyntFonts.semiBold)),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: shadcn.Table(
-                          defaultRowHeight: const shadcn.FixedTableSize(48),
-                          columnWidths: columnWidths,
-                          rows: expenses.asMap().entries.map((entry) {
-                            final e = entry.value;
-                            final amt = _parseDbl(e.nETAMOUNT);
-                            final profit = _parseDbl(e.nOTPROFIT);
-                            return shadcn.TableRow(cells: [
-                              _buildCell(
-                                child: Text(e.sCRIPSYMBOL ?? '',
-                                    style: _getTextStyle(context,
-                                        fontWeight: MyntFonts.medium)),
-                                rowIndex: entry.key,
-                                columnIndex: 0,
-                              ),
-                              _buildCell(
-                                child: Text(_formatRate(amt),
-                                    style: _getTextStyle(context,
-                                        color: amt < 0
-                                            ? Colors.red
-                                            : amt > 0
-                                                ? Colors.green
-                                                : null)),
-                                rowIndex: entry.key,
-                                columnIndex: 1,
-                                alignRight: true,
-                              ),
-                              _buildCell(
-                                child: Text(_formatRate(profit),
-                                    style: _getTextStyle(context,
-                                        color: profit < 0
-                                            ? Colors.red
-                                            : profit > 0
-                                                ? Colors.green
-                                                : null)),
-                                rowIndex: entry.key,
-                                columnIndex: 2,
-                                alignRight: true,
-                              ),
-                            ]);
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              );
-            },
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -1236,7 +1430,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            Icon(icon, size: 40, color: Colors.red),
+            Icon(icon, size: 40, color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)),
             const SizedBox(height: 8),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -1517,12 +1711,10 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
                                             Text(_formatRate(buyAmt),
                                                 style: MyntWebTextStyles
                                                     .caption(context,
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: MyntColors
+                                                        darkColor: MyntColors
                                                                 .textSecondaryDark,
-                                                            light: MyntColors
-                                                                .textSecondary))),
+                                                        lightColor: MyntColors
+                                                                .textSecondary)),
                                           ],
                                         ),
                                         true),
@@ -1542,12 +1734,10 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
                                             Text(_formatRate(sellAmt),
                                                 style: MyntWebTextStyles
                                                     .caption(context,
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: MyntColors
+                                                        darkColor: MyntColors
                                                                 .textSecondaryDark,
-                                                            light: MyntColors
-                                                                .textSecondary))),
+                                                        lightColor: MyntColors
+                                                                .textSecondary)),
                                           ],
                                         ),
                                         true),
@@ -1567,12 +1757,10 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
                                             Text(_formatRate(netAmt),
                                                 style: MyntWebTextStyles
                                                     .caption(context,
-                                                        color: resolveThemeColor(
-                                                            context,
-                                                            dark: MyntColors
+                                                        darkColor: MyntColors
                                                                 .textSecondaryDark,
-                                                            light: MyntColors
-                                                                .textSecondary))),
+                                                        lightColor: MyntColors
+                                                                .textSecondary)),
                                           ],
                                         ),
                                         true),
@@ -1581,9 +1769,9 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
                                           _formatRate(netAmt),
                                           style: _textStyle(context,
                                               color: netAmt < 0
-                                                  ? Colors.red
+                                                  ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
                                                   : netAmt > 0
-                                                      ? Colors.green
+                                                      ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
                                                       : null),
                                         ),
                                         true),
@@ -1620,9 +1808,9 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
                           style: MyntWebTextStyles.body(context,
                               fontWeight: MyntFonts.semiBold,
                               color: totalPnl < 0
-                                  ? Colors.red
+                                  ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
                                   : totalPnl > 0
-                                      ? Colors.green
+                                      ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
                                       : resolveThemeColor(context,
                                           dark: MyntColors.textPrimaryDark,
                                           light: MyntColors.textPrimary)),

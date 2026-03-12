@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../provider/ledger_provider.dart';
 import '../../../../provider/thems.dart';
+import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
+import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 import '../../../../utils/rupee_convert_format.dart';
 
 class TaxPnlScreenWeb extends ConsumerStatefulWidget {
@@ -19,7 +23,9 @@ class TaxPnlScreenWeb extends ConsumerStatefulWidget {
 }
 
 class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, ScrollToLoadMixin {
+  @override
+  ScrollController get tableScrollController => _scrollController;
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
@@ -36,10 +42,12 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
   @override
   void initState() {
     super.initState();
+    initScrollToLoad();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         ref.read(ledgerProvider).taxpnlExTabchange(_tabController.index);
+        resetDisplayCount();
       }
     });
 
@@ -54,6 +62,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
   @override
   void dispose() {
     _tabController.dispose();
+    disposeScrollToLoad();
     _scrollController.dispose();
     _hoveredRowKey.dispose();
     super.dispose();
@@ -112,17 +121,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
       child: Row(
         children: [
           if (widget.onBack != null) ...[
-            IconButton(
-              onPressed: widget.onBack,
-              icon: Icon(Icons.arrow_back_ios_new,
-                  size: 18,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary)),
-              splashRadius: 20,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-            ),
+            CustomBackBtn(onBack: widget.onBack),
             const SizedBox(width: 8),
           ],
           Column(
@@ -150,35 +149,33 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
   }
 
   Widget _buildDownloadButton(BuildContext context, LDProvider ledger) {
-    return InkWell(
-      onTap: () {
-        if (!ledger.taxpnlloading) {
-          _showDownloadDialog(context, ledger);
-        }
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        height: 40,
-        width: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: resolveThemeColor(context,
-                dark: MyntColors.cardBorderDark,
-                light: MyntColors.cardBorder),
-          ),
-        ),
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () {
+          if (!ledger.taxpnlloading) {
+            _showDownloadDialog(context, ledger);
+          }
+        },
         child: Center(
           child: ledger.taxpnlloading
               ? const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2))
-              : Icon(Icons.download,
-                  size: 20,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textPrimaryDark,
-                      light: MyntColors.textPrimary)),
+              : SvgPicture.asset(
+                  assets.downloadIcon,
+                  width: 18,
+                  height: 18,
+                  colorFilter: ColorFilter.mode(
+                    resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary),
+                    BlendMode.srcIn,
+                  ),
+                ),
         ),
       ),
     );
@@ -208,8 +205,10 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
             final toMonth = 'Mar ${selectedYear + 1}';
 
             return Dialog(
+               backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.cardDark, light: MyntColors.card),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(8)),
               child: Container(
                 width: 340,
                 padding: const EdgeInsets.all(24),
@@ -219,7 +218,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                   children: [
                     // Financial Year label
                     Text('Financial Year',
-                        style: MyntWebTextStyles.bodySmall(context,
+                        style: MyntWebTextStyles.title(context,
                             color: secondaryColor,
                             fontWeight: MyntFonts.medium)),
                     const SizedBox(height: 8),
@@ -282,7 +281,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                                 Icon(Icons.picture_as_pdf,
                                     size: 40,
                                     color: selectedFormat == 'PDF'
-                                        ? Colors.red
+                                        ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
                                         : secondaryColor),
                                 const SizedBox(height: 6),
                                 Row(
@@ -320,7 +319,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                                 Icon(Icons.table_chart,
                                     size: 40,
                                     color: selectedFormat == 'EXCEL'
-                                        ? Colors.green
+                                        ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
                                         : secondaryColor),
                                 const SizedBox(height: 6),
                                 Row(
@@ -360,10 +359,10 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                               context, selectedYear, selectedFormat);
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
+                          backgroundColor:resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
                         child: Text('Download',
                             style: MyntWebTextStyles.bodySmall(context,
@@ -590,8 +589,8 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
         ? resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
         : value < 0
-            ? Colors.red
-            : Colors.green;
+            ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+            : resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -739,21 +738,19 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
     showDialog(
       context: context,
       builder: (dialogContext) {
-        final textColor = resolveThemeColor(context,
-            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
         final secondaryColor = resolveThemeColor(context,
             dark: MyntColors.textSecondaryDark,
             light: MyntColors.textSecondary);
         final borderColor = resolveThemeColor(context,
             dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
-        final dividerColor = resolveThemeColor(context,
-            dark: MyntColors.dividerDark, light: MyntColors.divider);
 
         return Dialog(
+          backgroundColor: resolveThemeColor(context,
+              dark: MyntColors.cardDark, light: MyntColors.card),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           child: Container(
-            width: 420,
+            width: 600,
             padding: const EdgeInsets.all(0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -761,136 +758,158 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                 // Header
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   child: Row(
                     children: [
                       Text('Bifurcation of Bill',
-                          style: MyntWebTextStyles.body(context,
-                              color: textColor,
-                              fontWeight: MyntFonts.semiBold)),
+                          style: MyntWebTextStyles.head(context,
+                              darkColor: MyntColors.textPrimaryDark,
+                              lightColor: MyntColors.textPrimary,
+                              fontWeight: FontWeight.w600)),
                       const Spacer(),
                       InkWell(
                         onTap: () => Navigator.pop(dialogContext),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Icon(Icons.close,
-                            size: 20, color: secondaryColor),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Icons.close,
+                              size: 24, color: secondaryColor),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                Divider(height: 1, color: dividerColor),
-                // Table header
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    border:
-                        Border(bottom: BorderSide(color: dividerColor)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Text('Particulars',
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: secondaryColor,
-                                fontWeight: MyntFonts.semiBold)),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(segment,
-                            textAlign: TextAlign.right,
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: secondaryColor,
-                                fontWeight: MyntFonts.semiBold)),
-                      ),
-                    ],
-                  ),
-                ),
-                // Rows
-                if (rows.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text('No data available',
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: secondaryColor)),
-                  )
-                else
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 400),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: rows.length,
-                      itemBuilder: (context, index) {
-                        final row = rows[index];
-                        final valColor = row.value < 0
-                            ? Colors.red
-                            : row.value > 0
-                                ? Colors.green
-                                : textColor;
-                        return Container(
+                // Table
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Column(
+                      children: [
+                        // Table header
+                        Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
+                              horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
                             border: Border(
-                                bottom: BorderSide(
-                                    color: dividerColor.withValues(alpha: 0.5))),
+                                bottom: BorderSide(color: borderColor)),
                           ),
                           child: Row(
                             children: [
                               Expanded(
                                 flex: 3,
-                                child: Text(row.key,
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: textColor,
-                                        fontWeight: MyntFonts.medium)),
+                                child: Text('Particulars',
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                        fontWeight: FontWeight.w500)),
                               ),
                               Expanded(
                                 flex: 2,
-                                child: Text(row.value.toStringAsFixed(2),
+                                child: Text(segment,
                                     textAlign: TextAlign.right,
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: valColor,
-                                        fontWeight: MyntFonts.medium)),
+                                    style: MyntWebTextStyles.para(context,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                        fontWeight: FontWeight.w500)),
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                        // Rows
+                        if (rows.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text('No data available',
+                                style: MyntWebTextStyles.body(context,
+                                    color: secondaryColor)),
+                          )
+                        else
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 450),
+                            child: ListView.separated(
+                              shrinkWrap: true,
+                              itemCount: rows.length,
+                              separatorBuilder: (context, index) =>
+                                  Divider(height: 1, color: borderColor),
+                              itemBuilder: (context, index) {
+                                final row = rows[index];
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(row.key,
+                                            style: MyntWebTextStyles.body(context,
+                                                darkColor: MyntColors.textPrimaryDark,
+                                                lightColor: MyntColors.textPrimary,
+                                                fontWeight: MyntFonts.medium)),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                            '${row.value < 0 ? '- ' : ''}${row.value.abs().toStringAsFixed(2)}',
+                                            textAlign: TextAlign.right,
+                                            style: MyntWebTextStyles.body(context,
+                                                darkColor: MyntColors.textPrimaryDark,
+                                                lightColor: MyntColors.textPrimary,
+                                                fontWeight: MyntFonts.medium)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        // Total row
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                                top: BorderSide(color: borderColor)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text('Total',
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.semiBold)),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                    '${total < 0 ? '- ' : ''}${total.abs().toStringAsFixed(2)}',
+                                    textAlign: TextAlign.right,
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: total < 0
+                                            ? MyntColors.lossDark
+                                            : total > 0
+                                                ? MyntColors.profitDark
+                                                : MyntColors.textPrimaryDark,
+                                        lightColor: total < 0
+                                            ? MyntColors.loss
+                                            : total > 0
+                                                ? MyntColors.profit
+                                                : MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.semiBold)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                // Total row
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: borderColor)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: Text('Total',
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: textColor,
-                                fontWeight: MyntFonts.semiBold)),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(total.toStringAsFixed(2),
-                            textAlign: TextAlign.right,
-                            style: MyntWebTextStyles.bodySmall(context,
-                                color: total < 0
-                                    ? Colors.red
-                                    : total > 0
-                                        ? Colors.green
-                                        : textColor,
-                                fontWeight: MyntFonts.semiBold)),
-                      ),
-                    ],
-                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 24),
               ],
             ),
           ),
@@ -908,7 +927,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
   // ─── Tab Bar ─────────────────────────────────────────────────────────
 
   Widget _buildTabBar(BuildContext context) {
-    final tabLabels = ['Equity', 'FNO', 'Commodity', 'Currency'];
+    final tabLabels = ['Equity', 'Derivatives', 'Commodity', 'Currency'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -1090,19 +1109,17 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final double totalWidth = constraints.maxWidth;
-          // Symbol(2x) + 8 columns(1x each) = 10 parts
-          final symbolW = totalWidth * 0.20;
-          final colW = totalWidth * 0.10;
+          // Symbol + BuyQty + BuyRate(amt) + SellQty + SellRate(amt) + NetQty + NetRate(amt) + ClosePrice + P&L
           final columnWidths = {
-            0: shadcn.FixedTableSize(symbolW),
-            1: shadcn.FixedTableSize(colW),
-            2: shadcn.FixedTableSize(colW),
-            3: shadcn.FixedTableSize(colW),
-            4: shadcn.FixedTableSize(colW),
-            5: shadcn.FixedTableSize(colW),
-            6: shadcn.FixedTableSize(colW),
-            7: shadcn.FixedTableSize(colW),
-            8: shadcn.FixedTableSize(colW),
+            0: shadcn.FixedTableSize(totalWidth * 0.18), // Symbol
+            1: shadcn.FixedTableSize(totalWidth * 0.08), // Buy Qty
+            2: shadcn.FixedTableSize(totalWidth * 0.12), // Buy Rate + Amt
+            3: shadcn.FixedTableSize(totalWidth * 0.08), // Sell Qty
+            4: shadcn.FixedTableSize(totalWidth * 0.12), // Sell Rate + Amt
+            5: shadcn.FixedTableSize(totalWidth * 0.08), // Net Qty
+            6: shadcn.FixedTableSize(totalWidth * 0.12), // Net Rate + Amt
+            7: shadcn.FixedTableSize(totalWidth * 0.10), // Close Price
+            8: shadcn.FixedTableSize(totalWidth * 0.12), // P&L
           };
 
           return shadcn.OutlinedContainer(
@@ -1154,6 +1171,13 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
 
     return Column(
       children: [
+         Divider(
+            height: 1,
+            thickness: 1,
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark,
+                light: MyntColors.divider),
+          ),
         // Section header (expandable)
         InkWell(
           onTap: () {
@@ -1164,8 +1188,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             color: isDarkMode(context)
-                ? Colors.white.withValues(alpha: 0.03)
-                : Colors.black.withValues(alpha: 0.02),
+                ? MyntColors.transparent : MyntColors.overlayBg,
             child: Row(
               children: [
                 Icon(
@@ -1199,9 +1222,9 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
         // Expanded data rows
         if (isExpanded && section.data.isNotEmpty)
           shadcn.Table(
-            defaultRowHeight: const shadcn.FixedTableSize(42),
+            defaultRowHeight: const shadcn.FixedTableSize(64),
             columnWidths: columnWidths,
-            rows: section.data.asMap().entries.map((entry) {
+            rows: takeDisplayed(section.data).asMap().entries.map((entry) {
               final i = entry.key;
               final item = entry.value;
               return _buildDataRow(context, section.title, i, item, section.isEquity);
@@ -1221,32 +1244,38 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
 
   shadcn.TableRow _buildDataRow(BuildContext context, String sectionTitle,
       int index, dynamic item, bool isEquity) {
-    String symbol, buyQty, buyRate, sellQty, sellRate, netQty, netRate, closePrice, pnl;
+    String symbol, buyQty, buyRate, buyAmt, sellQty, sellRate, sellAmt, netQty, netRate, netAmount, closePrice, pnl;
 
     if (item is Map<String, dynamic>) {
-      symbol = item['SCRIP_NAME']?.toString() ?? item['SCRIP_SYMBOL']?.toString() ?? '';
+      symbol = (item['SCRIP_NAMEDATA']?.toString().isNotEmpty == true ? item['SCRIP_NAMEDATA'].toString() : null) ?? item['SCRIP_NAME']?.toString() ?? item['SCRIP_SYMBOL']?.toString() ?? '';
       buyQty = _formatNum(item['BUYQTY']);
       buyRate = _formatNum(item['BUYRATE']);
+      buyAmt = _formatNum(item['BUY_AMT']);
       sellQty = _formatNum(item['SALEQTY']);
       sellRate = _formatNum(item['SALERATE']);
+      sellAmt = _formatNum(item['SALE_AMT']);
       netQty = _formatNum(item['NETQTY']);
       netRate = _formatNum(item['NETRATE']);
+      netAmount = _formatNum(item['NET_AMOUNT']);
       closePrice = _formatNum(item['CL_PRICE']);
       pnl = _formatNum(item['NOTIONAL_NET']);
     } else {
       try {
-        symbol = item.sCRIPNAME?.toString() ?? '';
+        symbol = (item.sCRIPNAMEDATA?.isNotEmpty == true ? item.sCRIPNAMEDATA : null) ?? item.sCRIPNAME?.toString() ?? '';
         buyQty = _formatStr(item.bUYQTY);
         buyRate = _formatStr(item.bUYRATE);
+        buyAmt = _formatStr(item.bUYAMT);
         sellQty = _formatStr(item.sALEQTY);
         sellRate = _formatStr(item.sALERATE);
+        sellAmt = _formatStr(item.sALEAMT);
         netQty = _formatStr(item.nETQTY);
         netRate = _formatStr(item.nETRATE);
+        netAmount = _formatStr(item.nETAMOUNT);
         closePrice = _formatStr(item.closingPrice);
         pnl = _formatStr(item.pLAMT);
       } catch (_) {
         symbol = '--';
-        buyQty = buyRate = sellQty = sellRate = netQty = netRate = closePrice = pnl = '0.00';
+        buyQty = buyRate = buyAmt = sellQty = sellRate = sellAmt = netQty = netRate = netAmount = closePrice = pnl = '0.00';
       }
     }
 
@@ -1255,8 +1284,8 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
         ? resolveThemeColor(context,
             dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)
         : pnlValue < 0
-            ? Colors.red
-            : Colors.green;
+            ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+            : resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success);
 
     final rowKey = '${sectionTitle}_${index}_$symbol';
 
@@ -1264,27 +1293,54 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
       cells: [
         _buildDataCell(
           rowKey: rowKey,
-          child: Text(symbol.isNotEmpty ? symbol : '--',
-              style: _cellStyle(context), overflow: TextOverflow.ellipsis, maxLines: 1),
+          child: Tooltip(
+            message: symbol.isNotEmpty ? symbol : '--',
+            child: Text(symbol.isNotEmpty ? symbol : '--',
+                style: _cellStyle(context), overflow: TextOverflow.ellipsis, maxLines: 1),
+          ),
         ),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
             child: Text(buyQty, style: _cellStyle(context))),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
-            child: Text(buyRate, style: _cellStyle(context))),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(buyRate, style: _cellStyle(context)),
+                Text(buyAmt, style: MyntWebTextStyles.caption(context,
+                    darkColor: MyntColors.textSecondaryDark, lightColor: MyntColors.textSecondary)),
+              ],
+            )),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
             child: Text(sellQty, style: _cellStyle(context))),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
-            child: Text(sellRate, style: _cellStyle(context))),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(sellRate, style: _cellStyle(context)),
+                Text(sellAmt, style: MyntWebTextStyles.caption(context,
+                    darkColor: MyntColors.textSecondaryDark, lightColor: MyntColors.textSecondary)),
+              ],
+            )),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
             child: Text(netQty, style: _cellStyle(context))),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
-            child: Text(netRate, style: _cellStyle(context))),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(netRate, style: _cellStyle(context)),
+                Text(netAmount, style: MyntWebTextStyles.caption(context,
+                    darkColor: MyntColors.textSecondaryDark, lightColor: MyntColors.textSecondary)),
+              ],
+            )),
         _buildDataCell(
             rowKey: rowKey, alignRight: true,
             child: Text(closePrice, style: _cellStyle(context))),
@@ -1328,7 +1384,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                           light: MyntColors.primary)
                       .withValues(alpha: 0.06)
                   : null,
-              alignment: alignRight ? Alignment.centerRight : null,
+              alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
               child: child,
             );
           },

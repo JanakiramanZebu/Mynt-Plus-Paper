@@ -1073,15 +1073,16 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                             decoration: BoxDecoration(
-                                              color: MyntColors.secondary.withValues(alpha: 0.1),
+                                              color: resolveThemeColor(context,
+                                                  dark: MyntColors.primaryDark.withValues(alpha: 0.15),
+                                                  light: MyntColors.secondary.withValues(alpha: 0.1)),
                                               borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               'T1: ${int.parse(holding.npoadt1qty ?? "0") + int.parse(holding.btstqty ?? "0")}',
                                               style: MyntWebTextStyles.para(
                                                 context,
-                                                color: MyntColors.secondary,
-                                                darkColor: MyntColors.secondary,
+                                                darkColor: MyntColors.primaryDark,
                                                 lightColor: MyntColors.secondary,
                                                 fontWeight: MyntFonts.medium,
                                               ).copyWith(fontSize: 10),

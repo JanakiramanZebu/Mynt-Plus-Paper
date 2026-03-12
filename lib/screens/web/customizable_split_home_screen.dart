@@ -415,6 +415,8 @@ class _CustomizableSplitHomeScreenState
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
+          } else if (routeName == "refer") {
+            _replaceScreenInPanel(ScreenType.refer);
           } else {
             debugPrint("Unknown route: $routeName");
           }
@@ -479,6 +481,8 @@ class _CustomizableSplitHomeScreenState
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
+          } else if (routeName == "refer") {
+            _replaceScreenInPanel(ScreenType.refer);
           } else {
             debugPrint("Unknown route: $routeName");
           }

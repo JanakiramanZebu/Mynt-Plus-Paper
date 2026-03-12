@@ -13,7 +13,9 @@ import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../res/mynt_web_color_styles.dart';
 import '../../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../../sharedWidget/mynt_loader.dart';
+import '../../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
+import '../../../../../sharedWidget/scroll_to_load_mixin.dart';
 import '../../../../../sharedWidget/functions.dart';
 import '../../../../Mobile/desk_reports/bottom_sheets/ledger_filter.dart';
 import '../../../../../utils/rupee_convert_format.dart';
@@ -27,7 +29,10 @@ class LedgerScreenWeb extends ConsumerStatefulWidget {
   ConsumerState<LedgerScreenWeb> createState() => _LedgerScreenWebState();
 }
 
-class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
+class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
+    with ScrollToLoadMixin {
+  @override
+  ScrollController get tableScrollController => _tableScrollController;
   final ScrollController _tableScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
@@ -36,11 +41,6 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
   // Sorting state
   int? _sortColumnIndex;
   bool _sortAscending = true;
-
-  // Lazy loading
-  static const int _itemsPerPage = 20;
-  int _displayedItemCount = 20;
-  bool _isLoadingMore = false;
 
   // Date range picker state
   bool _showDatePicker = false;
@@ -54,7 +54,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
   @override
   void initState() {
     super.initState();
-    _tableScrollController.addListener(_onScroll);
+    initScrollToLoad();
 
     final now = DateTime.now();
     // Initialize calendar months: left = start of current FY, right = current month
@@ -74,7 +74,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
   @override
   void dispose() {
     _removeDatePickerOverlay();
-    _tableScrollController.removeListener(_onScroll);
+    disposeScrollToLoad();
     _tableScrollController.dispose();
     _horizontalScrollController.dispose();
     _searchController.dispose();
@@ -87,20 +87,6 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
     _datePickerOverlay = null;
     if (_showDatePicker) {
       setState(() => _showDatePicker = false);
-    }
-  }
-
-  void _onScroll() {
-    if (_isLoadingMore) return;
-    final maxScroll = _tableScrollController.position.maxScrollExtent;
-    final currentScroll = _tableScrollController.position.pixels;
-    final threshold = maxScroll * 0.8;
-    if (currentScroll >= threshold) {
-      setState(() {
-        _isLoadingMore = true;
-        _displayedItemCount += _itemsPerPage;
-        _isLoadingMore = false;
-      });
     }
   }
 
@@ -181,19 +167,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
   Widget _buildHeaderBar(BuildContext context, ThemesProvider theme) {
     return Row(
       children: [
-        IconButton(
-          onPressed: widget.onBack,
-          icon: Icon(
-            Icons.arrow_back_ios_new,
-            size: 18,
-            color: resolveThemeColor(context,
-                dark: MyntColors.textPrimaryDark,
-                light: MyntColors.textPrimary),
-          ),
-          splashRadius: 20,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
+        CustomBackBtn(onBack: widget.onBack),
         const SizedBox(width: 8),
         Text(
           'Ledger',
@@ -237,13 +211,17 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
             _buildStatCard(
               label: 'Total Debit',
               value: _formatAmount(totalDebit),
-              valueColor: colors.loss,
+              valueColor: resolveThemeColor(context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.loss),
               theme: theme,
             ),
             _buildStatCard(
               label: 'Total Credit',
               value: _formatAmount(totalCredit),
-              valueColor: colors.profit,
+              valueColor: resolveThemeColor(context,
+                  dark: MyntColors.profitDark,
+                  light: MyntColors.profit),
               theme: theme,
             ),
             _buildStatCard(
@@ -340,7 +318,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
             onChanged: (value) {
               ledgerprovider.searchLedgerType(value);
               setState(() {
-                _displayedItemCount = _itemsPerPage;
+                displayedItemCount = ScrollToLoadMixin.itemsPerPage;
               });
             },
           ),
@@ -444,30 +422,48 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
               color: isYes ? primaryColor : secondaryColor,
               fontWeight: isYes ? MyntFonts.semiBold : MyntFonts.medium),
         ),
-        Transform.scale(
-          scale: 0.7,
-          child: Switch(
-            value: !isYes,
-            onChanged: (val) {
-              ledgerprovider.setIncludeBillMargin(!val);
-              ledgerprovider.fetchLegerData(
-                  context,
-                  ledgerprovider.startDate,
-                  ledgerprovider.endDate,
-                  !val);
-              setState(() => _displayedItemCount = _itemsPerPage);
-            },
-            activeTrackColor: resolveThemeColor(context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary),
-            inactiveTrackColor: resolveThemeColor(context,
-                dark: MyntColors.primaryDark,
-                light: MyntColors.primary),
-            thumbColor: WidgetStateProperty.all(Colors.white),
-            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () {
+            final newVal = !isYes;
+            ledgerprovider.setIncludeBillMargin(newVal);
+            ledgerprovider.fetchLegerData(
+                context,
+                ledgerprovider.startDate,
+                ledgerprovider.endDate,
+                newVal);
+            setState(() => displayedItemCount = ScrollToLoadMixin.itemsPerPage);
+          },
+          child: Container(
+            width: 36,
+            height: 20,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: !isYes
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.secondary, light: MyntColors.primary)
+                  : Colors.grey.withValues(alpha: 0.3),
+            ),
+            child: Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  left: !isYes ? 18 : 2,
+                  top: 2,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           'No',
           style: MyntWebTextStyles.body(context,
@@ -565,7 +561,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
               '${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}';
           ledgerprovider.fetchLegerData(
               context, startStr, endStr, ledgerprovider.includeBillMargin);
-          setState(() => _displayedItemCount = _itemsPerPage);
+          setState(() => displayedItemCount = ScrollToLoadMixin.itemsPerPage);
           _removeDatePickerOverlay();
         },
         onQuickSelect: (preset) {
@@ -630,32 +626,107 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
         '${end.day.toString().padLeft(2, '0')}/${end.month.toString().padLeft(2, '0')}/${end.year}';
     ledgerprovider.fetchLegerData(
         context, startStr, endStr, ledgerprovider.includeBillMargin);
-    setState(() => _displayedItemCount = _itemsPerPage);
+    setState(() => displayedItemCount = ScrollToLoadMixin.itemsPerPage);
   }
 
-  // ─── Filter Popover (position_screen_web pattern) ────────────────────
+  // ─── Filter Popover ────────────────────────────────────────────────
 
   void _showFilterPopover(
-      BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
+      BuildContext buttonContext, ThemesProvider theme, LDProvider ledgerprovider) {
     ledgerprovider.setfilterpage = 'ledger';
 
+    final filters = <(String, List<SingingCharacter>)>[
+      ('All', [SingingCharacter.receipt, SingingCharacter.payment, SingingCharacter.journal, SingingCharacter.systemjournal, SingingCharacter.billmargin]),
+      ('Receipt', [SingingCharacter.receipt]),
+      ('Payment', [SingingCharacter.payment]),
+      ('Journal', [SingingCharacter.journal]),
+      ('System Journal', [SingingCharacter.systemjournal]),
+      ('Bill Margin', [SingingCharacter.billmargin]),
+    ];
+
+    // Determine current selection label
+    String currentLabel = 'All';
+    final selected = ledgerprovider.selectedFilters;
+    if (selected.length == 1) {
+      final single = selected.first;
+      final match = filters.where((f) => f.$2.length == 1 && f.$2.first == single);
+      if (match.isNotEmpty) currentLabel = match.first.$1;
+    } else if (selected.length < 5) {
+      currentLabel = 'All'; // fallback
+    }
+
     shadcn.showPopover(
-      context: context,
+      context: buttonContext,
       alignment: Alignment.topCenter,
       offset: const Offset(0, 8),
       overlayBarrier: shadcn.OverlayBarrier(
-        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
+        borderRadius: shadcn.Theme.of(buttonContext).borderRadiusLg,
       ),
       builder: (popoverContext) {
-        return _LedgerFilterPopover(
-          theme: theme,
-          ledgerprovider: ledgerprovider,
-          onApply: (filters) {
-            ledgerprovider.applyLedgerMultiFilter(context, filters);
-            setState(() => _displayedItemCount = _itemsPerPage);
-            shadcn.closeOverlay(popoverContext);
-          },
-          onClose: () => shadcn.closeOverlay(popoverContext),
+        return Container(
+          width: 180,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark,
+                light: MyntColors.backgroundColor),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: filters.map((f) {
+              final label = f.$1;
+              final filterValues = f.$2;
+              final isSelected = currentLabel == label;
+              return InkWell(
+                onTap: () {
+                  ledgerprovider.applyLedgerMultiFilter(context, filterValues);
+                  setState(() => displayedItemCount = ScrollToLoadMixin.itemsPerPage);
+                  shadcn.closeOverlay(popoverContext);
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: isSelected
+                      ? resolveThemeColor(context,
+                              dark: MyntColors.primaryDark,
+                              light: MyntColors.primary)
+                          .withValues(alpha: 0.1)
+                      : null,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: MyntWebTextStyles.bodySmall(context,
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                              fontWeight: isSelected
+                                  ? MyntFonts.semiBold
+                                  : MyntFonts.medium),
+                        ),
+                      ),
+                      if (isSelected)
+                        Icon(Icons.check,
+                            size: 16,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         );
       },
     );
@@ -684,21 +755,21 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
           case 2: // Type
             compareResult = (a.tYPE ?? '').compareTo(b.tYPE ?? '');
             break;
-          case 3: // Debit
+          case 3: // Details
+            compareResult =
+                (a.nARRATION ?? '').compareTo(b.nARRATION ?? '');
+            break;
+          case 4: // Debit
             compareResult = (double.tryParse(a.dRAMT ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.dRAMT ?? '0') ?? 0);
             break;
-          case 4: // Credit
+          case 5: // Credit
             compareResult = (double.tryParse(a.cRAMT ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.cRAMT ?? '0') ?? 0);
             break;
-          case 5: // Net Amount
+          case 6: // Net Amount
             compareResult = (double.tryParse(a.nETAMT ?? '0') ?? 0)
                 .compareTo(double.tryParse(b.nETAMT ?? '0') ?? 0);
-            break;
-          case 6: // Details
-            compareResult =
-                (a.nARRATION ?? '').compareTo(b.nARRATION ?? '');
             break;
         }
         return _sortAscending ? compareResult : -compareResult;
@@ -720,10 +791,10 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
           0: shadcn.FixedTableSize(dateWidth),
           1: shadcn.FixedTableSize(exchWidth),
           2: shadcn.FixedTableSize(typeWidth),
-          3: shadcn.FixedTableSize(debitWidth),
-          4: shadcn.FixedTableSize(creditWidth),
-          5: shadcn.FixedTableSize(netWidth),
-          6: shadcn.FixedTableSize(detailsWidth),
+          3: shadcn.FixedTableSize(detailsWidth),
+          4: shadcn.FixedTableSize(debitWidth),
+          5: shadcn.FixedTableSize(creditWidth),
+          6: shadcn.FixedTableSize(netWidth),
         };
 
         return shadcn.OutlinedContainer(
@@ -747,10 +818,10 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
                             _buildHeaderCell('Date', 0),
                             _buildHeaderCell('Exchange', 1),
                             _buildHeaderCell('Type', 2),
-                            _buildHeaderCell('Debit', 3, true),
-                            _buildHeaderCell('Credit', 4, true),
-                            _buildHeaderCell('Net Amount', 5, true),
-                            _buildHeaderCell('Details', 6),
+                            _buildHeaderCell('Details', 3),
+                            _buildHeaderCell('Debit', 4, true),
+                            _buildHeaderCell('Credit', 5, true),
+                            _buildHeaderCell('Net Amount', 6, true),
                           ],
                         ),
                       ],
@@ -765,7 +836,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
                                     const shadcn.FixedTableSize(55),
                                 columnWidths: columnWidths,
                                 rows: sortedList
-                                    .take(_displayedItemCount)
+                                    .take(displayedItemCount)
                                     .toList()
                                     .asMap()
                                     .entries
@@ -933,15 +1004,46 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
           columnIndex: 2,
           onTap: isBillEntry ? onBillTap : null,
         ),
+        // Details / Narration
+        _buildCellWithHover(
+          child: Tooltip(
+            message: item.nARRATION ?? '',
+            child: item.nARRATION != null && item.nARRATION != ''
+                ? RichText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      text: item.nARRATION,
+                      style: _getTextStyle(context),
+                      children: [
+                        if (item.bILLNO != null && item.bILLNO.toString().length >= 4)
+                          TextSpan(
+                            text: ' - (${item.bILLNO.toString().substring(item.bILLNO.toString().length - 4)})',
+                            style: _getTextStyle(context,
+                                color: resolveThemeColor(context,
+                                    dark: MyntColors.primaryDark,
+                                    light: MyntColors.primary)),
+                          ),
+                      ],
+                    ),
+                  )
+                : Text('-', style: _getTextStyle(context)),
+          ),
+          rowIndex: index,
+          columnIndex: 3,
+          onTap: isBillEntry ? onBillTap : null,
+        ),
         // Debit
         _buildCellWithHover(
           child: Text(
             debitAmt != 0 ? debitAmt.toStringAsFixed(2) : '-',
             style: _getTextStyle(context,
-                color: debitAmt != 0 ? colors.loss : null),
+                color: debitAmt != 0 ?   resolveThemeColor(context,
+                  dark: MyntColors.lossDark,
+                  light: MyntColors.loss) : null),
           ),
           rowIndex: index,
-          columnIndex: 3,
+          columnIndex: 4,
           alignRight: true,
           onTap: isBillEntry ? onBillTap : null,
         ),
@@ -950,10 +1052,12 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
           child: Text(
             creditAmt != 0 ? creditAmt.toStringAsFixed(2) : '-',
             style: _getTextStyle(context,
-                color: creditAmt != 0 ? colors.profit : null),
+                color: creditAmt != 0 ? resolveThemeColor(context,
+                  dark: MyntColors.profitDark,
+                  light: MyntColors.profit) : null),
           ),
           rowIndex: index,
-          columnIndex: 4,
+          columnIndex: 5,
           alignRight: true,
           onTap: isBillEntry ? onBillTap : null,
         ),
@@ -964,28 +1068,8 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
             style: _getTextStyle(context),
           ),
           rowIndex: index,
-          columnIndex: 5,
-          alignRight: true,
-          onTap: isBillEntry ? onBillTap : null,
-        ),
-        // Details / Narration
-        _buildCellWithHover(
-          child: Tooltip(
-            message: item.nARRATION ?? '',
-            child: Text(
-              item.nARRATION ?? '',
-              style: _getTextStyle(context,
-                  color: isBillEntry
-                      ? resolveThemeColor(context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary)
-                      : null),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          rowIndex: index,
           columnIndex: 6,
+          alignRight: true,
           onTap: isBillEntry ? onBillTap : null,
         ),
       ],
@@ -1040,7 +1124,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
                             light: MyntColors.primary)
                         .withValues(alpha: 0.08)
                     : null,
-                alignment: alignRight ? Alignment.topRight : null,
+                alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
                 child: child,
               ),
             );
@@ -1059,185 +1143,360 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
         dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
     final secondaryColor = resolveThemeColor(context,
         dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+    final dividerColor = resolveThemeColor(context,
+        dark: MyntColors.dividerDark, light: MyntColors.divider);
+    final transactionCount = billData?.transactions?.length ?? 0;
+
+    // Calculate total from transactions
+    double total = 0;
+    if (billData?.transactions != null) {
+      for (var item in billData!.transactions!) {
+        total += double.tryParse(item.nETAMT ?? '0') ?? 0;
+      }
+    }
+
+    final billSearchController = TextEditingController();
+    final screenWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = (screenWidth * 0.6).clamp(900.0, 1200.0);
 
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => Dialog(
-        backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: SizedBox(
-          width: 520,
-          height: 500,
-          child: Column(
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 12, 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (context) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            // Filter transactions by search
+            final filteredTransactions = billData?.transactions?.where((item) {
+              if (searchQuery.isEmpty) return true;
+              return (item.sCRIPNAME ?? '')
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase());
+            }).toList();
+
+            return Dialog(
+              backgroundColor:
+                  theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              child: SizedBox(
+                width: dialogWidth,
+                height: 560,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Bill and Details',
-                      style: MyntWebTextStyles.body(context,
-                          color: primaryColor,
-                          fontWeight: MyntFonts.semiBold),
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 12, 0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Bills and Taxes',
+                                  style: MyntWebTextStyles.title(context,
+                                      color: primaryColor,
+                                      fontWeight: MyntFonts.semiBold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Bills and Taxes Details About the bill',
+                                  style: MyntWebTextStyles.bodySmall(context,
+                                      color: secondaryColor),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Transaction count
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '$transactionCount Transactions',
+                              style: MyntWebTextStyles.body(context,
+                                  color: primaryColor,
+                                  fontWeight: MyntFonts.medium),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Search field
+                          SizedBox(
+                            width: 200,
+                            height: 36,
+                            child: MyntSearchTextField(
+                              controller: billSearchController,
+                              placeholder: 'Search',
+                              leadingIcon: 'assets/icon/search.svg',
+                              onChanged: (value) {
+                                setDialogState(() => searchQuery = value);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () {
+                              billSearchController.dispose();
+                              Navigator.pop(context);
+                            },
+                            icon: Icon(Icons.close_rounded,
+                                size: 20, color: secondaryColor),
+                            splashRadius: 18,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                                minWidth: 32, minHeight: 32),
+                          ),
+                        ],
+                      ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close_rounded,
-                          size: 20, color: secondaryColor),
-                      splashRadius: 18,
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 32, minHeight: 32),
-                    ),
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: dividerColor),
+                    const SizedBox(height: 12),
+                    // Content
+                    if (billData?.expenses == null &&
+                        billData?.transactions == null)
+                      const Expanded(
+                          child: Center(child: Text('No data available')))
+                    else
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Expense cards - horizontal scrollable
+                              if (billData?.expenses != null &&
+                                  billData!.expenses!.isNotEmpty) ...[
+                                Row(
+                                  children: [
+                                    for (int i = 0;
+                                        i < billData.expenses!.length;
+                                        i++) ...[
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            border: Border.all(
+                                                color: dividerColor),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                (billData.expenses![i]
+                                                            .sCRIPNAME ??
+                                                        '')
+                                                    .toUpperCase(),
+                                                style: MyntWebTextStyles
+                                                    .bodySmall(context,
+                                                        color: primaryColor,
+                                                        fontWeight: MyntFonts
+                                                            .semiBold),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Divider(
+                                                  height: 1,
+                                                  color: dividerColor),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                billData.expenses![i]
+                                                        .nETAMT ??
+                                                    '0',
+                                                style: MyntWebTextStyles
+                                                    .bodySmall(context,
+                                                        color: primaryColor,
+                                                        fontWeight: MyntFonts
+                                                            .medium),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      if (i <
+                                          billData.expenses!.length - 1)
+                                        const SizedBox(width: 12),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                              // Transactions table
+                              if (filteredTransactions != null &&
+                                  filteredTransactions.isNotEmpty) ...[
+                                Expanded(
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final double tableWidth = constraints.maxWidth;
+                                      final double scripWidth = tableWidth * 0.22;
+                                      final double colWidth = (tableWidth - scripWidth) / 8;
+
+                                      final billColumnWidths = {
+                                        0: shadcn.FixedTableSize(scripWidth),
+                                        1: shadcn.FixedTableSize(colWidth),
+                                        2: shadcn.FixedTableSize(colWidth),
+                                        3: shadcn.FixedTableSize(colWidth),
+                                        4: shadcn.FixedTableSize(colWidth),
+                                        5: shadcn.FixedTableSize(colWidth),
+                                        6: shadcn.FixedTableSize(colWidth),
+                                        7: shadcn.FixedTableSize(colWidth),
+                                        8: shadcn.FixedTableSize(colWidth),
+                                      };
+
+                                      shadcn.TableCell billHeaderCell(String label, [bool alignRight = false]) {
+                                        return shadcn.TableCell(
+                                          theme: const shadcn.TableCellTheme(
+                                            border: shadcn.WidgetStatePropertyAll(
+                                              shadcn.Border(
+                                                top: shadcn.BorderSide.none,
+                                                bottom: shadcn.BorderSide.none,
+                                                left: shadcn.BorderSide.none,
+                                                right: shadcn.BorderSide.none,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+                                            child: Text(label, style: _getHeaderStyle(context)),
+                                          ),
+                                        );
+                                      }
+
+                                      shadcn.TableCell billDataCell(String? value, [bool alignRight = false]) {
+                                        return shadcn.TableCell(
+                                          theme: const shadcn.TableCellTheme(
+                                            border: shadcn.WidgetStatePropertyAll(
+                                              shadcn.Border(
+                                                top: shadcn.BorderSide.none,
+                                                bottom: shadcn.BorderSide.none,
+                                                left: shadcn.BorderSide.none,
+                                                right: shadcn.BorderSide.none,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                            alignment: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+                                            child: Text(
+                                              value != null && double.tryParse(value) != null
+                                                  ? double.parse(value).toStringAsFixed(2)
+                                                  : value ?? '-',
+                                              style: _getTextStyle(context),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        );
+                                      }
+
+                                      return shadcn.OutlinedContainer(
+                                        child: Column(
+                                          children: [
+                                            // Fixed Header
+                                            shadcn.Table(
+                                              defaultRowHeight: const shadcn.FixedTableSize(50),
+                                              columnWidths: billColumnWidths,
+                                              rows: [
+                                                shadcn.TableHeader(
+                                                  cells: [
+                                                    billHeaderCell('Scrip'),
+                                                    billHeaderCell('BQty', true),
+                                                    billHeaderCell('BRate', true),
+                                                    billHeaderCell('BAmount', true),
+                                                    billHeaderCell('SQty', true),
+                                                    billHeaderCell('SRate', true),
+                                                    billHeaderCell('SAmount', true),
+                                                    billHeaderCell('NQty', true),
+                                                    billHeaderCell('NAmt', true),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            // Scrollable Body
+                                            Expanded(
+                                              child: SingleChildScrollView(
+                                                child: shadcn.Table(
+                                                  defaultRowHeight: const shadcn.FixedTableSize(52),
+                                                  columnWidths: billColumnWidths,
+                                                  rows: filteredTransactions
+                                                      .map((item) {
+                                                    return shadcn.TableRow(
+                                                      cells: [
+                                                        billDataCell(item.sCRIPNAME),
+                                                        billDataCell(item.bQTY, true),
+                                                        billDataCell(item.bRATE, true),
+                                                        billDataCell(item.bAMT, true),
+                                                        billDataCell(item.sQTY, true),
+                                                        billDataCell(item.sRATE, true),
+                                                        billDataCell(item.sAMT, true),
+                                                        billDataCell(item.nETQTY, true),
+                                                        billDataCell(item.nETAMT, true),
+                                                      ],
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    // Total footer
+                    if (billData?.transactions != null &&
+                        billData!.transactions!.isNotEmpty) ...[
+                      Divider(height: 1, color: dividerColor),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'Total : ${total.toStringAsFixed(2)}',
+                            style: MyntWebTextStyles.body(context,
+                                color: total < 0
+                                    ? resolveThemeColor(context,
+                                        dark: MyntColors.lossDark,
+                                        light: MyntColors.loss)
+                                    : resolveThemeColor(context,
+                                        dark: MyntColors.profitDark,
+                                        light: MyntColors.profit),
+                                fontWeight: MyntFonts.semiBold),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Divider(
-                  height: 1,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider)),
-              // Content
-              if (billData?.expenses == null && billData?.transactions == null)
-                const Expanded(
-                    child: Center(child: Text('No data available')))
-              else
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Expenses section
-                        if (billData?.expenses != null &&
-                            billData!.expenses!.isNotEmpty) ...[
-                          Text('Expenses',
-                              style: MyntWebTextStyles.bodySmall(context,
-                                  color: secondaryColor,
-                                  fontWeight: MyntFonts.semiBold)),
-                          const SizedBox(height: 12),
-                          for (var item in billData.expenses!)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.sCRIPNAME ?? '',
-                                      style: MyntWebTextStyles.bodySmall(
-                                          context,
-                                          color: secondaryColor),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  Text(
-                                    item.nETAMT ?? '',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: primaryColor,
-                                        fontWeight: MyntFonts.medium),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          Divider(
-                              height: 1,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.dividerDark,
-                                  light: MyntColors.divider)),
-                          const SizedBox(height: 16),
-                        ],
-                        // Transactions section
-                        if (billData?.transactions != null &&
-                            billData!.transactions!.isNotEmpty) ...[
-                          Text('Transactions',
-                              style: MyntWebTextStyles.bodySmall(context,
-                                  color: secondaryColor,
-                                  fontWeight: MyntFonts.semiBold)),
-                          const SizedBox(height: 12),
-                          for (var item in billData.transactions!)
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: resolveThemeColor(context,
-                                      dark: MyntColors.dividerDark,
-                                      light: MyntColors.divider),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.sCRIPNAME ?? '',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: primaryColor,
-                                        fontWeight: MyntFonts.medium),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      _billField('BQty', item.bQTY, context,
-                                          secondaryColor, primaryColor),
-                                      _billField('BRate', item.bRATE, context,
-                                          secondaryColor, primaryColor),
-                                      _billField('SQty', item.sQTY, context,
-                                          secondaryColor, primaryColor),
-                                      _billField('SRate', item.sRATE, context,
-                                          secondaryColor, primaryColor),
-                                      _billField('Net Amt', item.nETAMT,
-                                          context, secondaryColor, primaryColor),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _billField(String label, String? value, BuildContext context,
-      Color labelColor, Color valueColor) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: MyntWebTextStyles.caption(context, color: labelColor)),
-          const SizedBox(height: 2),
-          Text(value ?? '-',
-              style: MyntWebTextStyles.caption(context,
-                  color: valueColor, fontWeight: MyntFonts.medium)),
-        ],
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
   Widget _downloadDialog(
       BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
     return Dialog(
-      backgroundColor: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: SizedBox(
         width: 280,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(15),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1246,7 +1505,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb> {
                 children: [
                   Text(
                     'Download as',
-                    style: MyntWebTextStyles.body(
+                    style: MyntWebTextStyles.title(
                       context,
                       color: resolveThemeColor(context,
                           dark: MyntColors.textPrimaryDark,
@@ -1635,173 +1894,3 @@ class _DatePickerOverlayState extends State<_DatePickerOverlay> {
 
 // ─── Ledger Filter Popover ───────────────────────────────────────────
 
-class _LedgerFilterPopover extends StatefulWidget {
-  final ThemesProvider theme;
-  final LDProvider ledgerprovider;
-  final void Function(List<SingingCharacter> filters) onApply;
-  final VoidCallback onClose;
-
-  const _LedgerFilterPopover({
-    required this.theme,
-    required this.ledgerprovider,
-    required this.onApply,
-    required this.onClose,
-  });
-
-  @override
-  State<_LedgerFilterPopover> createState() => _LedgerFilterPopoverState();
-}
-
-class _LedgerFilterPopoverState extends State<_LedgerFilterPopover> {
-  late Set<SingingCharacter> _selected;
-
-  static const _filterOptions = [
-    ('Receipt', SingingCharacter.receipt),
-    ('Payment', SingingCharacter.payment),
-    ('Journal', SingingCharacter.journal),
-    ('System Journal', SingingCharacter.systemjournal),
-    ('Bill Margin', SingingCharacter.billmargin),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = Set.from(widget.ledgerprovider.selectedFilters);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: shadcn.Theme.of(context).borderRadiusLg,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: shadcn.ModalContainer(
-        padding: const EdgeInsets.all(12),
-        child: SizedBox(
-          width: 200,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Title row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filter',
-                    style: MyntWebTextStyles.body(context,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                        fontWeight: MyntFonts.semiBold),
-                  ),
-                  InkWell(
-                    onTap: widget.onClose,
-                    child: Icon(Icons.close, size: 18,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Filter checkboxes
-              ..._filterOptions.map((option) {
-                final label = option.$1;
-                final value = option.$2;
-                final isChecked = _selected.contains(value);
-                return _buildFilterCheckbox(label, value, isChecked);
-              }),
-              const SizedBox(height: 8),
-              // Apply button
-              SizedBox(
-                width: double.infinity,
-                height: 34,
-                child: ElevatedButton(
-                  onPressed: () => widget.onApply(_selected.toList()),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: resolveThemeColor(context,
-                        dark: MyntColors.primaryDark,
-                        light: MyntColors.primary),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text('Apply',
-                      style: MyntWebTextStyles.bodySmall(context,
-                          color: Colors.white,
-                          fontWeight: MyntFonts.semiBold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterCheckbox(
-      String label, SingingCharacter value, bool isChecked) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            if (isChecked) {
-              _selected.remove(value);
-            } else {
-              _selected.add(value);
-            }
-          });
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: Checkbox(
-                  value: isChecked,
-                  onChanged: (val) {
-                    setState(() {
-                      if (val == true) {
-                        _selected.add(value);
-                      } else {
-                        _selected.remove(value);
-                      }
-                    });
-                  },
-                  activeColor: resolveThemeColor(context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: MyntWebTextStyles.bodySmall(context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                    fontWeight:
-                        isChecked ? MyntFonts.semiBold : MyntFonts.medium),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

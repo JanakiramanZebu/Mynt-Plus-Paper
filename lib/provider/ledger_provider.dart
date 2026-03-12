@@ -2654,7 +2654,7 @@ class LDProvider extends DefaultChangeNotifier {
   //
 
   // True if Monthly tab is active; false if Daily tab is active.
-  bool isMonthly = true;
+  bool isMonthly = false;
 
   bool notsharing = true;
   bool billmargin = true;

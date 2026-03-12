@@ -7,8 +7,8 @@ class DercomcurModel {
   DercomcurModel.fromJson(Map<String, dynamic> json) {
     data =
         json['data'] != null ? Data.fromJson(json['data']['data']) : null;
-    if (json['data'] != null && json['data']['details'] != null && json['data']['details'] is Map) {
-      details = Map<String, dynamic>.from(json['data']['details']);
+    if (json['data'] != null && json['data']['data'] != null && json['data']['data']['details'] != null && json['data']['data']['details'] is Map) {
+      details = Map<String, dynamic>.from(json['data']['data']['details']);
     }
   }
 }
