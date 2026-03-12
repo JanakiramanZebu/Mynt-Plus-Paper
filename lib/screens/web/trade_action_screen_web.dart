@@ -207,28 +207,30 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
             final bLtp = double.tryParse(bSocketData?['lp']?.toString() ?? b.lp ?? '0') ?? 0.0;
             comparison = aLtp.compareTo(bLtp);
             break;
-          case 3: // Change - prefer socket data
+          case 3: // Change - computed from lp - close
             final aToken = a.token ?? "";
             final bToken = b.token ?? "";
-            final aUniqueId = '${a.exch ?? ''}|$aToken';
-            final bUniqueId = '${b.exch ?? ''}|$bToken';
-            final aSocketData = _socketDataMap[aUniqueId] ?? _socketDataMap[aToken];
-            final bSocketData = _socketDataMap[bUniqueId] ?? _socketDataMap[bToken];
-            final aChangeStr = aSocketData?['chng']?.toString() ?? a.c ?? '0';
-            final bChangeStr = bSocketData?['chng']?.toString() ?? b.c ?? '0';
-            final aChange = double.tryParse(aChangeStr) ?? 0.0;
-            final bChange = double.tryParse(bChangeStr) ?? 0.0;
+            final aSocketData = _socketDataMap['${a.exch ?? ''}|$aToken'] ?? _socketDataMap[aToken];
+            final bSocketData = _socketDataMap['${b.exch ?? ''}|$bToken'] ?? _socketDataMap[bToken];
+            final aLp2 = double.tryParse(aSocketData?['lp']?.toString() ?? a.lp ?? '0') ?? 0.0;
+            final bLp2 = double.tryParse(bSocketData?['lp']?.toString() ?? b.lp ?? '0') ?? 0.0;
+            final aClose = double.tryParse(aSocketData?['c']?.toString() ?? a.c ?? '0') ?? 0.0;
+            final bClose = double.tryParse(bSocketData?['c']?.toString() ?? b.c ?? '0') ?? 0.0;
+            final aChange = aLp2 - aClose;
+            final bChange = bLp2 - bClose;
             comparison = aChange.compareTo(bChange);
             break;
-          case 4: // Change % - prefer socket data
+          case 4: // Change % - computed from (lp - close) / close * 100
             final aToken = a.token ?? "";
             final bToken = b.token ?? "";
-            final aUniqueId = '${a.exch ?? ''}|$aToken';
-            final bUniqueId = '${b.exch ?? ''}|$bToken';
-            final aSocketData = _socketDataMap[aUniqueId] ?? _socketDataMap[aToken];
-            final bSocketData = _socketDataMap[bUniqueId] ?? _socketDataMap[bToken];
-            final aPerChange = double.tryParse(aSocketData?['pc']?.toString() ?? a.pc ?? '0') ?? 0.0;
-            final bPerChange = double.tryParse(bSocketData?['pc']?.toString() ?? b.pc ?? '0') ?? 0.0;
+            final aSocketData = _socketDataMap['${a.exch ?? ''}|$aToken'] ?? _socketDataMap[aToken];
+            final bSocketData = _socketDataMap['${b.exch ?? ''}|$bToken'] ?? _socketDataMap[bToken];
+            final aLp3 = double.tryParse(aSocketData?['lp']?.toString() ?? a.lp ?? '0') ?? 0.0;
+            final bLp3 = double.tryParse(bSocketData?['lp']?.toString() ?? b.lp ?? '0') ?? 0.0;
+            final aClose2 = double.tryParse(aSocketData?['c']?.toString() ?? a.c ?? '0') ?? 0.0;
+            final bClose2 = double.tryParse(bSocketData?['c']?.toString() ?? b.c ?? '0') ?? 0.0;
+            final aPerChange = aClose2 != 0 ? ((aLp3 - aClose2) / aClose2) * 100 : 0.0;
+            final bPerChange = bClose2 != 0 ? ((bLp3 - bClose2) / bClose2) * 100 : 0.0;
             comparison = aPerChange.compareTo(bPerChange);
             break;
           case 5: // Open - get from socket data
@@ -757,13 +759,25 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
     final token = stock.token ?? "";
     final socketData = _socketDataMap[token];
     final ltp = socketData?['lp']?.toString() ?? stock.lp ?? '0.00';
-    final change = socketData?['chng']?.toString() ?? stock.c ?? '0.00';
-    final perChange = socketData?['pc']?.toString() ?? stock.pc ?? '0.00';
     final open = socketData?['o']?.toString() ?? '0.00';
     final high = socketData?['h']?.toString() ?? '0.00';
     final low = socketData?['l']?.toString() ?? '0.00';
-    final close = socketData?['c']?.toString() ?? stock.pp ?? '0.00';
+    final close = socketData?['c']?.toString() ?? stock.c ?? '0.00';
     final volume = socketData?['v']?.toString() ?? stock.v ?? '0';
+
+    // Compute change and percentage from lp and close
+    final lpVal = double.tryParse(ltp);
+    final closeVal = double.tryParse(close);
+    double changeVal = 0.0;
+    double perChangeVal = 0.0;
+    if (lpVal != null && closeVal != null) {
+      changeVal = lpVal - closeVal;
+      if (closeVal != 0) {
+        perChangeVal = (changeVal / closeVal) * 100;
+      }
+    }
+    final change = changeVal.toStringAsFixed(2);
+    final perChange = perChangeVal.toStringAsFixed(2);
 
     final changeColor = _getChangeColorFromValues(change, perChange, theme);
     final rowTap = () => _handleStockTap(stock, theme);
@@ -812,7 +826,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
           alignRight: true,
           onTap: rowTap,
           child: Text(
-            change.startsWith("-") ? change : "+$change",
+            change.startsWith("-") ? change : change,
             style: _getTextStyle(context, color: changeColor),
           ),
         ),
@@ -941,12 +955,17 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
           case 2: // LTP
             cellText = '₹${socketData?['lp']?.toString() ?? stock.lp ?? '0.00'}';
             break;
-          case 3: // Change
-            final change = socketData?['chng']?.toString() ?? stock.c ?? '0.00';
-            cellText = change.startsWith("-") ? change : '+$change';
+          case 3: // Change (computed from lp - close)
+            final lpVal = double.tryParse(socketData?['lp']?.toString() ?? stock.lp ?? '0') ?? 0.0;
+            final closeVal = double.tryParse(socketData?['c']?.toString() ?? stock.c ?? '0') ?? 0.0;
+            final chg = lpVal - closeVal;
+            cellText = chg < 0 ? chg.toStringAsFixed(2) : '+${chg.toStringAsFixed(2)}';
             break;
-          case 4: // Change %
-            cellText = '${socketData?['pc']?.toString() ?? stock.pc ?? '0.00'}%';
+          case 4: // Change % (computed from (lp - close) / close * 100)
+            final lpVal2 = double.tryParse(socketData?['lp']?.toString() ?? stock.lp ?? '0') ?? 0.0;
+            final closeVal2 = double.tryParse(socketData?['c']?.toString() ?? stock.c ?? '0') ?? 0.0;
+            final pctChg = closeVal2 != 0 ? ((lpVal2 - closeVal2) / closeVal2) * 100 : 0.0;
+            cellText = '${pctChg.toStringAsFixed(2)}%';
             break;
           case 5: // Open
             cellText = socketData?['o']?.toString() ?? '0.00';
@@ -958,7 +977,7 @@ class _TradeActionScreenWebState extends ConsumerState<TradeActionScreenWeb>
             cellText = socketData?['l']?.toString() ?? '0.00';
             break;
           case 8: // Close
-            cellText = socketData?['c']?.toString() ?? stock.pp ?? '0.00';
+            cellText = socketData?['c']?.toString() ?? stock.c ?? '0.00';
             break;
           case 9: // Volume
             cellText = socketData?['v']?.toString() ?? stock.v ?? '0';
