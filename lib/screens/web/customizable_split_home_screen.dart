@@ -994,7 +994,7 @@ class _CustomizableSplitHomeScreenState
           ),
           body: Column(
             children: [
-              _buildOldVersionBanner(),
+              // _buildOldVersionBanner(),
               Expanded(child: _buildNewLayout(theme)),
             ],
           ),
@@ -5680,7 +5680,7 @@ class _AppBarLivePriceWidgetState
   }
 
   @override
-  Widget build(BuildContext context) {
+ Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
     // Use Wrap - stays on same line when space available, wraps when not
     return Wrap(
@@ -5688,12 +5688,14 @@ class _AppBarLivePriceWidgetState
       runSpacing: 2,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(
+        Text( 
           _ltp,
           style: MyntWebTextStyles.price(
             context,
             color: changeColor,
             fontWeight: MyntFonts.medium,
+          ).copyWith(
+            fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
         Text(
@@ -5705,6 +5707,8 @@ class _AppBarLivePriceWidgetState
               dark: MyntColors.textSecondaryDark,
               light: MyntColors.textSecondary,
             ),
+          ).copyWith(
+            fontFeatures: [FontFeature.tabularFigures()],
           ),
         ),
       ],

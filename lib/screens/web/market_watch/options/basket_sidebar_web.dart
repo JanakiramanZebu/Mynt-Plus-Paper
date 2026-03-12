@@ -507,7 +507,12 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                         color: Colors.transparent,
                         shape:CircleBorder(),
                         child: InkWell(
-                          onTap: () => _deleteScript(index, script, orderProv),
+                          onTap: () async {
+                              await orderProv.removeBsktScrip(index, orderProv.selectedBsktName);
+                              await orderProv.fetchBasketMargin();
+                              showResponsiveSuccess(context, "Removed from basket");
+                            },
+                          //  _deleteScript(index, script, orderProv),
                           // borderRadius: BorderRadius.circular(4),/
                           customBorder: CircleBorder(),
                           child: Padding(
@@ -569,7 +574,14 @@ class _BasketSidebarWebState extends ConsumerState<BasketSidebarWeb> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "${script["dscqty"]} / ${script["qty"]}",
+                      () {
+                        final rawQty = int.tryParse(script["qty"]?.toString() ?? '0') ?? 0;
+                        final ls = int.tryParse(script["ls"]?.toString() ?? '1') ?? 1;
+                        final displayQty = script["exch"] == 'MCX' && ls > 1
+                            ? (rawQty ~/ ls).toString()
+                            : rawQty.toString();
+                        return "${script["dscqty"]} / $displayQty";
+                      }(),
                       style: MyntWebTextStyles.exch(
                         context,
                         darkColor: MyntColors.textSecondaryDark,

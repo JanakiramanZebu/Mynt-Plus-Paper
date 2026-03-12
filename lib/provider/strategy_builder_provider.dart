@@ -656,6 +656,30 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     return DateTime.now();
   }
 
+  /// Recalculate _daysToExpiry from the nearest expiry leg in the basket.
+  /// Falls back to _selectedExpiry if basket is empty.
+  void _updateDaysToExpiryFromBasket() {
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final selectedItems = _basket.where((item) => item.checkbox).toList();
+
+    if (selectedItems.isEmpty) {
+      // Fallback to selected expiry dropdown
+      final expiryDate = _parseExpiryDate(_selectedExpiry);
+      _daysToExpiry = expiryDate.difference(today).inDays;
+    } else {
+      // Use the nearest (minimum) expiry from basket legs
+      _daysToExpiry = selectedItems.map((item) {
+        return _parseExpiryDate(item.expdate).difference(today).inDays;
+      }).reduce((a, b) => a < b ? a : b);
+    }
+
+    if (_daysToExpiry < 0) _daysToExpiry = 0;
+    // Reset target if it exceeds the new days to expiry
+    if (_targetDaysToExpiry > _daysToExpiry) {
+      _targetDaysToExpiry = 0;
+    }
+  }
+
   // ============ Option Strategy API Conversion Helpers ============
 
   /// Extract the underlying API symbol from trading symbol or display name
@@ -871,11 +895,9 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
       if (chainData != null && chainData.stat == 'Ok' && chainData.optValue != null) {
         _optionChain = chainData.optValue!;
 
-        // Calculate days to expiry
-        final expiryDate = _parseExpiryDate(_selectedExpiry);
-        _daysToExpiry = expiryDate.difference(DateTime.now()).inDays;
-        log('[StrategyBuilder] daysToExpiry calculated: $_daysToExpiry, expiryDate=$expiryDate, now=${DateTime.now()}, selectedExpiry=$_selectedExpiry');
-        _targetDaysToExpiry = 0;
+        // Calculate days to expiry (nearest basket leg, or selected expiry if basket empty)
+        _updateDaysToExpiryFromBasket();
+        log('[StrategyBuilder] daysToExpiry calculated: $_daysToExpiry, selectedExpiry=$_selectedExpiry');
 
         // Subscribe to option chain updates
         _subscribeToOptions();
@@ -1457,6 +1479,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
   /// Clear basket
   void clearBasket() {
     _basket.clear();
+    _draftLegs.clear();
     _lotMultiplier = 1;
     _activePredefinedStrategy = null;
     _editingCustomBuilderName = null;
@@ -1565,10 +1588,7 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
 
       if (_basket.isNotEmpty) {
         _selectedExpiry = _basket.first.expdate;
-        final expiryDate = _parseExpiryDate(_selectedExpiry);
-        _daysToExpiry = expiryDate.difference(DateTime.now()).inDays;
-        if (_daysToExpiry < 0) _daysToExpiry = 0;
-        _targetDaysToExpiry = 0;
+        _updateDaysToExpiryFromBasket();
       }
 
       await loadOptionChain(context);
@@ -2007,47 +2027,61 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
     notifyListeners();
 
     try {
-      // Build legs array for API
-      final legs = selectedItems.map((item) => {
-        "exch": item.exch,
-        "token": item.token,
-        "tsym": item.tsym,
-        "optt": item.optt,
-        "pp": "2",
-        "ls": item.lotSize.toString(),
-        "ti": "0.05",
-        "strprc": item.strprc,
-        "instname": "OPTIDX",
-        "cname": "${_selectedSymbol} ${item.expdate} ${item.strprc} ${item.optt} ",
-        "dname": "${_selectedSymbol} ${item.expdate} ${item.strprc} ${item.optt} ",
-        "bar": item.optt == 'CE' ? "#FF1717" : "#17FF17",
-        "p": "",
-        "ltp": item.ltp,
-        "ask": item.ltp,
-        "bid": item.ltp.toString(),
-        "ch": "0",
-        "chp": "0",
-        "coi": 0,
-        "oi": "0",
-        "oich": "0",
-        "vol": "0",
-        "buySell": item.buySell,
-        "expdate": _expiryDates,
-        "ordvai": "MKT",
-        "ordlot": (item.ordlot * _lotMultiplier).toString(),
-        "ordprc": item.entryPrice.toString(),
-        "checkbox": item.checkbox,
-        "ser": item.expdate,
-        "tsyms": _selectedSymbol,
-        "inx": DateTime.now().millisecondsSinceEpoch.toDouble(),
-        "exp": "${item.strprc} ${item.optt}",
+      final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+      // Build legs array for API — each leg gets its own daysToExpiry
+      final legs = selectedItems.map((item) {
+        final legExpiryDate = _parseExpiryDate(item.expdate);
+        final legDaysToExpiry = legExpiryDate.difference(today).inDays.clamp(0, 9999);
+
+        return {
+          "exch": item.exch,
+          "token": item.token,
+          "tsym": item.tsym,
+          "optt": item.optt,
+          "pp": "2",
+          "ls": item.lotSize.toString(),
+          "ti": "0.05",
+          "strprc": item.strprc,
+          "instname": "OPTIDX",
+          "cname": "${_selectedSymbol} ${item.expdate} ${item.strprc} ${item.optt} ",
+          "dname": "${_selectedSymbol} ${item.expdate} ${item.strprc} ${item.optt} ",
+          "bar": item.optt == 'CE' ? "#FF1717" : "#17FF17",
+          "p": "",
+          "ltp": item.ltp,
+          "ask": item.ltp,
+          "bid": item.ltp.toString(),
+          "ch": "0",
+          "chp": "0",
+          "coi": 0,
+          "oi": "0",
+          "oich": "0",
+          "vol": "0",
+          "buySell": item.buySell,
+          "expdate": _expiryDates,
+          "ordvai": "MKT",
+          "ordlot": (item.ordlot * _lotMultiplier).toString(),
+          "ordprc": item.entryPrice.toString(),
+          "checkbox": item.checkbox,
+          "ser": item.expdate,
+          "daysToExpiry": legDaysToExpiry,
+          "tsyms": _selectedSymbol,
+          "inx": DateTime.now().millisecondsSinceEpoch.toDouble(),
+          "exp": "${item.strprc} ${item.optt}",
+        };
       }).toList();
+
+      // Use the nearest expiry (minimum daysToExpiry) from selected basket legs
+      final minDaysToExpiry = selectedItems.map((item) {
+        final legExpiry = _parseExpiryDate(item.expdate);
+        return legExpiry.difference(today).inDays.clamp(0, 9999);
+      }).reduce((a, b) => a < b ? a : b);
 
       final response = await api.getPayoffCalculation(
         strategy: "custom",
         isPosition: _isAnalyzeMode,
         spotPrice: _spotPrice.toStringAsFixed(2),
-        daysToExpiry: _targetDaysToExpiry > 0 ? (_daysToExpiry - _targetDaysToExpiry) : _daysToExpiry,
+        daysToExpiry: _targetDaysToExpiry > 0 ? (minDaysToExpiry - _targetDaysToExpiry).clamp(0, 9999) : minDaysToExpiry,
         legs: legs,
       );
 
@@ -2658,13 +2692,10 @@ class StrategyBuilderProvider extends DefaultChangeNotifier {
         _basket.add(item);
       }
 
-      // Calculate days to expiry from first basket item's expiry (now in API format)
+      // Calculate days to expiry from nearest basket leg's expiry
       if (_basket.isNotEmpty) {
-        final expiryDate = _parseExpiryDate(_basket.first.expdate);
-        _daysToExpiry = expiryDate.difference(DateTime.now()).inDays;
-        if (_daysToExpiry < 0) _daysToExpiry = 0;
-        _targetDaysToExpiry = 0;
         _selectedExpiry = _basket.first.expdate;
+        _updateDaysToExpiryFromBasket();
       }
 
       // Subscribe to updates

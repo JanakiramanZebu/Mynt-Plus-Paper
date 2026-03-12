@@ -20,6 +20,19 @@ import 'package:mynt_plus/screens/web/strategy_builder/entry_price_input.dart';
 import 'package:mynt_plus/utils/rupee_convert_format.dart';
 
 
+/// Lightweight tooltip state to avoid full widget rebuilds on hover
+class _PayoffTooltipState {
+  final double? selectedPrice;
+  final bool showTooltip;
+  final Offset position;
+
+  const _PayoffTooltipState({
+    this.selectedPrice,
+    this.showTooltip = false,
+    this.position = const Offset(10, 10),
+  });
+}
+
 /// Strategy Builder Screen - Full screen strategy builder with payoff analysis
 class StrategyBuilderScreenWeb extends ConsumerStatefulWidget {
   const StrategyBuilderScreenWeb({super.key});
@@ -37,12 +50,13 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
   double _lastEmittedTargetPrice = 0;
   String _lastSelectedSymbol = '';
 
-  // Payoff chart tooltip state
-  double? _selectedPrice;
-  bool _showTooltip = false;
+  // Payoff chart tooltip state — uses ValueNotifier to avoid full widget rebuild on hover
+  final ValueNotifier<_PayoffTooltipState> _tooltipNotifier = ValueNotifier(const _PayoffTooltipState());
   bool _isDragging = false;
   int _tooltipUpdateCounter = 0;
-  Offset _tooltipPosition = const Offset(10, 10);
+  // Keep _selectedPrice accessible for chart marker dot rendering
+  double? _selectedPrice;
+  bool _markerUpdateScheduled = false;
 
   @override
   void initState() {
@@ -78,6 +92,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     _searchController.dispose();
     _lotMultiplierController.dispose();
     _targetPriceController.dispose();
+    _tooltipNotifier.dispose();
     super.dispose();
   }
 
@@ -3274,7 +3289,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)} ${targetDate.hour > 12 ? targetDate.hour - 12 : targetDate.hour}:${targetDate.minute.toString().padLeft(2, '0')} ${targetDate.hour >= 12 ? 'PM' : 'AM'}",
+                    "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)}",
                     style: valueStyle,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -3487,10 +3502,9 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                   _hidePayoffTooltipAfterDelay();
                 },
                 onPointerCancel: (event) {
-                  setState(() {
-                    _isDragging = false;
-                    _showTooltip = false;
-                  });
+                  _isDragging = false;
+                  _selectedPrice = null;
+                  _tooltipNotifier.value = const _PayoffTooltipState();
                 },
               child: SfCartesianChart(
                 plotAreaBorderWidth: 0,
@@ -3721,7 +3735,7 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
                     name: 'Expiry',
                   ),
                   // Marker dot on Target line at tooltip position
-                  if (_showTooltip && _selectedPrice != null && payoffsTarget.isNotEmpty)
+                  if (_selectedPrice != null && payoffsTarget.isNotEmpty)
                     ScatterSeries<_PayoffData, double>(
                       dataSource: [
                         _PayoffData(
@@ -3748,9 +3762,16 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
               ),
             ), // Close Listener
             ), // Close MouseRegion
-            // Custom tooltip
-            if (_showTooltip && _selectedPrice != null)
-              _buildPayoffCustomTooltip(provider, isDark, stockPrices, payoffsExpiry, payoffsTarget),
+            // Custom tooltip — uses ValueListenableBuilder to avoid rebuilding the chart
+            ValueListenableBuilder<_PayoffTooltipState>(
+              valueListenable: _tooltipNotifier,
+              builder: (context, tooltipState, _) {
+                if (!tooltipState.showTooltip || tooltipState.selectedPrice == null) {
+                  return const SizedBox.shrink();
+                }
+                return _buildPayoffCustomTooltip(provider, isDark, stockPrices, payoffsExpiry, payoffsTarget, tooltipState);
+              },
+            ),
           ],
         );
       },
@@ -3796,11 +3817,20 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     double tooltipY = yPosition - tooltipHeight / 2;
     tooltipY = tooltipY.clamp(minY, maxY);
 
-    setState(() {
-      _selectedPrice = calculatedPrice;
-      _tooltipPosition = Offset(tooltipX, tooltipY);
-      _showTooltip = true;
-    });
+    _selectedPrice = calculatedPrice;
+    _tooltipNotifier.value = _PayoffTooltipState(
+      selectedPrice: calculatedPrice,
+      showTooltip: true,
+      position: Offset(tooltipX, tooltipY),
+    );
+    // Schedule a single setState per frame for chart marker dot update
+    if (!_markerUpdateScheduled) {
+      _markerUpdateScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+        _markerUpdateScheduled = false;
+      });
+    }
   }
 
   void _hidePayoffTooltipAfterDelay() {
@@ -3808,32 +3838,33 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
       final counterWhenScheduled = _tooltipUpdateCounter;
       Future.delayed(const Duration(milliseconds: 2000), () {
         if (mounted && !_isDragging && counterWhenScheduled == _tooltipUpdateCounter) {
-          setState(() {
-            _showTooltip = false;
-          });
+          _selectedPrice = null;
+          _tooltipNotifier.value = const _PayoffTooltipState();
         }
       });
     }
   }
 
-  Widget _buildPayoffCustomTooltip(StrategyBuilderProvider provider, bool isDark, List<double> stockPrices, List<double> payoffsExpiry, List<double> payoffsTarget) {
-    if (_selectedPrice == null) return const SizedBox.shrink();
-
+  Widget _buildPayoffCustomTooltip(StrategyBuilderProvider provider, bool isDark, List<double> stockPrices, List<double> payoffsExpiry, List<double> payoffsTarget, _PayoffTooltipState tooltipState) {
+    final selectedPrice = tooltipState.selectedPrice!;
     final initialPrice = provider.spotPrice;
 
     // Get payoff values at selected price
-    final expiryPayoff = _getPayoffAtPrice(stockPrices, payoffsExpiry, _selectedPrice!);
+    final expiryPayoff = _getPayoffAtPrice(stockPrices, payoffsExpiry, selectedPrice);
     final targetPayoff = payoffsTarget.isNotEmpty
-        ? _getPayoffAtPrice(stockPrices, payoffsTarget, _selectedPrice!)
+        ? _getPayoffAtPrice(stockPrices, payoffsTarget, selectedPrice)
         : 0.0;
+
+    // Calculate price difference percentage from spot
+    final priceDiffPercent = initialPrice > 0 ? ((selectedPrice - initialPrice) / initialPrice) * 100 : 0.0;
 
     // Calculate payoff percentages
     final expiryPayoffPercent = initialPrice > 0 ? (expiryPayoff / initialPrice) * 100 : 0.0;
     final targetPayoffPercent = initialPrice > 0 ? (targetPayoff / initialPrice) * 100 : 0.0;
 
     return Positioned(
-      left: _tooltipPosition.dx,
-      top: _tooltipPosition.dy,
+      left: tooltipState.position.dx,
+      top: tooltipState.position.dy,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -3851,8 +3882,8 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Underlying Price
-            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toIndianFormat(), MyntColors.textBlack),
+            // Underlying Price with percentage difference from spot
+            _buildTooltipRowWithPercent(context, 'Underlying Price:', selectedPrice.toIndianFormat(), priceDiffPercent, MyntColors.textBlack),
             const SizedBox(height: 6),
             // Expiry P&L with percentage
             _buildTooltipRowWithPercent(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toIndianFormat()}', expiryPayoffPercent, expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
@@ -3867,29 +3898,6 @@ class _StrategyBuilderScreenWebState extends ConsumerState<StrategyBuilderScreen
     );
   }
 
-  Widget _buildTooltipRow(BuildContext context, String label, String value, Color valueColor) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$label ',
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: MyntColors.textBlack,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-        Text(
-          value,
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: valueColor,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildTooltipRowWithPercent(BuildContext context, String label, String value, double percent, Color valueColor) {
     final baseStyle = MyntWebTextStyles.bodySmall(
@@ -4526,12 +4534,13 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
   double _lastEmittedTargetPrice = 0;
   String _lastSelectedSymbol = '';
 
-  // Payoff chart tooltip state
-  double? _selectedPrice;
-  bool _showTooltip = false;
+  // Payoff chart tooltip state — uses ValueNotifier to avoid full widget rebuild on hover
+  final ValueNotifier<_PayoffTooltipState> _tooltipNotifier = ValueNotifier(const _PayoffTooltipState());
   bool _isDragging = false;
   int _tooltipUpdateCounter = 0;
-  Offset _tooltipPosition = const Offset(10, 10);
+  // Keep _selectedPrice accessible for chart marker dot rendering
+  double? _selectedPrice;
+  bool _markerUpdateScheduled = false;
 
   @override
   void initState() {
@@ -4567,6 +4576,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     _searchController.dispose();
     _lotMultiplierController.dispose();
     _targetPriceController.dispose();
+    _tooltipNotifier.dispose();
     super.dispose();
   }
 
@@ -7785,10 +7795,9 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   _hidePayoffTooltipAfterDelay();
                 },
                 onPointerCancel: (event) {
-                  setState(() {
-                    _isDragging = false;
-                    _showTooltip = false;
-                  });
+                  _isDragging = false;
+                  _selectedPrice = null;
+                  _tooltipNotifier.value = const _PayoffTooltipState();
                 },
               child: SfCartesianChart(
                 plotAreaBorderWidth: 0,
@@ -8019,7 +8028,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                     name: 'Expiry',
                   ),
                   // Marker dot on Target line at tooltip position
-                  if (_showTooltip && _selectedPrice != null && payoffsTarget.isNotEmpty)
+                  if (_selectedPrice != null && payoffsTarget.isNotEmpty)
                     ScatterSeries<_PayoffData, double>(
                       dataSource: [
                         _PayoffData(
@@ -8046,9 +8055,16 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
               ),
             ), // Close Listener
             ), // Close MouseRegion
-            // Custom tooltip
-            if (_showTooltip && _selectedPrice != null)
-              _buildPayoffCustomTooltip(provider, isDark, stockPrices, payoffsExpiry, payoffsTarget),
+            // Custom tooltip — uses ValueListenableBuilder to avoid rebuilding the chart
+            ValueListenableBuilder<_PayoffTooltipState>(
+              valueListenable: _tooltipNotifier,
+              builder: (context, tooltipState, _) {
+                if (!tooltipState.showTooltip || tooltipState.selectedPrice == null) {
+                  return const SizedBox.shrink();
+                }
+                return _buildPayoffCustomTooltip(provider, isDark, stockPrices, payoffsExpiry, payoffsTarget, tooltipState);
+              },
+            ),
           ],
         );
       },
@@ -8094,11 +8110,20 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     double tooltipY = yPosition - tooltipHeight / 2;
     tooltipY = tooltipY.clamp(minY, maxY);
 
-    setState(() {
-      _selectedPrice = calculatedPrice;
-      _tooltipPosition = Offset(tooltipX, tooltipY);
-      _showTooltip = true;
-    });
+    _selectedPrice = calculatedPrice;
+    _tooltipNotifier.value = _PayoffTooltipState(
+      selectedPrice: calculatedPrice,
+      showTooltip: true,
+      position: Offset(tooltipX, tooltipY),
+    );
+    // Schedule a single setState per frame for chart marker dot update
+    if (!_markerUpdateScheduled) {
+      _markerUpdateScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+        _markerUpdateScheduled = false;
+      });
+    }
   }
 
   void _hidePayoffTooltipAfterDelay() {
@@ -8106,32 +8131,33 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
       final counterWhenScheduled = _tooltipUpdateCounter;
       Future.delayed(const Duration(milliseconds: 2000), () {
         if (mounted && !_isDragging && counterWhenScheduled == _tooltipUpdateCounter) {
-          setState(() {
-            _showTooltip = false;
-          });
+          _selectedPrice = null;
+          _tooltipNotifier.value = const _PayoffTooltipState();
         }
       });
     }
   }
 
-  Widget _buildPayoffCustomTooltip(StrategyBuilderProvider provider, bool isDark, List<double> stockPrices, List<double> payoffsExpiry, List<double> payoffsTarget) {
-    if (_selectedPrice == null) return const SizedBox.shrink();
-
+  Widget _buildPayoffCustomTooltip(StrategyBuilderProvider provider, bool isDark, List<double> stockPrices, List<double> payoffsExpiry, List<double> payoffsTarget, _PayoffTooltipState tooltipState) {
+    final selectedPrice = tooltipState.selectedPrice!;
     final initialPrice = provider.spotPrice;
 
     // Get payoff values at selected price
-    final expiryPayoff = _getPayoffAtPrice(stockPrices, payoffsExpiry, _selectedPrice!);
+    final expiryPayoff = _getPayoffAtPrice(stockPrices, payoffsExpiry, selectedPrice);
     final targetPayoff = payoffsTarget.isNotEmpty
-        ? _getPayoffAtPrice(stockPrices, payoffsTarget, _selectedPrice!)
+        ? _getPayoffAtPrice(stockPrices, payoffsTarget, selectedPrice)
         : 0.0;
+
+    // Calculate price difference percentage from spot
+    final priceDiffPercent = initialPrice > 0 ? ((selectedPrice - initialPrice) / initialPrice) * 100 : 0.0;
 
     // Calculate payoff percentages
     final expiryPayoffPercent = initialPrice > 0 ? (expiryPayoff / initialPrice) * 100 : 0.0;
     final targetPayoffPercent = initialPrice > 0 ? (targetPayoff / initialPrice) * 100 : 0.0;
 
     return Positioned(
-      left: _tooltipPosition.dx,
-      top: _tooltipPosition.dy,
+      left: tooltipState.position.dx,
+      top: tooltipState.position.dy,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
@@ -8149,8 +8175,8 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Underlying Price
-            _buildTooltipRow(context, 'Underlying Price:', _selectedPrice!.toIndianFormat(), MyntColors.textBlack),
+            // Underlying Price with percentage difference from spot
+            _buildTooltipRowWithPercent(context, 'Underlying Price:', selectedPrice.toIndianFormat(), priceDiffPercent, MyntColors.textBlack),
             const SizedBox(height: 6),
             // Expiry P&L with percentage
             _buildTooltipRowWithPercent(context, 'Expiry P&L:', '\u20B9${expiryPayoff.toIndianFormat()}', expiryPayoffPercent, expiryPayoff >= 0 ? MyntColors.profit : MyntColors.loss),
@@ -8165,29 +8191,6 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
     );
   }
 
-  Widget _buildTooltipRow(BuildContext context, String label, String value, Color valueColor) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          '$label ',
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: MyntColors.textBlack,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-        Text(
-          value,
-          style: MyntWebTextStyles.bodySmall(
-            context,
-            color: valueColor,
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildTooltipRowWithPercent(BuildContext context, String label, String value, double percent, Color valueColor) {
     final baseStyle = MyntWebTextStyles.bodySmall(
@@ -8705,7 +8708,7 @@ class _StrategyBuilderPanelWebState extends ConsumerState<StrategyBuilderPanelWe
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)} ${targetDate.hour > 12 ? targetDate.hour - 12 : targetDate.hour}:${targetDate.minute.toString().padLeft(2, '0')} ${targetDate.hour >= 12 ? 'PM' : 'AM'}",
+                      "${_getWeekday(targetDate.weekday)}, ${targetDate.day} ${_getMonth(targetDate.month)}",
                       style: valueStyle,
                       overflow: TextOverflow.ellipsis,
                     ),

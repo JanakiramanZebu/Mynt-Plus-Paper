@@ -44,13 +44,7 @@ class _MfUPIProcessingScreenWebState extends ConsumerState<MfUPIProcessingScreen
         ref.read(mfProvider).IsPaymentCalled(false);
 
         if (Navigator.of(context).canPop()) {
-          if (mfProv.paymentName == "UPI") {
-            Navigator.of(context).pop();
-          }
-          if (mfProv.paymentName == "NET BANKING") {
-            Navigator.of(context).pop();
-            Navigator.of(context).pop();
-          }
+          Navigator.of(context).pop();
           showDialog(
             context: context,
             barrierDismissible: false,

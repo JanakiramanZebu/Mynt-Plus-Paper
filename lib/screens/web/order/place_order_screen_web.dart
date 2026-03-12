@@ -593,7 +593,7 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
       frezQty = sfq > 1
           ? widget.orderArg.exchange == "MCX"
-              ? (sfq / lotSize).floor()
+              ? ((sfq / lotSize).floor() < 1 ? 1 : (sfq / lotSize).floor())
               : (sfq / lotSize).floor() * lotSize
           : lotSize;
       // 999999 1353220
@@ -8193,7 +8193,10 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
     String curDate = convDateWithTime();
 
     // Convert lots to qty if in lot mode, then validate
-    final quantity = SafeParse.toInt(getFinalQuantity(qtyCtrl.text));
+    // For MCX, multiply by lotSize to get actual qty (same as placeOrder)
+    final quantity = widget.scripInfo.exch == 'MCX'
+        ? SafeParse.toInt(getFinalQuantity(qtyCtrl.text)) * lotSize
+        : SafeParse.toInt(getFinalQuantity(qtyCtrl.text));
     final lotSizeVal = lotSize;
 
     if (quantity % lotSizeVal != 0) {
@@ -8215,7 +8218,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
 
     // Calculate splits needed for current order
     List<int> splitQuantities = [];
-    final freezeQty = frezQty;
+    // For MCX, convert frezQty from lots to actual qty to match quantity
+    final freezeQty = widget.scripInfo.exch == 'MCX' ? frezQty * lotSize : frezQty;
     final orderProv = ref.read(orderProvider);
     final frezQtyOrderSliceMaxLimit = orderProv.frezQtyOrderSliceMaxLimit;
 
@@ -8238,15 +8242,23 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
       splitQuantities.add(quantity);
     }
 
-    // Check if total orders in basket would exceed limit
-    int currentBasketOrders =
-        scripList.length; // Each item in basket counts as 1 order
+    // Check if total basket items would exceed the limit
+    int currentBasketOrders = scripList.length;
     int newOrders = splitQuantities.length;
+    int remainingSlots = frezQtyOrderSliceMaxLimit - currentBasketOrders;
 
-    if (currentBasketOrders + newOrders > frezQtyOrderSliceMaxLimit) {
+    if (newOrders > frezQtyOrderSliceMaxLimit) {
       ResponsiveSnackBar.showError(context,
-          "Cannot add to basket. Total orders would be ${currentBasketOrders + newOrders}, which exceeds the maximum limit of $frezQtyOrderSliceMaxLimit orders.");
-      return; // Exit the function without adding to basket
+          "Maximum allowed quantity is $frezQty x $frezQtyOrderSliceMaxLimit = ${frezQty * frezQtyOrderSliceMaxLimit}");
+      return;
+    }
+
+    if (newOrders > remainingSlots) {
+      ResponsiveSnackBar.showError(context,
+          remainingSlots <= 0
+              ? "Basket is full. Maximum $frezQtyOrderSliceMaxLimit items allowed per basket."
+              : "Order requires $newOrders slices but basket can only hold $remainingSlots more.");
+      return;
     }
 
     // Add each split as separate entry to basket
@@ -8290,7 +8302,8 @@ class _PlaceOrderScreenWebState extends ConsumerState<PlaceOrderScreenWeb>
         "tsym": stockExchangeSelected.tsym == null ? UrlUtils.encodeParameter(widget.scripInfo.tsym!) : UrlUtils.encodeParameter(stockExchangeSelected.tsym?? ""),
         "mktProt": priceType == "Market" || priceType == "SL MKT"
             ? mktProtCtrl.text
-            : ''
+            : '',
+        "ls": widget.scripInfo.ls?.toString() ?? '1',
       });
     }
 

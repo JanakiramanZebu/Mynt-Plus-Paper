@@ -2012,6 +2012,7 @@ class _ApiKeyBottomTabsState extends ConsumerState<ApiKeyBottomTabs>
             Tab(text: "OAuth Key"),
           ],
         ),
+        const SizedBox(height: 10),
         Expanded(
           child: TabBarView(
             controller: _tabController,

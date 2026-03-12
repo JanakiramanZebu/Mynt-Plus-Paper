@@ -2562,7 +2562,6 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
   StreamSubscription? _subscription;
   String _ltp = "0.00";
   String _change = "0.00";
-  String _perChange = "0.00";
   bool _isInitialized = false;
 
   @override
@@ -2570,7 +2569,6 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
     super.initState();
     _ltp = widget.stock.lp ?? "0.00";
     _change = widget.stock.c ?? "0.00";
-    _perChange = widget.stock.pc ?? "0.00";
   }
 
   @override
@@ -2631,20 +2629,33 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
       hasChanged = true;
     }
 
-    final newPerChange = data['pc']?.toString() ?? "0.00";
-    if (newPerChange != "null" && newPerChange != _perChange) {
-      _perChange = newPerChange;
-      hasChanged = true;
-    }
-
     return hasChanged;
   }
 
+  double get _computedChange {
+    final lp = double.tryParse(_ltp);
+    final close = double.tryParse(_change);
+    if (lp != null && close != null) {
+      return lp - close;
+    }
+    return 0.0;
+  }
+
+  double get _computedPerChange {
+    final lp = double.tryParse(_ltp);
+    final close = double.tryParse(_change);
+    if (lp != null && close != null && close != 0) {
+      return ((lp - close) / close) * 100;
+    }
+    return 0.0;
+  }
+
   Color _getChangeColor(BuildContext context) {
-    if (_change.startsWith("-") || _perChange.startsWith('-')) {
+    final change = _computedChange;
+    if (change < 0) {
       return resolveThemeColor(context,
           dark: MyntColors.lossDark, light: MyntColors.loss);
-    } else if (_change == "0.00" || _perChange == "0.00") {
+    } else if (change == 0) {
       return resolveThemeColor(context,
           dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
     } else {
@@ -2732,14 +2743,15 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                         ),
                       ),
                       // LTP
-                      if (widget.showPrice)
+                      if (widget.showPrice) ...[
                         Text(
-                          "₹$_ltp",
+                          "₹${(double.tryParse(_ltp) ?? 0.0).toStringAsFixed(2)}",
                           style: MyntWebTextStyles.price(
                             context,
                             color: changeColor,
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -2766,7 +2778,7 @@ class _TradeActionStockItemState extends ConsumerState<_TradeActionStockItem> {
                       // Change and percentage
                       if (widget.showPrice)
                         Text(
-                          "${_change.startsWith("-") ? _change : "+$_change"} ($_perChange%)",
+                          "${_computedChange < 0 ? _computedChange.toStringAsFixed(2) : _computedChange.toStringAsFixed(2)} (${_computedPerChange.toStringAsFixed(2)}%)",
                           style: MyntWebTextStyles.priceChange(
                             context,
                             color: resolveThemeColor(

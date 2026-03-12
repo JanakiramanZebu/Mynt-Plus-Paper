@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:mynt_plus/models/mf_model/all_category_new_model.dart';
 import 'package:mynt_plus/models/mf_model/all_mf_holdings_model.dart';
 import 'package:mynt_plus/models/mf_model/mf_bestnewapi_list_model.dart';
@@ -217,7 +218,7 @@ mixin MutualFundApi on ApiCore {
             "ClientCode": "${prefs.clientId}",
             "scheme_code": scode,
             "amount": amt,
-            "source": "MOB",
+            "source": kIsWeb ? "WEB" : "MOB",
             "placed_by": "${prefs.clientId}"
           }));
 
@@ -284,7 +285,7 @@ mixin MutualFundApi on ApiCore {
             "CaseNo": droupreason,
             "CaseRemarks": droupreason == "13" ? "$retext" : "",
             "placed_by": "${prefs.clientId}",
-            "source": "MOB",
+            "source": kIsWeb ? "WEB" : "MOB",
             "SIPRegnNo": orderno,
             "scheme_code": scode
           }));
@@ -386,7 +387,7 @@ mixin MutualFundApi on ApiCore {
             "ClientCode": "${prefs.clientId}",
             "scheme_code": scheme,
             "redqty": qty,
-            "source": "WEB",
+            "source": kIsWeb ? "WEB" : "MOB",
             "placed_by": "${prefs.clientId}",
           }));
 
@@ -421,7 +422,7 @@ mixin MutualFundApi on ApiCore {
             "mandate_id": mandateId,
             "start_date": startDate,
             "placed_by": prefs.clientId,
-            "source": "MOB"
+            "source": kIsWeb ? "WEB" : "MOB"
           }));
 
       print("MF X-sip PlaceOrder ==>${res.body}");
