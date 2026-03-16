@@ -566,12 +566,19 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   child: Row(
                     children: [
                       if (widget.onBack != null)
-                        IconButton(
-                          icon: Icon(Icons.arrow_back_ios_outlined,
-                              size: 18, color: textColor),
-                          onPressed: widget.onBack,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                        InkWell(
+                          onTap: widget.onBack,
+                          borderRadius: BorderRadius.circular(50),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.arrow_back_ios_outlined,
+                              size: 18,
+                              color: textColor,
+                            ),
+                          ),
                         ),
                       if (widget.onBack != null) const SizedBox(width: 8),
                       Text('Nominee',
@@ -672,9 +679,10 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: cardBg,
+      color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
         border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,7 +738,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                         color: Colors.white, fontWeight: MyntFonts.semiBold)
                         .copyWith(decoration: TextDecoration.none)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
+                  backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -763,7 +772,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             ElevatedButton(
               onPressed: _loading ? null : _submitNominee,
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -1340,7 +1350,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           selected: _activePanel == 0,
           showCheckmark: false,
           onSelected: (_) => setState(() => _activePanel = 0),
-          selectedColor: primaryColor,
+          selectedColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)  ,
           labelStyle: MyntWebTextStyles.bodySmall(context,
               color: _activePanel == 0 ? Colors.white : subtitleColor,
               fontWeight: MyntFonts.medium)
@@ -1348,7 +1358,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           backgroundColor: Colors.transparent,
           shape: StadiumBorder(
               side: BorderSide(
-                  color: _activePanel == 0 ? primaryColor : borderColor)),
+                  color: _activePanel == 0 ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary)   : borderColor)),
         ),
         if (_nomineeCount >= 2)
           ChoiceChip(
@@ -1381,7 +1391,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             selected: _activePanel == 1,
             showCheckmark: false,
             onSelected: (_) => setState(() => _activePanel = 1),
-            selectedColor: primaryColor,
+            selectedColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
             labelStyle: MyntWebTextStyles.bodySmall(context,
                 color: _activePanel == 1 ? Colors.white : subtitleColor,
                 fontWeight: MyntFonts.medium)
@@ -1421,7 +1432,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             selected: _activePanel == 2,
             showCheckmark: false,
             onSelected: (_) => setState(() => _activePanel = 2),
-            selectedColor: primaryColor,
+            selectedColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
             labelStyle: MyntWebTextStyles.bodySmall(context,
                 color: _activePanel == 2 ? Colors.white : subtitleColor,
                 fontWeight: MyntFonts.medium)
@@ -1515,7 +1527,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
         ElevatedButton(
           onPressed: _loading ? null : _submitNominee,
           style: ElevatedButton.styleFrom(
-            backgroundColor: primaryColor,
+            backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8)),
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),

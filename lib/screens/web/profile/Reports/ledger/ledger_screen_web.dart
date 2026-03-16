@@ -7,10 +7,13 @@ import 'package:intl/intl.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../../provider/ledger_provider.dart';
+import '../../../../../provider/profile_all_details_provider.dart';
+import '../../../../../provider/user_profile_provider.dart';
 import '../../../../../provider/thems.dart';
 import '../../../../../res/res.dart';
 import '../../../../../res/mynt_web_text_styles.dart';
 import '../../../../../res/mynt_web_color_styles.dart';
+import 'ledger_download_helper.dart';
 import '../../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../../sharedWidget/mynt_loader.dart';
 import '../../../../../sharedWidget/custom_back_btn.dart';
@@ -370,12 +373,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () {
-              showDialog(
-                context: context,
-                barrierDismissible: true,
-                builder: (context) =>
-                    _downloadDialog(context, theme, ledgerprovider),
-              );
+              _showDownloadDialog(context, theme, ledgerprovider);
             },
             child: Center(
               child: SvgPicture.asset(
@@ -1488,105 +1486,232 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
     );
   }
 
-  Widget _downloadDialog(
+  void _showDownloadDialog(
       BuildContext context, ThemesProvider theme, LDProvider ledgerprovider) {
-    return Dialog(
-      backgroundColor: theme.isDarkMode ? MyntColors.dialogDark : MyntColors.dialog,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: SizedBox(
-        width: 280,
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Download as',
-                    style: MyntWebTextStyles.title(
-                      context,
-                      color: resolveThemeColor(context,
-                          dark: MyntColors.textPrimaryDark,
-                          light: MyntColors.textPrimary),
-                      fontWeight: MyntFonts.semiBold,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 20,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textSecondaryDark,
-                            light: MyntColors.textSecondary),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  Navigator.pop(context);
-                  String currentDate =
-                      DateFormat("dd/MM/yyyy").format(DateTime.now());
-                  ledgerprovider.pdfdownloadforledger(
-                    context,
-                    ledgerprovider.ledgerAllData?.toJson() ?? {},
-                    ledgerprovider.ledgerAllData?.drAmt ?? '0.00',
-                    ledgerprovider.ledgerAllData?.crAmt ?? '0.00',
-                    ledgerprovider.ledgerAllData?.openingBalance ?? '0.00',
-                    ledgerprovider.ledgerAllData?.closingBalance ?? '0.00',
-                    ledgerprovider.startDate,
-                    currentDate,
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      SvgPicture.asset(
-                        assets.pdfIcon,
-                        height: 44,
-                        width: 44,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.download,
-                              size: 14,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary)),
-                          const SizedBox(width: 4),
-                          Text(
-                            'PDF',
-                            style: MyntWebTextStyles.bodySmall(
-                              context,
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.textSecondaryDark,
-                                  light: MyntColors.textSecondary),
+    String selectedFormat = 'PDF';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final primaryColor = resolveThemeColor(context,
+                dark: MyntColors.primaryDark, light: MyntColors.primary);
+            final textColor = resolveThemeColor(context,
+                dark: MyntColors.textPrimaryDark,
+                light: MyntColors.textPrimary);
+            final secondaryColor = resolveThemeColor(context,
+                dark: MyntColors.textSecondaryDark,
+                light: MyntColors.textSecondary);
+
+            return Dialog(
+              backgroundColor: resolveThemeColor(context,
+                  dark: MyntColors.cardDark, light: MyntColors.card),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              child: Container(
+                width: 340,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Download as',
+                          style: MyntWebTextStyles.title(
+                            context,
+                            color: textColor,
+                            fontWeight: MyntFonts.semiBold,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(dialogContext),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 20,
+                              color: secondaryColor,
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // PDF / Excel radio with icons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // PDF option
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                setDialogState(() => selectedFormat = 'PDF'),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Column(
+                              children: [
+                                Icon(Icons.picture_as_pdf,
+                                    size: 40,
+                                    color: selectedFormat == 'PDF'
+                                        ? resolveThemeColor(context,
+                                            dark: MyntColors.errorDark,
+                                            light: MyntColors.error)
+                                        : secondaryColor),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Radio<String>(
+                                      value: 'PDF',
+                                      groupValue: selectedFormat,
+                                      onChanged: (v) => setDialogState(
+                                          () => selectedFormat = v!),
+                                      activeColor: primaryColor,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    Text('PDF',
+                                        style: MyntWebTextStyles.bodySmall(
+                                            context,
+                                            color: textColor,
+                                            fontWeight: MyntFonts.medium)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Excel option
+                        Expanded(
+                          child: InkWell(
+                            onTap: () =>
+                                setDialogState(() => selectedFormat = 'EXCEL'),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Column(
+                              children: [
+                                Icon(Icons.table_chart,
+                                    size: 40,
+                                    color: selectedFormat == 'EXCEL'
+                                        ? resolveThemeColor(context,
+                                            dark: MyntColors.successDark,
+                                            light: MyntColors.success)
+                                        : secondaryColor),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Radio<String>(
+                                      value: 'EXCEL',
+                                      groupValue: selectedFormat,
+                                      onChanged: (v) => setDialogState(
+                                          () => selectedFormat = v!),
+                                      activeColor: primaryColor,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                    Text('Excel',
+                                        style: MyntWebTextStyles.bodySmall(
+                                            context,
+                                            color: textColor,
+                                            fontWeight: MyntFonts.medium)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // Download button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          _triggerDownload(selectedFormat, ledgerprovider);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                        ),
+                        child: Text('Download',
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: Colors.white,
+                                fontWeight: MyntFonts.semiBold)),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  void _triggerDownload(String format, LDProvider ledgerprovider) async {
+    final data = ledgerprovider.ledgerAllData;
+    if (data == null) return;
+
+    final profileDetails = ref.read(profileAllDetailsProvider).clientAllDetailsSafe;
+    final clientData = profileDetails?.clientData;
+    final userProfile = ref.read(userProfileProvider);
+
+    final clientId = clientData?.cLIENTID ?? userProfile.userDetailModel?.actid ?? '';
+    final clientName = clientData?.cLIENTNAME ?? userProfile.userDetailModel?.uname ?? '';
+    final panNo = clientData?.pANNO ?? '';
+    final email = clientData?.cLIENTIDMAIL ?? userProfile.userDetailModel?.email ?? '';
+    final mobile = clientData?.mOBILENO ?? userProfile.userDetailModel?.mNum ?? '';
+    final address = '${clientData?.cLRESIADD1 ?? ''} ${clientData?.cLRESIADD2 ?? ''} ${clientData?.cLRESIADD3 ?? ''}'.trim();
+    final fromDate = ledgerprovider.startDate;
+    final toDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
+    final year = fromDate.split('/').last;
+
+    try {
+      if (format == 'EXCEL') {
+        await LedgerDownloadHelper.downloadExcel(
+          ledgerData: data,
+          clientId: clientId,
+          clientName: clientName,
+          panNo: panNo,
+          email: email,
+          year: year,
+          fromDate: fromDate,
+          toDate: toDate,
+        );
+      } else {
+        await LedgerDownloadHelper.downloadPdf(
+          ledgerData: data,
+          clientId: clientId,
+          clientName: clientName,
+          panNo: panNo,
+          email: email,
+          mobile: mobile,
+          address: address,
+          fromDate: fromDate,
+          toDate: toDate,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Download failed: $e')),
+        );
+      }
+    }
   }
 }
 

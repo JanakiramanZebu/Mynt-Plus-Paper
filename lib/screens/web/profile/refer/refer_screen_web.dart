@@ -131,8 +131,8 @@ class _ReferScreenWebState extends ConsumerState<ReferScreenWeb> {
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.bold,
-                  darkColor: MyntColors.primaryDark,
-                  lightColor: MyntColors.primary,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 8),
@@ -205,8 +205,8 @@ class _ReferScreenWebState extends ConsumerState<ReferScreenWeb> {
                 style: MyntWebTextStyles.body(
                   context,
                   fontWeight: MyntFonts.bold,
-                  darkColor: MyntColors.primaryDark,
-                  lightColor: MyntColors.primary,
+                   darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 8),

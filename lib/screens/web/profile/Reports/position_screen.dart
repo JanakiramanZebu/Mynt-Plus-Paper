@@ -677,8 +677,8 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         : _fmt(p.netAvgPrc);
     final ltp = _fmt(p.ltp);
     final pnl = _showMtm ? _safeDouble(p.rmtm) : _safeDouble(p.rpnl);
-    final buyQty = p.buyQuantity?.toString() ?? '0';
-    final sellQty = p.sellQuantity?.toString() ?? '0';
+    final buyQty = (double.tryParse(p.buyQuantity ?? '0') ?? 0).toStringAsFixed(0);
+    final sellQty = (double.tryParse(p.sellQuantity ?? '0') ?? 0).toStringAsFixed(0);
     final buyAvg = _showMtm
         ? _fmt(p.buypricemtm)
         : _fmt(p.buyPrice);

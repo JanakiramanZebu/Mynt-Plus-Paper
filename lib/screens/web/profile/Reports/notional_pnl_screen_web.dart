@@ -1456,10 +1456,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
 
   // ─── Helpers ─────────────────────────────────────────────────────────
 
-  String _formatQty(double val) {
-    if (val == val.roundToDouble()) return val.toInt().toString();
-    return val.toStringAsFixed(2);
-  }
+  String _formatQty(double val) => val.toStringAsFixed(0);
 
   String _formatRate(double val) => val.toStringAsFixed(2);
 
@@ -1550,10 +1547,7 @@ class _DetailedPnlDialogState extends State<_DetailedPnlDialog> {
 
   String _formatRate(double val) => val.toStringAsFixed(2);
 
-  String _formatQty(double val) {
-    if (val == val.roundToDouble()) return val.toInt().toString();
-    return val.toStringAsFixed(2);
-  }
+  String _formatQty(double val) => val.toStringAsFixed(0);
 
   List<Data> _getFiltered() {
     final all = _data?.data ?? [];

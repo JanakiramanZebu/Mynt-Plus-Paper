@@ -1202,8 +1202,9 @@ class _ProfileDetailsScreenWebState
         return Container(
           padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
           decoration: BoxDecoration(
-            color: cardBg,
-            borderRadius: BorderRadius.circular(12),
+            color: resolveThemeColor(context,
+                dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(color: cardBorder),
           ),
           child: Column(
@@ -2442,7 +2443,8 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
         '${widget.clientData.cLRESIADD1 ?? ''} ${widget.clientData.cLRESIADD2 ?? ''} ${widget.clientData.cLRESIADD3 ?? ''}';
 
     return Dialog(
-      backgroundColor: _dialogBg,
+      backgroundColor: resolveThemeColor(context,
+        dark: MyntColors.cardDark, light: MyntColors.card),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
@@ -2483,7 +2485,8 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
                       widget.onAadhaarTap?.call();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
+                      backgroundColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -2499,29 +2502,30 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      setState(() => _showManualForm = true);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF0037B7)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Type manually',
-                      style: TextStyle(
-                        color: Color(0xFF0037B7),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+            //     SizedBox(
+            //       width: double.infinity,
+            //       height: 44,
+            //       child: OutlinedButton(
+            //         onPressed: () {
+            //           setState(() => _showManualForm = true);
+            //         },
+            //         style: OutlinedButton.styleFrom(
+            //           side:  BorderSide(color:resolveThemeColor(context,
+            // dark: MyntColors.secondary, light: MyntColors.primary)),
+            //           shape: RoundedRectangleBorder(
+            //             borderRadius: BorderRadius.circular(8),
+            //           ),
+            //         ),
+            //         child:  Text(
+            //           'Type manually',
+            //           style: TextStyle(
+            //             color: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
+            //             fontSize: 14,
+            //             fontWeight: FontWeight.w600,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
               ],
 
               // Manual form

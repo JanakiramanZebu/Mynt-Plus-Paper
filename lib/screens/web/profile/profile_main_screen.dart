@@ -5,7 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/app_spacing.dart';
-import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
+import 'package:mynt_plus/res/res.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,6 @@ import 'package:mynt_plus/provider/fund_provider.dart';
 import 'package:mynt_plus/provider/profile_all_details_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/provider/user_profile_provider.dart';
-import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/screens/web/customizable_split_home_screen.dart' show ScreenType;
 
@@ -142,7 +142,7 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
     //           decoration: BoxDecoration(
     //             border: Border(
     //               bottom: BorderSide(
-    //                 color: isDark ? colors.darkColorDivider : colors.colorDivider,
+    //                 color: isDark ? MyntColors.dividerDark : MyntColors.divider,
     //               ),
     //             ),
     //           ),
@@ -155,14 +155,14 @@ class _ProfileMainScreenState extends ConsumerState<ProfileMainScreen> {
     //                   Text(
     //                     _currentChildTitle ?? '',
     //                     style: MyntWebTextStyles.title(context, 
-    //                       color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+    //                       color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
     //                   if (_currentChildTitle == 'Settings')
     //                     Padding(
     //                       padding: const EdgeInsets.only(top: 8.0),
     //                       child: Text(
     //                         "Catch the log, setting up preference, get API key, and change themes.",
     //                         style: MyntWebTextStyles.body(context, 
-    //                           color: resolveThemeColor(context, dark: colors.textSecondaryDark, light: colors.textSecondaryLight),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
+    //                           color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
     //                     ),
     //                 ],
     //               ),
@@ -606,13 +606,13 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                       Text(
                         "Settings",
                         style: MyntWebTextStyles.title(context, 
-                          color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                          color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             "Catch the log, setting up preference, get API key, and change themes.",
                             style: MyntWebTextStyles.body(context, 
-                              color: resolveThemeColor(context, dark: colors.textSecondaryDark, light: colors.textSecondaryLight),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
+                              color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),fontWeight: MyntFonts.regular).copyWith(decoration: TextDecoration.none)),
                         ),
                         const SizedBox(height: 16),
                     ],
@@ -620,7 +620,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
         Container(
           padding: const EdgeInsets.only(right: 16.0),
           decoration: BoxDecoration(
-            border: Border.all(color: theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider),
+            border: Border.all(color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider),
             borderRadius: BorderRadius.circular(8),
           ),
           child: shadcn.Accordion(
@@ -633,7 +633,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('API Key', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -655,7 +655,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('TOTP', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -677,7 +677,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('Change Password ', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -699,7 +699,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
             //       child: Padding(
             //         padding: const EdgeInsets.symmetric(horizontal: 16.0),
             //         child: Text('Themes', style: MyntWebTextStyles.title(context, 
-            //           color: theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight).copyWith(decoration: TextDecoration.none)),
+            //           color: theme.isDarkMode ? MyntColors.textPrimaryDark : MyntColors.textPrimary).copyWith(decoration: TextDecoration.none)),
             //       ),
             //     ),
             //   ),
@@ -721,7 +721,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('Order Preference', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -743,7 +743,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Text('Freeze Account', style: MyntWebTextStyles.titlesub(context, 
-                      color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
+                      color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none)),
                   ),
                 ),
               ),
@@ -1016,14 +1016,7 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                         light: MyntColors.borderMuted),
                   ),
                   child: changePassword.loading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? MyntLoader.inline(color: Colors.white)
                       : Text(
                           'Set New Password',
                           style: MyntWebTextStyles.body(context,
@@ -1182,11 +1175,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                  borderSide: BorderSide(color: isDark ? MyntColors.dividerDark : MyntColors.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                  borderSide: BorderSide(color: isDark ? MyntColors.dividerDark : MyntColors.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -1253,11 +1246,11 @@ class _SettingsSectionState extends ConsumerState<_SettingsSection> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                    borderSide: BorderSide(color: isDark ? MyntColors.dividerDark : MyntColors.divider),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: isDark ? colors.darkColorDivider : colors.colorDivider),
+                    borderSide: BorderSide(color: isDark ? MyntColors.dividerDark : MyntColors.divider),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -1768,6 +1761,7 @@ class MyAccountScreen extends ConsumerStatefulWidget {
 class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // late int _expandedIndex;
   String? _expandedTitle;
+  final _cardHoverStates = <int, bool>{};
 
   @override
   void initState() {
@@ -1800,7 +1794,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   //   return BottomAppBar(
   //     height: 64,
   //     shadowColor:
-  //         theme.isDarkMode ? colors.darkColorDivider : colors.colorDivider,
+  //         theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
   //     padding: EdgeInsets.zero,
   //     child: Row(
   //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1890,12 +1884,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
   // }
 
   // List of items for the account screen with icons and descriptions
-  final accountItems = [
+  List<Map<String, dynamic>> get accountItems => [
     {
       'title': 'Profile',
       'description': 'Personal details, PAN, email & address',
       'icon': Icons.person_outline_rounded,
-      'color': Color(0xFF0037B7),
+      'color': resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
     },
     {
       'title': 'Bank',
@@ -1937,7 +1931,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       'title': 'Closure',
       'description': 'Request account closure',
       'icon': Icons.cancel_outlined,
-      'color': Color(0xFFC40024),
+      'color': resolveThemeColor(context, dark: MyntColors.lossDark, light: MyntColors.loss),
     },
   ];
 
@@ -1991,7 +1985,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       'Profile Photo',
                       style: MyntWebTextStyles.title(context,
                         color: resolveThemeColor(context,
-                          dark: colors.textPrimaryDark, light: colors.textPrimaryLight),
+                          dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary),
                         fontWeight: MyntFonts.semiBold,
                       ).copyWith(decoration: TextDecoration.none),
                     ),
@@ -2078,7 +2072,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               color: resolveThemeColor(context,
-                                dark: MyntColors.primaryDark,
+                                dark: MyntColors.secondary,
                                 light: MyntColors.primary),
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -2118,19 +2112,19 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: MyntColors.tertiary,
+                                  color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error),
                                 ),
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.delete_outline_rounded,
-                                    size: 18, color: MyntColors.tertiary),
+                                   Icon(Icons.delete_outline_rounded,
+                                    size: 18, color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Remove',
                                     style: MyntWebTextStyles.bodySmall(context,
-                                      color: MyntColors.tertiary,
+                                      color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error),
                                       fontWeight: MyntFonts.medium,
                                     ).copyWith(decoration: TextDecoration.none),
                                   ),
@@ -2211,35 +2205,39 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     return Row(
       children: [
         Expanded(
-          child: TextWidget.subText(
-            text: title,
-            theme: false,
-            color: _expandedTitle == title
-                ? theme.isDarkMode
-                    ? colors.primaryDark
-                    : colors.primaryLight
-                : theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-            fw: _expandedTitle == title ? 1 : 0,
+          child: Text(
+            title,
+            style: MyntWebTextStyles.body(
+              context,
+              color: _expandedTitle == title
+                  ? resolveThemeColor(context,
+                      dark: MyntColors.primaryDark,
+                      light: MyntColors.primary)
+                  : resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+              fontWeight: _expandedTitle == title ? MyntFonts.semiBold : MyntFonts.medium,
+            ),
           ),
         ),
         if (hasPending) ...[
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.2),
+              color: Colors.orange.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.orange.withOpacity(0.6),
+                color: Colors.orange.withValues(alpha: 0.6),
                 width: 1,
               ),
             ),
-            child: TextWidget.captionText(
-              text: '${pendingStatuses.length} Pending',
-              theme: false,
-              color: Colors.orange.shade700,
-              fw: 3,
+            child: Text(
+              '${pendingStatuses.length} Pending',
+              style: MyntWebTextStyles.caption(
+                context,
+                color: Colors.orange.shade700,
+                fontWeight: MyntFonts.regular,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -2263,7 +2261,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),
-      color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+      color: theme.isDarkMode ? Colors.black : Colors.white,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Column(
@@ -2273,13 +2271,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextWidget.subText(
-                  text: "Pending Status",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 3,
+                Text(
+                  "Pending Status",
+                  style: MyntWebTextStyles.body(
+                    context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                    fontWeight: MyntFonts.regular,
+                  ),
                 ),
                 Row(
                   children: [
@@ -2290,15 +2289,17 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: theme.isDarkMode
-                              ? colors.primaryDark
-                              : colors.primaryLight,
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary,
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: TextWidget.captionText(
-                          text: "Click here to E-sign",
-                          theme: false,
-                          color: colors.colorWhite,
-                          fw: 2,
+                        child: Text(
+                          "Click here to E-sign",
+                          style: MyntWebTextStyles.caption(
+                            context,
+                            color: Colors.white,
+                            fontWeight: MyntFonts.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -2308,9 +2309,9 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                                  backgroundColor: theme.isDarkMode
-                                      ? const Color(0xFF121212)
-                                      : const Color(0xFFF1F3F8),
+                                  backgroundColor: resolveThemeColor(context,
+                                      dark: MyntColors.backgroundColorDark,
+                                      light: MyntColors.backgroundColor),
                                   titlePadding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 8),
                                   shape: const RoundedRectangleBorder(
@@ -2344,11 +2345,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               splashColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
+                                                  ? MyntColors.rippleDark
+                                                  : MyntColors.rippleLight,
                                               highlightColor: theme.isDarkMode
-                                                  ? colors.splashColorDark
-                                                  : colors.splashColorLight,
+                                                  ? MyntColors.rippleDark
+                                                  : MyntColors.rippleLight,
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.all(6.0),
@@ -2356,9 +2357,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                                   Icons.close_rounded,
                                                   size: 22,
                                                   color: theme.isDarkMode
-                                                      ? colors.textSecondaryDark
-                                                      : colors
-                                                          .textSecondaryLight,
+                                                      ? MyntColors.textSecondaryDark
+                                                      : MyntColors.textSecondary,
                                                 ),
                                               ),
                                             ),
@@ -2377,15 +2377,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                                 CrossAxisAlignment.center,
                                             children: [
                                               const SizedBox(height: 10),
-                                              TextWidget.subText(
-                                                text:
-                                                    "Are you sure want to cancel the Esign",
-                                                theme: theme.isDarkMode,
-                                                color: theme.isDarkMode
-                                                    ? colors.textSecondaryDark
-                                                    : colors.textPrimaryLight,
-                                                fw: 3,
-                                                align: TextAlign.center,
+                                              Text(
+                                                "Are you sure want to cancel the Esign",
+                                                style: MyntWebTextStyles.body(
+                                                  context,
+                                                  darkColor: MyntColors.textSecondaryDark,
+                                                  lightColor: MyntColors.textPrimary,
+                                                  fontWeight: MyntFonts.regular,
+                                                ),
+                                                textAlign: TextAlign.center,
                                               ),
                                             ],
                                           ),
@@ -2401,26 +2401,21 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                         style: OutlinedButton.styleFrom(
                                           minimumSize: const Size(0, 40),
                                           side: BorderSide(
-                                              color: colors.btnOutlinedBorder),
+                                              color: MyntColors.outlinedBorder),
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(5),
                                           ),
-                                          backgroundColor: colors.primaryDark,
+                                          backgroundColor: MyntColors.primaryDark,
                                         ),
-                                        child: profileDetails.cancelpendingloader ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: theme.isDarkMode
-                              ? colors.colorWhite
-                              : colors.colorBlack,
-                        )) : TextWidget.titleText(
-                                            text: "Yes",
-                                            theme: theme.isDarkMode,
-                                            color: colors.colorWhite,
-                                            fw: 2),
+                                        child: profileDetails.cancelpendingloader
+                            ? MyntLoader.inline(color: Colors.white)
+                            : Text("Yes",
+                                style: MyntWebTextStyles.body(
+                                  context,
+                                  color: Colors.white,
+                                  fontWeight: MyntFonts.bold,
+                                )),
                                       ),
                                     ),
                                   ],
@@ -2431,16 +2426,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight,
+                                ? MyntColors.lossDark
+                                : MyntColors.loss,
                             width: 1,
                           ),
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Icon(Icons.close,
                             color: theme.isDarkMode
-                                ? colors.lossDark
-                                : colors.lossLight,
+                                ? MyntColors.lossDark
+                                : MyntColors.loss,
                             size: 14),
                       ),
                     ),
@@ -2461,19 +2456,21 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                   decoration: BoxDecoration(
                     color: theme.isDarkMode
-                        ? colors.pending.withOpacity(0.1)
-                        : colors.pending.withOpacity(0.1),
+                        ? MyntColors.pending.withValues(alpha: 0.1)
+                        : MyntColors.pending.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: colors.pending.withOpacity(0.6),
+                      color: MyntColors.pending.withValues(alpha: 0.6),
                       width: 1,
                     ),
                   ),
-                  child: TextWidget.subText(
-                    text: displayName,
-                    theme: false,
-                    color: colors.pending,
-                    fw: 3,
+                  child: Text(
+                    displayName,
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: MyntColors.pending,
+                      fontWeight: MyntFonts.regular,
+                    ),
                   ),
                 );
               }).toList(),
@@ -2538,9 +2535,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               // ── Page Title ──
               Text(
                 'Account',
-                style: MyntWebTextStyles.title(context,
-                  color: resolveThemeColor(context, dark: colors.textPrimaryDark, light: colors.textPrimaryLight),
-                  fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none),
+                style: MyntWebTextStyles.hero(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textPrimaryDark,
+                      light: MyntColors.textPrimary),
+                ).copyWith(decoration: TextDecoration.none),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Manage your profile, preferences and account settings',
+                style: MyntWebTextStyles.para(
+                  context,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary),
+                ).copyWith(decoration: TextDecoration.none),
               ),
               const SizedBox(height: 16),
               // ── Unified 3-Column Grid ──
@@ -2568,17 +2578,17 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             borderRadius: BorderRadius.circular(12),
                             onTap: () => _showProfileImageOptions(context, ref, profileImage != null),
                             hoverColor: isDark
-                                ? const Color(0xFF21262D)
-                                : const Color(0xFFF0F3F9),
+                                ? MyntColors.cardHoverDark
+                                : MyntColors.cardHover,
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF161B22) : Colors.white,
+                                color: isDark ? MyntColors.cardDark : MyntColors.card,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isDark
-                                      ? const Color(0xFF30363D)
-                                      : const Color(0xFFE1E4E8),
+                                      ? MyntColors.cardBorderDark
+                                      : MyntColors.cardBorder,
                                 ),
                               ),
                               child: Row(
@@ -2609,15 +2619,10 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                         ),
                                         child: imageLoading
                                             ? Center(
-                                                child: SizedBox(
-                                                  width: 22,
-                                                  height: 22,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    color: resolveThemeColor(context,
-                                                      dark: MyntColors.primaryDark,
-                                                      light: MyntColors.primary),
-                                                  ),
+                                                child: MyntLoader.inline(
+                                                  color: resolveThemeColor(context,
+                                                    dark: MyntColors.primaryDark,
+                                                    light: MyntColors.primary),
                                                 ),
                                               )
                                             : profileImage == null
@@ -2676,8 +2681,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                                           _truncateProfileName(userName, maxLength: 24),
                                           style: MyntWebTextStyles.title(context,
                                             color: resolveThemeColor(context,
-                                              dark: colors.textPrimaryDark,
-                                              light: colors.textPrimaryLight),
+                                              dark: MyntColors.textPrimaryDark,
+                                              light: MyntColors.textPrimary),
                                             fontWeight: MyntFonts.semiBold,
                                           ).copyWith(decoration: TextDecoration.none),
                                         ),
@@ -2712,16 +2717,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 4, top: 12),
                           child: Text(
-                            'ACCOUNT SETTINGS',
-                            style: MyntWebTextStyles.caption(context,
-                              darkColor: MyntColors.textSecondaryDark,
-                              lightColor: MyntColors.textSecondary,
-                              fontWeight: MyntFonts.semiBold,
-                            ).copyWith(
-                              letterSpacing: 1.2,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
+                            'Account Settings',
+                        style: MyntWebTextStyles.bodySmall(
+                          context,
+                          fontWeight: MyntFonts.semiBold,
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark,
+                              light: MyntColors.textSecondary),
+                        ),
+                      ),
                         ),
                       ),
 
@@ -2734,6 +2738,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                       final itemColor = item['color'] as Color;
                       final pendingStatuses = _getPendingStatusesForSection(title, ref);
                       final hasPending = pendingStatuses.isNotEmpty;
+
+                      final hovered = _cardHoverStates[index] == true;
 
                       return SizedBox(
                         width: itemWidth,
@@ -2763,7 +2769,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               //     child: TextWidget.captionText(
               //       text: ref.watch(authProvider).versiontext,
               //       theme: false,
-              //       color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+              //       color: isDark ? MyntColors.textSecondaryDark : MyntColors.textSecondary,
               //     ),
               //   ),
               // ),
@@ -2798,10 +2804,12 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       default:
         return Padding(
           padding: const EdgeInsets.all(16.0),
-          child: TextWidget.paraText(
-            text: 'Details for $title will be shown here.',
-            color: colors.colorGrey,
-            theme: theme.isDarkMode,
+          child: Text(
+            'Details for $title will be shown here.',
+            style: MyntWebTextStyles.para(
+              context,
+              color: MyntColors.textTertiary,
+            ),
           ),
         );
     }
@@ -3288,7 +3296,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Card(
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: theme.isDarkMode ? Colors.black : Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           elevation: 0,
@@ -3300,13 +3308,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextWidget.subText(
-                      text: "CDSL",
-                      theme: theme.isDarkMode,
-                      color: theme.isDarkMode
-                          ? colors.textPrimaryDark
-                          : colors.textPrimaryLight,
-                      fw: 0,
+                    Text(
+                      "CDSL",
+                      style: MyntWebTextStyles.body(
+                        context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.medium,
+                      ),
                     ),
                     Row(
                       children: [
@@ -3318,32 +3327,34 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             borderRadius: BorderRadius.circular(2),
                             color: DDPIActive
                                 ? theme.isDarkMode
-                                    ? colors.primaryDark
-                                    : colors.primaryLight
+                                    ? MyntColors.primaryDark
+                                    : MyntColors.primary
                                 : theme.isDarkMode
-                                    ? colors.textSecondaryDark.withOpacity(0.2)
+                                    ? MyntColors.textSecondaryDark.withValues(alpha: 0.2)
                                     : null,
                             border: !DDPIActive
                                 ? Border(
                                     bottom: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.lossDark
-                                          : colors.lossLight,
+                                          ? MyntColors.lossDark
+                                          : MyntColors.loss,
                                       width: 1,
                                     ),
                                   )
                                 : null,
                           ),
-                          child: TextWidget.subText(
-                            text: "DDPI",
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            color: DDPIActive
-                                ? colors.colorWhite
-                                : theme.isDarkMode
-                                    ? colors.lossDark
-                                    : colors.lossLight,
-                            fw: 0,
+                          child: Text(
+                            "DDPI",
+                            style: MyntWebTextStyles.body(
+                              context,
+                              color: DDPIActive
+                                  ? Colors.white
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                              fontWeight: MyntFonts.medium,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Container(
@@ -3352,28 +3363,30 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(2),
-                            color: POAActive ? colors.primaryLight : null,
+                            color: POAActive ? MyntColors.primary : null,
                             border: !POAActive
                                 ? Border(
                                     bottom: BorderSide(
                                       color: theme.isDarkMode
-                                          ? colors.lossDark
-                                          : colors.lossLight,
+                                          ? MyntColors.lossDark
+                                          : MyntColors.loss,
                                       width: 1,
                                     ),
                                   )
                                 : null,
                           ),
-                          child: TextWidget.subText(
-                            text: "POA",
-                            textOverflow: TextOverflow.ellipsis,
-                            theme: theme.isDarkMode,
-                            color: POAActive
-                                ? colors.colorWhite
-                                : theme.isDarkMode
-                                    ? colors.lossDark
-                                    : colors.lossLight,
-                            fw: 0,
+                          child: Text(
+                            "POA",
+                            style: MyntWebTextStyles.body(
+                              context,
+                              color: POAActive
+                                  ? Colors.white
+                                  : resolveThemeColor(context,
+                                      dark: MyntColors.lossDark,
+                                      light: MyntColors.loss),
+                              fontWeight: MyntFonts.medium,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -3408,13 +3421,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextWidget.paraText(
-                text: "Do you want to sell your stocks without CDSL T-Pin",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textSecondaryDark
-                    : colors.textSecondaryLight,
-                fw: 0,
+              Text(
+                "Do you want to sell your stocks without CDSL T-Pin",
+                style: MyntWebTextStyles.para(
+                  context,
+                  darkColor: MyntColors.textSecondaryDark,
+                  lightColor: MyntColors.textSecondary,
+                  fontWeight: MyntFonts.medium,
+                ),
               ),
               const SizedBox(height: 12),
               ElevatedButton(
@@ -3438,15 +3452,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     elevation: 0,
                     minimumSize: Size(100, 45),
                     backgroundColor: theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight,
+                        ? MyntColors.primaryDark
+                        : MyntColors.primary,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4))),
-                child: TextWidget.subText(
-                    text: "Activate DDPI",
-                    theme: false,
-                    color: colors.colorWhite,
-                    fw: 2),
+                child: Text("Activate DDPI",
+                    style: MyntWebTextStyles.body(context,
+                        color: Colors.white,
+                        fontWeight: MyntFonts.bold)),
               ),
               SizedBox(height: 10.0),
             ],
@@ -3493,12 +3506,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             // const SizedBox(height: 16),
 
             if (!DDPIActive && !POAActive) ...[
-              TextWidget.subText(
-                text:
-                    "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode ? colors.lossDark : colors.lossLight,
-                fw: 0,
+              Text(
+                "You need to enable DDPI before you can proceed with processing MTF (Margin Trading Facility).",
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.lossDark,
+                  lightColor: MyntColors.loss,
+                  fontWeight: MyntFonts.medium,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -3506,45 +3521,40 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   minimumSize: Size(100, 45),
-                  backgroundColor: colors.colorbluegrey,
-                  disabledBackgroundColor: colors.colorbluegrey,
+                  backgroundColor: MyntColors.borderMuted,
+                  disabledBackgroundColor: MyntColors.borderMuted,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: TextWidget.subText(
-                  text: "Enable MTF",
-                  theme: theme.isDarkMode,
-                  fw: 2,
-                  color: colors.colorWhite,
-                ),
+                child: Text("Enable MTF",
+                    style: MyntWebTextStyles.body(context,
+                        color: Colors.white, fontWeight: MyntFonts.bold)),
               ),
             ] else if (mtfCl && mtfClAuto) ...[
-              TextWidget.subText(
-                text:
-                    "You have activated the Margin Trading Facility (MTF) on your account",
-                theme: theme.isDarkMode,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
+              Text(
+                "You have activated the Margin Trading Facility (MTF) on your account",
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               Chip(
-                label: TextWidget.subText(
-                  text: 'MTF Enabled',
-                  theme: theme.isDarkMode,
-                  color: colors.colorWhite,
-                ),
-                backgroundColor: colors.primaryLight,
+                label: Text('MTF Enabled',
+                    style: MyntWebTextStyles.body(context,
+                        color: Colors.white)),
+                backgroundColor: MyntColors.primary,
               ),
             ] else if (DDPIActive || POAActive) ...[
-              TextWidget.subText(
-                text:
-                    "Would you like to activate Margin Trading Facility (MTF) on your account",
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                theme: theme.isDarkMode,
+              Text(
+                "Would you like to activate Margin Trading Facility (MTF) on your account",
+                style: MyntWebTextStyles.body(
+                  context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -3568,18 +3578,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   elevation: 0,
                   minimumSize: Size(100, 45),
                   backgroundColor: theme.isDarkMode
-                      ? colors.primaryDark
-                      : colors.primaryLight,
+                      ? MyntColors.primaryDark
+                      : MyntColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: TextWidget.subText(
-                  text: "Enable MTF",
-                  theme: theme.isDarkMode,
-                  fw: 2,
-                  color: colors.colorWhite,
-                ),
+                child: Text("Enable MTF",
+                    style: MyntWebTextStyles.body(context,
+                        color: Colors.white, fontWeight: MyntFonts.bold)),
               ),
             ] else ...[
               if ((profileDetails.clientAllDetails.clientData!.mTFCl == 'N' &&
@@ -3592,13 +3599,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextWidget.subText(
-                        text:
-                            "Would you like to activate Margin Trading Facility (MTF) on your account ",
-                        theme: theme.isDarkMode,
-                        color: theme.isDarkMode
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
+                      Text(
+                        "Would you like to activate Margin Trading Facility (MTF) on your account ",
+                        style: MyntWebTextStyles.body(
+                          context,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
@@ -3625,22 +3632,21 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: theme.isDarkMode
-                                ? colors.colorBlack
-                                : colors.colorWhite,
+                                ? Colors.black
+                                : Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(32),
                             ),
                             side: BorderSide(
                               width: 1,
                               color: theme.isDarkMode
-                                  ? colors.colorWhite
-                                  : colors.colorBlack,
+                                  ? Colors.white
+                                  : Colors.black,
                             ),
                           ),
-                          child: TextWidget.subText(
-                              text: "Enable MTF",
-                              theme: theme.isDarkMode,
-                              fw: 2),
+                          child: Text("Enable MTF",
+                              style: MyntWebTextStyles.body(context,
+                                  fontWeight: MyntFonts.bold)),
                         ),
                       ),
                     ],
@@ -3677,13 +3683,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextWidget.subText(
-                  text: "Segments",
-                  theme: theme.isDarkMode,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  fw: 0),
+              Text("Segments",
+                  style: MyntWebTextStyles.body(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium)),
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -3708,18 +3712,18 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   },
                   borderRadius: BorderRadius.circular(20),
                   splashColor: theme.isDarkMode
-                      ? colors.splashColorDark
-                      : colors.splashColorLight,
+                      ? MyntColors.rippleDark
+                      : MyntColors.rippleLight,
                   highlightColor: theme.isDarkMode
-                      ? colors.highlightDark
-                      : colors.highlightLight,
+                      ? MyntColors.highlightDark
+                      : MyntColors.highlightLight,
                   child: Padding(
                     padding: EdgeInsets.all(8),
                     child: Icon(
                       Icons.edit_outlined,
                       color: theme.isDarkMode
-                          ? colors.textSecondaryDark
-                          : colors.textSecondaryLight,
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
                       size: 20,
                     ),
                   ),
@@ -3750,10 +3754,8 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     ['MCX', 'NSE_COM', 'BSE_COM'].contains(s.cOMPANYCODE)),
                 theme),
           ] else
-            TextWidget.paraText(
-              text: "No segment data available",
-              theme: theme.isDarkMode,
-            ),
+            Text("No segment data available",
+                style: MyntWebTextStyles.para(context)),
 
           // Show pending statuses for Trading Preferences section
           _buildSectionPendingStatuses('Trading Preferences', ref, theme, () {
@@ -3839,12 +3841,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TextWidget.subText(
-                  text: "Nominee Details",
-                  theme: theme.isDarkMode,
-                  fw: 0,
-                  color: textColor,
-                ),
+                Text("Nominee Details",
+                    style: MyntWebTextStyles.body(context,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                        fontWeight: MyntFonts.medium)),
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -3869,16 +3870,18 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.black.withValues(alpha: 0.15),
+                        ? MyntColors.rippleDark
+                        : MyntColors.rippleLight,
                     highlightColor: theme.isDarkMode
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.08),
+                        ? MyntColors.highlightDark
+                        : MyntColors.highlightLight,
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Icon(
                         Icons.edit_outlined,
-                        color: subtitleColor,
+                        color: theme.isDarkMode
+                            ? MyntColors.textSecondaryDark
+                            : MyntColors.textSecondary,
                         size: 20,
                       ),
                     ),
@@ -3918,14 +3921,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.subText(
-            text: "Download various forms and documents",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 0,
-          ),
+          Text("Download various forms and documents",
+              style: MyntWebTextStyles.body(context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                  fontWeight: MyntFonts.medium)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -3939,15 +3939,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     elevation: 0,
                     minimumSize: Size(100, 45),
                     backgroundColor: theme.isDarkMode
-                        ? colors.primaryDark
-                        : colors.primaryLight,
+                        ? MyntColors.primaryDark
+                        : MyntColors.primary,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5))),
-                child: TextWidget.subText(
-                    text: "Download Forms",
-                    theme: false,
-                    color: colors.colorWhite,
-                    fw: 2),
+                child: Text("Download Forms",
+                    style: MyntWebTextStyles.body(context,
+                        color: Colors.white,
+                        fontWeight: MyntFonts.bold)),
               ),
             ],
           ),
@@ -3959,13 +3958,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           //     elevation: 0,
           //     minimumSize: const Size(double.infinity, 40),
           //     backgroundColor:
-          //         theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          //         theme.isDarkMode ? Colors.black : Colors.white,
           //     shape: RoundedRectangleBorder(
           //       borderRadius: BorderRadius.circular(32),
           //     ),
           //     side: BorderSide(
           //       width: 1,
-          //       color: theme.isDarkMode ? colors.colorWhite : colors.colorBlack,
+          //       color: theme.isDarkMode ? Colors.white : Colors.black,
           //     ),
           //   ),
           //   child: TextWidget.subText(
@@ -3989,14 +3988,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextWidget.subText(
-            text: "Closing your account is a permanent and irreversible action",
-            theme: theme.isDarkMode,
-            color: theme.isDarkMode
-                ? colors.textPrimaryDark
-                : colors.textPrimaryLight,
-            fw: 0,
-          ),
+          Text("Closing your account is a permanent and irreversible action",
+              style: MyntWebTextStyles.body(context,
+                  darkColor: MyntColors.textPrimaryDark,
+                  lightColor: MyntColors.textPrimary,
+                  fontWeight: MyntFonts.medium)),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () async {
@@ -4022,14 +4018,13 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                 elevation: 0,
                 minimumSize: Size(100, 45),
                 backgroundColor:
-                    theme.isDarkMode ? colors.primaryDark : colors.primaryLight,
+                    theme.isDarkMode ? MyntColors.primaryDark : MyntColors.primary,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5))),
-            child: TextWidget.subText(
-                text: "Close Account",
-                theme: false,
-                color: colors.colorWhite,
-                fw: 2),
+            child: Text("Close Account",
+                style: MyntWebTextStyles.body(context,
+                    color: Colors.white,
+                    fontWeight: MyntFonts.bold)),
           ),
 
           // Show pending statuses for Closure section
@@ -4053,16 +4048,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         borderRadius: BorderRadius.circular(4),
         color: theme.isDarkMode
             ? isActive
-                ? colors.primaryDark
-                : colors.btnBg
+                ? MyntColors.primaryDark
+                : MyntColors.listItemBg
             : isActive
-                ? colors.primaryLight
-                : colors.btnBg,
+                ? MyntColors.primary
+                : MyntColors.listItemBg,
       ),
-      child: TextWidget.paraText(
-          text: label,
-          theme: theme.isDarkMode,
-          color: isActive ? colors.colorWhite : colors.colorBlack),
+      child: Text(label,
+          style: MyntWebTextStyles.para(context,
+              color: isActive ? Colors.white : Colors.black)),
     );
   }
 
@@ -4075,14 +4069,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextWidget.subText(
-              text: label,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
-            ),
+            Text(label,
+                style: MyntWebTextStyles.body(context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
+                    fontWeight: MyntFonts.medium)),
             Row(
               children: segments.map<Widget>((segment) {
                 bool isActive = segment.aCTIVEINACTIVE == "A";
@@ -4099,30 +4090,28 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     borderRadius: BorderRadius.circular(2),
                     color: isActive
                         ? theme.isDarkMode
-                            ? colors.primaryDark
-                            : colors.primaryLight
+                            ? MyntColors.primaryDark
+                            : MyntColors.primary
                         : null,
                     border: !isActive
                         ? Border(
                             bottom: BorderSide(
                               color: theme.isDarkMode
-                                  ? colors.lossDark
-                                  : colors.lossLight,
+                                  ? MyntColors.lossDark
+                                  : MyntColors.loss,
                               width: 1,
                             ),
                           )
                         : null,
                   ),
-                  child: TextWidget.subText(
-                    text: displayName,
-                    theme: theme.isDarkMode,
-                    color: isActive
-                        ? colors.colorWhite
-                        : theme.isDarkMode
-                            ? colors.lossDark
-                            : colors.lossLight,
-                    fw: 0,
-                  ),
+                  child: Text(displayName,
+                      style: MyntWebTextStyles.body(context,
+                          color: isActive
+                              ? Colors.white
+                              : resolveThemeColor(context,
+                                  dark: MyntColors.lossDark,
+                                  light: MyntColors.loss),
+                          fontWeight: MyntFonts.medium)),
                 );
               }).toList(),
             ),
@@ -4131,7 +4120,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         const SizedBox(height: 8),
         Divider(
           thickness: 1,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
         )
       ],
     );
@@ -4158,14 +4147,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               children: [
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.20,
-                  child: TextWidget.subText(
-                    text: label,
-                    theme: false,
-                    color: theme.isDarkMode
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                    fw: 0,
-                  ),
+                  child: Text(label,
+                      style: MyntWebTextStyles.body(context,
+                          darkColor: MyntColors.textSecondaryDark,
+                          lightColor: MyntColors.textSecondary,
+                          fontWeight: MyntFonts.medium)),
                 ),
                 if (label == "Email" || label == "Mobile" || label == "Address")
                   Material(
@@ -4174,11 +4160,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       splashColor: theme.isDarkMode
-                          ? colors.splashColorDark
-                          : colors.splashColorLight,
+                          ? MyntColors.rippleDark
+                          : MyntColors.rippleLight,
                       highlightColor: theme.isDarkMode
-                          ? colors.highlightDark
-                          : colors.highlightLight,
+                          ? MyntColors.highlightDark
+                          : MyntColors.highlightLight,
                       onTap: () {
                         final pendingStatuses = ref
                             .watch(profileAllDetailsProvider)
@@ -4219,7 +4205,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         padding: const EdgeInsets.all(4.0),
                         child: Icon(
                           Icons.edit_outlined,
-                          color: colors.iconColor,
+                          color: MyntColors.iconSecondary,
                           size: 20,
                         ),
                       ),
@@ -4229,25 +4215,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
             ),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
-              child: TextWidget.subText(
-                text: value,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                softWrap: true,
-                align: TextAlign.right,
-                textOverflow: TextOverflow.ellipsis,
-                maxLines: 4,
-                fw: 0,
-              ),
+              child: Text(value,
+                  style: MyntWebTextStyles.body(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium),
+                  softWrap: true,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 4),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Divider(
           thickness: 0,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
         )
       ],
     );
@@ -4262,32 +4245,26 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextWidget.subText(
-              text: label,
-              theme: false,
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              fw: 0,
-            ),
+            Text(label,
+                style: MyntWebTextStyles.body(context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
+                    fontWeight: MyntFonts.medium)),
             SizedBox(
               width: 250,
-              child: TextWidget.subText(
-                text: value,
-                theme: false,
-                color: theme.isDarkMode
-                    ? colors.textPrimaryDark
-                    : colors.textPrimaryLight,
-                align: TextAlign.right,
-                fw: 0,
-              ),
+              child: Text(value,
+                  style: MyntWebTextStyles.body(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium),
+                  textAlign: TextAlign.right),
             ),
           ],
         ),
         const SizedBox(height: 8),
         Divider(
           thickness: 1,
-          color: theme.isDarkMode ? colors.dividerDark : colors.dividerLight,
+          color: theme.isDarkMode ? MyntColors.dividerDark : MyntColors.divider,
         )
       ],
     );
@@ -4416,9 +4393,9 @@ class _ProfileDetailsSectionState extends ConsumerState<_ProfileDetailsSection> 
     final profileDetails = ref.watch(profileAllDetailsProvider);
 
     if (profileDetails.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(20),
-        child: Center(child: CircularProgressIndicator()),
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(child: MyntLoader.simple()),
       );
     }
 

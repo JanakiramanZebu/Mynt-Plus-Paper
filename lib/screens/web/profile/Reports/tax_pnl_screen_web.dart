@@ -1248,13 +1248,13 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
 
     if (item is Map<String, dynamic>) {
       symbol = (item['SCRIP_NAMEDATA']?.toString().isNotEmpty == true ? item['SCRIP_NAMEDATA'].toString() : null) ?? item['SCRIP_NAME']?.toString() ?? item['SCRIP_SYMBOL']?.toString() ?? '';
-      buyQty = _formatNum(item['BUYQTY']);
+      buyQty = _formatQtyNum(item['BUYQTY']);
       buyRate = _formatNum(item['BUYRATE']);
       buyAmt = _formatNum(item['BUY_AMT']);
-      sellQty = _formatNum(item['SALEQTY']);
+      sellQty = _formatQtyNum(item['SALEQTY']);
       sellRate = _formatNum(item['SALERATE']);
       sellAmt = _formatNum(item['SALE_AMT']);
-      netQty = _formatNum(item['NETQTY']);
+      netQty = _formatQtyNum(item['NETQTY']);
       netRate = _formatNum(item['NETRATE']);
       netAmount = _formatNum(item['NET_AMOUNT']);
       closePrice = _formatNum(item['CL_PRICE']);
@@ -1262,20 +1262,21 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
     } else {
       try {
         symbol = (item.sCRIPNAMEDATA?.isNotEmpty == true ? item.sCRIPNAMEDATA : null) ?? item.sCRIPNAME?.toString() ?? '';
-        buyQty = _formatStr(item.bUYQTY);
+        buyQty = _formatQtyStr(item.bUYQTY);
         buyRate = _formatStr(item.bUYRATE);
         buyAmt = _formatStr(item.bUYAMT);
-        sellQty = _formatStr(item.sALEQTY);
+        sellQty = _formatQtyStr(item.sALEQTY);
         sellRate = _formatStr(item.sALERATE);
         sellAmt = _formatStr(item.sALEAMT);
-        netQty = _formatStr(item.nETQTY);
+        netQty = _formatQtyStr(item.nETQTY);
         netRate = _formatStr(item.nETRATE);
         netAmount = _formatStr(item.nETAMOUNT);
         closePrice = _formatStr(item.closingPrice);
         pnl = _formatStr(item.pLAMT);
       } catch (_) {
         symbol = '--';
-        buyQty = buyRate = buyAmt = sellQty = sellRate = sellAmt = netQty = netRate = netAmount = closePrice = pnl = '0.00';
+        buyRate = buyAmt = sellRate = sellAmt = netRate = netAmount = closePrice = pnl = '0.00';
+        buyQty = sellQty = netQty = '0';
       }
     }
 
@@ -1429,6 +1430,18 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
     if (val == null || val.isEmpty) return '0.00';
     final d = double.tryParse(val) ?? 0;
     return d.toStringAsFixed(2);
+  }
+
+  String _formatQtyNum(dynamic val) {
+    if (val == null) return '0';
+    final d = double.tryParse(val.toString()) ?? 0;
+    return d.toStringAsFixed(0);
+  }
+
+  String _formatQtyStr(String? val) {
+    if (val == null || val.isEmpty) return '0';
+    final d = double.tryParse(val) ?? 0;
+    return d.toStringAsFixed(0);
   }
 }
 

@@ -5,10 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
-import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 
@@ -30,39 +29,51 @@ class PledgenUnpledgeResponse extends StatelessWidget {
           return true;
         },
         child: Scaffold(
-          appBar: AppBar(
-            elevation: 0.2,
-            title: Text(
-              'Pledge Report Details',
-              style: MyntWebTextStyles.body(
-                context,
-                fontWeight: MyntFonts.semiBold,
-                darkColor: MyntColors.textPrimaryDark,
-                lightColor: MyntColors.textPrimary,
+          body: Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    children: [
+                      CustomBackBtn(
+                        onBack: () async {
+                          await ledgerprovider.getCurrentDate("pandu");
+                          ledgerprovider.fetchpledgeandunpledge(context);
+                          Navigator.pop(context);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pledge Report Details',
+                        style: MyntWebTextStyles.head(context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            leading: CustomBackBtn(
-              onBack: () async {
-                await ledgerprovider.getCurrentDate("pandu");
-                ledgerprovider.fetchpledgeandunpledge(context);
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          body: ledgerprovider.cdslresponsedata == null ||
+              Expanded(
+                child: ledgerprovider.cdslresponsedata == null ||
                   ledgerprovider.pledgeloader
               ? Center(
                   child: Container(
-                    color: theme.isDarkMode
-                        ? colors.colorBlack
-                        : colors.colorWhite,
-                    child: CircularLoaderImage(),
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.backgroundColorDark,
+                        light: MyntColors.backgroundColor),
+                    child: MyntLoader.branded(),
                   ),
                 )
               : _PledgeResponseBody(
                   theme: theme,
                   ledgerprovider: ledgerprovider,
                 ),
+              ),
+            ],
+          ),
         ),
       );
     });

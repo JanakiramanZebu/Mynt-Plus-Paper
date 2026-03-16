@@ -13,9 +13,8 @@ import 'package:mynt_plus/routes/web_router.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
 import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
-import 'package:mynt_plus/sharedWidget/splash_loader.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 
@@ -371,7 +370,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                   color: resolveThemeColor(context,
                       dark: MyntColors.backgroundColorDark,
                       light: MyntColors.backgroundColor),
-                  child: CircularLoaderImage(),
+                  child: MyntLoader.branded(),
                 ),
               )
             : SafeArea(
@@ -668,9 +667,6 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
         isDark ? MyntColors.cardBorderDark : MyntColors.cardBorder;
     final textPrimary = resolveThemeColor(context,
         dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final textSecondary = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: resolveThemeColor(context,
@@ -681,30 +677,10 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
         centerTitle: false,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.hardEdge,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            splashColor: resolveThemeColor(context,
-                dark: MyntColors.rippleDark, light: MyntColors.rippleLight),
-            highlightColor: resolveThemeColor(context,
-                dark: MyntColors.highlightDark, light: MyntColors.highlightLight),
-            onTap: () {
-              ledgerprovider.resetCdslWebReport(context);
-            },
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              child: Icon(
-                Icons.arrow_back_ios_outlined,
-                size: 18,
-                color: textSecondary,
-              ),
-            ),
-          ),
+        leading: CustomBackBtn(
+          onBack: () {
+            ledgerprovider.resetCdslWebReport(context);
+          },
         ),
         title: Text("Pledge Report Details",
             overflow: TextOverflow.ellipsis,

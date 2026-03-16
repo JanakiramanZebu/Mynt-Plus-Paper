@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/sharedWidget/functions.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
-import '../../../../provider/thems.dart';
-import '../../../../res/global_state_text.dart';
-import '../../../../res/res.dart';
+import '../../../../res/mynt_web_text_styles.dart';
+import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/list_divider.dart';
 
 class PledgeList extends StatefulWidget {
@@ -21,13 +20,13 @@ class _PledgeList extends State<PledgeList> {
   Widget build(BuildContext context) {
     return Consumer(builder: (context, WidgetRef ref, _) {
       final ledgerprovider = ref.watch(ledgerProvider);
-      final theme = ref.read(themeProvider);
 
       return Container(
         constraints: const BoxConstraints(maxHeight: 500),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
+          color: resolveThemeColor(context,
+              dark: Colors.black, light: Colors.white),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -37,14 +36,12 @@ class _PledgeList extends State<PledgeList> {
             Padding(
               padding: const EdgeInsets.only(
                   top: 16.0, left: 16.0, right: 16.0, bottom: 8.0),
-              child: TextWidget.titleText(
-                  text: "Pledge Details",
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
-                  textOverflow: TextOverflow.ellipsis,
-                  theme: theme.isDarkMode,
-                  fw: 1),
+              child: Text("Pledge Details",
+                  overflow: TextOverflow.ellipsis,
+                  style: MyntWebTextStyles.body(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold)),
             ),
             ListDivider(),
 
@@ -66,48 +63,40 @@ class _PledgeList extends State<PledgeList> {
                           Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                TextWidget.subText(
-                                    align: TextAlign.start,
-                                    text: "Symbol : ",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textSecondaryDark
-                                        : colors.textSecondaryLight,
-                                    fw: 0),
-                                TextWidget.subText(
-                                    align: TextAlign.start,
-                                    text: "${value['symbol'] ?? '-'}",
-                                    textOverflow: TextOverflow.ellipsis,
-                                    theme: theme.isDarkMode,
-                                    color: theme.isDarkMode
-                                        ? colors.textPrimaryDark
-                                        : colors.textPrimaryLight,
-                                    fw: 0),
+                                Text("Symbol : ",
+                                    textAlign: TextAlign.start,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary,
+                                        fontWeight: MyntFonts.medium)),
+                                Text("${value['symbol'] ?? '-'}",
+                                    textAlign: TextAlign.start,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: MyntWebTextStyles.body(context,
+                                        darkColor: MyntColors.textPrimaryDark,
+                                        lightColor: MyntColors.textPrimary,
+                                        fontWeight: MyntFonts.medium)),
                               ]),
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  TextWidget.subText(
-                                      align: TextAlign.start,
-                                      text: "Segment : ",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 0),
-                                  TextWidget.subText(
-                                      align: TextAlign.start,
-                                      text: "${value['segments'] ?? '-'}",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 0),
+                                  Text("Segment : ",
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.body(context,
+                                          darkColor: MyntColors.textSecondaryDark,
+                                          lightColor: MyntColors.textSecondary,
+                                          fontWeight: MyntFonts.medium)),
+                                  Text("${value['segments'] ?? '-'}",
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.body(context,
+                                          darkColor: MyntColors.textPrimaryDark,
+                                          lightColor: MyntColors.textPrimary,
+                                          fontWeight: MyntFonts.medium)),
                                 ]),
                           ),
                           Padding(
@@ -115,24 +104,20 @@ class _PledgeList extends State<PledgeList> {
                             child: Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  TextWidget.subText(
-                                      align: TextAlign.start,
-                                      text: "Total Qty : ",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textSecondaryDark
-                                          : colors.textSecondaryLight,
-                                      fw: 0),
-                                  TextWidget.subText(
-                                      align: TextAlign.start,
-                                      text: "${value['quantity'] ?? '-'}",
-                                      textOverflow: TextOverflow.ellipsis,
-                                      theme: theme.isDarkMode,
-                                      color: theme.isDarkMode
-                                          ? colors.textPrimaryDark
-                                          : colors.textPrimaryLight,
-                                      fw: 0),
+                                  Text("Total Qty : ",
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.body(context,
+                                          darkColor: MyntColors.textSecondaryDark,
+                                          lightColor: MyntColors.textSecondary,
+                                          fontWeight: MyntFonts.medium)),
+                                  Text("${value['quantity'] ?? '-'}",
+                                      textAlign: TextAlign.start,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.body(context,
+                                          darkColor: MyntColors.textPrimaryDark,
+                                          lightColor: MyntColors.textPrimary,
+                                          fontWeight: MyntFonts.medium)),
                                 ]),
                           ),
                         ],
@@ -145,9 +130,9 @@ class _PledgeList extends State<PledgeList> {
                           bottom: 6.0,
                         ),
                         child: Divider(
-                          color: theme.isDarkMode
-                              ? const Color(0xffB5C0CF).withOpacity(.15)
-                              : const Color(0xffF1F3F8),
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.dividerDark,
+                              light: MyntColors.divider),
                           thickness: 1.0,
                         ),
                       );
@@ -171,26 +156,25 @@ class _PledgeList extends State<PledgeList> {
                         },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: theme.isDarkMode
-                              ? colors.textSecondaryDark.withOpacity(0.6)
-                              : colors.btnBg,
-                          side: theme.isDarkMode
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.textSecondaryDark.withValues(alpha: 0.6),
+                              light: MyntColors.listItemBg),
+                          side: isDarkMode(context)
                               ? null
                               : BorderSide(
-                                  color: colors.primaryLight,
+                                  color: MyntColors.primary,
                                   width: 1,
                                 ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
                         ),
-                        child: TextWidget.subText(
-                            text: "Cancel",
-                            color: theme.isDarkMode
-                                ? colors.colorWhite
-                                : colors.primaryLight,
-                            theme: theme.isDarkMode,
-                            fw: 2),
+                        child: Text("Cancel",
+                            style: MyntWebTextStyles.body(context,
+                                color: resolveThemeColor(context,
+                                    dark: Colors.white,
+                                    light: MyntColors.primary),
+                                fontWeight: MyntFonts.bold)),
                       ),
                     ),
                   ),
@@ -202,9 +186,9 @@ class _PledgeList extends State<PledgeList> {
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
                             shadowColor: Colors.transparent,
-                            backgroundColor: !theme.isDarkMode
-                                ? colors.primaryLight
-                                : colors.primaryDark,
+                            backgroundColor: resolveThemeColor(context,
+                                dark: MyntColors.primaryDark,
+                                light: MyntColors.primary),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5))),
                         onPressed: () async {
@@ -219,15 +203,11 @@ class _PledgeList extends State<PledgeList> {
                               ledgerprovider.listforpledge);
                         },
                         child: ledgerprovider.pledgeloader == true
-                            ? SpinKitThreeBounce(
-                                color: Colors.grey,
-                                size: 24,
-                              )
-                            : TextWidget.subText(
-                                text: "Submit",
-                                color: colors.colorWhite,
-                                theme: theme.isDarkMode,
-                                fw: 2),
+                            ? MyntLoader.inline(color: Colors.white)
+                            : Text("Submit",
+                                style: MyntWebTextStyles.body(context,
+                                    color: Colors.white,
+                                    fontWeight: MyntFonts.bold)),
                       ),
                     ),
                   ),

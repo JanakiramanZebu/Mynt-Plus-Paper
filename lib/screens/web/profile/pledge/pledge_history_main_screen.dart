@@ -6,7 +6,7 @@ import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
 import 'package:mynt_plus/sharedWidget/common_search_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
@@ -49,25 +49,31 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen> {
       final ledgerprovider = ref.watch(ledgerProvider);
 
       return Scaffold(
-        appBar: AppBar(
-          elevation: 0.2,
-          title: Text(
-            'Pledge History',
-            style: MyntWebTextStyles.body(
-              context,
-              fontWeight: MyntFonts.semiBold,
-              darkColor: MyntColors.textPrimaryDark,
-              lightColor: MyntColors.textPrimary,
-            ),
-          ),
-          leading: const CustomBackBtn(),
-        ),
+        backgroundColor: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
         body: SafeArea(
-          child: TransparentLoaderScreen(
+          child: MyntLoaderOverlay(
             isLoading: ledgerprovider.pledgehistory,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Header with back button
+                Container(
+                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    children: [
+                      const CustomBackBtn(),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pledge History',
+                        style: MyntWebTextStyles.head(context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
                 // Tabs + Search Row
                 _buildTabsAndSearchRow(theme),
                 // Divider

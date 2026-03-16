@@ -137,32 +137,44 @@ class _ProfileSectionScreenWebState
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
     final bgColor = resolveThemeColor(context,
         dark: MyntColors.backgroundColorDark,
         light: MyntColors.backgroundColor);
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        backgroundColor: theme.isDarkMode ? Colors.black : Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leadingWidth: 48,
-        titleSpacing: 0,
-        leading: CustomBackBtn(onBack: widget.onBack),
-        title: Text(
-          widget.sectionTitle,
-          style: MyntWebTextStyles.title(context,
-                  color: textColor, fontWeight: MyntFonts.medium)
-              .copyWith(decoration: TextDecoration.none),
-        ),
-      ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: _buildSectionContent(ref, theme),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 24, 28, 20),
+            child: Row(
+              children: [
+                if (widget.onBack != null) ...[
+                  CustomBackBtn(onBack: widget.onBack),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Text(
+                    widget.sectionTitle,
+                    style: MyntWebTextStyles.title(context,
+                      darkColor: MyntColors.textPrimaryDark,
+                      lightColor: MyntColors.textPrimary,
+                      fontWeight: MyntFonts.semiBold,
+                    ).copyWith(decoration: TextDecoration.none),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: _buildSectionContent(ref, theme),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -223,8 +235,9 @@ class _ProfileSectionScreenWebState
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
+        color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: cardBorder),
       ),
       child: Column(
@@ -254,7 +267,8 @@ class _ProfileSectionScreenWebState
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: primaryColor,
+                        color: resolveThemeColor(context, dark: 
+                        MyntColors.secondary, light: MyntColors.primary),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -1290,8 +1304,9 @@ class _ProfileSectionScreenWebState
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
+      color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: cardBorder),
       ),
       child: Column(
@@ -1556,8 +1571,8 @@ class _ProfileSectionScreenWebState
                     color: (_ddpiActivateLoading ||
                             ddpiStatus == 'e-signed pending' ||
                             ddpiStatus == 'e-signed completed')
-                        ? primaryColor.withValues(alpha: 0.4)
-                        : primaryColor,
+                        ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.4)
+                        : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: _ddpiActivateLoading
@@ -1769,7 +1784,7 @@ class _ProfileSectionScreenWebState
           final errorColor = resolveThemeColor(ctx,
               dark: MyntColors.errorDark, light: MyntColors.error);
           final chipBg = resolveThemeColor(ctx,
-              dark: const Color(0xFF1A1D21), light: const Color(0xFFF5F7FA));
+              dark: MyntColors.overlayBgDark, light: MyntColors.overlayBg);
           final cardBorderColor = resolveThemeColor(ctx,
               dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
 
@@ -2126,8 +2141,9 @@ class _ProfileSectionScreenWebState
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(12),
+color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: cardBorder),
       ),
       child: Column(
@@ -2315,7 +2331,8 @@ class _ProfileSectionScreenWebState
                 fontWeight: MyntFonts.regular,
               ).copyWith(
                 decoration: TextDecoration.none,
-                color: Colors.red.shade600,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.errorDark, light: MyntColors.error)
               ),
             ),
             const SizedBox(height: 18),
@@ -2925,8 +2942,9 @@ class _ProfileSectionScreenWebState
       child: Container(
         padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
         decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(12),
+         color: resolveThemeColor(context,
+            dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: cardBorder),
         ),
         child: Column(
@@ -3086,9 +3104,10 @@ class _ProfileSectionScreenWebState
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                        horizontal: 20, vertical: 10),
                     decoration: BoxDecoration(
-                      color: primaryColor,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.secondary, light: MyntColors.primary),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -3924,18 +3943,16 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
   bool _isSubmitting = false;
   Timer? _ifscDebounce;
 
-  Color get _textPrimary =>
-      widget.isDark ? colors.textPrimaryDark : colors.textPrimaryLight;
-  Color get _textSecondary =>
-      widget.isDark ? colors.textSecondaryDark : colors.textSecondaryLight;
-  Color get _dialogBg =>
-      widget.isDark ? const Color(0xFF121212) : const Color(0xFFF1F3F8);
-  Color get _cardBg =>
-      widget.isDark ? const Color(0xFF1E1E1E) : Colors.white;
-  Color get _borderColor =>
-      widget.isDark ? Colors.grey[700]! : const Color(0xFFD0D3D6);
-  Color get _inputFillColor =>
-      widget.isDark ? const Color(0xFF2C2C2C) : const Color(0xFFF6F7F7);
+  Color get _textPrimary => resolveThemeColor(context,
+      dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+  Color get _textSecondary => resolveThemeColor(context,
+      dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+  Color get _cardBg => resolveThemeColor(context,
+      dark: MyntColors.dialogDark, light: MyntColors.dialog);
+  Color get _borderColor => resolveThemeColor(context,
+      dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+  Color get _inputFillColor => resolveThemeColor(context,
+      dark: MyntColors.inputBgDark, light: MyntColors.inputBg);
 
   final List<String> _proofTypes = [
     'Passbook',
@@ -4078,9 +4095,11 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
   }
 
   InputDecoration _themedInputDecoration(String hint) {
+    final focusBorderColor = resolveThemeColor(context,
+        dark: MyntColors.outlinedBorderDark, light: MyntColors.outlinedBorder);
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(fontSize: 14, color: _textSecondary),
+      hintStyle: MyntWebTextStyles.placeholder(context, color: _textSecondary),
       filled: true,
       fillColor: _inputFillColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -4094,27 +4113,28 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF0037B7)),
+        borderSide: BorderSide(color: focusBorderColor),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+    final dialogBg = resolveThemeColor(context,
+        dark: MyntColors.dialogDark, light: MyntColors.dialog);
     final dividerColor = resolveThemeColor(context,
         dark: MyntColors.dividerDark, light: MyntColors.divider);
+    final shadow = isDarkMode(context) ? MyntShadows.modalDark : MyntShadows.modal;
 
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
         width: 420,
         decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(8),
+          color: dialogBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _borderColor),
+          boxShadow: shadow,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -4135,7 +4155,7 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                       widget.isEdit
                           ? 'Edit Your Bank Details Here'
                           : 'Bank change request',
-                      style: MyntWebTextStyles.title(context, color: textColor),
+                      style: MyntWebTextStyles.title(context, color: _textPrimary),
                     ),
                   ),
                   MyntCloseButton(
@@ -4161,7 +4181,7 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                   children: ['Saving', 'Current'].map((type) {
                     final selected = _accountType == type;
                     final primaryColor = resolveThemeColor(context,
-                        dark: MyntColors.primaryDark, light: MyntColors.primary);
+                        dark: MyntColors.secondary, light: MyntColors.primary);
                     final chipBorderColor = resolveThemeColor(context,
                         dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
                     final textColor = resolveThemeColor(context,
@@ -4244,17 +4264,17 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                       children: [
                         Text(
                           _ifscInfo!['BANK'] ?? '',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                          style: MyntWebTextStyles.body(context,
                             color: _textPrimary,
+                            fontWeight: MyntFonts.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${_ifscInfo!['BRANCH'] ?? ''}, ${_ifscInfo!['CITY'] ?? ''}, ${_ifscInfo!['STATE'] ?? ''} | ${_ifscInfo!['MICR'] ?? ''}',
-                          style:
-                              TextStyle(fontSize: 12, color: _textSecondary),
+                          style: MyntWebTextStyles.para(context,
+                            color: _textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -4276,11 +4296,11 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                     child: DropdownButton<String>(
                       value: _proofType.isEmpty ? null : _proofType,
                       hint: Text('Proof type',
-                          style:
-                              TextStyle(fontSize: 14, color: _textSecondary)),
+                          style: MyntWebTextStyles.placeholder(context,
+                            color: _textSecondary)),
                       isExpanded: true,
                       dropdownColor: _cardBg,
-                      style: TextStyle(fontSize: 14, color: _textPrimary),
+                      style: MyntWebTextStyles.body(context, color: _textPrimary),
                       items: _proofTypes.map((t) {
                         return DropdownMenuItem(
                           value: t,
@@ -4316,24 +4336,25 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                       children: [
                         Text(
                           'Upload your Bank Proof',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0037B7),
+                          style: MyntWebTextStyles.body(context,
+                            fontWeight: MyntFonts.bold,
+                            darkColor: MyntColors.primaryDark,
+                            lightColor: MyntColors.primary,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Select a file or drag it into the box below.',
-                          style:
-                              TextStyle(fontSize: 12, color: _textSecondary),
+                          style: MyntWebTextStyles.para(context,
+                            color: _textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0037B7),
+                            color: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -4344,10 +4365,9 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                               const SizedBox(width: 6),
                               Text(
                                 'Choose File',
-                                style: TextStyle(
-                                  fontSize: 12,
+                                style: MyntWebTextStyles.para(context,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: MyntFonts.medium,
                                 ),
                               ),
                             ],
@@ -4356,8 +4376,9 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                         const SizedBox(height: 6),
                         Text(
                           'Accepted formats: .pdf',
-                          style:
-                              TextStyle(fontSize: 11, color: _textSecondary),
+                          style: MyntWebTextStyles.caption(context,
+                            color: _textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -4369,13 +4390,15 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.check, size: 16, color: Colors.green),
+                      Icon(Icons.check, size: 16,
+                        color: resolveThemeColor(context,
+                          dark: MyntColors.profitDark, light: MyntColors.profit)),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           _proofFileName!,
-                          style:
-                              TextStyle(fontSize: 13, color: _textPrimary),
+                          style: MyntWebTextStyles.bodySmall(context,
+                            color: _textPrimary),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -4407,11 +4430,13 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                               setState(() => _setDefault = v ?? false);
                             },
                       shape: const CircleBorder(),
-                      activeColor: const Color(0xFF0037B7),
+                      activeColor: resolveThemeColor(context,
+                        dark: MyntColors.primaryDark, light: MyntColors.primary),
                     ),
                     Text(
                       'Set as primary',
-                      style: TextStyle(fontSize: 14, color: _textPrimary),
+                      style: MyntWebTextStyles.body(context,
+                        color: _textPrimary),
                     ),
                   ],
                 ),
@@ -4440,18 +4465,19 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
   }
 
   Widget _buildLabel(String text) {
+    final errorColor = resolveThemeColor(context,
+        dark: MyntColors.errorDark, light: MyntColors.error);
     return RichText(
       text: TextSpan(
         text: text,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+        style: MyntWebTextStyles.body(context,
           color: _textPrimary,
+          fontWeight: MyntFonts.medium,
         ),
-        children: const [
+        children: [
           TextSpan(
             text: ' *',
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: errorColor),
           ),
         ],
       ),

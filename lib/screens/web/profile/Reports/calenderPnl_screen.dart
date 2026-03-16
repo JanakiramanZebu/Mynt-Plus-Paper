@@ -259,7 +259,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Calender P&L',
+              'P&L Summary',
               style: MyntWebTextStyles.head(context,
                   darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textPrimary,
@@ -740,7 +740,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       rowKey: rowKey,
                       alignRight: true,
                       child: Text(
-                        row.buyQty.toStringAsFixed(2),
+                        row.buyQty.toStringAsFixed(0),
                         style: _getTextStyle(context),
                       ),
                     ),
@@ -769,7 +769,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       rowKey: rowKey,
                       alignRight: true,
                       child: Text(
-                        row.sellQty.toStringAsFixed(2),
+                        row.sellQty.toStringAsFixed(0),
                         style: _getTextStyle(context),
                       ),
                     ),
@@ -798,7 +798,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                       rowKey: rowKey,
                       alignRight: true,
                       child: Text(
-                        row.netQty.toStringAsFixed(2),
+                        row.netQty.toStringAsFixed(0),
                         style: _getTextStyle(context),
                       ),
                     ),
@@ -1465,7 +1465,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                     ),
                                   ),
                                   child: Text(
-                                    '${openQty.abs()} @ ${openRate.toStringAsFixed(4)}',
+                                    '${openQty.abs().toStringAsFixed(0)} @ ${openRate.toStringAsFixed(4)}',
                                     style: MyntWebTextStyles.caption(context,
                                         color: resolveThemeColor(context,
                                             dark: MyntColors.profitDark,
@@ -1756,7 +1756,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                     rowKey: rKey,
                                     alignRight: true,
                                     child: Text(
-                                      t.safeBuyQty.toStringAsFixed(2),
+                                      t.safeBuyQty.toStringAsFixed(0),
                                       style: _getTextStyle(context),
                                     ),
                                   ),
@@ -1789,7 +1789,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                     rowKey: rKey,
                                     alignRight: true,
                                     child: Text(
-                                      t.safeSellQty.toStringAsFixed(2),
+                                      t.safeSellQty.toStringAsFixed(0),
                                       style: _getTextStyle(context),
                                     ),
                                   ),
@@ -1828,7 +1828,7 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
                                           CrossAxisAlignment.end,
                                       children: [
                                         Text(
-                                          netQty.toStringAsFixed(2),
+                                          netQty.toStringAsFixed(0),
                                           style: _getTextStyle(context),
                                         ),
                                         Text(

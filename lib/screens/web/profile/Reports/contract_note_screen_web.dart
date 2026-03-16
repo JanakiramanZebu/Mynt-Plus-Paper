@@ -625,7 +625,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
                                                 totalColumns: 10,
                                                 alignRight: true,
                                                 child: Text(
-                                                  item.quantity ?? '',
+                                                  (double.tryParse(item.quantity ?? '0') ?? 0).toStringAsFixed(0),
                                                   style: _getTextStyle(context),
                                                   softWrap: false,
                                                   overflow: TextOverflow.ellipsis,

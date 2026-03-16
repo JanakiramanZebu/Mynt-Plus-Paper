@@ -12,6 +12,7 @@ import '../../../../provider/thems.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/cust_text_formfield.dart';
+import '../../../../sharedWidget/mynt_loader.dart';
 // import '../../../../sharedWidget/custom_drag_handler.dart';
 
 class PledgeDeytails extends StatefulWidget {
@@ -236,107 +237,23 @@ class _PledgeDeytails extends State<PledgeDeytails> {
           physics: ClampingScrollPhysics(),
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
               color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
             ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Material(
-                    color: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                    child: InkWell(
-                      customBorder: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            splashColor: resolveThemeColor(context, dark: MyntColors.rippleDark, light: MyntColors.rippleLight),
-                                        highlightColor: resolveThemeColor(context, dark: MyntColors.highlightDark, light: MyntColors.highlightLight),
-                                            onTap: (){},
-                            // onTap: widget.data.sERIES == "GR" ? () async {
-                            //         final isin = widget.data.iSIN?.toString() ?? "";
-                            //         if (isin.isEmpty) return;
-                            //         final mf = ref.read(mfProvider);
-                            //         try {
-                            //           setState(() => _isLoadingMf = true);
-                            //           mf.loaderfun();
-                            //           await mf.fetchFactSheet(isin);
-                            //           final mfInstance = await mf.fetchSinglePageMfData(isin);
-                            //           if (mounted) setState(() => _isLoadingMf = false);
-                            //           if (mf.factSheetDataModel?.stat != "Not Ok") {
-                            //             if (mfInstance == null || !context.mounted) return;
-                            //             showModalBottomSheet(
-                            //               isScrollControlled: true,
-                            //               shape: const RoundedRectangleBorder(
-                            //                 borderRadius: BorderRadius.only(
-                            //                   topLeft: Radius.circular(16),
-                            //                   topRight: Radius.circular(16),
-                            //                 ),
-                            //               ),
-                            //               isDismissible: true,
-                            //               enableDrag: false,
-                            //               useSafeArea: true,
-                            //               context: context,
-                            //               builder: (context) => Container(
-                            //                 padding: EdgeInsets.only(
-                            //                   bottom: MediaQuery.of(context).viewInsets.bottom,
-                            //                 ),
-                            //                 child: MFStockDetailScreen(mfStockData: mfInstance),
-                            //               ),
-                            //             );
-                            //           }
-                            //         } catch (e) {
-                            //           if (mounted) setState(() => _isLoadingMf = false);
-                            //           print("Error opening MF detail: $e");
-                            //         }
-                            //       } : () async {
-                            //         final portfolio = ref.read(portfolioProvider);
-                            //         final isin = widget.data.iSIN?.toString() ?? "";
-                            //         String matchedToken = "";
-                            //         String matchedExch = "";
-                            //         if (portfolio.holdingsModel != null && isin.isNotEmpty) {
-                            //           for (var holding in portfolio.holdingsModel!) {
-                            //             if (holding.exchTsym != null && holding.exchTsym!.isNotEmpty) {
-                            //               final exchTsym = holding.exchTsym![0];
-                            //               if (exchTsym.isin == isin) {
-                            //                 matchedToken = exchTsym.token ?? "";
-                            //                 matchedExch = exchTsym.exch ?? "";
-                            //                 break;
-                            //               }
-                            //             }
-                            //           }
-                            //         }
-                            //         if (matchedToken.isEmpty || matchedExch.isEmpty) {
-                            //           return;
-                            //         }
-                            //         await marketwatch.fetchScripQuoteIndex(matchedToken, matchedExch, context);
-                            //     final quots = marketwatch.getQuotes;
-                            //     if (quots == null) {
-                            //       return;
-                            //     }
-                            //       DepthInputArgs depthArgs = DepthInputArgs(
-                            //         exch: marketwatch.getQuotes?.exch?.toString() ?? "",
-                            //         token: marketwatch.getQuotes?.token?.toString() ?? "",
-                            //         tsym: marketwatch.getQuotes?.tsym?.toString() ?? "",
-                            //         instname: marketwatch.getQuotes?.instname?.toString() ?? "",
-                            //         symbol: marketwatch.getQuotes?.symbol?.toString() ?? "",
-                            //         expDate: marketwatch.getQuotes?.expDate?.toString() ?? "",
-                            //         option: marketwatch.getQuotes?.option?.toString() ?? "");
-                                    
-                            //         marketwatch.calldepthApis(
-                            //             context,
-                            //             depthArgs,
-                            //             "");
-                            //       },
-                      child: Padding(
-                          padding: const EdgeInsets.only(
-                              top: 16.0, left: 16.0, bottom: 8.0, right: 16.0),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        top: 16.0, left: 16.0, bottom: 8.0, right: 8.0),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: SizedBox(
                                       width: widget.data.sERIES == "GR" ? screenWidth * 0.65 : null,
                                       child: Text(
                                           widget.data.sERIES == "GR" && mfname.isNotEmpty ? mfname : widget.data.nSESYMBOL.toString(),
@@ -346,30 +263,51 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                               fontWeight: MyntFonts.semiBold),
                                       ),
                                     ),
-                                    SizedBox(height: 8.0),
-                                    ledgerdata.screenpledge == 'pledge'
-                                        ? Text(
-                                            "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: MyntWebTextStyles.para(context,
-                                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
-                                          )
-                                        : Text(
-                                            "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: MyntWebTextStyles.para(context,
-                                                color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
-                                          ),
-                                  ],
-                                ),
-                                Text(
-                                    netValue.toString(),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: MyntWebTextStyles.title(context,
-                                        color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
-                                ),
-                              ])),
-                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (ledgerdata.listforpledge == []) {
+                                        ledgerdata.changesegvaldummy('');
+                                      }
+                                      Navigator.pop(context);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 22,
+                                        color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8.0),
+                              Row(
+                                children: [
+                                  ledgerdata.screenpledge == 'pledge'
+                                      ? Text(
+                                          "${double.tryParse(widget.data.estimated.toString())!.toStringAsFixed(2)} (${widget.data.estPercentage}%)",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: MyntWebTextStyles.para(context,
+                                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                        )
+                                      : Text(
+                                          "${double.tryParse(widget.data.margin.toString())!.toStringAsFixed(2)}",
+                                          overflow: TextOverflow.ellipsis,
+                                          style: MyntWebTextStyles.para(context,
+                                              color: resolveThemeColor(context, dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary)),
+                                        ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                      "Qty: $netValue",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: MyntWebTextStyles.para(context,
+                                          color: resolveThemeColor(context, dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary)),
+                                  ),
+                                ],
+                              ),
+                        ]),
                   ),
                   // Padding(
                   //   padding:
@@ -745,7 +683,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                                       widget.data.segmentselect.toString() ==
                                                           "null")))
                                           ? resolveThemeColor(context, dark: MyntColors.borderMutedDark, light: MyntColors.borderMuted)
-                                          : resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
+                                          : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(5))),
@@ -804,7 +742,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                     }
                                   },
                                   child: Text("Submit",
-                                      style: MyntWebTextStyles.bodySmall(context,
+                                      style: MyntWebTextStyles.bodyMedium(context,
                                           color: MyntColors.textWhite,
                                           fontWeight: MyntFonts.semiBold)))),
                         ),
@@ -824,8 +762,8 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                   color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor).withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Center(
-                  child: CircularProgressIndicator(),
+                child: Center(
+                  child: MyntLoader.simple(),
                 ),
               ),
             ),

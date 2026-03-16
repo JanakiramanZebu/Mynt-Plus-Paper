@@ -576,7 +576,7 @@ mixin LedgerApi on ApiCore {
 
   Future<String> downloadDocWeb(String recno, String filename) async {
     try {
-      final uri = Uri.parse('${apiLinks.reportsapi}/downloaddoc');
+      final uri = Uri.parse('${apiLinks.reportsapi}downloaddoc');
       final res = await apiClient.post(uri,
           headers: funddefaultHeaders,
           body: jsonEncode({
@@ -584,18 +584,43 @@ mixin LedgerApi on ApiCore {
             "recno": recno,
           }));
 
-      if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
-        final blob = html.Blob(
-            [Uint8List.fromList(res.bodyBytes)], 'application/pdf');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download',
-              filename.isNotEmpty ? filename : 'document.pdf')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+      if (res.statusCode == 200) {
+        final contentType = res.headers['content-type'] ?? '';
+
+        if (contentType.contains('application/json')) {
+          final json = jsonDecode(res.body);
+
+          if (json['stat'] == 'Not Ok') {
+            return json['msg'] ?? 'No data available';
+          }
+
+          final filepath = json['filepath']?.toString() ??
+              json['path']?.toString() ??
+              '';
+          if (filepath.isEmpty) {
+            return 'No data available';
+          }
+
+          final staticPath =
+              filepath.split('static').last.replaceAll(r'\', '/');
+          final finalUrl = '${apiLinks.reportsapi}static$staticPath';
+          html.window.open(finalUrl, '_blank');
+        } else {
+          if (res.bodyBytes.isEmpty) {
+            return 'No data available';
+          }
+          final blob = html.Blob(
+              [Uint8List.fromList(res.bodyBytes)], 'application/pdf');
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          html.AnchorElement(href: url)
+            ..setAttribute('download',
+                filename.isNotEmpty ? filename : 'document.pdf')
+            ..click();
+          html.Url.revokeObjectUrl(url);
+        }
         return "File downloaded successfully";
       } else {
-        return "Error: Empty response";
+        return "Error: Server returned ${res.statusCode}";
       }
     } catch (e) {
       print("Error downloading doc: $e");
@@ -607,7 +632,7 @@ mixin LedgerApi on ApiCore {
     try {
       final isPdf = format == 'PDF';
       final uri = Uri.parse(
-          '${apiLinks.reportsapi}/${isPdf ? 'taxpnl_pdf' : 'tax_p_l_excel'}');
+          '${apiLinks.reportsapi}${isPdf ? 'taxpnl_pdf' : 'tax_p_l_excel'}');
       final fromapi = '01/04/$year';
       final toapi = '31/03/${year + 1}';
 
@@ -619,21 +644,31 @@ mixin LedgerApi on ApiCore {
             "to_date": toapi,
           }));
 
-      if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
-        final mimeType = isPdf
-            ? 'application/pdf'
-            : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        final ext = isPdf ? 'pdf' : 'xlsx';
-        final blob =
-            html.Blob([Uint8List.fromList(res.bodyBytes)], mimeType);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'TaxPnL_${year}_${year + 1}.$ext')
-          ..click();
-        html.Url.revokeObjectUrl(url);
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+
+        if (json['stat'] == 'Not Ok') {
+          return json['msg'] ?? 'Error generating file';
+        }
+
+        final filepath = json['filepath']?.toString() ?? '';
+        if (filepath.isEmpty) {
+          return 'Error: No file path in response';
+        }
+
+        // Build URL: split on "static" and append to base
+        final staticPath = filepath.split('static').last.replaceAll(r'\', '/');
+        final finalUrl = '${apiLinks.reportsapi}static$staticPath';
+
+        if (isPdf) {
+          html.window.open(finalUrl, '_blank');
+        } else {
+          html.window.location.href = finalUrl;
+        }
+
         return "File downloaded successfully";
       } else {
-        return "Error: Empty response";
+        return "Error: Server returned ${res.statusCode}";
       }
     } catch (e) {
       print("Error downloading tax pnl: $e");

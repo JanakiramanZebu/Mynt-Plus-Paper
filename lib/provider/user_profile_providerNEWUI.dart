@@ -82,7 +82,7 @@ class UserProfileProvider extends DefaultChangeNotifier {
     },
     {"title": "Profit & Loss", "trailing": "assets/profile/ex-link.svg"},
     {
-      "title": "Calender P&L (Beta)",
+      "title": "P&L Summary (Beta)",
       "trailing": "assets/profile/ex-link.svg"
     },
     {"title": "Tax P&L", "trailing": "assets/profile/ex-link.svg"},

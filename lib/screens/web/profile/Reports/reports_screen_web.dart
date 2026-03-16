@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynt_plus/provider/auth_provider.dart';
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
 import 'package:mynt_plus/res/mynt_web_text_styles.dart';
-import 'package:mynt_plus/res/app_spacing.dart';
-import 'package:mynt_plus/res/responsive_extensions.dart';
 
 import '../../customizable_split_home_screen.dart' show ScreenType;
 import 'ledger/ledger_screen.dart';
@@ -15,19 +12,13 @@ class _ReportItem {
   final String title;
   final String subtitle;
   final IconData icon;
-  final Color iconBgLight;
-  final Color iconBgDark;
-  final Color iconColorLight;
-  final Color iconColorDark;
+  final Color color;
 
   const _ReportItem({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.iconBgLight,
-    required this.iconBgDark,
-    required this.iconColorLight,
-    required this.iconColorDark,
+    required this.color,
   });
 }
 
@@ -46,66 +37,48 @@ class ReportsScreenWeb extends ConsumerWidget {
 
   static const _categories = [
     _ReportCategory(
+      label: 'Trading Activity',
+      items: [
+        _ReportItem(
+          title: 'Ledger',
+          subtitle: 'Financial ledger and fund movements',
+          icon: Icons.account_balance_wallet_rounded,
+          color: Color(0xFFC62828),
+        ),       
+        _ReportItem(
+          title: 'Positions',
+          subtitle: 'Open and closed position details',
+          icon: Icons.stacked_line_chart_rounded,
+          color: Color(0xFF00838F),
+        ),
+         _ReportItem(
+          title: 'Tradebook',
+          subtitle: 'Complete history of executed trades',
+          icon: Icons.swap_horiz_rounded,
+          color: Color(0xFF7B1FA2),
+        ),
+      ],
+    ),
+    _ReportCategory(
       label: 'Profit & Loss',
       items: [
         _ReportItem(
-          title: 'Calender P&L',
+          title: 'P&L Summary',
           subtitle: 'Calendar-wise realized P&L overview',
           icon: Icons.calendar_month_rounded,
-          iconBgLight: Color(0xFFE8F5E9),
-          iconBgDark: Color(0xFF1B3A26),
-          iconColorLight: Color(0xFF2E7D32),
-          iconColorDark: Color(0xFF66BB6A),
+          color: Color(0xFF2E7D32),
         ),
         _ReportItem(
           title: 'Tax P&L',
           subtitle: 'Tax computation for capital gains',
           icon: Icons.receipt_long_rounded,
-          iconBgLight: Color(0xFFFFF3E0),
-          iconBgDark: Color(0xFF3A2E1B),
-          iconColorLight: Color(0xFFE65100),
-          iconColorDark: Color(0xFFFFB74D),
+          color: Color(0xFFE65100),
         ),
         _ReportItem(
           title: 'Notional P&L',
           subtitle: 'Unrealized profit & loss details',
           icon: Icons.trending_up_rounded,
-          iconBgLight: Color(0xFFE3F2FD),
-          iconBgDark: Color(0xFF1B2A3A),
-          iconColorLight: Color(0xFF1565C0),
-          iconColorDark: Color(0xFF64B5F6),
-        ),
-      ],
-    ),
-    _ReportCategory(
-      label: 'Trading Activity',
-      items: [
-        _ReportItem(
-          title: 'Tradebook',
-          subtitle: 'Complete history of executed trades',
-          icon: Icons.swap_horiz_rounded,
-          iconBgLight: Color(0xFFF3E5F5),
-          iconBgDark: Color(0xFF2A1B3A),
-          iconColorLight: Color(0xFF7B1FA2),
-          iconColorDark: Color(0xFFCE93D8),
-        ),
-        _ReportItem(
-          title: 'Positions',
-          subtitle: 'Open and closed position details',
-          icon: Icons.stacked_line_chart_rounded,
-          iconBgLight: Color(0xFFE0F7FA),
-          iconBgDark: Color(0xFF1B3338),
-          iconColorLight: Color(0xFF00838F),
-          iconColorDark: Color(0xFF4DD0E1),
-        ),
-        _ReportItem(
-          title: 'Ledger',
-          subtitle: 'Financial ledger and fund movements',
-          icon: Icons.account_balance_wallet_rounded,
-          iconBgLight: Color(0xFFFCE4EC),
-          iconBgDark: Color(0xFF3A1B24),
-          iconColorLight: Color(0xFFC62828),
-          iconColorDark: Color(0xFFEF9A9A),
+          color: Color(0xFF1565C0),
         ),
       ],
     ),
@@ -116,37 +89,25 @@ class ReportsScreenWeb extends ConsumerWidget {
           title: 'Contract Note',
           subtitle: 'Daily trade contract notes',
           icon: Icons.description_rounded,
-          iconBgLight: Color(0xFFE8EAF6),
-          iconBgDark: Color(0xFF1B1F3A),
-          iconColorLight: Color(0xFF283593),
-          iconColorDark: Color(0xFF9FA8DA),
+          color: Color(0xFF283593),
         ),
         _ReportItem(
           title: 'Client Master(CMR)',
           subtitle: 'Download client master report',
           icon: Icons.person_outline_rounded,
-          iconBgLight: Color(0xFFF1F8E9),
-          iconBgDark: Color(0xFF243A1B),
-          iconColorLight: Color(0xFF558B2F),
-          iconColorDark: Color(0xFFAED581),
+          color: Color(0xFF558B2F),
         ),
         _ReportItem(
           title: 'CA Events',
           subtitle: 'Corporate action events tracker',
           icon: Icons.event_note_rounded,
-          iconBgLight: Color(0xFFFFF8E1),
-          iconBgDark: Color(0xFF3A351B),
-          iconColorLight: Color(0xFFF9A825),
-          iconColorDark: Color(0xFFFFD54F),
+          color: Color(0xFFF9A825),
         ),
         _ReportItem(
           title: 'PDF Download',
           subtitle: 'Download reports as PDF files',
           icon: Icons.picture_as_pdf_rounded,
-          iconBgLight: Color(0xFFFFEBEE),
-          iconBgDark: Color(0xFF3A1B1B),
-          iconColorLight: Color(0xFFD32F2F),
-          iconColorDark: Color(0xFFEF5350),
+          color: Color(0xFFD32F2F),
         ),
       ],
     ),
@@ -158,130 +119,83 @@ class ReportsScreenWeb extends ConsumerWidget {
     final ledgerdate = ref.watch(ledgerProvider);
 
     return Scaffold(
-      backgroundColor: dark
-          ? MyntColors.backgroundColorDark
-          : MyntColors.backgroundColor,
+      backgroundColor:
+          dark ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const ClampingScrollPhysics(),
-          slivers: [
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
             // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xs),
-                child: Text(
-                  'Reports',
-                  style: MyntWebTextStyles.hero(
-                    context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textPrimaryDark,
-                        light: MyntColors.textPrimary),
-                  ),
-                ),
+            Text(
+              'Reports',
+              style: MyntWebTextStyles.hero(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textPrimaryDark,
+                    light: MyntColors.textPrimary),
               ),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.md),
-                child: Text(
-                  'Access all your financial reports and documents',
-                  style: MyntWebTextStyles.para(
-                    context,
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.textSecondaryDark,
-                        light: MyntColors.textSecondary),
-                  ),
-                ),
+            const SizedBox(height: 4),
+            Text(
+              'Access all your financial reports and documents',
+              style: MyntWebTextStyles.para(
+                context,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
               ),
             ),
+            const SizedBox(height: 24),
 
-            // Categories
+            // Categories with card grids
             ..._categories.expand((category) => [
                   // Category label
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
-                          AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
-                      child: Text(
-                        category.label,
-                        style: MyntWebTextStyles.bodySmall(
-                          context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: resolveThemeColor(context,
-                              dark: MyntColors.textSecondaryDark,
-                              light: MyntColors.textSecondary),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Cards grid
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
-                    sliver: SliverLayoutBuilder(
-                      builder: (context, constraints) {
-                        final crossAxisCount = context.responsiveValue(
-                          mobile: 1,
-                          smallTablet: 2,
-                          tablet: 2,
-                          desktop: 3,
-                          largeDesktop: 3,
-                          widescreen: 4,
-                        );
-                        return SliverGrid(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: crossAxisCount,
-                            mainAxisSpacing: AppSpacing.sm,
-                            crossAxisSpacing: AppSpacing.sm,
-                            childAspectRatio: context.responsiveValue(
-                              mobile: 3.8,
-                              smallTablet: 2.8,
-                              tablet: 2.8,
-                              desktop: 3.0,
-                              largeDesktop: 3.2,
-                            ),
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) => _ReportCard(
-                              item: category.items[index],
-                              onTap: () => _handleTap(
-                                  context,
-                                  category.items[index].title,
-                                  ledgerdate),
-                            ),
-                            childCount: category.items.length,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ]),
-
-            // Bottom spacing + version
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Column(
-                children: [
-                  const Spacer(),
                   Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
                     child: Text(
-                      ref.watch(authProvider).versiontext,
-                      style: MyntWebTextStyles.caption(
+                      category.label,
+                      style: MyntWebTextStyles.bodySmall(
                         context,
+                        fontWeight: MyntFonts.semiBold,
                         color: resolveThemeColor(context,
-                            dark: MyntColors.textTertiaryDark,
-                            light: MyntColors.textTertiary),
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
+
+                  // Cards grid using LayoutBuilder + Wrap
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final width = constraints.maxWidth;
+                      final crossAxisCount =
+                          width > 900 ? 3 : width > 600 ? 2 : 1;
+                      const spacing = 8.0;
+                      final itemWidth =
+                          (width - (spacing * (crossAxisCount - 1))) /
+                              crossAxisCount;
+                      final itemHeight = itemWidth / 4.5;
+
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        children: category.items.map((item) {
+                          return SizedBox(
+                            width: itemWidth,
+                            height: itemHeight,
+                            child: _ReportCard(
+                              item: item,
+                              onTap: () => _handleTap(
+                                  context, item.title, ledgerdate),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+                ]),
           ],
         ),
       ),
@@ -291,7 +205,7 @@ class ReportsScreenWeb extends ConsumerWidget {
   void _handleTap(
       BuildContext context, String title, LDProvider ledgerdate) async {
     switch (title) {
-      case 'Calender P&L':
+      case 'P&L Summary':
         await ledgerdate.getCurrentDate('pandu');
         if (onNavigateToScreen != null) {
           onNavigateToScreen!(ScreenType.calendarPnl);
@@ -356,7 +270,7 @@ class ReportsScreenWeb extends ConsumerWidget {
   }
 }
 
-/// Individual report card with hover effect
+/// Individual report card matching Account Settings card layout
 class _ReportCard extends StatefulWidget {
   final _ReportItem item;
   final VoidCallback onTap;
@@ -380,12 +294,10 @@ class _ReportCardState extends State<_ReportCard> {
         : (dark ? MyntColors.cardDark : MyntColors.card);
 
     final borderColor = _hovered
-        ? (dark ? MyntColors.primaryDark.withValues(alpha: 0.4) : MyntColors.primary.withValues(alpha: 0.25))
+        ? (dark
+            ? MyntColors.primaryDark.withValues(alpha: 0.4)
+            : MyntColors.primary.withValues(alpha: 0.25))
         : (dark ? MyntColors.cardBorderDark : MyntColors.cardBorder);
-
-    // final shadow = _hovered
-    //     ? (dark ? MyntShadows.cardHoverDark : MyntShadows.cardHover)
-    //     : (dark ? MyntShadows.cardDark : MyntShadows.card);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -398,12 +310,10 @@ class _ReportCardState extends State<_ReportCard> {
           curve: Curves.easeOut,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: borderColor, width: 1),
-            // boxShadow: shadow,
           ),
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               // Icon container
@@ -412,16 +322,18 @@ class _ReportCardState extends State<_ReportCard> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: dark ? item.iconBgDark : item.iconBgLight,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMD),
+                  color: item.color.withValues(alpha: dark ? 0.15 : 0.08),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   item.icon,
                   size: 20,
-                  color: dark ? item.iconColorDark : item.iconColorLight,
+                  color: dark
+                      ? item.color.withValues(alpha: 0.9)
+                      : item.color,
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm + 4),
+              const SizedBox(width: 12),
 
               // Text content
               Expanded(
@@ -431,11 +343,11 @@ class _ReportCardState extends State<_ReportCard> {
                   children: [
                     Text(
                       item.title,
-                      style: MyntWebTextStyles.bodyMedium(
+                      style: MyntWebTextStyles.body(
                         context,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
+                        fontWeight: MyntFonts.medium,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -443,11 +355,10 @@ class _ReportCardState extends State<_ReportCard> {
                     const SizedBox(height: 2),
                     Text(
                       item.subtitle,
-                      style: MyntWebTextStyles.caption(
+                      style: MyntWebTextStyles.bodySmall(
                         context,
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textTertiaryDark,
-                            light: MyntColors.textTertiary),
+                        darkColor: MyntColors.textTertiaryDark,
+                        lightColor: MyntColors.textTertiary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -10,6 +10,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/utils/digio_esign.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn;
 
 class TradingPreferencesScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -24,6 +25,13 @@ class _TradingPreferencesScreenWebState
     extends ConsumerState<TradingPreferencesScreenWeb> {
   bool _segmentEsignLoading = false;
   bool _segmentCancelLoading = false;
+  final ValueNotifier<int?> _hoveredRowIndex = ValueNotifier<int?>(null);
+
+  @override
+  void dispose() {
+    _hoveredRowIndex.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -84,10 +92,6 @@ class _TradingPreferencesScreenWebState
     final bgColor = resolveThemeColor(context,
         dark: MyntColors.backgroundColorDark,
         light: MyntColors.backgroundColor);
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final dividerColor = resolveThemeColor(context,
-        dark: MyntColors.dividerDark, light: MyntColors.divider);
     final successColor = resolveThemeColor(context,
         dark: MyntColors.successDark, light: MyntColors.success);
     final warningColor = resolveThemeColor(context,
@@ -113,12 +117,19 @@ class _TradingPreferencesScreenWebState
             child: Row(
               children: [
                 if (widget.onBack != null)
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_outlined,
-                        size: 18, color: textColor),
-                    onPressed: widget.onBack,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  InkWell(
+                    onTap: widget.onBack,
+                    borderRadius: BorderRadius.circular(50),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.arrow_back_ios_outlined,
+                        size: 18,
+                        color: textColor,
+                      ),
+                    ),
                   ),
                 if (widget.onBack != null) const SizedBox(width: 8),
                 Column(
@@ -157,178 +168,54 @@ class _TradingPreferencesScreenWebState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Segments table
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: cardBg,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: dividerColor),
-                      ),
-                      child: Column(
-                        children: [
-                          // Table header row
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: resolveThemeColor(context,
-                                  dark: MyntColors.listItemBgDark,
-                                  light: MyntColors.listItemBg),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Segment',
-                                      style: MyntWebTextStyles.bodySmall(
-                                          context,
-                                          fontWeight: MyntFonts.semiBold,
-                                          color: subtitleColor)),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text('Exchange',
-                                      style: MyntWebTextStyles.bodySmall(
-                                          context,
-                                          fontWeight: MyntFonts.semiBold,
-                                          color: subtitleColor)),
-                                ),
-                                Expanded(
-                                  flex: 1,
-                                  child: Text('Status',
-                                      style: MyntWebTextStyles.bodySmall(
-                                          context,
-                                          fontWeight: MyntFonts.semiBold,
-                                          color: subtitleColor)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(height: 1, color: dividerColor),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final totalWidth = constraints.maxWidth;
+                        final col0 = totalWidth * 0.40; // Segment
+                        final col1 = totalWidth * 0.40; // Exchange
+                        final col2 = totalWidth * 0.20; // Status
 
-                          // Table rows grouped by category
-                          ..._categories.entries.expand((entry) {
-                            final categoryName = entry.key;
-                            final codes = entry.value;
-                            final categorySegments = segmentsData
-                                .where(
-                                    (s) => codes.contains(s.cOMPANYCODE))
-                                .toList();
+                        final columnWidths = {
+                          0: shadcn.FixedTableSize(col0),
+                          1: shadcn.FixedTableSize(col1),
+                          2: shadcn.FixedTableSize(col2),
+                        };
 
-                            if (categorySegments.isEmpty) return <Widget>[];
-
-                            return categorySegments
-                                .asMap()
-                                .entries
-                                .map((e) {
-                              final index = e.key;
-                              final segment = e.value;
-                              final exchStatus =
-                                  segment.exchangeACTIVEINACTIVE ?? '';
-                              final isActive = exchStatus == 'A';
-                              final isInactive = exchStatus == 'I';
-                              final code = segment.cOMPANYCODE ?? '';
-                              final displayName =
-                                  _segmentDisplayNames[code] ?? code;
-
-                              Color statusColor;
-                              String statusLabel;
-                              if (isActive) {
-                                statusColor = successColor;
-                                statusLabel = 'Active';
-                              } else if (isInactive) {
-                                statusColor = errorColor;
-                                statusLabel = 'Inactive';
-                              } else {
-                                statusColor = warningColor;
-                                statusLabel = 'Not open';
-                              }
-
-                              return Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 14),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            index == 0 ? categoryName : '',
-                                            style: MyntWebTextStyles.body(
-                                                context,
-                                                fontWeight: MyntFonts.medium,
-                                                color: textColor),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(displayName,
-                                              style: MyntWebTextStyles.body(
-                                                  context,
-                                                  color: textColor)),
-                                        ),
-                                        Expanded(
-                                          flex: 1,
-                                          child: Row(
-                                            children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: statusColor
-                                                      .withValues(alpha: 0.1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          20),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Container(
-                                                      width: 6,
-                                                      height: 6,
-                                                      decoration:
-                                                          BoxDecoration(
-                                                        color: statusColor,
-                                                        shape:
-                                                            BoxShape.circle,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      statusLabel,
-                                                      style: MyntWebTextStyles
-                                                          .caption(context,
-                                                              fontWeight:
-                                                                  MyntFonts
-                                                                      .semiBold,
-                                                              color:
-                                                                  statusColor),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                        return shadcn.OutlinedContainer(
+                          child: Column(
+                            children: [
+                              // Fixed Header
+                              shadcn.Table(
+                                defaultRowHeight:
+                                    const shadcn.FixedTableSize(50),
+                                columnWidths: columnWidths,
+                                rows: [
+                                  shadcn.TableHeader(
+                                    cells: [
+                                      _buildHeaderCell('Segment', 0),
+                                      _buildHeaderCell('Exchange', 1),
+                                      _buildHeaderCell('Status', 2),
+                                    ],
                                   ),
-                                  Divider(height: 1, color: dividerColor),
                                 ],
-                              );
-                            });
-                          }),
-                        ],
-                      ),
+                              ),
+                              // Data Rows
+                              shadcn.Table(
+                                defaultRowHeight:
+                                    const shadcn.FixedTableSize(50),
+                                columnWidths: columnWidths,
+                                rows: _buildTableRows(
+                                  segmentsData,
+                                  textColor: textColor,
+                                  successColor: successColor,
+                                  errorColor: errorColor,
+                                  warningColor: warningColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
 
                     // Segment status banners
@@ -457,7 +344,9 @@ class _TradingPreferencesScreenWebState
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 10),
                           decoration: BoxDecoration(
-                            color: primaryColor,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.secondary,
+                                light: MyntColors.primary),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -483,6 +372,192 @@ class _TradingPreferencesScreenWebState
         ],
       ),
     );
+  }
+
+  // ─── Shadcn Table Helpers ───────────────────────────────────────────
+
+  static const _noBorder = shadcn.TableCellTheme(
+    border: shadcn.WidgetStatePropertyAll(
+      shadcn.Border(
+        top: shadcn.BorderSide.none,
+        bottom: shadcn.BorderSide.none,
+        left: shadcn.BorderSide.none,
+        right: shadcn.BorderSide.none,
+      ),
+    ),
+  );
+
+  shadcn.TableCell _buildHeaderCell(String label, int columnIndex) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 2;
+
+    EdgeInsets headerPadding;
+    if (isFirstColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(16, 0, 8, 0);
+    } else if (isLastColumn) {
+      headerPadding = const EdgeInsets.fromLTRB(8, 0, 16, 0);
+    } else {
+      headerPadding = const EdgeInsets.symmetric(horizontal: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: _noBorder,
+      child: Container(
+        padding: headerPadding,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          label,
+          style: MyntWebTextStyles.tableHeader(
+            context,
+            darkColor: MyntColors.textSecondaryDark,
+            lightColor: MyntColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  shadcn.TableCell _buildDataCell({
+    required int rowIndex,
+    required int columnIndex,
+    required Widget child,
+  }) {
+    final isFirstColumn = columnIndex == 0;
+    final isLastColumn = columnIndex == 2;
+
+    EdgeInsets cellPadding;
+    if (isFirstColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(16, 8, 8, 8);
+    } else if (isLastColumn) {
+      cellPadding = const EdgeInsets.fromLTRB(8, 8, 16, 8);
+    } else {
+      cellPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 8);
+    }
+
+    return shadcn.TableCell(
+      theme: _noBorder,
+      child: MouseRegion(
+        onEnter: (_) => _hoveredRowIndex.value = rowIndex,
+        onExit: (_) => _hoveredRowIndex.value = null,
+        child: ValueListenableBuilder<int?>(
+          valueListenable: _hoveredRowIndex,
+          builder: (context, hoveredIndex, _) {
+            final isRowHovered = hoveredIndex == rowIndex;
+            return Container(
+              padding: cellPadding,
+              color: isRowHovered
+                  ? resolveThemeColor(context,
+                          dark: MyntColors.primaryDark,
+                          light: MyntColors.primary)
+                      .withValues(alpha: 0.08)
+                  : null,
+              alignment: Alignment.centerLeft,
+              child: child,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  List<shadcn.TableRow> _buildTableRows(
+    List<SegmentsData> segmentsData, {
+    required Color textColor,
+    required Color successColor,
+    required Color errorColor,
+    required Color warningColor,
+  }) {
+    final rows = <shadcn.TableRow>[];
+    int globalRowIndex = 0;
+
+    for (final entry in _categories.entries) {
+      final categoryName = entry.key;
+      final codes = entry.value;
+      final categorySegments = segmentsData
+          .where((s) => codes.contains(s.cOMPANYCODE))
+          .toList();
+
+      if (categorySegments.isEmpty) continue;
+
+      for (int i = 0; i < categorySegments.length; i++) {
+        final segment = categorySegments[i];
+        final exchStatus = segment.exchangeACTIVEINACTIVE ?? '';
+        final isActive = exchStatus == 'A';
+        final isInactive = exchStatus == 'I';
+        final code = segment.cOMPANYCODE ?? '';
+        final displayName = _segmentDisplayNames[code] ?? code;
+
+        Color statusColor;
+        String statusLabel;
+        if (isActive) {
+          statusColor = successColor;
+          statusLabel = 'Active';
+        } else if (isInactive) {
+          statusColor = errorColor;
+          statusLabel = 'Inactive';
+        } else {
+          statusColor = warningColor;
+          statusLabel = 'Not open';
+        }
+
+        final rowIdx = globalRowIndex;
+        rows.add(shadcn.TableRow(
+          cells: [
+            _buildDataCell(
+              rowIndex: rowIdx,
+              columnIndex: 0,
+              child: Text(
+                i == 0 ? categoryName : '',
+                style: MyntWebTextStyles.tableCell(context,
+                    color: textColor, fontWeight: MyntFonts.medium),
+              ),
+            ),
+            _buildDataCell(
+              rowIndex: rowIdx,
+              columnIndex: 1,
+              child: Text(
+                displayName,
+                style: MyntWebTextStyles.tableCell(context, color: textColor),
+              ),
+            ),
+            _buildDataCell(
+              rowIndex: rowIdx,
+              columnIndex: 2,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      statusLabel,
+                      style: MyntWebTextStyles.caption(context,
+                          fontWeight: MyntFonts.semiBold,
+                          color: statusColor),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ));
+        globalRowIndex++;
+      }
+    }
+    return rows;
   }
 
   // ─── Cancel Segment Request (no Navigator.pop, just refresh status) ───

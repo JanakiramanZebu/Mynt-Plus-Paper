@@ -7,7 +7,7 @@ import 'package:mynt_plus/models/desk_reports_model/approved_pledge_list_model.d
 import 'package:mynt_plus/provider/ledger_provider.dart';
 import 'package:mynt_plus/provider/thems.dart';
 import 'package:mynt_plus/res/res.dart';
-import 'package:mynt_plus/sharedWidget/loader_ui.dart';
+import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
@@ -280,25 +280,30 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
 
       return Scaffold(
         backgroundColor:
-            theme.isDarkMode ? colors.colorBlack : colors.colorWhite,
-        appBar: AppBar(
-          elevation: 0.2,
-          title: Text(
-            'Approved Securities',
-            style: MyntWebTextStyles.body(
-              context,
-              fontWeight: MyntFonts.semiBold,
-              darkColor: MyntColors.textPrimaryDark,
-              lightColor: MyntColors.textPrimary,
-            ),
-          ),
-          leading: const CustomBackBtn(),
-        ),
+            theme.isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
         body: SafeArea(
-          child: TransparentLoaderScreen(
+          child: MyntLoaderOverlay(
             isLoading: ledgerprovider.approvepledgeloader,
             child: Column(
               children: [
+                // Header with back button
+                Container(
+                  color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  child: Row(
+                    children: [
+                      const CustomBackBtn(),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Approved Securities',
+                        style: MyntWebTextStyles.head(context,
+                            darkColor: MyntColors.textPrimaryDark,
+                            lightColor: MyntColors.textPrimary,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
                 // ── Toolbar: Tabs + Cash dropdown + Search + Filter ──
                 _buildToolbar(tabKeys, theme),
 
