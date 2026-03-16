@@ -574,44 +574,44 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                           constraints: const BoxConstraints(),
                         ),
                       if (widget.onBack != null) const SizedBox(width: 8),
-                      Expanded(
+                      Text('Nominee',
+                          style: MyntWebTextStyles.head(context,
+                              fontWeight: MyntFonts.semiBold,
+                              color: textColor)
+                              .copyWith(decoration: TextDecoration.none)),
+                      const SizedBox(width: 12),
+                      // Status badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _hasExistingNominee
+                              ? successColor.withValues(alpha: 0.1)
+                              : errorColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _hasExistingNominee
+                                ? successColor.withValues(alpha: 0.3)
+                                : errorColor.withValues(alpha: 0.3),
+                          ),
+                        ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('Nominee',
-                                style: MyntWebTextStyles.head(context,
-                                    fontWeight: MyntFonts.semiBold,
-                                    color: textColor)
-                                    .copyWith(decoration: TextDecoration.none)),
-                            const SizedBox(width: 8),
-                            if (_hasExistingNominee) ...[
-                              Text('- ',
-                                  style: MyntWebTextStyles.body(context,
-                                      color: successColor,
-                                      fontWeight: MyntFonts.medium)
-                                      .copyWith(decoration: TextDecoration.none)),
-                              Icon(Icons.verified_user_outlined,
-                                  color: successColor, size: 20),
-                              const SizedBox(width: 4),
-                              Text('Your account is Secured',
-                                  style: MyntWebTextStyles.body(context,
-                                      color: successColor,
-                                      fontWeight: MyntFonts.medium)
-                                      .copyWith(decoration: TextDecoration.none)),
-                            ] else ...[
-                              Text('- ',
-                                  style: MyntWebTextStyles.body(context,
-                                      color: errorColor,
-                                      fontWeight: MyntFonts.medium)
-                                      .copyWith(decoration: TextDecoration.none)),
-                              Icon(Icons.remove_moderator_outlined,
-                                  color: errorColor, size: 20),
-                              const SizedBox(width: 4),
-                              Text('Your account is unsecured',
-                                  style: MyntWebTextStyles.body(context,
-                                      color: errorColor,
-                                      fontWeight: MyntFonts.medium)
-                                      .copyWith(decoration: TextDecoration.none)),
-                            ],
+                            Icon(
+                              _hasExistingNominee
+                                  ? Icons.verified_user_outlined
+                                  : Icons.shield_outlined,
+                              color: _hasExistingNominee ? successColor : errorColor,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _hasExistingNominee ? 'Secured' : 'Unsecured',
+                              style: MyntWebTextStyles.caption(context,
+                                  color: _hasExistingNominee ? successColor : errorColor,
+                                  fontWeight: MyntFonts.semiBold)
+                                  .copyWith(decoration: TextDecoration.none),
+                            ),
                           ],
                         ),
                       ),
@@ -641,18 +641,17 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                           const SizedBox(height: 24),
                         ],
 
-                        // ── Nominee form (only show when no completed/pending esign) ──
-                        if (!_esignCompleted && !_esignPending) ...[
+                        // ── Single card for no-nominee state ──
+                        if (!_hasExistingNominee && !_esignPending && !_esignCompleted)
+                          _buildNoNomineeCard(textColor, subtitleColor, cardBg, cardBorder, primaryColor, errorColor),
+
+                        // ── Nominee form (only show when editing/adding with existing nominee) ──
+                        if (_hasExistingNominee && !_esignCompleted && !_esignPending) ...[
                           _buildChoiceSection(primaryColor, textColor, subtitleColor, cardBorder),
                           const SizedBox(height: 16),
-
                           if (_yesOrNo == 'yes') ...[
                             _buildNomineeForm(
                                 textColor, subtitleColor, cardBorder, cardBg, primaryColor, dividerColor),
-                          ],
-
-                          if (_yesOrNo == 'no' && !_hasExistingNominee) ...[
-                            _buildOptOutView(primaryColor),
                           ],
                         ],
                       ],
@@ -661,6 +660,153 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 ),
               ],
             ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  SINGLE CARD (no nominee state - info + actions combined)
+  // ═══════════════════════════════════════════════════════════════════
+
+  Widget _buildNoNomineeCard(Color textColor, Color subtitleColor,
+      Color cardBg, Color borderColor, Color primaryColor, Color errorColor) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: cardBg,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon + Title row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: errorColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.shield_outlined, color: errorColor, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Your account is not secured',
+                        style: MyntWebTextStyles.title(context,
+                            fontWeight: MyntFonts.semiBold, color: textColor)
+                            .copyWith(decoration: TextDecoration.none)),
+                    const SizedBox(height: 4),
+                    Text('Add a nominee to protect your investments and ensure smooth transfer of assets.',
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: subtitleColor, fontWeight: MyntFonts.regular)
+                            .copyWith(decoration: TextDecoration.none)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+          Divider(height: 1, color: borderColor),
+          const SizedBox(height: 20),
+
+          // Action buttons
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _yesOrNo = 'yes';
+                    _activePanel = 0;
+                  });
+                },
+                icon: const Icon(Icons.add, size: 18),
+                label: Text('Add Nominee',
+                    style: MyntWebTextStyles.bodySmall(context,
+                        color: Colors.white, fontWeight: MyntFonts.semiBold)
+                        .copyWith(decoration: TextDecoration.none)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton(
+                onPressed: () {
+                  setState(() => _yesOrNo = 'no');
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: borderColor),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text('Skip for now',
+                    style: MyntWebTextStyles.bodySmall(context,
+                        color: subtitleColor, fontWeight: MyntFonts.medium)
+                        .copyWith(decoration: TextDecoration.none)),
+              ),
+            ],
+          ),
+
+          // Opt-out continue button
+          if (_yesOrNo == 'no') ...[
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loading ? null : _submitNominee,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 18, height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text('Continue',
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: Colors.white, fontWeight: MyntFonts.semiBold)
+                          .copyWith(decoration: TextDecoration.none)),
+            ),
+          ],
+
+          // Nominee form (inline when "Add Nominee" is selected)
+          if (_yesOrNo == 'yes') ...[
+            const SizedBox(height: 20),
+            Divider(height: 1, color: borderColor),
+            const SizedBox(height: 20),
+            _buildNomineeForm(textColor, subtitleColor, borderColor, cardBg, primaryColor,
+                resolveThemeColor(context, dark: MyntColors.dividerDark, light: MyntColors.divider)),
+          ],
+
+          // Regulatory note
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: subtitleColor, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'As per SEBI regulations, you can add up to 3 nominees for your trading and demat account.',
+                  style: MyntWebTextStyles.caption(context,
+                      color: subtitleColor, fontWeight: MyntFonts.regular)
+                      .copyWith(decoration: TextDecoration.none),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -972,85 +1118,135 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
   Widget _buildChoiceSection(
       Color primaryColor, Color textColor, Color subtitleColor, Color borderColor) {
     final isEdit = _hasExistingNominee;
-    final options = isEdit
-        ? [
-            {'txt': 'Edit your nominee', 'val': 'yes'},
-            {'txt': 'No, i will do it later', 'val': 'no'},
-          ]
-        : [
-            {'txt': 'Click here to secure', 'val': 'yes'},
-            {'txt': 'No, i will do it later', 'val': 'no'},
-          ];
+    final cardBg = resolveThemeColor(context,
+        dark: MyntColors.cardDark, light: MyntColors.card);
 
-    return Wrap(
-      spacing: 12,
-      children: options.map((opt) {
-        final selected = _yesOrNo == opt['val'];
-        return ChoiceChip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (selected) ...[
-                const Icon(Icons.check, size: 16, color: Colors.white),
-                const SizedBox(width: 4),
-              ],
-              Text(opt['txt']!),
-            ],
-          ),
-          selected: selected,
-          showCheckmark: false,
-          onSelected: (sel) {
-            setState(() {
-              _yesOrNo = opt['val'];
-              if (_yesOrNo == 'yes') _activePanel = 0;
-            });
-          },
-          selectedColor: primaryColor,
-          labelStyle: MyntWebTextStyles.bodySmall(context,
-              color: selected ? Colors.white : subtitleColor,
-              fontWeight: MyntFonts.medium)
-              .copyWith(decoration: TextDecoration.none),
-          backgroundColor: Colors.transparent,
-          shape: StadiumBorder(
-              side: BorderSide(
-                  color: selected ? primaryColor : borderColor)),
-        );
-      }).toList(),
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  //  OPT OUT VIEW
-  // ═══════════════════════════════════════════════════════════════════
-
-  Widget _buildOptOutView(Color primaryColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 40,
-          child: ElevatedButton(
-            onPressed: _loading ? null : _submitNominee,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+        Text(
+          isEdit ? 'What would you like to do?' : 'Get started',
+          style: MyntWebTextStyles.bodySmall(context,
+              color: subtitleColor, fontWeight: MyntFonts.medium)
+              .copyWith(decoration: TextDecoration.none),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            // Primary action button
+            _buildChoiceButton(
+              icon: isEdit ? Icons.edit_outlined : Icons.shield_outlined,
+              label: isEdit ? 'Edit your nominee' : 'Add Nominee',
+              subtitle: isEdit ? 'Update nominee details' : 'Secure your account now',
+              isSelected: _yesOrNo == 'yes',
+              isPrimary: true,
+              primaryColor: primaryColor,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              borderColor: borderColor,
+              cardBg: cardBg,
+              onTap: () {
+                setState(() {
+                  _yesOrNo = 'yes';
+                  _activePanel = 0;
+                });
+              },
             ),
-            child: _loading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white))
-                : Text('Continue',
-                    style: MyntWebTextStyles.bodySmall(context,
-                        color: Colors.white, fontWeight: MyntFonts.semiBold)
-                        .copyWith(decoration: TextDecoration.none)),
-          ),
+            const SizedBox(width: 12),
+            // Secondary action button
+            _buildChoiceButton(
+              icon: Icons.schedule_outlined,
+              label: 'Skip for now',
+              subtitle: 'I\'ll do it later',
+              isSelected: _yesOrNo == 'no',
+              isPrimary: false,
+              primaryColor: primaryColor,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              borderColor: borderColor,
+              cardBg: cardBg,
+              onTap: () {
+                setState(() {
+                  _yesOrNo = 'no';
+                });
+              },
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildChoiceButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required bool isSelected,
+    required bool isPrimary,
+    required Color primaryColor,
+    required Color textColor,
+    required Color subtitleColor,
+    required Color borderColor,
+    required Color cardBg,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isPrimary ? primaryColor.withValues(alpha: 0.06) : cardBg)
+                : cardBg,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? primaryColor : borderColor,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? primaryColor.withValues(alpha: 0.1)
+                      : subtitleColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon,
+                    size: 18,
+                    color: isSelected ? primaryColor : subtitleColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label,
+                        style: MyntWebTextStyles.bodySmall(context,
+                            color: isSelected ? primaryColor : textColor,
+                            fontWeight: MyntFonts.semiBold)
+                            .copyWith(decoration: TextDecoration.none)),
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: MyntWebTextStyles.caption(context,
+                            color: subtitleColor,
+                            fontWeight: MyntFonts.regular)
+                            .copyWith(decoration: TextDecoration.none)),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(Icons.check_circle, color: primaryColor, size: 18),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

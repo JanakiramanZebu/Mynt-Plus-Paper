@@ -1,7 +1,10 @@
 import 'dart:async';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/global_state_text.dart';
 import 'package:mynt_plus/res/mynt_web_color_styles.dart';
+import 'package:mynt_plus/res/app_spacing.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/utils/responsive_snackbar.dart';
@@ -2528,7 +2531,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2540,13 +2543,14 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   fontWeight: MyntFonts.medium).copyWith(decoration: TextDecoration.none),
               ),
               const SizedBox(height: 16),
-              // ── Unified 4-Column Grid ──
+              // ── Unified 3-Column Grid ──
               LayoutBuilder(
                 builder: (context, constraints) {
                   final width = constraints.maxWidth;
-                  final crossAxisCount = width > 900 ? 4 : width > 600 ? 3 : 2;
-                  const spacing = 12.0;
+                  final crossAxisCount = width > 900 ? 3 : width > 600 ? 2 : 1;
+                  const spacing = AppSpacing.sm;
                   final itemWidth = (width - (spacing * (crossAxisCount - 1))) / crossAxisCount;
+                  final itemHeight = itemWidth / 4.5;
                   final profileImage = ref.watch(userProfileProvider).getprofileImage;
                   final imageLoading = ref.watch(userProfileProvider).imageLoader;
 
@@ -2733,106 +2737,15 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
 
                       return SizedBox(
                         width: itemWidth,
-                        child: Material(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => _onExpansionChanged(true, title),
-                            hoverColor: resolveThemeColor(context,
-                                dark: MyntColors.cardHoverDark,
-                                light: MyntColors.cardHover),
-                            splashColor: itemColor.withValues(alpha: 0.08),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: resolveThemeColor(context,
-                                  dark: MyntColors.cardDark,
-                                  light: MyntColors.card),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: resolveThemeColor(context,
-                                    dark: MyntColors.cardBorderDark,
-                                    light: MyntColors.cardBorder),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top row: icon + pending badge
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: itemColor.withValues(alpha: isDark ? 0.15 : 0.08),
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(
-                                          icon,
-                                          size: 22,
-                                          color: isDark
-                                              ? itemColor.withValues(alpha: 0.9)
-                                              : itemColor,
-                                        ),
-                                      ),
-                                      if (hasPending)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: Colors.orange.withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          child: Text(
-                                            'Pending',
-                                            style: MyntWebTextStyles.caption(context,
-                                              color: isDark
-                                                  ? Colors.orange.shade300
-                                                  : Colors.orange.shade700,
-                                              fontWeight: MyntFonts.semiBold,
-                                            ).copyWith(decoration: TextDecoration.none),
-                                          ),
-                                        ),
-                                      if (!hasPending)
-                                        Icon(
-                                          Icons.arrow_forward_rounded,
-                                          size: 18,
-                                          color: resolveThemeColor(context,
-                                            dark: MyntColors.textTertiaryDark,
-                                            light: MyntColors.textTertiary),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  // Title
-                                  Text(
-                                    title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: MyntWebTextStyles.body(context,
-                                      darkColor: MyntColors.textPrimaryDark,
-                                      lightColor: MyntColors.textPrimary,
-                                      fontWeight: MyntFonts.semiBold,
-                                    ).copyWith(decoration: TextDecoration.none),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  // Description
-                                  Text(
-                                    description,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: MyntWebTextStyles.para(context,
-                                      darkColor: MyntColors.textSecondaryDark,
-                                      lightColor: MyntColors.textSecondary,
-                                    ).copyWith(decoration: TextDecoration.none),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                        height: itemHeight,
+                        child: _ProfileHoverCard(
+                          title: title,
+                          description: description,
+                          icon: icon,
+                          iconColor: itemColor,
+                          isDark: isDark,
+                          hasPending: hasPending,
+                          onTap: () => _onExpansionChanged(true, title),
                         ),
                       );
                     }),
@@ -2844,16 +2757,16 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
               const SizedBox(height: 16),
 
               // ── Version Text ──
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: TextWidget.captionText(
-                    text: ref.watch(authProvider).versiontext,
-                    theme: false,
-                    color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
-                  ),
-                ),
-              ),
+              // Center(
+              //   child: Padding(
+              //     padding: const EdgeInsets.only(bottom: 8),
+              //     child: TextWidget.captionText(
+              //       text: ref.watch(authProvider).versiontext,
+              //       theme: false,
+              //       color: isDark ? colors.textSecondaryDark : colors.textSecondaryLight,
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 8),
             ],
           ),
@@ -3861,6 +3774,11 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
     final profileDetails = ref.watch(profileAllDetailsProvider);
     final clientData = profileDetails.clientAllDetails.clientData;
 
+    final primaryColor = theme.isDarkMode ? colors.primaryDark : colors.primaryLight;
+    final textColor = theme.isDarkMode ? colors.textPrimaryDark : colors.textPrimaryLight;
+    final subtitleColor = theme.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
+    final errorColor = theme.isDarkMode ? const Color(0xFFF85149) : const Color(0xFFFF1717);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 8.0),
       child: Column(
@@ -3869,38 +3787,53 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         children: [
           if (clientData?.nomineeName == null ||
               clientData?.nomineeName == "") ...[
-            TextWidget.subText(
-              text: "No nominee details found",
-              color: theme.isDarkMode
-                  ? colors.textSecondaryDark
-                  : colors.textSecondaryLight,
-              theme: theme.isDarkMode,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    await Future.delayed(const Duration(milliseconds: 150));
-                    // profileDetails.openInWebURL(context, "nominee");
-                    profileDetails.openInWebURLk(context, "nominee", "nominee");
-                  },
-                  style: ElevatedButton.styleFrom(
-                      elevation: 0,
-                    minimumSize: Size(100, 45),
-                      backgroundColor: theme.isDarkMode
-                          ? colors.primaryDark
-                          : colors.primaryLight,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4))),
-                  child: TextWidget.subText(
-                    text: "Add Nominee",
-                    color: colors.colorWhite,
+            // Status badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: errorColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: errorColor.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.shield_outlined, color: errorColor, size: 14),
+                  const SizedBox(width: 6),
+                  TextWidget.subText(
+                    text: "No nominee added - Account unsecured",
+                    color: errorColor,
                     theme: theme.isDarkMode,
                     fw: 2,
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextWidget.subText(
+              text: "Protect your investments by adding a nominee to your account.",
+              color: subtitleColor,
+              theme: theme.isDarkMode,
+            ),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              onPressed: () async {
+                await Future.delayed(const Duration(milliseconds: 150));
+                profileDetails.openInWebURLk(context, "nominee", "nominee");
+              },
+              icon: const Icon(Icons.add, size: 18),
+              label: TextWidget.subText(
+                text: "Add Nominee",
+                color: colors.colorWhite,
+                theme: theme.isDarkMode,
+                fw: 2,
+              ),
+              style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  minimumSize: const Size(100, 42),
+                  backgroundColor: primaryColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))),
             ),
           ] else ...[
             Row(
@@ -3910,9 +3843,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                   text: "Nominee Details",
                   theme: theme.isDarkMode,
                   fw: 0,
-                  color: theme.isDarkMode
-                      ? colors.textPrimaryDark
-                      : colors.textPrimaryLight,
+                  color: textColor,
                 ),
                 Material(
                   color: Colors.transparent,
@@ -3932,26 +3863,22 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                         }
                       }
 
-                      // Add delay for visual feedback
                       await Future.delayed(const Duration(milliseconds: 150));
-                      // profileDetails.openInWebURL(context, "nominee");
                       profileDetails.openInWebURLk(
                           context, "nominee", "nominee");
                     },
                     borderRadius: BorderRadius.circular(20),
                     splashColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.15)
-                        : Colors.black.withOpacity(0.15),
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.15),
                     highlightColor: theme.isDarkMode
-                        ? Colors.white.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.08),
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.08),
                     child: Padding(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       child: Icon(
                         Icons.edit_outlined,
-                        color: theme.isDarkMode
-                            ? colors.textSecondaryDark
-                            : colors.textSecondaryLight,
+                        color: subtitleColor,
                         size: 20,
                       ),
                     ),
@@ -4268,12 +4195,24 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             warningMessage(context, 'You have pending request.click on the E-Sign to proceed.');
                             return;
                           } else {
+                            if (label == "Address") {
+                              final pref = locator<Preferences>();
+                              final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                              html.window.open(url, '_blank', 'width=800,height=700,scrollbars=yes,resizable=yes,left=200,top=100');
+                            } else {
+                              ref.read(profileAllDetailsProvider).openInWebURLk(
+                                  context, "profile", label.toLowerCase());
+                            }
+                          }
+                        } else {
+                          if (label == "Address") {
+                            final pref = locator<Preferences>();
+                            final url = 'https://profile.zebuetrade.com/?uid=${pref.clientId}&token=${pref.token}';
+                            html.window.open(url, '_blank', 'width=800,height=700,scrollbars=yes,resizable=yes,left=200,top=100');
+                          } else {
                             ref.read(profileAllDetailsProvider).openInWebURLk(
                                 context, "profile", label.toLowerCase());
                           }
-                        } else {
-                          ref.read(profileAllDetailsProvider).openInWebURLk(
-                              context, "profile", label.toLowerCase());
                         }
                       },
                       child: Padding(
@@ -4876,6 +4815,159 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A hoverable card widget for profile/report sections.
+/// Shows icon, title, description, chevron with hover color change and optional pending badge.
+class _ProfileHoverCard extends StatefulWidget {
+  final String title;
+  final String description;
+  final IconData icon;
+  final Color iconColor;
+  final bool isDark;
+  final bool hasPending;
+  final VoidCallback onTap;
+
+  const _ProfileHoverCard({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.iconColor,
+    required this.isDark,
+    required this.onTap,
+    this.hasPending = false,
+  });
+
+  @override
+  State<_ProfileHoverCard> createState() => _ProfileHoverCardState();
+}
+
+class _ProfileHoverCardState extends State<_ProfileHoverCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = widget.isDark;
+
+    final bgColor = _hovered
+        ? (dark ? MyntColors.cardHoverDark : MyntColors.cardHover)
+        : (dark ? MyntColors.cardDark : MyntColors.card);
+
+    final borderColor = _hovered
+        ? (dark
+            ? MyntColors.primaryDark.withValues(alpha: 0.4)
+            : MyntColors.primary.withValues(alpha: 0.25))
+        : (dark ? MyntColors.cardBorderDark : MyntColors.cardBorder);
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLG),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          child: Row(
+            children: [
+              // Icon container
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: widget.iconColor.withValues(alpha: dark ? 0.15 : 0.08),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMD),
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: 20,
+                  color: dark
+                      ? widget.iconColor.withValues(alpha: 0.9)
+                      : widget.iconColor,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm + 4),
+
+              // Text content
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        fontWeight: MyntFonts.medium,
+                        darkColor: MyntColors.textPrimaryDark,
+                        lightColor: MyntColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.description,
+                      style: MyntWebTextStyles.bodySmall(
+                        context,
+                        darkColor: MyntColors.textTertiaryDark,
+                        lightColor: MyntColors.textTertiary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Pending badge or Arrow
+              if (widget.hasPending)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Pending',
+                    style: MyntWebTextStyles.caption(context,
+                      color: dark
+                          ? Colors.orange.shade300
+                          : Colors.orange.shade700,
+                      fontWeight: MyntFonts.semiBold,
+                    ).copyWith(decoration: TextDecoration.none),
+                  ),
+                )
+              else
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  opacity: _hovered ? 1.0 : 0.4,
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: _hovered
+                        ? (dark
+                            ? MyntColors.primaryDark
+                            : MyntColors.primary)
+                        : resolveThemeColor(context,
+                            dark: MyntColors.textTertiaryDark,
+                            light: MyntColors.textTertiary),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
