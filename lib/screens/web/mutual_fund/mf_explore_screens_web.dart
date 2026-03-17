@@ -28,6 +28,7 @@ class MFExploreScreensWeb extends ConsumerStatefulWidget {
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
   final Function(MutualFundList mfData)? onFundTap; // Callback when fund is tapped (for web panel navigation)
+  final VoidCallback? onStrategyTap;
 
   const MFExploreScreensWeb({
     super.key,
@@ -39,6 +40,7 @@ class MFExploreScreensWeb extends ConsumerStatefulWidget {
     this.onSipCalculatorTap,
     this.onCagrCalculatorTap,
     this.onFundTap,
+    this.onStrategyTap,
   });
 
   @override
@@ -196,6 +198,7 @@ class _ExploreScreensStateWeb extends ConsumerState<MFExploreScreensWeb>
                       onCategoryTap: widget.onCategoryTap,
                       onSipCalculatorTap: widget.onSipCalculatorTap,
                       onCagrCalculatorTap: widget.onCagrCalculatorTap,
+                      onStrategyTap: widget.onStrategyTap,
                     ),
                    MFWatchlistScreenWeb(onFundTap: widget.onFundTap),
                    const MfOrderBookScreenWeb(),

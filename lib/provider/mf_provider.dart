@@ -338,6 +338,12 @@ class MFProvider extends DefaultChangeNotifier {
   int? _activeTab = 0;
   int? get activeTab => _activeTab;
 
+  int _mfPortfolioInitialTab = 0;
+  int get mfPortfolioInitialTab => _mfPortfolioInitialTab;
+  void setMfPortfolioInitialTab(int tab) {
+    _mfPortfolioInitialTab = tab;
+  }
+
   Timer? _autoPopTimer;
   Timer? get autoPopTimer => _autoPopTimer;
 

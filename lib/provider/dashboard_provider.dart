@@ -743,9 +743,18 @@ Color getSectorAllocationColor(String sector) {
   // Trading Personality Selection
   TradingPersonalityType _selectedPersonality = TradingPersonalityType.aurora;
   TradingPersonalityType get selectedPersonality => _selectedPersonality;
-  
+
   void updateSelectedPersonality(TradingPersonalityType personality) {
     _selectedPersonality = personality;
+    notifyListeners();
+  }
+
+  // Weighting scheme
+  String _weightingScheme = 'Equi-Weighted';
+  String get weightingScheme => _weightingScheme;
+
+  void updateWeightingScheme(String scheme) {
+    _weightingScheme = scheme;
     notifyListeners();
   }
 
@@ -762,6 +771,19 @@ Color getSectorAllocationColor(String sector) {
     _strategyNameError = null;
     notifyListeners();
   }
+
+  // Pending strategy name (set before first fund is added, used to create strategy on first add)
+  String _pendingStrategyName = '';
+  String get pendingStrategyName => _pendingStrategyName;
+
+  void setPendingStrategyName(String name) {
+    _pendingStrategyName = name;
+    notifyListeners();
+  }
+
+  bool _isAutoSaving = false;
+  bool get isAutoSaving => _isAutoSaving;
+  bool _pendingAutoSave = false;
 
   // Saved Strategies
   SavedStrategyModel? _savedStrategies;
@@ -853,14 +875,27 @@ Color getSectorAllocationColor(String sector) {
         schemeValues: schemaValues,
         basketName: strategyNameController.text ?? '',
         investmentAmount: double.tryParse(_investmentController.text) ?? 0.0,
-        invesmentdetail: 'Updated Strategy|personality:${_selectedPersonality.name}',
+        invesmentdetail: 'Updated Strategy|personality:${_selectedPersonality.name}|weighting:$_weightingScheme',
       );
 
-      await fetchbasketlist();
-       Navigator.pop(context);
-      Navigator.pop(context);
-
-      _editingStrategy = null;
+      // Update _editingStrategy in-place — no need to re-fetch all strategies
+      _editingStrategy = SavedStrategyModel(data: [
+        Data(
+          uuid: uuid,
+          basketName: strategyNameController.text,
+          investAmount: double.tryParse(_investmentController.text) ?? 0.0,
+          years: _getYearInFromDuration(_selectedDuration),
+          schemaValues: _selectedFunds.map((f) => SchemaValues(
+            name: f.name,
+            schemaName: f.schemeName,
+            schemeType: f.type,
+            isin: f.isin,
+            percentage: f.percentage.round(),
+            schemeCode: f.schemeCode,
+            minimumPurchaseAmount: f.minimumPurchaseAmount,
+          )).toList(),
+        )
+      ]);
       _strategyError = null;
     } catch (e) {
       print("Update Strategy Error: $e");
@@ -890,12 +925,20 @@ Color getSectorAllocationColor(String sector) {
         schemeValues: schemaValues,
         basketName: basketName,
         investmentAmount: double.tryParse(_investmentController.text) ?? 0.0,
-        invesmentdetail: 'Created Strategy|personality:${_selectedPersonality.name}',
+        invesmentdetail: 'Created Strategy|personality:${_selectedPersonality.name}|weighting:$_weightingScheme',
       );
 
       await fetchbasketlist();
 
-      _editingStrategy = null;
+      // Set editing mode to the newly created strategy
+      if (_savedStrategies != null) {
+        final match = _savedStrategies!.data?.where(
+            (s) => s.basketName?.toLowerCase() == basketName.toLowerCase());
+        if (match != null && match.isNotEmpty) {
+          _editingStrategy = SavedStrategyModel(data: [match.first]);
+          strategyNameController.text = basketName;
+        }
+      }
       _strategyError = null;
     } catch (e) {
       print("Create Strategy Error: $e");
@@ -906,19 +949,58 @@ Color getSectorAllocationColor(String sector) {
     }
   }
 
+  /// Called from fund search screen on each add/remove.
+  /// Creates strategy on first fund add, updates on subsequent changes.
+  Future<void> autoSaveFundChange(BuildContext context) async {
+    if (_selectedFunds.isEmpty) return;
+    if (_isAutoSaving) {
+      _pendingAutoSave = true;
+      return;
+    }
+    _isAutoSaving = true;
+    notifyListeners();
+    try {
+      if (_editingStrategy == null && _pendingStrategyName.isNotEmpty) {
+        await createStrategy(_pendingStrategyName, context);
+      } else if (_editingStrategy != null) {
+        await updateStrategy(context);
+      }
+    } catch (e) {
+      print('autoSaveFundChange error: $e');
+    } finally {
+      _isAutoSaving = false;
+      final needsAnotherSave = _pendingAutoSave;
+      _pendingAutoSave = false;
+      notifyListeners();
+      if (needsAnotherSave && _selectedFunds.isNotEmpty) {
+        await autoSaveFundChange(context);
+      }
+    }
+  }
+
   List<Map<String, dynamic>> _convertFundsToSchemaValues(
       List<FundListModel> funds) {
+    for (final fund in funds) {
+      print('>>> Saving fund: name=${fund.name}, schemeCode=${fund.schemeCode}, isin=${fund.isin}');
+    }
     return funds
         .map((fund) => {
               'name': fund.name,
               'schema_name': fund.schemeName,
-              'scheme_type': fund.type,
+              'scheme_type': _normalizeSchemeType(fund.type),
               'percentage': fund.percentage.round(),
               'isin': fund.isin ?? '',
               'aMCCode': fund.aMCCode ?? '',
-              'aum': fund.aum,
+              'scheme_code': fund.schemeCode ?? '',
+              'minimum_purchase_amount': fund.minimumPurchaseAmount,
             })
         .toList();
+  }
+
+  /// Save type as-is from the API — no hardcoded mapping
+  String _normalizeSchemeType(String type) {
+    final trimmed = type.trim();
+    return trimmed.isNotEmpty ? trimmed : 'Equity';
   }
 
   int _getYearInFromDuration(String duration) {
@@ -941,7 +1023,11 @@ Color getSectorAllocationColor(String sector) {
   Future<void> deleteStrategy(String strategyId, BuildContext context) async {
     try {
       strategyLoader(true);
+      print('=== DELETE STRATEGY ===');
+      print('Payload: {"client_id": "${pref.clientId}", "type_in": "remove", "id": "$strategyId"}');
       final response = await api.deletebasketsStrategy(strategyId);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       if (response.statusCode == 200) {
         successMessage(context, "Strategy deleted successfully");
         await fetchbasketlist();
@@ -951,12 +1037,14 @@ Color getSectorAllocationColor(String sector) {
       _editingStrategy = null;
       _strategyError = null;
       notifyListeners();
+    } catch (e) {
+      print('Delete strategy error: $e');
     } finally {
       strategyLoader(false);
     }
   }
 
-  void loadStrategy(Data strategyData) {
+  Future<void> loadStrategy(Data strategyData) async {
     clearStrategy();
 
     _editingStrategy = SavedStrategyModel(
@@ -968,17 +1056,20 @@ Color getSectorAllocationColor(String sector) {
     _selectedFunds.clear();
     if (strategyData.schemaValues != null) {
       for (final schema in strategyData.schemaValues!) {
+        print('>>> Schema raw: name=${schema.name}, schemeCode=${schema.schemeCode}, isin=${schema.isin}, schemaName=${schema.schemaName}');
         final fund = FundListModel(
           name: schema.name ?? '',
           schemeName: schema.schemaName ?? '',
           type: schema.schemeType ?? '',
-          fiveYearCAGR: 0.0, // Default value since not available in schema
-          threeYearCAGR: 0.0, // Default value since not available in schema
-          aum: schema.aum?.toDouble() ?? 0.0, // Default value since not available in schema
-          sharpe: 0.0, // Default value since not available in schema
+          fiveYearCAGR: 0.0,
+          threeYearCAGR: 0.0,
+          aum: schema.aum?.toDouble() ?? 0.0,
+          sharpe: 0.0,
           percentage: schema.percentage?.toDouble() ?? 0.0,
           isin: schema.isin ?? '',
           aMCCode: schema.aMCCode ?? '',
+          schemeCode: schema.schemeCode,
+          minimumPurchaseAmount: schema.minimumPurchaseAmount ?? 100.0,
         );
         _selectedFunds.add(fund);
       }
@@ -986,8 +1077,9 @@ Color getSectorAllocationColor(String sector) {
     _strategyNameController.text = strategyData.basketName ?? '';
     _investmentController.text = strategyData.investAmount?.toString() ?? '0';
 
-    // Load trading personality information from investment details
+    // Load trading personality and weighting scheme from investment details
     _selectedPersonality = getPersonalityFromInvestmentDetails(strategyData.investmentDetails);
+    _weightingScheme = _getWeightingFromInvestmentDetails(strategyData.investmentDetails);
 
     if (strategyData.years != null) {
       if (strategyData.years! <= 1) {
@@ -1002,10 +1094,112 @@ Color getSectorAllocationColor(String sector) {
     }
 
     _initializeControllers();
+
+    // Enrich funds with all data (NAV, AUM, CAGR, min purchase) in a single API call
+    await _enrichFundsByIsins();
+
     notifyListeners();
   }
 
+  /// Enrich all selected funds in a single API call using get_schemes_by_isins
+  Future<void> enrichFundsByIsins() => _enrichFundsByIsins();
+
+  Future<void> _enrichFundsByIsins() async {
+    final isins = _selectedFunds
+        .where((f) => f.isin != null && f.isin!.isNotEmpty)
+        .map((f) => f.isin!)
+        .toList();
+    if (isins.isEmpty) return;
+
+    _isFetchingNav = true;
+    notifyListeners();
+
+    try {
+      final schemes = await api.getSchemesByIsins(isins);
+
+      // Build a lookup map by ISIN for O(1) matching
+      final schemeMap = <String, Map<String, dynamic>>{};
+      for (final scheme in schemes) {
+        final isin = scheme['ISIN']?.toString() ?? '';
+        if (isin.isNotEmpty) schemeMap[isin] = scheme;
+      }
+
+      for (int i = 0; i < _selectedFunds.length; i++) {
+        final fund = _selectedFunds[i];
+        final scheme = schemeMap[fund.isin];
+        if (scheme == null) continue;
+
+        _selectedFunds[i] = FundListModel(
+          name: fund.name,
+          schemeName: scheme['schemename']?.toString() ?? fund.schemeName,
+          type: fund.type,
+          fiveYearCAGR: double.tryParse(scheme['5Year']?.toString() ?? '0') ?? fund.fiveYearCAGR,
+          threeYearCAGR: double.tryParse(scheme['3Year']?.toString() ?? '0') ?? fund.threeYearCAGR,
+          aum: double.tryParse(scheme['AUM']?.toString() ?? '0') ?? fund.aum,
+          sharpe: fund.sharpe,
+          aMCCode: scheme['AMC_Code']?.toString() ?? fund.aMCCode,
+          isin: fund.isin,
+          schemeCode: scheme['Scheme_Code']?.toString() ?? fund.schemeCode,
+          minimumPurchaseAmount: double.tryParse(scheme['Minimum_Purchase_Amount']?.toString() ?? '100') ?? fund.minimumPurchaseAmount,
+          nav: (scheme['Cur_Nav'] is num) ? (scheme['Cur_Nav'] as num).toDouble() : (double.tryParse(scheme['Cur_Nav']?.toString() ?? '0') ?? fund.nav),
+          percentage: fund.percentage,
+          isLocked: fund.isLocked,
+        );
+      }
+
+      _updateAllControllerValues();
+    } catch (e) {
+      print("Enrich funds by ISINs error: $e");
+      // Fallback: try old individual calls if bulk API fails
+      await _enrichFundsWithCAGRFallback();
+    }
+
+    _isFetchingNav = false;
+    // Recalculate allocations if amount is already entered
+    final amount = double.tryParse(_basketInvestAmountController.text);
+    if (amount != null && amount > 0) {
+      calculateBasketAllocations(amount);
+    }
+    notifyListeners();
+  }
+
+  /// Fallback: enrich funds individually if bulk API fails
+  Future<void> _enrichFundsWithCAGRFallback() async {
+    try {
+      for (int i = 0; i < _selectedFunds.length; i++) {
+        final fund = _selectedFunds[i];
+        if (fund.fiveYearCAGR > 0 && fund.threeYearCAGR > 0 && fund.nav > 0) continue;
+
+        final searchResult = await api.getSearchMf(fund.name);
+        final items = searchResult.data ?? [];
+
+        final match = items.where((item) => item.iSIN == fund.isin).firstOrNull;
+        if (match != null) {
+          _selectedFunds[i] = FundListModel(
+            name: fund.name,
+            schemeName: fund.schemeName,
+            type: fund.type,
+            fiveYearCAGR: double.tryParse(match.fIVEYEARDATA ?? "0") ?? 0.0,
+            threeYearCAGR: double.tryParse(match.tHREEYEARDATA ?? "0") ?? 0.0,
+            aum: fund.aum > 0 ? fund.aum : (double.tryParse(match.aUM ?? "0") ?? 0.0),
+            sharpe: fund.sharpe,
+            aMCCode: fund.aMCCode,
+            isin: fund.isin,
+            schemeCode: fund.schemeCode,
+            minimumPurchaseAmount: fund.minimumPurchaseAmount,
+            nav: fund.nav > 0 ? fund.nav : (double.tryParse(match.nETASSETVALUE ?? "0") ?? 0.0),
+            percentage: fund.percentage,
+            isLocked: fund.isLocked,
+          );
+        }
+      }
+    } catch (e) {
+      print("Enrich CAGR fallback error: $e");
+    }
+  }
+
   void addFundToStrategy(FundListModel fund) {
+    print('>>> addFundToStrategy: name=${fund.name}, schemeCode=${fund.schemeCode}, isin=${fund.isin}');
     if (!_selectedFunds.any((f) => f.name == fund.name)) {
       final newFund = FundListModel(
         name: fund.name,
@@ -1017,6 +1211,9 @@ Color getSectorAllocationColor(String sector) {
         sharpe: fund.sharpe,
         aMCCode: fund.aMCCode,
         isin: fund.isin,
+        schemeCode: fund.schemeCode,
+        minimumPurchaseAmount: fund.minimumPurchaseAmount,
+        nav: fund.nav,
       );
       _selectedFunds.add(newFund);
 
@@ -1070,10 +1267,9 @@ Color getSectorAllocationColor(String sector) {
     if (index != -1) {
       final roundedPercentage = percentage.round().clamp(0, 100).toDouble();
       _selectedFunds[index].percentage = roundedPercentage;
-
-      _percentageControllers[fund.name]?.text =
-          roundedPercentage.round().toString();
-
+      // Do NOT set controller.text here — _autoRedistributePercentages will
+      // call _updateAllControllerValues, which only updates when text changes,
+      // preserving the cursor for the field currently being typed in.
       _autoRedistributePercentages(index);
       notifyListeners();
     }
@@ -1149,9 +1345,20 @@ Color getSectorAllocationColor(String sector) {
     for (final fund in _selectedFunds) {
       final controller = _percentageControllers[fund.name];
       if (controller != null) {
-        controller.text = fund.percentage.round().toString();
+        final newText = fund.percentage.round().toString();
+        // Only update if the text actually changed — this preserves the cursor
+        // position for whichever field the user is currently editing.
+        if (controller.text != newText) {
+          controller.text = newText;
+        }
       }
     }
+  }
+
+  /// Public method to sync controllers after external weight changes
+  void updateAllControllers() {
+    _updateAllControllerValues();
+    notifyListeners();
   }
 
   void _redistributePercentages() {
@@ -1216,7 +1423,10 @@ Color getSectorAllocationColor(String sector) {
     _selectedDuration = '3Y';
     _editingStrategy = null;
     _investmentError = null;
-    _selectedPersonality = TradingPersonalityType.aurora; // Reset to default personality
+    _analysisData = null;
+    _pendingStrategyName = '';
+    _selectedPersonality = TradingPersonalityType.aurora;
+    _weightingScheme = 'Equi-Weighted';
     notifyListeners();
   }
 
@@ -1264,7 +1474,7 @@ Color getSectorAllocationColor(String sector) {
     
     // Sort categories in preferred order
     Map<String, List<FundListModel>> sortedGrouped = {};
-    const order = ['Equity', 'Hybrid', 'Debt'];
+    const order = ['Equity', 'Hybrid', 'Debt', 'Fixed Income', 'Liquid', 'Solution Oriented', 'Index', 'FoF'];
     
     for (String category in order) {
       if (grouped.containsKey(category)) {
@@ -1283,17 +1493,15 @@ Color getSectorAllocationColor(String sector) {
   }
 
   String _getCategoryFromType(String type) {
-    final lowerType = type.toLowerCase();
-    if (lowerType.contains('equity') || lowerType.contains('elss') || lowerType.contains('large cap') || 
-        lowerType.contains('mid cap') || lowerType.contains('small cap') || lowerType.contains('flexi cap')) {
-      return 'Equity';
-    } else if (lowerType.contains('hybrid') || lowerType.contains('balanced') || lowerType.contains('arbitrage')) {
-      return 'Hybrid';
-    } else if (lowerType.contains('debt') || lowerType.contains('liquid') || lowerType.contains('gilt') || 
-               lowerType.contains('duration') || lowerType.contains('credit') || lowerType.contains('ultra short')) {
-      return 'Debt';
-    }
-    return 'Other';
+    final trimmed = type.trim();
+    if (trimmed.isEmpty) return 'Other';
+    // Handle old uppercase-normalized values from previously saved strategies
+    final lower = trimmed.toLowerCase();
+    if (lower == 'equity') return 'Equity';
+    if (lower == 'debt') return 'Debt';
+    if (lower == 'hybrid') return 'Hybrid';
+    // All other types (Liquid, Solution Oriented, Index, FoF, etc.) — use as-is
+    return trimmed;
   }
 
   // Helper method to extract trading personality from investment details
@@ -1316,6 +1524,18 @@ Color getSectorAllocationColor(String sector) {
     }
     
     return TradingPersonalityType.aurora; // Default fallback
+  }
+
+  String _getWeightingFromInvestmentDetails(String? investmentDetails) {
+    if (investmentDetails == null || !investmentDetails.contains('weighting:')) {
+      return 'Equi-Weighted';
+    }
+    try {
+      final part = investmentDetails.split('weighting:')[1];
+      return part.split('|')[0];
+    } catch (e) {
+      return 'Equi-Weighted';
+    }
   }
 
   // Investment Configuration Methods
@@ -1351,12 +1571,23 @@ Color getSectorAllocationColor(String sector) {
     return _isStrategyValid;
   }
 
+  String? getStrategyValidationError() {
+    if (_selectedFunds.isEmpty) return 'Please add at least one fund';
+    if (totalPercentage.round() != 100) return 'Total weight must equal 100%';
+    if (_selectedFunds.any((fund) => fund.percentage <= 0)) {
+      final zeroFund = _selectedFunds.firstWhere((f) => f.percentage <= 0);
+      return '${zeroFund.name} has 0% weight. Please assign a weight or remove it';
+    }
+    final investmentAmount = double.tryParse(_investmentController.text);
+    if (investmentAmount == null || investmentAmount < 10000) return 'Minimum investment amount is ₹10,000';
+    if (investmentAmount > 1000000000000) return 'Investment amount is too high';
+    return null;
+  }
+
   String? _investmentError;
   String? get investmentError => _investmentError;
 
   String? validateInvestmentAmount(String value) {
-    _investmentController.text = value;
-    
     if (value.isEmpty) {
       _isStrategyValid = false;
       _investmentError = "Please enter Investment amount";
@@ -1543,6 +1774,12 @@ Color getSectorAllocationColor(String sector) {
 
   PortfolioAnalysisModel? _analysisData;
   String? _error;
+
+  // Snapshot of amount & duration used for the last backtest run
+  String? _backtestAmount;
+  String? _backtestDuration;
+  String? get backtestAmount => _backtestAmount;
+  String? get backtestDuration => _backtestDuration;
   
   // Chart selection states
   bool _showBenchmarkComparison = true;
@@ -1688,6 +1925,9 @@ Color getSectorAllocationColor(String sector) {
   try {
     strategyLoader(true);
     _error = null;
+    // Snapshot the settings used for this backtest so the header stays accurate
+    _backtestAmount = _investmentController.text;
+    _backtestDuration = _selectedDuration;
     // Convert selected funds to schema values
     final schemaValues = _convertFundsToSchemaValues(_selectedFunds)
         .map((map) => SchemeValue(
@@ -1764,6 +2004,7 @@ Color getSectorAllocationColor(String sector) {
           'schemeType': fund.schemeType ?? 'EQUITY',
           'isin': fund.iSIN ?? '',
           'amcCode': fund.aMCCode ?? '',
+          'schemeCode': fund.schemeCode ?? '',
           'fiveYearCAGR': 0.0, // Not available in MutualFundList
           'threeYearCAGR': 0.0, // Not available in MutualFundList
           'aum': double.tryParse(fund.aUM ?? '0') ?? 0.0,
@@ -1778,6 +2019,7 @@ Color getSectorAllocationColor(String sector) {
         'schemeType': category.toUpperCase(),
         'isin': '',
         'amcCode': '',
+        'schemeCode': '',
         'fiveYearCAGR': 0.0,
         'threeYearCAGR': 0.0,
         'aum': 0.0,
@@ -1792,6 +2034,7 @@ Color getSectorAllocationColor(String sector) {
         'schemeType': category.toUpperCase(),
         'isin': '',
         'amcCode': '',
+        'schemeCode': '',
         'fiveYearCAGR': 0.0,
         'threeYearCAGR': 0.0,
         'aum': 0.0,
@@ -1855,10 +2098,234 @@ Color getSectorAllocationColor(String sector) {
     }
   }
 
-  // Refresh data
-  // Future<void> refreshData(BacktestRequest request) async {
-  //   await performBacktest(request);
-  // }
+  // ─── BASKET INVEST ──────────────────────────────────────────────────
+
+  final TextEditingController _basketInvestAmountController = TextEditingController();
+  TextEditingController get basketInvestAmountController => _basketInvestAmountController;
+
+  bool _isBasketOrdering = false;
+  bool get isBasketOrdering => _isBasketOrdering;
+
+  int _currentOrderIndex = -1;
+  int get currentOrderIndex => _currentOrderIndex;
+
+  String? _basketInvestError;
+  String? get basketInvestError => _basketInvestError;
+
+  List<BasketFundAllocation> _basketAllocations = [];
+  List<BasketFundAllocation> get basketAllocations => _basketAllocations;
+
+  List<BasketOrderResult> _basketOrderResults = [];
+  List<BasketOrderResult> get basketOrderResults => _basketOrderResults;
+
+  bool _basketOrderCompleted = false;
+  bool get basketOrderCompleted => _basketOrderCompleted;
+
+  /// Calculate per-fund allocation from total investment amount
+  void calculateBasketAllocations(double totalAmount) {
+    _basketInvestError = null;
+
+    if (_selectedFunds.isEmpty) {
+      _basketAllocations = [];
+      _basketInvestError = 'No funds in basket';
+      notifyListeners();
+      return;
+    }
+
+    final totalPerc = _selectedFunds.fold(0.0, (sum, f) => sum + f.percentage);
+
+    // Always compute allocations so the table stays visible
+    List<BasketFundAllocation> allocations = [];
+    double allocatedTotal = 0;
+
+    for (int i = 0; i < _selectedFunds.length; i++) {
+      final fund = _selectedFunds[i];
+      double fundAmount;
+
+      if (i == _selectedFunds.length - 1) {
+        // Last fund gets the remainder to avoid rounding issues
+        fundAmount = totalAmount - allocatedTotal;
+      } else {
+        fundAmount = (totalAmount * fund.percentage / 100).floorToDouble();
+      }
+
+      allocatedTotal += fundAmount;
+
+      final isValid = fundAmount >= fund.minimumPurchaseAmount;
+      final fundNav = fund.nav;
+      final units = fundNav > 0 ? fundAmount / fundNav : 0.0;
+      allocations.add(BasketFundAllocation(
+        fund: fund,
+        allocatedAmount: fundAmount,
+        isValid: isValid,
+        nav: fundNav,
+        estimatedUnits: units,
+        errorMessage: isValid
+            ? null
+            : 'Min ₹${fund.minimumPurchaseAmount.toStringAsFixed(0)} required, getting ₹${fundAmount.toStringAsFixed(0)}',
+      ));
+    }
+
+    _basketAllocations = allocations;
+
+    // Set error if percentages don't total 100%
+    if (totalPerc.round() != 100) {
+      _basketInvestError = 'Fund percentages must total 100% (currently ${totalPerc.round()}%)';
+    } else {
+      // Check if any fund fails minimum
+      final invalidFunds = allocations.where((a) => !a.isValid).toList();
+      if (invalidFunds.isNotEmpty) {
+        _basketInvestError =
+            '${invalidFunds.first.fund.name} needs min ₹${invalidFunds.first.fund.minimumPurchaseAmount.toStringAsFixed(0)} but gets ₹${invalidFunds.first.allocatedAmount.toStringAsFixed(0)}';
+      }
+    }
+
+    notifyListeners();
+  }
+
+  /// Validate and recalculate when user changes percentage in invest dialog
+  void updateBasketFundPercentage(int index, double newPercentage) {
+    if (index < 0 || index >= _selectedFunds.length) return;
+
+    // Don't allow editing locked funds
+    if (_selectedFunds[index].isLocked) return;
+
+    _selectedFunds[index].percentage = newPercentage.round().clamp(0, 100).toDouble();
+
+    // Auto-redistribute remaining % to other funds
+    _autoRedistributePercentages(index);
+
+    // Recalculate if amount is entered
+    final amount = double.tryParse(_basketInvestAmountController.text);
+    if (amount != null && amount > 0) {
+      calculateBasketAllocations(amount);
+    }
+
+    notifyListeners();
+  }
+
+  /// Check if basket is ready to place orders
+  bool get isBasketReadyToOrder {
+    if (_basketAllocations.isEmpty) return false;
+    if (_basketInvestError != null) return false;
+    final totalPerc = _selectedFunds.fold(0.0, (sum, f) => sum + f.percentage);
+    if (totalPerc.round() != 100) return false;
+    return _basketAllocations.every((a) => a.isValid);
+  }
+
+  /// Place lumpsum orders for all funds in basket sequentially
+  Future<void> placeBasketLumpsumOrders() async {
+    if (!isBasketReadyToOrder) return;
+
+    _isBasketOrdering = true;
+    _currentOrderIndex = 0;
+    _basketOrderResults = [];
+    _basketOrderCompleted = false;
+    notifyListeners();
+
+    for (int i = 0; i < _basketAllocations.length; i++) {
+      _currentOrderIndex = i;
+      notifyListeners();
+
+      final allocation = _basketAllocations[i];
+      final schemeCode = allocation.fund.schemeCode ?? '';
+
+      print('>>> [Order ${i + 1}] Fund: ${allocation.fund.name}');
+      print('>>>   schemeCode: "${allocation.fund.schemeCode}"');
+      print('>>>   isin: "${allocation.fund.isin}"');
+      print('>>>   aMCCode: "${allocation.fund.aMCCode}"');
+      print('>>>   schemeName: "${allocation.fund.schemeName}"');
+      print('>>>   amount: ${allocation.allocatedAmount.toStringAsFixed(0)}');
+
+      // Skip funds without valid scheme code
+      if (schemeCode.isEmpty) {
+        _basketOrderResults.add(BasketOrderResult(
+          fund: allocation.fund,
+          amount: allocation.allocatedAmount,
+          isSuccess: false,
+          message: 'Invalid scheme code - fund cannot be ordered',
+        ));
+        notifyListeners();
+        continue;
+      }
+
+      try {
+        final response = await api.getLumpSumOrder(
+          schemeCode,
+          allocation.allocatedAmount.toStringAsFixed(0),
+        );
+
+        print('>>> Response: stat=${response.stat}, orderId=${response.orderId}, remarks=${response.remarks}');
+
+        _basketOrderResults.add(BasketOrderResult(
+          fund: allocation.fund,
+          amount: allocation.allocatedAmount,
+          isSuccess: response.stat == 'Ok',
+          orderId: response.orderId,
+          message: response.remarks ?? (response.stat == 'Ok' ? 'Order placed' : 'Order failed'),
+        ));
+      } catch (e) {
+        print('>>> Error: $e');
+        _basketOrderResults.add(BasketOrderResult(
+          fund: allocation.fund,
+          amount: allocation.allocatedAmount,
+          isSuccess: false,
+          message: 'Error: ${e.toString()}',
+        ));
+      }
+      notifyListeners();
+    }
+
+    _isBasketOrdering = false;
+    _basketOrderCompleted = true;
+    _currentOrderIndex = -1;
+    notifyListeners();
+  }
+
+  /// Fetch current NAV for funds that don't have NAV data
+  bool _isFetchingNav = false;
+  bool get isFetchingNav => _isFetchingNav;
+
+  Future<void> fetchNavForSelectedFunds() async {
+    final fundsWithoutNav = _selectedFunds.where((f) => f.nav <= 0).toList();
+    if (fundsWithoutNav.isEmpty) return;
+
+    _isFetchingNav = true;
+    notifyListeners();
+
+    for (final fund in fundsWithoutNav) {
+      try {
+        if (fund.isin != null && fund.isin!.isNotEmpty) {
+          final navGraph = await api.getMFNavGraph(fund.isin!);
+          if (navGraph.data != null && navGraph.data!.isNotEmpty) {
+            fund.nav = navGraph.data!.last.nav?.toDouble() ?? 0.0;
+          }
+        }
+      } catch (e) {
+        print('Failed to fetch NAV for ${fund.name}: $e');
+      }
+    }
+
+    _isFetchingNav = false;
+    // Recalculate allocations if amount is already entered
+    final amount = double.tryParse(_basketInvestAmountController.text);
+    if (amount != null && amount > 0) {
+      calculateBasketAllocations(amount);
+    }
+    notifyListeners();
+  }
+
+  /// Reset basket invest state
+  void resetBasketInvest() {
+    _basketInvestAmountController.clear();
+    _basketAllocations = [];
+    _basketOrderResults = [];
+    _basketInvestError = null;
+    _isBasketOrdering = false;
+    _basketOrderCompleted = false;
+    _currentOrderIndex = -1;
+    notifyListeners();
+  }
 }
 
 // Helper extension for formatting
