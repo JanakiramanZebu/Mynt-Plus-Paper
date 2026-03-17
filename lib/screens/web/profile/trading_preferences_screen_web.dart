@@ -136,7 +136,7 @@ class _TradingPreferencesScreenWebState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Trading Preferences',
-                        style: MyntWebTextStyles.head(context,
+                        style: MyntWebTextStyles.title(context,
                             fontWeight: MyntFonts.semiBold, color: textColor)),
                     // const SizedBox(height: 2),
                     // Text(
@@ -347,7 +347,7 @@ class _TradingPreferencesScreenWebState
                             color: resolveThemeColor(context,
                                 dark: MyntColors.secondary,
                                 light: MyntColors.primary),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -421,6 +421,7 @@ class _TradingPreferencesScreenWebState
     required int rowIndex,
     required int columnIndex,
     required Widget child,
+    bool isLastInCategory = false,
   }) {
     final isFirstColumn = columnIndex == 0;
     final isLastColumn = columnIndex == 2;
@@ -443,14 +444,22 @@ class _TradingPreferencesScreenWebState
           valueListenable: _hoveredRowIndex,
           builder: (context, hoveredIndex, _) {
             final isRowHovered = hoveredIndex == rowIndex;
+            final dividerColor = resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider);
             return Container(
               padding: cellPadding,
-              color: isRowHovered
-                  ? resolveThemeColor(context,
-                          dark: MyntColors.primaryDark,
-                          light: MyntColors.primary)
-                      .withValues(alpha: 0.08)
-                  : null,
+              decoration: BoxDecoration(
+                color: isRowHovered
+                    ? resolveThemeColor(context,
+                            dark: MyntColors.primaryDark,
+                            light: MyntColors.primary)
+                        .withValues(alpha: 0.08)
+                    : null,
+                border: isLastInCategory
+                    ? Border(
+                        bottom: BorderSide(color: dividerColor, width: 1))
+                    : null,
+              ),
               alignment: Alignment.centerLeft,
               child: child,
             );
@@ -486,6 +495,7 @@ class _TradingPreferencesScreenWebState
         final isInactive = exchStatus == 'I';
         final code = segment.cOMPANYCODE ?? '';
         final displayName = _segmentDisplayNames[code] ?? code;
+        final isLast = i == categorySegments.length - 1;
 
         Color statusColor;
         String statusLabel;
@@ -506,6 +516,7 @@ class _TradingPreferencesScreenWebState
             _buildDataCell(
               rowIndex: rowIdx,
               columnIndex: 0,
+              isLastInCategory: isLast,
               child: Text(
                 i == 0 ? categoryName : '',
                 style: MyntWebTextStyles.tableCell(context,
@@ -515,6 +526,7 @@ class _TradingPreferencesScreenWebState
             _buildDataCell(
               rowIndex: rowIdx,
               columnIndex: 1,
+              isLastInCategory: isLast,
               child: Text(
                 displayName,
                 style: MyntWebTextStyles.tableCell(context, color: textColor),
@@ -523,6 +535,7 @@ class _TradingPreferencesScreenWebState
             _buildDataCell(
               rowIndex: rowIdx,
               columnIndex: 2,
+              isLastInCategory: isLast,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -954,179 +967,255 @@ class _SegmentChangeRequestDialogState
     final canSubmit = (_equity || _fno || _currency || _commodity) &&
         (!_needsProof || _proofBytes != null);
 
+    final bgColor = resolveThemeColor(context,
+        dark: MyntColors.backgroundColorDark,
+        light: MyntColors.backgroundColor);
+    final borderColor = resolveThemeColor(context,
+        dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
+
     return Dialog(
-      backgroundColor: cardBg,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: bgColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: borderColor),
+      ),
+      elevation: 0,
       child: Container(
         width: 480,
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title row
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Segment Change Request',
-                    style: MyntWebTextStyles.body(context,
-                        fontWeight: MyntFonts.semiBold, color: textColor),
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Segment chips (multi-select like Vue's v-chip-group)
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _buildChip('Equity', _equity, widget.equityDisabled,
-                    (v) => setState(() => _equity = v)),
-                _buildChip('F&O', _fno, widget.fnoDisabled,
-                    (v) => setState(() => _fno = v)),
-                _buildChip('Currency', _currency, widget.currencyDisabled,
-                    (v) => setState(() => _currency = v)),
-                _buildChip('Commodity', _commodity, widget.commodityDisabled,
-                    (v) => setState(() => _commodity = v)),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Info text
-            Text(
-              'As per the latest guidelines by SEBI & Exchange, you need to upload any one of the below mentioned document to trade in Derivatives.',
-              style:
-                  MyntWebTextStyles.bodySmall(context, color: subtitleColor),
-            ),
-
-            // File upload section (shown when F&O/Currency/Commodity selected)
-            if (_needsProof) ...[
-              const SizedBox(height: 20),
-              InkWell(
-                onTap: _pickFile,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: resolveThemeColor(context,
-                        dark: MyntColors.listItemBgDark,
-                        light: const Color(0xFFF6F7F7)),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: dividerColor,
-                      style: BorderStyle.solid,
+            // Title row with bottom border
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: dividerColor)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Segment Change Request',
+                      style: MyntWebTextStyles.title(context,
+                          fontWeight: MyntFonts.semiBold, color: textColor),
                     ),
                   ),
-                  child: Column(
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        // borderRadius: BorderRadius.circular(6),
+                        // color: dividerColor.withValues(alpha: 0.3),
+                      ),
+                      child: Icon(Icons.close, size: 16, color: subtitleColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Body content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Select Segments',
+                      style: MyntWebTextStyles.bodySmall(context,
+                          color: subtitleColor, fontWeight: MyntFonts.medium)),
+                  const SizedBox(height: 12),
+
+                  // Segment chips
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
                     children: [
-                      Text('Upload your Income Proof',
-                          style: MyntWebTextStyles.body(context,
-                              fontWeight: MyntFonts.semiBold,
-                              color: primaryColor)),
-                      const SizedBox(height: 4),
-                      Text(
-                          'Select a file or drag it into the box below.',
-                          style: MyntWebTextStyles.caption(context,
-                              color: subtitleColor)),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          borderRadius: BorderRadius.circular(6),
+                      _buildChip('Equity', _equity, widget.equityDisabled,
+                          (v) => setState(() => _equity = v)),
+                      _buildChip('F&O', _fno, widget.fnoDisabled,
+                          (v) => setState(() => _fno = v)),
+                      _buildChip('Currency', _currency, widget.currencyDisabled,
+                          (v) => setState(() => _currency = v)),
+                      _buildChip('Commodity', _commodity, widget.commodityDisabled,
+                          (v) => setState(() => _commodity = v)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Info text
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: primaryColor.withValues(alpha: 0.15)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 16, color: primaryColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'As per the latest guidelines by SEBI & Exchange, you need to upload any one of the below mentioned document to trade in Derivatives.',
+                            style: MyntWebTextStyles.caption(context,
+                                color: subtitleColor),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      ],
+                    ),
+                  ),
+
+                  // File upload section
+                  if (_needsProof) ...[
+                    const SizedBox(height: 20),
+                    InkWell(
+                      onTap: _pickFile,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 24, horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Column(
                           children: [
-                            const Icon(Icons.upload,
-                                size: 16, color: Colors.white),
-                            const SizedBox(width: 6),
-                            Text('Choose File',
-                                style: MyntWebTextStyles.bodySmall(context,
-                                    color: Colors.white,
-                                    fontWeight: MyntFonts.semiBold)),
+                            Container(
+                              width: 44,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: primaryColor.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(Icons.cloud_upload_outlined,
+                                  size: 22, color: primaryColor),
+                            ),
+                            const SizedBox(height: 12),
+                            Text('Upload your Income Proof',
+                                style: MyntWebTextStyles.body(context,
+                                    fontWeight: MyntFonts.semiBold,
+                                    color: textColor)),
+                            const SizedBox(height: 4),
+                            Text(
+                                'Click to browse or drag & drop your file here',
+                                style: MyntWebTextStyles.caption(context,
+                                    color: subtitleColor)),
+                            const SizedBox(height: 6),
+                            Text('PDF only, max 5MB',
+                                style: MyntWebTextStyles.caption(context,
+                                    color: subtitleColor.withValues(
+                                        alpha: 0.6))),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text('Accepted formats: .pdf (Max size: 5MB)',
-                          style: MyntWebTextStyles.caption(context,
-                              color: subtitleColor)),
-                    ],
-                  ),
-                ),
-              ),
-              if (_proofFileName != null) ...[
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle, size: 16, color: successColor),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(_proofFileName!,
-                          style: MyntWebTextStyles.bodySmall(context,
-                              color: textColor)),
                     ),
-                  ],
-                ),
-              ],
-            ],
-            const SizedBox(height: 24),
-
-            // Submit button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: (canSubmit && !_submitting)
-                    ? () async {
-                        setState(() => _submitting = true);
-                        await widget.onSubmit(
-                          _equity,
-                          _fno,
-                          _currency,
-                          _commodity,
-                          _proofBytes,
-                          _proofFileName,
-                        );
-                        if (mounted) setState(() => _submitting = false);
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  disabledBackgroundColor: dividerColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
-                ),
-                child: _submitting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
+                    if (_proofFileName != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: successColor.withValues(alpha: 0.06),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: successColor.withValues(alpha: 0.2)),
                         ),
-                      )
-                    : Text(
-                        'Submit',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold,
-                            color: Colors.white),
+                        child: Row(
+                          children: [
+                            Icon(Icons.check_circle,
+                                size: 16, color: successColor),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(_proofFileName!,
+                                  style: MyntWebTextStyles.bodySmall(context,
+                                      color: textColor,
+                                      fontWeight: MyntFonts.medium)),
+                            ),
+                            const Spacer(),
+                            InkWell(
+                              onTap: () => setState(() {
+                                _proofBytes = null;
+                                _proofFileName = null;
+                              }),
+                              child: Icon(Icons.close,
+                                  size: 14, color: subtitleColor),
+                            ),
+                          ],
+                        ),
                       ),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Submit button with top border
+            Container(
+              padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: dividerColor)),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: (canSubmit && !_submitting)
+                      ? () async {
+                          setState(() => _submitting = true);
+                          await widget.onSubmit(
+                            _equity,
+                            _fno,
+                            _currency,
+                            _commodity,
+                            _proofBytes,
+                            _proofFileName,
+                          );
+                          if (mounted) setState(() => _submitting = false);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.secondary,
+                        light: MyntColors.primary),
+                    disabledBackgroundColor: dividerColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _submitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 25,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Submit',
+                          style: MyntWebTextStyles.body(context,
+                              fontWeight: MyntFonts.semiBold,
+                              color: Colors.white),
+                        ),
+                ),
               ),
             ),
           ],
@@ -1146,34 +1235,23 @@ class _SegmentChangeRequestDialogState
     final primaryColor = resolveThemeColor(context,
         dark: MyntColors.primaryDark, light: MyntColors.primary);
 
-    return InkWell(
+    return GestureDetector(
       onTap: disabled ? null : () => onChanged(!selected),
-      borderRadius: BorderRadius.circular(20),
       child: Opacity(
         opacity: disabled ? 0.4 : 1.0,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: selected ? primaryColor.withValues(alpha: 0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(4),
             border: Border.all(
                 color: selected ? primaryColor : dividerColor),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (selected)
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: Icon(Icons.check, size: 14, color: primaryColor),
-                ),
-              Text(
-                label,
-                style: MyntWebTextStyles.bodySmall(context,
-                    fontWeight: MyntFonts.medium,
-                    color: selected ? primaryColor : (disabled ? subtitleColor : textColor)),
-              ),
-            ],
+          child: Text(
+            label,
+            style: MyntWebTextStyles.bodySmall(context,
+                fontWeight: MyntFonts.medium,
+                color: selected ? primaryColor : (disabled ? subtitleColor : textColor)),
           ),
         ),
       ),

@@ -193,7 +193,7 @@ class _FormDownloadScreenWebState extends ConsumerState<FormDownloadScreenWeb> {
                               color: resolveThemeColor(context,
                                   dark: MyntColors.secondary,
                                   light: MyntColors.primary),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               'CMR Download',

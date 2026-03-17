@@ -46,10 +46,18 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
     super.initState();
     _horizontalScrollController = ScrollController();
     _tableScrollController = ScrollController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ledger = ref.read(ledgerProvider);
+      if (ledger.positiondata == null) {
+        ledger.fetchposition(context);
+      }
+    });
   }
 
   @override
   void dispose() {
+    ref.read(ledgerProvider).ccancelalltimes();
     _horizontalScrollController.dispose();
     _tableScrollController.dispose();
     _hoveredRowIndex.dispose();
@@ -240,7 +248,7 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         const SizedBox(width: 8),
         Text(
           'Positions',
-          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
+          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
         ),
       ],
     );
@@ -1051,7 +1059,7 @@ class _PositionFilterPopoverState extends State<_PositionFilterPopover> {
               // Apply button
               SizedBox(
                 width: double.infinity,
-                height: 34,
+                height: 35,
                 child: ElevatedButton(
                   onPressed: () => widget.onApply(_selected),
                   style: ElevatedButton.styleFrom(
@@ -1060,7 +1068,7 @@ class _PositionFilterPopoverState extends State<_PositionFilterPopover> {
                         light: MyntColors.primary),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     elevation: 0,
                   ),

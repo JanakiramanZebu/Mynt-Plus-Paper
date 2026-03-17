@@ -136,9 +136,9 @@ class _HelpSupportScreenWebState extends ConsumerState<HelpSupportScreenWeb> {
       children: [
         Text(
           'Customer Support & Assistance',
-          style: MyntWebTextStyles.head(
+          style: MyntWebTextStyles.title(
             context,
-            fontWeight: MyntFonts.bold,
+            fontWeight: MyntFonts.semiBold,
             darkColor: MyntColors.textPrimaryDark,
             lightColor: MyntColors.textPrimary,
           ),
@@ -473,14 +473,14 @@ class _HelpSupportScreenWebState extends ConsumerState<HelpSupportScreenWeb> {
           const Spacer(),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 35,
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitEnquiry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: resolveThemeColor(context,
                     dark: MyntColors.secondary, light: MyntColors.primary),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 elevation: 0,
               ),

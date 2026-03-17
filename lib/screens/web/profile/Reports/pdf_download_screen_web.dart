@@ -349,7 +349,7 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
         const SizedBox(width: 8),
         Text(
           'PDF Download',
-          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
+          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
         ),
       ],
     );

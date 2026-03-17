@@ -602,7 +602,7 @@ class _ProfileDetailsScreenWebState
                       Text(
                         "Profile Details",
                         style: MyntWebTextStyles.title(context,
-                          color: textColor, fontWeight: MyntFonts.medium,
+                          color: textColor, fontWeight: MyntFonts.semiBold,
                         ).copyWith(decoration: TextDecoration.none),
                       ),
                     ],
@@ -2015,11 +2015,13 @@ class _IncomeChangeDialogState extends State<_IncomeChangeDialog> {
                           }
                         });
                       },
-                selectedColor: primaryColor,
+                selectedColor: resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary),
                 disabledColor: chipBg,
                 backgroundColor: chipBg,
                 side: BorderSide(
-                  color: isSelected ? primaryColor : borderColor,
+                  color: isSelected ? resolveThemeColor(context,
+            dark: MyntColors.secondary, light: MyntColors.primary) : borderColor,
                 ),
                 labelStyle: MyntWebTextStyles.bodySmall(context,
                   color: isDisabled
@@ -2263,11 +2265,11 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
   Color get _textSecondary =>
       widget.isDarkMode ? colors.textSecondaryDark : colors.textSecondaryLight;
   Color get _dialogBg =>
-      widget.isDarkMode ? const Color(0xFF121212) : const Color(0xFFF1F3F8);
+      widget.isDarkMode ? MyntColors.cardDark : MyntColors.card;
   Color get _inputFillColor =>
-      widget.isDarkMode ? const Color(0xFF2C2C2C) : const Color(0xFFF6F7F7);
+      widget.isDarkMode ? const Color(0xFF1C2333) : const Color(0xFFF6F7F9);
   Color get _borderColor =>
-      widget.isDarkMode ? Colors.grey[700]! : const Color(0xFFD0D3D6);
+      widget.isDarkMode ? MyntColors.dividerDark : MyntColors.divider;
 
   final _proofTypes = [
     'Aadhar Card',
@@ -2443,42 +2445,70 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
         '${widget.clientData.cLRESIADD1 ?? ''} ${widget.clientData.cLRESIADD2 ?? ''} ${widget.clientData.cLRESIADD3 ?? ''}';
 
     return Dialog(
-      backgroundColor: resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      backgroundColor: _dialogBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: _borderColor,
+          width: 0.5,
+        ),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 440),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: _borderColor),
+                ),
+              ),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'Address change request',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: _textPrimary,
-                    ),
+                    style: MyntWebTextStyles.title(context,
+                        color: _textPrimary,
+                    )
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close, size: 20, color: _textSecondary),
+                  Material(
+                    color: Colors.transparent,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () => Navigator.pop(context),
+                      borderRadius: BorderRadius.circular(20),
+                      splashColor: (widget.isDarkMode
+                              ? MyntColors.primaryDark
+                              : MyntColors.primary)
+                          .withValues(alpha: 0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(Icons.close_rounded,
+                            size: 20, color: _textSecondary),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+            ),
+            // Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
               // Options view: Aadhaar (Digilocker) / Type manually
               if (!_showManualForm) ...[
                 SizedBox(
                   width: double.infinity,
-                  height: 44,
+                  height: 45,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -2486,9 +2516,12 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: resolveThemeColor(context,
-            dark: MyntColors.secondary, light: MyntColors.primary),
+                          dark: MyntColors.secondary,
+                          light: MyntColors.primary),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: const Text(
@@ -2830,6 +2863,9 @@ class _AddressChangeDialogState extends State<_AddressChangeDialog> {
                 ),
             ],
           ),
+        ),
+            ),
+          ],
         ),
       ),
     );

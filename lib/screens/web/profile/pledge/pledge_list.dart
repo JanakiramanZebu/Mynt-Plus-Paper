@@ -149,7 +149,7 @@ class _PledgeList extends State<PledgeList> {
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: 45,
+                      height: 35,
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pop(context);
@@ -166,7 +166,7 @@ class _PledgeList extends State<PledgeList> {
                                   width: 1,
                                 ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text("Cancel",
@@ -181,7 +181,7 @@ class _PledgeList extends State<PledgeList> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: SizedBox(
-                      height: 45,
+                      height: 35,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                             elevation: 0,
@@ -190,7 +190,7 @@ class _PledgeList extends State<PledgeList> {
                                 dark: MyntColors.primaryDark,
                                 light: MyntColors.primary),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5))),
+                                borderRadius: BorderRadius.circular(4))),
                         onPressed: () async {
                           ledgerprovider.beforecdsl(
                               context,

@@ -235,7 +235,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
             .inDays;
         if (diff > 90) {
           _dateValidationMsg =
-              'You can only select a date range of Three month.';
+              'You can only select a date range of three month.';
           _tempStartDate = date;
           _tempEndDate = null;
           return;
@@ -328,10 +328,10 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
               children: [
                 Text(
                   'Tradebook',
-                  style: MyntWebTextStyles.head(context,
+                  style: MyntWebTextStyles.title(context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
-                      fontWeight: FontWeight.w500),
+                      fontWeight: MyntFonts.semiBold),
                 ),
                 // const SizedBox(height: 2),
                 // Text(

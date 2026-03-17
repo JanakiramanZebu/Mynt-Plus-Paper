@@ -66,10 +66,10 @@ class _PledgeMainScreen extends State<PledgeHistoryMainScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Pledge History',
-                        style: MyntWebTextStyles.head(context,
+                        style: MyntWebTextStyles.title(context,
                             darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textPrimary,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: MyntFonts.semiBold),
                       ),
                     ],
                   ),

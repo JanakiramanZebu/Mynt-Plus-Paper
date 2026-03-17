@@ -744,7 +744,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(4)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -756,7 +756,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                   side: BorderSide(color: borderColor),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                      borderRadius: BorderRadius.circular(4)),
                 ),
                 child: Text('Skip for now',
                     style: MyntWebTextStyles.bodySmall(context,
@@ -830,7 +830,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: resolveThemeColor(context,
+        dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
         border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -1130,6 +1131,8 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     final isEdit = _hasExistingNominee;
     final cardBg = resolveThemeColor(context,
         dark: MyntColors.cardDark, light: MyntColors.card);
+    final hoverBg = resolveThemeColor(context,
+        dark: const Color(0xFF21262D), light: const Color(0xFFF6F8FA));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1140,10 +1143,9 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               color: subtitleColor, fontWeight: MyntFonts.medium)
               .copyWith(decoration: TextDecoration.none),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Row(
           children: [
-            // Primary action button
             _buildChoiceButton(
               icon: isEdit ? Icons.edit_outlined : Icons.shield_outlined,
               label: isEdit ? 'Edit your nominee' : 'Add Nominee',
@@ -1155,6 +1157,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               subtitleColor: subtitleColor,
               borderColor: borderColor,
               cardBg: cardBg,
+              hoverBg: hoverBg,
               onTap: () {
                 setState(() {
                   _yesOrNo = 'yes';
@@ -1162,8 +1165,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
                 });
               },
             ),
-            const SizedBox(width: 12),
-            // Secondary action button
+            const SizedBox(width: 16),
             _buildChoiceButton(
               icon: Icons.schedule_outlined,
               label: 'Skip for now',
@@ -1175,6 +1177,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               subtitleColor: subtitleColor,
               borderColor: borderColor,
               cardBg: cardBg,
+              hoverBg: hoverBg,
               onTap: () {
                 setState(() {
                   _yesOrNo = 'no';
@@ -1198,21 +1201,25 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
     required Color subtitleColor,
     required Color borderColor,
     required Color cardBg,
+    required Color hoverBg,
     required VoidCallback onTap,
   }) {
+    final selectedBg = cardBg;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
+        hoverColor: isSelected ? Colors.transparent : hoverBg,
+        splashColor: primaryColor.withValues(alpha: 0.08),
         child: Container(
-          width: 200,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          width: 240,
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isSelected
-                ? (isPrimary ? primaryColor.withValues(alpha: 0.06) : cardBg)
-                : cardBg,
-            borderRadius: BorderRadius.circular(10),
+            color: isSelected ? selectedBg : cardBg,
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? primaryColor : borderColor,
               width: isSelected ? 1.5 : 1,
@@ -1221,7 +1228,9 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isSelected
                       ? primaryColor.withValues(alpha: 0.1)
@@ -1235,6 +1244,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(label,
@@ -1400,7 +1410,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             backgroundColor: Colors.transparent,
             shape: StadiumBorder(
                 side: BorderSide(
-                    color: _activePanel == 1 ? primaryColor : borderColor)),
+                    color: _activePanel == 1 ? borderColor : borderColor)),
           ),
         if (_nomineeCount >= 3)
           ChoiceChip(
@@ -1494,7 +1504,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             }),
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(4)),
               side: BorderSide(color: primaryColor),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
@@ -1513,7 +1523,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             }),
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(4)),
               side: BorderSide(color: primaryColor),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
@@ -1530,7 +1540,7 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
             backgroundColor: resolveThemeColor(context,
             dark: MyntColors.secondary, light: MyntColors.primary),
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(4)),
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
           ),
           child: _loading

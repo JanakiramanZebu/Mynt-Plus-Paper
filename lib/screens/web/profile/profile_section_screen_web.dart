@@ -262,14 +262,14 @@ class _ProfileSectionScreenWebState
                     onTap: (bankData != null && bankData.length >= 5)
                         ? null
                         : () => _showAddEditBankDialog(theme),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(3),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: resolveThemeColor(context, dark: 
                         MyntColors.secondary, light: MyntColors.primary),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -1565,15 +1565,15 @@ class _ProfileSectionScreenWebState
                       },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 12),
+                 padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: (_ddpiActivateLoading ||
                             ddpiStatus == 'e-signed pending' ||
                             ddpiStatus == 'e-signed completed')
                         ? resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary).withValues(alpha: 0.4)
                         : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: _ddpiActivateLoading
                       ? const SizedBox(
@@ -2338,12 +2338,12 @@ color: resolveThemeColor(context,
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
+                          horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: resolveThemeColor(context,
                     dark: MyntColors.cardBorderDark,
                     light: MyntColors.cardBorder),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 "Enable MTF",
@@ -3104,11 +3104,11 @@ color: resolveThemeColor(context,
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                          horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: resolveThemeColor(context,
                           dark: MyntColors.secondary, light: MyntColors.primary),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       "Initiate Closure",
@@ -3386,7 +3386,7 @@ color: resolveThemeColor(context,
     final String stat = balCheck['stat'] ?? '';
 
     // Negative balance → insufficient funds
-    if (msg1 == 'negative legeder balance') {
+    if (msg1 == 'negative ledger balance') {
       Navigator.pop(dialogCtx);
       if (mounted) {
         warningMessage(context,
@@ -4132,7 +4132,7 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
         width: 420,
         decoration: BoxDecoration(
           color: dialogBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: _borderColor),
           boxShadow: shadow,
         ),
@@ -4176,8 +4176,7 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                     children: [
 
                 // Account Type chips
-                Wrap(
-                  spacing: 8,
+                Row(
                   children: ['Saving', 'Current'].map((type) {
                     final selected = _accountType == type;
                     final primaryColor = resolveThemeColor(context,
@@ -4186,31 +4185,35 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                         dark: MyntColors.cardBorderDark, light: MyntColors.cardBorder);
                     final textColor = resolveThemeColor(context,
                         dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-                    return ChoiceChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (selected) ...[
-                            const Icon(Icons.check, size: 16, color: Colors.white),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(type),
-                        ],
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: SizedBox(
+                        width: 100,
+                        child: ChoiceChip(
+                          label: SizedBox(
+                            width: double.infinity,
+                            child: Center(child: Text(type)),
+                          ),
+                          showCheckmark: false,
+                          selected: selected,
+                          selectedColor: primaryColor,
+                          backgroundColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                            side: BorderSide(
+                              color: selected ? primaryColor : chipBorderColor,
+                            ),
+                          ),
+                          labelStyle: MyntWebTextStyles.bodySmall(context,
+                            color: selected ? Colors.white : textColor,
+                            fontWeight: selected ? MyntFonts.semiBold : MyntFonts.regular,
+                          ).copyWith(decoration: TextDecoration.none),
+                          labelPadding: EdgeInsets.zero,
+                          onSelected: (_) {
+                            setState(() => _accountType = type);
+                          },
+                        ),
                       ),
-                      showCheckmark: false,
-                      selected: selected,
-                      selectedColor: primaryColor,
-                      backgroundColor: Colors.transparent,
-                      labelStyle: MyntWebTextStyles.bodySmall(context,
-                        color: selected ? Colors.white : textColor,
-                        fontWeight: selected ? MyntFonts.semiBold : MyntFonts.regular,
-                      ).copyWith(decoration: TextDecoration.none),
-                      side: BorderSide(
-                        color: selected ? primaryColor : chipBorderColor,
-                      ),
-                      onSelected: (_) {
-                        setState(() => _accountType = type);
-                      },
                     );
                   }).toList(),
                 ),
@@ -4355,7 +4358,7 @@ class _BankChangeDialogState extends State<_BankChangeDialog> {
                               horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,

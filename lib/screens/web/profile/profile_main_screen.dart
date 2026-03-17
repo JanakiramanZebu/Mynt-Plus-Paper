@@ -1970,7 +1970,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
         return Dialog(
           backgroundColor: resolveThemeColor(context,
             dark: MyntColors.cardDark, light: MyntColors.card),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Container(
             width: 360,
             padding: const EdgeInsets.all(24),
@@ -2074,7 +2074,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                               color: resolveThemeColor(context,
                                 dark: MyntColors.secondary,
                                 light: MyntColors.primary),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2110,7 +2110,7 @@ class _MyAccountScreenState extends ConsumerState<MyAccountScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
                                   color: resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error),
                                 ),

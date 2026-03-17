@@ -198,10 +198,10 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
               children: [
                 Text(
                   'Event calendar',
-                  style: MyntWebTextStyles.head(context,
+                  style: MyntWebTextStyles.title(context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
-                      fontWeight: FontWeight.w600),
+                      fontWeight: MyntFonts.semiBold),
                 ),
                 // const SizedBox(height: 2),
                 // Text(

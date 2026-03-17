@@ -129,7 +129,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
             children: [
               Text('Tax P&L',
                   style: MyntWebTextStyles.title(context,
-                      fontWeight: FontWeight.w600)),
+                      fontWeight: MyntFonts.semiBold)),
               // const SizedBox(height: 2),
               // Text('Tax P&L Data',
               //     style: MyntWebTextStyles.caption(context,
@@ -361,7 +361,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                         style: ElevatedButton.styleFrom(
                           backgroundColor:resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                              borderRadius: BorderRadius.circular(4)),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
                         child: Text('Download',

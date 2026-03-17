@@ -195,7 +195,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
         Text(
           'Contract Note',
           style:
-              MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
+              MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
         ),
       ],
     );

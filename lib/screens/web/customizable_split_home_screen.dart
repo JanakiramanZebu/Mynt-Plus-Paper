@@ -3259,6 +3259,11 @@ class _CustomizableSplitHomeScreenState
     // Update subscription manager with active screen
     _updateSubscriptionManagerForPanels();
 
+    // Cancel position polling timer when navigating away from reportPositions
+    if (screenType != ScreenType.reportPositions) {
+      ref.read(ledgerProvider).ccancelalltimes();
+    }
+
     // Only call handlers if this is not the initial load
     if (_isInitialLoad) {
       return;

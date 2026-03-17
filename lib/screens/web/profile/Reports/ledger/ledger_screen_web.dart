@@ -174,7 +174,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
         const SizedBox(width: 8),
         Text(
           'Ledger',
-          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
+          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
         ),
       ],
     );
@@ -779,11 +779,11 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
         final double totalWidth = constraints.maxWidth;
         final double dateWidth = totalWidth * 0.12;
         final double exchWidth = totalWidth * 0.10;
-        final double typeWidth = totalWidth * 0.10;
-        final double debitWidth = totalWidth * 0.15;
-        final double creditWidth = totalWidth * 0.15;
-        final double netWidth = totalWidth * 0.15;
-        final double detailsWidth = totalWidth * 0.23;
+        final double typeWidth = totalWidth * 0.18;
+        final double debitWidth = totalWidth * 0.10;
+        final double creditWidth = totalWidth * 0.10;
+        final double netWidth = totalWidth * 0.10;
+        final double detailsWidth = totalWidth * 0.30;
 
         final columnWidths = {
           0: shadcn.FixedTableSize(dateWidth),
@@ -1643,7 +1643,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
                               dark: MyntColors.secondary,
                               light: MyntColors.primary),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                              borderRadius: BorderRadius.circular(4)),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
                         child: Text('Download',

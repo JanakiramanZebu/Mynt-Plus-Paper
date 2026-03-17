@@ -756,7 +756,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                             : colors.colorBlack,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: TextWidget.subText(
@@ -881,7 +881,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text(
@@ -922,7 +922,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit'),
@@ -952,7 +952,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 12, horizontal: 12),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: Text('Submit otp'),
@@ -1052,7 +1052,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -1088,7 +1088,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: Text('Submit'),
@@ -1116,7 +1116,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                         padding: const EdgeInsets.symmetric(
                             vertical: 12, horizontal: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       child: const Text('Submit otp'),
@@ -1368,7 +1368,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
             ),
@@ -1390,7 +1390,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: Text(
@@ -1457,7 +1457,7 @@ class _ProfileDetailsBankState extends ConsumerState<ProfileDetailsBank> {
                       padding: const EdgeInsets.symmetric(
                           vertical: 12, horizontal: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                     child: const Text('Submit'),

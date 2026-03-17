@@ -296,10 +296,10 @@ class _PledgeApproveListScreenState extends State<PledgeApproveListScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Approved Securities',
-                        style: MyntWebTextStyles.head(context,
+                        style: MyntWebTextStyles.title(context,
                             darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textPrimary,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: MyntFonts.semiBold),
                       ),
                     ],
                   ),

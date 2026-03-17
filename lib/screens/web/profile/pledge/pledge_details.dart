@@ -238,7 +238,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: resolveThemeColor(context, dark: MyntColors.backgroundColorDark, light: MyntColors.backgroundColor),
+              color: resolveThemeColor(context, dark: MyntColors.cardDark, light: MyntColors.card),
             ),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,7 +668,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                             : SizedBox(),
                         SafeArea(
                           child: Container(
-                              height: 45,
+                              height: 35,
                               width: screenWidth,
                               margin: const EdgeInsets.only(top: 8.0),
                               child: ElevatedButton(
@@ -686,7 +686,7 @@ class _PledgeDeytails extends State<PledgeDeytails> {
                                           : resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
-                                              BorderRadius.circular(5))),
+                                              BorderRadius.circular(4))),
                                   onPressed: () {
                                     if ((ledgerdata.screenpledge ==
                                                 'pledge' &&

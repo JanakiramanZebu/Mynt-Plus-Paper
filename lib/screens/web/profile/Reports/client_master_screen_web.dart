@@ -37,7 +37,7 @@ class _ClientMasterScreenWebState extends ConsumerState<ClientMasterScreenWeb> {
               const SizedBox(width: 8),
               Text(
                 'Client Master (CMR)',
-                style: MyntWebTextStyles.head(context,
+                style: MyntWebTextStyles.title(context,
                     fontWeight: MyntFonts.semiBold),
               ),
             ],

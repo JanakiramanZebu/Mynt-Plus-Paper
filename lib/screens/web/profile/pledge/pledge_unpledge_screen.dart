@@ -237,7 +237,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                   const SizedBox(height: 32),
                   SizedBox(
                     width: 200,
-                    height: 44,
+                    height: 35,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
@@ -245,7 +245,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                             dark: MyntColors.primaryDark,
                             light: MyntColors.primary),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                       onPressed: () {
@@ -447,7 +447,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                               ),
                               const SizedBox(width: 12),
                               SizedBox(
-                                height: 38,
+                                height: 35,
                                 child: ElevatedButton(
                                   onPressed: () {
                                     ledgerprovider
@@ -476,7 +476,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                         RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.circular(
-                                              5),
+                                              4),
                                     ),
                                   ),
                                   child: Text("Cancel",
@@ -489,7 +489,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                               ),
                               const SizedBox(width: 10),
                               SizedBox(
-                                height: 38,
+                                height: 35,
                                 child: ElevatedButton(
                                   style:
                                       ElevatedButton.styleFrom(
@@ -505,7 +505,7 @@ class _PledgenUnpledgeScreenState extends State<PledgenUnpledge> {
                                         RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.circular(
-                                              5),
+                                              4),
                                     ),
                                   ),
                                           onPressed: () {

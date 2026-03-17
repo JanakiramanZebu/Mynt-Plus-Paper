@@ -47,10 +47,10 @@ class PledgenUnpledgeResponse extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         'Pledge Report Details',
-                        style: MyntWebTextStyles.head(context,
+                        style: MyntWebTextStyles.title(context,
                             darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textPrimary,
-                            fontWeight: FontWeight.w500),
+                            fontWeight: MyntFonts.semiBold),
                       ),
                     ],
                   ),

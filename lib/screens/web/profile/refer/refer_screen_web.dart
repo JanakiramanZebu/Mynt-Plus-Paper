@@ -255,11 +255,11 @@ class _ReferScreenWebState extends ConsumerState<ReferScreenWeb> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
-                  minimumSize: const Size(0, 48),
+                  minimumSize: const Size(0, 35),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   elevation: 0,
                 ),
@@ -272,12 +272,12 @@ class _ReferScreenWebState extends ConsumerState<ReferScreenWeb> {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 48),
+                  minimumSize: const Size(0, 35),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 20, vertical: 14),
                   side: BorderSide(color: borderColor),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
                 child: Text(

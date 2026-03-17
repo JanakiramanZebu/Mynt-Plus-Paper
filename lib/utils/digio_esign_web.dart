@@ -187,7 +187,7 @@ String _escapeJs(String value) {
 //  DIGILOCKER OAUTH HELPERS (same-window redirect, like Vue)
 // ═══════════════════════════════════════════════════════════════════════
 
-/// Navigates the current window to Digilocker OAuth (same-window redirect).
+/// Opens Digilocker OAuth in a new browser tab.
 /// After auth, Digilocker redirects back to profile.mynt.in/profile?code=xxx&state=yyy.
 /// The Flutter app reads code/state from URL on reload and calls the API.
 void launchDigilockerAuth() {
@@ -197,8 +197,8 @@ void launchDigilockerAuth() {
       '?response_type=code&client_id=A987F208'
       '&state=$stateId';
 
-  // Same-window redirect (like Vue: window.location.href = url)
-  html.window.location.href = url;
+  // Open in new tab
+  html.window.open(url, '_blank');
 }
 
 /// Check if current URL has Digilocker callback params (code & state).

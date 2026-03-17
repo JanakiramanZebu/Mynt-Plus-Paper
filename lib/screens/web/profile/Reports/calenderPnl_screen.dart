@@ -84,23 +84,6 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final ledgerprovider = ref.read(ledgerProvider);
-    if (_isInitialized) {
-      if (!ledgerprovider.hasDataForSegment(ledgerprovider.selectedSegment)) {
-        ledgerprovider.fetchcalenderpnldata(
-          context,
-          ledgerprovider.startDate,
-          ledgerprovider.today,
-          ledgerprovider.selectedSegment,
-        );
-      } else {
-        ledgerprovider.refreshCurrentSegmentUI();
-      }
-    }
-  }
 
   @override
   void dispose() {
@@ -260,10 +243,10 @@ class _CalenderpnlScreenState extends ConsumerState<CalenderpnlScreen>
           Expanded(
             child: Text(
               'P&L Summary',
-              style: MyntWebTextStyles.head(context,
+              style: MyntWebTextStyles.title(context,
                   darkColor: MyntColors.textPrimaryDark,
                   lightColor: MyntColors.textPrimary,
-                  fontWeight: FontWeight.w500),
+                  fontWeight: MyntFonts.semiBold),
             ),
           ),
           // Date range button
@@ -2274,30 +2257,79 @@ class _WebDailyCalendar extends StatelessWidget {
       current = current.add(const Duration(days: 7));
     }
 
-    // Group weeks by month
+    // Group weeks by month — split weeks that span two months
     final monthGroups = <_MonthGroup>[];
     int? currentMonthVal;
     int? currentYear;
     List<List<DateTime?>> currentGroup = [];
 
     for (final week in weeks) {
-      final firstDate =
-          week.firstWhere((d) => d != null, orElse: () => null);
-      if (firstDate != null &&
-          (firstDate.month != currentMonthVal ||
-              firstDate.year != currentYear)) {
-        if (currentGroup.isNotEmpty) {
-          monthGroups.add(_MonthGroup(
-            month: currentMonthVal!,
-            year: currentYear!,
-            weeks: List.from(currentGroup),
-          ));
-        }
-        currentMonthVal = firstDate.month;
-        currentYear = firstDate.year;
-        currentGroup = [week];
-      } else {
+      final datesInWeek = week.where((d) => d != null).toList();
+      if (datesInWeek.isEmpty) {
         currentGroup.add(week);
+        continue;
+      }
+
+      final firstDate = datesInWeek.first!;
+      final firstMonth = firstDate.month;
+      final firstYear = firstDate.year;
+
+      // Check if this week spans multiple months
+      final spansMultipleMonths = datesInWeek
+          .any((d) => d!.month != firstMonth || d.year != firstYear);
+
+      if (!spansMultipleMonths) {
+        // Entire week belongs to one month
+        if (firstMonth != currentMonthVal || firstYear != currentYear) {
+          if (currentGroup.isNotEmpty) {
+            monthGroups.add(_MonthGroup(
+              month: currentMonthVal ?? firstMonth,
+              year: currentYear ?? firstYear,
+              weeks: List.from(currentGroup),
+            ));
+          }
+          currentMonthVal = firstMonth;
+          currentYear = firstYear;
+          currentGroup = [week];
+        } else {
+          currentGroup.add(week);
+        }
+      } else {
+        // Week spans two months — split into two filtered weeks
+        final firstMonthWeek = week
+            .map((d) => (d != null && d.month == firstMonth && d.year == firstYear) ? d : null)
+            .toList();
+        final secondMonthWeek = week
+            .map((d) => (d != null && (d.month != firstMonth || d.year != firstYear)) ? d : null)
+            .toList();
+
+        // Add first part to current group
+        if (firstMonth != currentMonthVal || firstYear != currentYear) {
+          if (currentGroup.isNotEmpty) {
+            monthGroups.add(_MonthGroup(
+              month: currentMonthVal ?? firstMonth,
+              year: currentYear ?? firstYear,
+              weeks: List.from(currentGroup),
+            ));
+          }
+          currentMonthVal = firstMonth;
+          currentYear = firstYear;
+          currentGroup = [firstMonthWeek];
+        } else {
+          currentGroup.add(firstMonthWeek);
+        }
+
+        // Close current month group and start new one for second month
+        monthGroups.add(_MonthGroup(
+          month: currentMonthVal ?? firstMonth,
+          year: currentYear ?? firstYear,
+          weeks: List.from(currentGroup),
+        ));
+
+        final secondDate = secondMonthWeek.firstWhere((d) => d != null)!;
+        currentMonthVal = secondDate.month;
+        currentYear = secondDate.year;
+        currentGroup = [secondMonthWeek];
       }
     }
     if (currentGroup.isNotEmpty && currentMonthVal != null) {
@@ -2321,7 +2353,7 @@ class _WebDailyCalendar extends StatelessWidget {
       builder: (context, constraints) {
         // Calculate cell size to fill 100% width
         // Total width = dayLabels + sum(month groups) + gaps between months
-        final totalWeeks = weeks.length;
+        final totalWeeks = monthGroups.fold<int>(0, (sum, g) => sum + g.weeks.length);
         final totalMonthGaps = (monthGroups.length - 1) * monthGap;
         final availableWidth =
             constraints.maxWidth - dayLabelWidth - totalMonthGaps;
@@ -2357,27 +2389,18 @@ class _WebDailyCalendar extends StatelessWidget {
                     dark: MyntColors.profitDark, light: MyntColors.profit).withAlpha(900);
           }
 
-          return Tooltip(
-            message:
+          final todayBorderColor = resolveThemeColor(context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary);
+
+          return _HoverableHeatmapCell(
+            tooltipMessage:
                 '${DateFormat('dd MMM yyyy').format(date)}: ${value != null ? '₹${value.toStringAsFixed(2)}' : 'No trades'}',
-            child: Container(
-              width: cellSize,
-              height: cellSize,
-              margin: EdgeInsets.only(
-                  bottom: cellGap, right: cellGap),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(3),
-                border: isToday
-                    ? Border.all(
-                        color: resolveThemeColor(context,
-                            dark: MyntColors.textPrimaryDark,
-                            light: MyntColors.textPrimary),
-                        width: 1.5,
-                      )
-                    : null,
-              ),
-            ),
+            cellSize: cellSize,
+            cellGap: cellGap,
+            bgColor: bgColor,
+            isToday: isToday,
+            todayBorderColor: todayBorderColor,
           );
         }
 
@@ -2504,6 +2527,63 @@ class _MonthGroup {
     required this.year,
     required this.weeks,
   });
+}
+
+class _HoverableHeatmapCell extends StatefulWidget {
+  final String tooltipMessage;
+  final double cellSize;
+  final double cellGap;
+  final Color bgColor;
+  final bool isToday;
+  final Color todayBorderColor;
+
+  const _HoverableHeatmapCell({
+    required this.tooltipMessage,
+    required this.cellSize,
+    required this.cellGap,
+    required this.bgColor,
+    required this.isToday,
+    required this.todayBorderColor,
+  });
+
+  @override
+  State<_HoverableHeatmapCell> createState() => _HoverableHeatmapCellState();
+}
+
+class _HoverableHeatmapCellState extends State<_HoverableHeatmapCell> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: Tooltip(
+        message: widget.tooltipMessage,
+        child: Container(
+          width: widget.cellSize,
+          height: widget.cellSize,
+          margin: EdgeInsets.only(
+              bottom: widget.cellGap, right: widget.cellGap),
+          decoration: BoxDecoration(
+            color: widget.bgColor,
+            borderRadius: BorderRadius.circular(3),
+            border: widget.isToday
+                ? Border.all(
+                    color: widget.todayBorderColor,
+                    width: 1.5,
+                  )
+                : _hovered
+                    ? Border.all(
+                        color: widget.todayBorderColor.withValues(alpha: 0.5),
+                        width: 1.5,
+                      )
+                    : null,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _DateRowData {
