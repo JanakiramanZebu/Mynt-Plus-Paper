@@ -3323,6 +3323,38 @@ class _CustomizableSplitHomeScreenState
           break;
 
         case ScreenType.orderBook:
+          final orderProv = ref.read(orderProvider);
+          // Collect all tokens from open orders, executed orders, trade book, and GTT
+          final orderTokens = <String>{};
+          for (var order in orderProv.openOrder ?? []) {
+            if (order.token != null && order.token!.isNotEmpty) {
+              orderTokens.add(order.token!);
+            }
+          }
+          for (var order in orderProv.executedOrder ?? []) {
+            if (order.token != null && order.token!.isNotEmpty) {
+              orderTokens.add(order.token!);
+            }
+          }
+          for (var trade in orderProv.tradeBook ?? []) {
+            if (trade.token != null && trade.token!.isNotEmpty) {
+              orderTokens.add(trade.token!);
+            }
+          }
+          for (var gtt in orderProv.gttOrderBookModel ?? []) {
+            final token = gtt.token?.toString();
+            if (token != null && token.isNotEmpty) {
+              orderTokens.add(token);
+            }
+          }
+          // Remove non-protected order tokens from socketDatas
+          for (var token in orderTokens) {
+            if (!protectedTokens.contains(token) &&
+                websocket.socketDatas.containsKey(token)) {
+              websocket.socketDatas.remove(token);
+              removedCount++;
+            }
+          }
           break;
 
         default:
@@ -4043,13 +4075,9 @@ class _CustomizableSplitHomeScreenState
         // Preserve current tab selection - don't reset to tab 0 unless this is first load
         final currentTab = orderProviderRef.selectedTab;
 
-        // Fetch Order Book, GTT Orders, and Trade Book in parallel
-        // This ensures all order data is ready when user navigates between tabs
-        await Future.wait([
-          orderProviderRef.fetchOrderBook(context, false),
-          orderProviderRef.fetchGTTOrderBook(context, "initLoad"), // initLoad to prevent tab switch
-          orderProviderRef.fetchTradeBook(context),
-        ]);
+        // Only fetch Open + Executed orders on entry (same API).
+        // Trade Book, GTT, SIP, Basket, Alerts load lazily on tab click.
+        await orderProviderRef.fetchOrderBook(context, false);
 
         // SIP will be lazy loaded when user switches to that tab
         // This is handled in OrderProvider.changeTabIndex()

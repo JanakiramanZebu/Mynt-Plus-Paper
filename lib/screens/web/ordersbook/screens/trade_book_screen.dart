@@ -279,140 +279,134 @@ class _TradeBookScreenState extends ConsumerState<TradeBookScreen> {
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
-                          child: SingleChildScrollView(
+                          child: ListView.builder(
                             controller: _verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: shadcn.Table(
-                              key: ValueKey(
-                                  'table_${_sortColumnIndex}_$_sortAscending'),
-                              columnWidths: {
-                                0: shadcn.FixedTableSize(tradeIdWidth),
-                                1: shadcn.FixedTableSize(fillTimeWidth),
-                                2: shadcn.FixedTableSize(typeWidth),
-                                3: shadcn.FixedTableSize(instrumentWidth),
-                                4: shadcn.FixedTableSize(productWidth),
-                                5: shadcn.FixedTableSize(qtyWidth),
-                                6: shadcn.FixedTableSize(ltpWidth),
-                                7: shadcn.FixedTableSize(avgPriceWidth),
-                              },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: sortedTrades.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final trade = entry.value;
-
-                                return shadcn.TableRow(
-                                  cells: [
-                                    // Column 0: Trade ID
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 0,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        trade.flid?.toString() ?? 'N/A',
-                                        style: _getTextStyle(context),
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                    // Column 1: Fill time
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 1,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        _formatFillTime(trade.norentm ?? 'N/A'),
-                                        style: _getTextStyle(context),
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                    // Column 2: Type (BUY/SELL)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 2,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        trade.trantype == "S" ? "SELL" : "BUY",
-                                        style: _getTextStyle(
-                                          context,
-                                          color: trade.trantype == "S"
-                                              ? resolveThemeColor(context,
-                                                  dark: MyntColors.errorDark,
-                                                  light: MyntColors.loss)
-                                              : resolveThemeColor(context,
-                                                  dark: MyntColors.profitDark,
-                                                  light: MyntColors.profit),
+                            itemCount: sortedTrades.length,
+                            itemExtent: 50.0,
+                            itemBuilder: (context, index) {
+                              final trade = sortedTrades[index];
+                              return shadcn.Table(
+                                columnWidths: {
+                                  0: shadcn.FixedTableSize(tradeIdWidth),
+                                  1: shadcn.FixedTableSize(fillTimeWidth),
+                                  2: shadcn.FixedTableSize(typeWidth),
+                                  3: shadcn.FixedTableSize(instrumentWidth),
+                                  4: shadcn.FixedTableSize(productWidth),
+                                  5: shadcn.FixedTableSize(qtyWidth),
+                                  6: shadcn.FixedTableSize(ltpWidth),
+                                  7: shadcn.FixedTableSize(avgPriceWidth),
+                                },
+                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                rows: [
+                                  shadcn.TableRow(
+                                    cells: [
+                                      // Column 0: Trade ID
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 0,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          trade.flid?.toString() ?? 'N/A',
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
                                         ),
                                       ),
-                                    ),
-                                    // Column 3: Instrument - with hover menu
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 3,
-                                      child: ValueListenableBuilder<int?>(
-                                        valueListenable: _hoveredRowIndex,
-                                        builder: (context, hoveredIndex, _) {
-                                          // Row is hovered if mouse is over it OR if its dropdown menu is open
-                                          final isHovered = hoveredIndex == index ||
-                                              (_activePopoverController != null && _popoverRowIndex == index);
-                                          return _buildInstrumentCell(
-                                            trade,
-                                            theme,
-                                            isHovered,
-                                            rowIndex: index,
-                                          );
-                                        },
+                                      // Column 1: Fill time
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 1,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          _formatFillTime(trade.norentm ?? 'N/A'),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
                                       ),
-                                    ),
-                                    // Column 4: Product
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 4,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        trade.sPrdtAli ?? trade.prd ?? '',
-                                        style: _getTextStyle(context),
-                                        overflow: TextOverflow.ellipsis,
-                                        softWrap: false,
+                                      // Column 2: Type (BUY/SELL)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 2,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          trade.trantype == "S" ? "SELL" : "BUY",
+                                          style: _getTextStyle(
+                                            context,
+                                            color: trade.trantype == "S"
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.errorDark, light: MyntColors.loss)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.profitDark, light: MyntColors.profit),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    // Column 5: Qty. (filledQty / totalQty) - MCX divided by lot size
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 5,
-                                      alignRight: true,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        _formatTradeQty(trade),
-                                        style: _getTextStyle(context),
+                                      // Column 3: Instrument - with hover menu
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 3,
+                                        child: ValueListenableBuilder<int?>(
+                                          valueListenable: _hoveredRowIndex,
+                                          builder: (context, hoveredIndex, _) {
+                                            final isHovered = hoveredIndex == index ||
+                                                (_activePopoverController != null && _popoverRowIndex == index);
+                                            return _buildInstrumentCell(
+                                              trade, theme, isHovered,
+                                              rowIndex: index,
+                                            );
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    // Column 6: LTP (with WebSocket updates)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 6,
-                                      alignRight: true,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: _TradeLTPCell(
-                                        token: trade.token ?? '',
-                                        initialLtp: trade.avgprc ?? '0.00',
+                                      // Column 4: Product
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 4,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          trade.sPrdtAli ?? trade.prd ?? '',
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
                                       ),
-                                    ),
-                                    // Column 7: Avg. Price
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 7,
-                                      alignRight: true,
-                                      onTap: () => _showTradeDetail(trade),
-                                      child: Text(
-                                        trade.avgprc?.toString() ?? 'N/A',
-                                        style: _getTextStyle(context),
+                                      // Column 5: Qty.
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 5,
+                                        alignRight: true,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          _formatTradeQty(trade),
+                                          style: _getTextStyle(context),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
+                                      // Column 6: LTP
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 6,
+                                        alignRight: true,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: _TradeLTPCell(
+                                          token: trade.token ?? '',
+                                          initialLtp: trade.avgprc ?? '0.00',
+                                        ),
+                                      ),
+                                      // Column 7: Avg. Price
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 7,
+                                        alignRight: true,
+                                        onTap: () => _showTradeDetail(trade),
+                                        child: Text(
+                                          trade.avgprc?.toString() ?? 'N/A',
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ),
