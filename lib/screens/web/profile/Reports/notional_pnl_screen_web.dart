@@ -16,8 +16,11 @@ import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
 import '../../../../utils/rupee_convert_format.dart';
+import '../../../../locator/locator.dart';
+import '../../../../locator/preference.dart';
 import '../../../../models/desk_reports_model/pnl_model.dart';
 import '../../../../models/desk_reports_model/pnl_summary_model.dart';
+import 'notional_pnl_download_helper.dart';
 
 class NotionalPnlScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -289,17 +292,86 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                           light: MyntColors.textPrimary))),
               const SizedBox(width: 16),
               // Download button
-              // IconButton(
-              //   icon: Icon(Icons.download,
-              //       size: 20,
-              //       color: resolveThemeColor(context,
-              //           dark: MyntColors.textSecondaryDark,
-              //           light: MyntColors.textSecondary)),
-              //   onPressed: () => _showDownloadDialog(context, ledger),
-              //   padding: EdgeInsets.zero,
-              //   constraints: const BoxConstraints(),
-              // ),
-              // const SizedBox(width: 16),
+              PopupMenuButton<String>(
+                icon: Icon(Icons.download,
+                    size: 20,
+                    color: resolveThemeColor(context,
+                        dark: MyntColors.textSecondaryDark,
+                        light: MyntColors.textSecondary)),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Download',
+                color: resolveThemeColor(context,
+                    dark: MyntColors.cardDark, light: MyntColors.card),
+                onSelected: (value) {
+                  final transactions = pnlData?.transactions ?? [];
+                  final filteredTransactions = _getFilteredTransactions(transactions);
+
+                  if (filteredTransactions.isEmpty || pnlData == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No data to download')),
+                    );
+                    return;
+                  }
+
+                  final pref = locator<Preferences>();
+                  final clientId = pref.clientId ?? '';
+                  final clientName = pref.clientName ?? '';
+                  final dateRange =
+                      '${ledger.startDate.isNotEmpty ? ledger.startDate : _getDefaultStartDate()} to ${ledger.today.isNotEmpty ? ledger.today : _getDefaultEndDate()}';
+
+                  if (value == 'pdf') {
+                    NotionalPnlDownloadHelper.downloadPdf(
+                      transactions: filteredTransactions,
+                      pnlData: pnlData,
+                      clientId: clientId,
+                      clientName: clientName,
+                      dateRange: dateRange,
+                    );
+                  } else if (value == 'excel') {
+                    NotionalPnlDownloadHelper.downloadExcel(
+                      transactions: filteredTransactions,
+                      pnlData: pnlData,
+                      clientId: clientId,
+                      clientName: clientName,
+                      dateRange: dateRange,
+                    );
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'pdf',
+                    child: Row(
+                      children: [
+                        Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+                        const SizedBox(width: 8),
+                        Text('Download PDF',
+                            style: TextStyle(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            )),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'excel',
+                    child: Row(
+                      children: [
+                        Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+                        const SizedBox(width: 8),
+                        Text('Download Excel',
+                            style: TextStyle(
+                              color: resolveThemeColor(context,
+                                  dark: MyntColors.textPrimaryDark,
+                                  light: MyntColors.textPrimary),
+                            )),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
               // Date range
               InkWell(
                 key: _datePickerButtonKey,

@@ -11,6 +11,9 @@ import 'package:mynt_plus/screens/web/position/group/position_group_screen_web.d
 import 'package:mynt_plus/screens/web/position/group/create_group_web.dart';
 
 import '../../../../models/portfolio_model/position_book_model.dart';
+import '../../../../locator/locator.dart';
+import '../../../../locator/preference.dart';
+import '../position/position_download_helper.dart';
 import '../../../../provider/portfolio_provider.dart';
 import '../../../../provider/thems.dart';
 import '../../../../provider/websocket_provider.dart';
@@ -601,6 +604,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
             ),
 
             SizedBox(width: context.responsive<double>(mobile: 6, tablet: 8, desktop: 12)),
+            // Download Button - PDF/Excel export
+            _buildDownloadButton(theme, positionBook),
+            SizedBox(width: context.responsive<double>(mobile: 4, tablet: 6, desktop: 8)),
             // Refresh Button - triggers manual refresh
             _buildIconButton(
               icon: Icons.refresh,
@@ -713,6 +719,107 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
                 dark: MyntColors.iconDark,
                 light: MyntColors.icon,
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Download button with PDF/Excel dropdown
+  Widget _buildDownloadButton(ThemesProvider theme, PortfolioProvider positionBook) {
+    final buttonSize = context.responsive<double>(
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
+    );
+    final iconSize = context.responsive<double>(
+      mobile: 22,
+      tablet: 25,
+      desktop: 28,
+    );
+
+    return PopupMenuButton<String>(
+      tooltip: 'Download',
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      color: theme.isDarkMode ? MyntColors.cardDark : Colors.white,
+      onSelected: (value) {
+        final positions = positionBook.allPostionList.isNotEmpty
+            ? positionBook.allPostionList
+            : positionBook.openPosition ?? [];
+
+        final filteredPositions = _getFilteredPositionsFromList(positions);
+
+        if (filteredPositions.isEmpty) {
+          warningMessage(context, 'No positions to download');
+          return;
+        }
+
+        final pref = locator<Preferences>();
+        final clientId = pref.clientId ?? '';
+        final clientName = pref.clientName ?? '';
+
+        if (value == 'pdf') {
+          PositionDownloadHelper.downloadPdf(
+            positions: filteredPositions,
+            clientId: clientId,
+            clientName: clientName,
+          );
+        } else if (value == 'excel') {
+          PositionDownloadHelper.downloadExcel(
+            positions: filteredPositions,
+            clientId: clientId,
+            clientName: clientName,
+          );
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+              const SizedBox(width: 8),
+              Text('Download PDF',
+                  style: TextStyle(
+                    color: theme.isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
+                  )),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'excel',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+              const SizedBox(width: 8),
+              Text('Download Excel',
+                  style: TextStyle(
+                    color: theme.isDarkMode
+                        ? MyntColors.textPrimaryDark
+                        : MyntColors.textPrimary,
+                  )),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
+        width: buttonSize,
+        height: buttonSize,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.download,
+            size: iconSize,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.iconDark,
+              light: MyntColors.icon,
             ),
           ),
         ),
@@ -1249,9 +1356,9 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
     }
 
     // Apply product filter
-    if (_selectedFilter != 'All') {
+    if (_selectedFilter.value != 'All') {
       filtered = filtered.where((position) {
-        return position.sPrdtAli == _selectedFilter;
+        return position.sPrdtAli == _selectedFilter.value;
       }).toList();
     }
 

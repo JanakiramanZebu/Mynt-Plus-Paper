@@ -13,7 +13,10 @@ import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
+import '../../../../locator/locator.dart';
+import '../../../../locator/preference.dart';
 import '../../../../models/desk_reports_model/contract_note_model.dart';
+import 'contract_note_download_helper.dart';
 
 class ContractNoteScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -252,22 +255,58 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
         const SizedBox(width: 12),
         // Download button
         if (_selectedDate != null)
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => _handleDownload(ledgerprovider),
-              child: Center(
-                child: Icon(
-                  Icons.download_rounded,
-                  size: 20,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.textSecondaryDark,
-                      light: MyntColors.textSecondary),
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.download_rounded,
+              size: 20,
+              color: resolveThemeColor(context,
+                  dark: MyntColors.textSecondaryDark,
+                  light: MyntColors.textSecondary),
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Download',
+            color: resolveThemeColor(context,
+                dark: MyntColors.cardDark, light: MyntColors.card),
+            onSelected: (value) {
+              if (value == 'pdf') {
+                _handleDownload(ledgerprovider);
+              } else if (value == 'excel') {
+                _handleExcelDownload(ledgerprovider);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'pdf',
+                child: Row(
+                  children: [
+                    Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+                    const SizedBox(width: 8),
+                    Text('Download PDF',
+                        style: TextStyle(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        )),
+                  ],
                 ),
               ),
-            ),
+              PopupMenuItem(
+                value: 'excel',
+                child: Row(
+                  children: [
+                    Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+                    const SizedBox(width: 8),
+                    Text('Download Excel',
+                        style: TextStyle(
+                          color: resolveThemeColor(context,
+                              dark: MyntColors.textPrimaryDark,
+                              light: MyntColors.textPrimary),
+                        )),
+                  ],
+                ),
+              ),
+            ],
           ),
       ],
     );
@@ -329,6 +368,40 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
     if (doc != null) {
       ledgerprovider.pdfdownloadfunction(context, doc.recno, doc.docFileName);
     }
+  }
+
+  void _handleExcelDownload(LDProvider ledgerprovider) {
+    final contractData = ledgerprovider.contractNoteModel?.data;
+    final trades = contractData?.common ?? [];
+
+    if (trades.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No data to download')),
+      );
+      return;
+    }
+
+    final pref = locator<Preferences>();
+    final clientId = pref.clientId ?? '';
+    final clientName = pref.clientName ?? '';
+    final dateStr = _selectedDate != null
+        ? DateFormat('dd/MM/yyyy').format(_selectedDate!)
+        : DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+    // Get settlement data from Data level first, then top-level model
+    final settlementData =
+        (contractData?.settlement != null && contractData!.settlement!.isNotEmpty)
+            ? contractData.settlement
+            : ledgerprovider.contractNoteModel?.settlement;
+
+    ContractNoteDownloadHelper.downloadExcel(
+      trades: trades,
+      netData: contractData?.net,
+      settlementData: settlementData,
+      clientId: clientId,
+      clientName: clientName,
+      selectedDate: dateStr,
+    );
   }
 
   // ─── Trade Table ─────────────────────────────────────────────────────
