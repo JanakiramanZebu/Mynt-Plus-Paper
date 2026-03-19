@@ -1439,6 +1439,19 @@ class _TradeLTPCellState extends ConsumerState<_TradeLTPCell> {
     if (!_didSetupSubscription && widget.token.isNotEmpty) {
       _didSetupSubscription = true;
 
+      // Check existing socket data first (tokens may already be subscribed via watchlist)
+      final existingData = ref.read(websocketProvider).socketDatas;
+      if (existingData.containsKey(widget.token)) {
+        final existingLtp = existingData[widget.token]['lp']?.toString();
+        if (existingLtp != null &&
+            existingLtp != '0.00' &&
+            existingLtp != 'null' &&
+            existingLtp != '0') {
+          ltp = existingLtp;
+        }
+      }
+
+      // Subscribe for future updates
       Future.microtask(() {
         if (!mounted) return;
 

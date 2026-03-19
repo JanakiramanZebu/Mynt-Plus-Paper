@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/foundation.dart' show debugPrint;
+import '../../../utils/rupee_convert_format.dart';
 import 'package:flutter/material.dart'
     show
         InkWell,
@@ -51,7 +52,8 @@ import 'package:flutter/material.dart'
         Offset,
         RawScrollbar,
         Radius,
-        Builder;
+        Builder,
+        ListView;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -932,24 +934,23 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                     thickness: 6,
                     radius: const Radius.circular(3),
                     interactive: true,
-                    child: SingleChildScrollView(
+                    child: ListView.builder(
                       controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey(
-                            'table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: columnWidths.map((index, width) {
-                          return MapEntry(index, shadcn.FixedTableSize(width));
-                        }),
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: [
-                          // Data rows
-                          ...filteredPositions.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final position = entry.value;
-                            final isClosed = _isPositionClosed(position);
+                      itemCount: filteredPositions.length,
+                      itemExtent: 50.0,
+                      itemBuilder: (context, index) {
+                        final position = filteredPositions[index];
+                        final isClosed = _isPositionClosed(position);
 
-                            return shadcn.TableRow(
+                        return shadcn.Table(
+                          key: ValueKey(
+                              'row_${position.token}_${_sortColumnIndex}_$_sortAscending'),
+                          columnWidths: columnWidths.map((idx, width) {
+                            return MapEntry(idx, shadcn.FixedTableSize(width));
+                          }),
+                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          rows: [
+                            shadcn.TableRow(
                               cells: headers.map((header) {
                                 final columnIndex =
                                     _getColumnIndexForHeader(header);
@@ -1010,10 +1011,10 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                                   );
                                 }
                               }).toList(),
-                            );
-                          }),
-                        ],
-                      ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -1171,7 +1172,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
         return Align(
           alignment: alignment,
           child: Text(
-            pnlValue,
+            pnlValue.toIndianFormat(),
             style: _getTextStyle(context,
                 color: _getCellColor(double.tryParse(pnlValue) ?? 0.0, context)),
           ),
@@ -1292,7 +1293,7 @@ class _PositionTableState extends ConsumerState<PositionTable> {
                 cellContent = Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    totalPnl.toStringAsFixed(2),
+                    totalPnl.toIndianFormat(),
                     style: _getTextStyle(context,
                         color: _getCellColor(totalPnl, context)).copyWith(
                       fontWeight: MyntFonts.semiBold,

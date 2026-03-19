@@ -44,6 +44,7 @@ import 'order_input_provider.dart';
 import 'websocket_provider.dart';
 import 'portfolio_provider.dart';
 import 'mf_provider.dart';
+import 'web_subscription_manager.dart';
 
 final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
@@ -337,12 +338,16 @@ class OrderProvider extends DefaultChangeNotifier {
     final Map<String, dynamic> result;
     if (mode == 'ob') {
       result = await api.getOrderBook();
+      // result = await api.mockOrderBookResponse();
+
       if (result['stat'] == 'no data') {
         _orderBookModel = [];
       }
       return result['data'] as List;
     } else if (mode == 'tb') {
       result = await api.getTradeBook();
+      // result = await api.mockTradeBookResponse();
+
       if (result['stat'] == 'no data') {
         _tradeBook = [];
       }
@@ -466,9 +471,70 @@ class OrderProvider extends DefaultChangeNotifier {
 
   // Method to unsubscribe from current active tab (called when leaving order book screen)
   void unsubscribeFromCurrentTab(BuildContext context) {
-    if (_selectedTab <= 3) {
-      debugPrint(
-          "📤 [Order Book] Unsubscribing from current tab ($_selectedTab) - leaving order book screen");
+    if (_selectedTab > 3) return;
+
+    // Collect tokens for current tab
+    final tokens = <String>{};
+
+    switch (_selectedTab) {
+      case 0:
+        if (_orderBookModel != null && _orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
+          for (var e in _orderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 1:
+        if (_orderBookModel != null && _orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
+          for (var e in _orderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        if (_executedOrder != null && _executedOrder!.isNotEmpty) {
+          for (var e in _executedOrder!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 2:
+        if (_tradeBook != null && _tradeBook!.isNotEmpty) {
+          for (var e in _tradeBook!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 3:
+        if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
+          for (var e in _gttOrderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+    }
+
+    if (tokens.isEmpty) return;
+
+    debugPrint("📤 [Order Book] Unsubscribing ${tokens.length} tokens from tab $_selectedTab via WebSubscriptionManager");
+
+    if (kIsWeb) {
+      // On web, use WebSubscriptionManager for smart unsubscription with token protection
+      ref.read(webSubscriptionManagerProvider).unsubscribeTokens(
+        tokensToCheck: tokens,
+        context: context,
+        source: 'orderBook',
+      );
+    } else {
+      // On mobile, use direct unsubscription
       requestWSOrderBook(isSubscribe: false, context: context);
     }
   }

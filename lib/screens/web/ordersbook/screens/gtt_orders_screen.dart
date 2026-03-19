@@ -1649,23 +1649,51 @@ class _GttLTPCell extends ConsumerStatefulWidget {
 class _GttLTPCellState extends ConsumerState<_GttLTPCell> {
   late String ltp;
   StreamSubscription? _subscription;
+  bool _didSetupSubscription = false;
 
   @override
   void initState() {
     super.initState();
     ltp = widget.initialLtp;
+  }
 
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != 'null') {
-        setState(() => ltp = newLtp);
+    if (!_didSetupSubscription && widget.token.isNotEmpty) {
+      _didSetupSubscription = true;
+
+      // Check existing socket data first (tokens may already be subscribed via watchlist)
+      final existingData = ref.read(websocketProvider).socketDatas;
+      if (existingData.containsKey(widget.token)) {
+        final existingLtp = existingData[widget.token]['lp']?.toString();
+        if (existingLtp != null &&
+            existingLtp != '0.00' &&
+            existingLtp != 'null' &&
+            existingLtp != '0') {
+          ltp = existingLtp;
+        }
       }
-    });
+
+      // Subscribe for future updates
+      Future.microtask(() {
+        if (!mounted) return;
+
+        _subscription =
+            ref.read(websocketProvider).socketDataStream.listen((data) {
+          if (!mounted || !data.containsKey(widget.token)) return;
+
+          final newLtp = data[widget.token]['lp']?.toString();
+          if (newLtp != null &&
+              newLtp != ltp &&
+              newLtp != '0.00' &&
+              newLtp != 'null') {
+            setState(() => ltp = newLtp);
+          }
+        });
+      });
+    }
   }
 
   @override

@@ -3213,7 +3213,6 @@ class _CustomizableSplitHomeScreenState
             // Unsubscribe from current active tab when leaving order book screen
             ref.read(orderProvider).unsubscribeFromCurrentTab(context);
           }
-          _clearScreenCache(screenType);
           break;
 
         case ScreenType.funds:
@@ -3943,6 +3942,10 @@ class _CustomizableSplitHomeScreenState
     if (targetPanelIndex == -1) {
       targetPanelIndex = 0;
     }
+
+    // WebSubscriptionManager handles smart unsubscription via _updateSubscriptionManagerForPanels()
+    // called below — it protects shared tokens (watchlist, positions, holdings, ticker, etc.)
+    // Do NOT clear _socketDatas here — the ticker needs position token data on all screens
 
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
