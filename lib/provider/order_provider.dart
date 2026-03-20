@@ -44,6 +44,7 @@ import 'order_input_provider.dart';
 import 'websocket_provider.dart';
 import 'portfolio_provider.dart';
 import 'mf_provider.dart';
+import 'web_subscription_manager.dart';
 
 final orderProvider = ChangeNotifierProvider((ref) => OrderProvider(ref));
 
@@ -74,7 +75,6 @@ class OrderProvider extends DefaultChangeNotifier {
   PlaceGttOrderModel? get modifyGttOrderModel => _modifyGttOrderModel;
   List<OrderBookModel>? _orderBookModel = [];
   List<OrderBookModel>? get orderBookModel => _orderBookModel;
-  List<OrderBookModel>? _torderBookModel = [];
   List<GttOrderBookModel>? _gttOrderBookModel = [];
   List<GttOrderBookModel>? get gttOrderBookModel => _gttOrderBookModel;
   // List<GttOrderBookModel>? _tgttOrderBookModel = [];
@@ -87,7 +87,6 @@ class OrderProvider extends DefaultChangeNotifier {
   final Preferences pref = locator<Preferences>();
   List<TradeBookModel>? _tradeBook = [];
   List<TradeBookModel>? get tradeBook => _tradeBook;
-  List<TradeBookModel>? _ttradeBook = [];
   List<TradeBookModel>? _tradeBooksearch = [];
   List<TradeBookModel>? get tradeBooksearch => _tradeBooksearch;
   List<OrderBookModel>? _allOrder = [];
@@ -145,13 +144,18 @@ class OrderProvider extends DefaultChangeNotifier {
 
   String? bsketNameError;
 
+  // In-flight guards for lazy-loaded tab data
+  bool _isFetchingTradeBook = false;
+  bool _isFetchingGTT = false;
+  bool _isFetchingSIP = false;
+
   final TextEditingController orderSearchCtrl = TextEditingController();
   final TextEditingController orderGttSearchCtrl = TextEditingController();
   final TextEditingController orderSipSearchCtrl = TextEditingController();
   final TextEditingController orderTradebookCtrl = TextEditingController();
 
   OrderProvider(this.ref) {
-    getBasketName();
+    // getBasketName() deferred — loaded lazily when basket tab (index 4) is selected
     tabSize();
   }
 
@@ -197,30 +201,48 @@ class OrderProvider extends DefaultChangeNotifier {
   String get lastOrderSortMethod => _lastOrderSortMethod;
 
   clearAllorders() async {
-    _torderBookModel = [];
-    _ttradeBook = [];
+    // Order data
     _orderBookModel = [];
     _gttOrderBookModel = [];
     _tradeBook = [];
-    _orderSearchItem = [];
-    _orderHistoryModel = [];
-    _siporderBookModel = null;
-    _siporderBookSearch = [];
-    _gttOrderBookSearch = [];
-    _triggeredGttOrders = [];
-    _showTriggeredGtt = false;
-    _tradeBooksearch = [];
     _executedOrder = [];
     _openOrder = [];
     _allOrder = [];
-    _orderBookModel = [];
+
+    // Search state
+    _orderSearchItem = [];
+    _orderBookSearchItem = [];
+    _tradeBooksearch = [];
+    _gttOrderBookSearch = [];
+    _siporderBookSearch = [];
+    _showSearchOrder = false;
+    _showGttOrderSearch = false;
+    _showSipOrderSearch = false;
+    orderSearchCtrl.clear();
+    orderGttSearchCtrl.clear();
+    orderSipSearchCtrl.clear();
+    orderTradebookCtrl.clear();
+
+    // Order history & SIP
+    _orderHistoryModel = [];
+    _siporderBookModel = null;
+    _triggeredGttOrders = [];
+    _showTriggeredGtt = false;
+
+    // Basket state
+    _bsktList = [];
+    _bsktScrips = {};
+    _bsktScripList = [];
+    _selectedBsktName = "";
+    _basketOverallStatus = {};
+
+    // Reset in-flight guards (prevents stale locks on account switch)
+    _isFetchingTradeBook = false;
+    _isFetchingGTT = false;
+    _isFetchingSIP = false;
+
     _selectedTab = 0;
-    // Clear basket data from preferences for current user
-    // final userId = pref.clientId;
-    // if (userId != null && userId.isNotEmpty) {
-    //   await pref.setBasketListForUser(userId, '');
-    //   await pref.setBasketScripForUser(userId, '');
-    // }
+
     // Clear subscription tracking
     clearSubscriptions();
     tabSize();
@@ -229,14 +251,14 @@ class OrderProvider extends DefaultChangeNotifier {
 
   showorderHistory(value) {
     _showOrderHistory = value;
-    print("showOrderHistory: $_showOrderHistory");
+    debugPrint("showOrderHistory: $_showOrderHistory");
     notifyListeners();
   }
 
   // Clear subscription tracking
   void clearSubscriptions() {
     _subscribedSymbols.clear();
-    print("Cleared all WebSocket subscriptions tracking");
+    debugPrint("Cleared all WebSocket subscriptions tracking");
   }
 
   setOrderIp() async {
@@ -308,42 +330,39 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
 // Change tab orderbook tab index
-  Future<void> setPortfolioupdate(String mode) async {
-    Map<String, dynamic> result;
+  /// Fetches portfolio data for the given [mode] and returns the parsed list.
+  /// Callers assign the result directly — no temp fields needed.
+  /// Always returns result['data'] (which is a List) — even for error/no-data
+  /// so callers can check for session-expired models in the list.
+  Future<List> _fetchPortfolioData(String mode) async {
+    final Map<String, dynamic> result;
     if (mode == 'ob') {
       result = await api.getOrderBook();
       // result = await api.mockOrderBookResponse();
-      if (result['stat'] == 'success') {
-        _torderBookModel = result['data'];
-      } else {
-        if (result['stat'] == 'no data') {
-          _orderBookModel = [];
-        }
-        _torderBookModel = [];
+
+      if (result['stat'] == 'no data') {
+        _orderBookModel = [];
       }
+      return result['data'] as List;
     } else if (mode == 'tb') {
       result = await api.getTradeBook();
       // result = await api.mockTradeBookResponse();
-      if (result['stat'] == 'success') {
-        _ttradeBook = result['data'];
-      } else {
-        if (result['stat'] == 'no data') {
-          _tradeBook = [];
-        }
-        _ttradeBook = [];
+
+      if (result['stat'] == 'no data') {
+        _tradeBook = [];
       }
+      return result['data'] as List;
     } else if (mode == 'gtt') {
       result = await api.getGTTOrderBook();
-      if (result['stat'] == 'success') {
-        _gttOrderBookModel = result['data'];
+      final gttData = List<GttOrderBookModel>.from(result['data'] as List);
+      if (result['stat'] == 'no data') {
+        _gttOrderBookModel = [];
       } else {
-        if (result['stat'] == 'no data') {
-          _gttOrderBookModel = [];
-        }
-        // _tgttOrderBookModel = [];
+        _gttOrderBookModel = gttData;
       }
+      return _gttOrderBookModel ?? [];
     }
-    // print("qwqwqw prov alert btm $mode");
+    return [];
   }
 
   changeTabIndex(int index, BuildContext context) {
@@ -360,40 +379,56 @@ class OrderProvider extends DefaultChangeNotifier {
     // Animate the TabController to the new index if initialized
     tabCtrl?.animateTo(index);
 
-    tabSize();
-    showOrderSearch(false);
-    showGTTOrderSearch(false);
+    // --- Batch state changes: set internal state directly, single notifyListeners at the end ---
+    // Update tab names without notifying (batched)
+    _updateTabNamesSilent();
+
+    // Reset search states without triggering notifyListeners
+    _showSearchOrder = false;
+    _orderSearchItem = [];
+    _showGttOrderSearch = false;
+    _gttOrderBookSearch = [];
+    _showSipOrderSearch = false;
+    _siporderBookSearch = [];
     ref.read(marketWatchProvider).showAlertPendingSearch(false);
-    showSipSearch(false);
     ref.read(marketWatchProvider).clearAlertSearch();
 
-    // Clear search only if switching away from search-enabled tabs (indices 0-3 and index 5 are searchable)
+    // Clear search only if switching away from search-enabled tabs
     if (index == 4) {
-      clearOrderSearch();
-      clearGttOrderSearch();
-      clearSipSearch();
+      orderSearchCtrl.clear();
+      _tradeBooksearch = [];
+      ref.read(mfProvider).clearMfSearch();
+      ref.read(notificationprovider).clearTriggeredAlertSearch();
+      orderGttSearchCtrl.clear();
+      orderSipSearchCtrl.clear();
     }
+
+    // Single notifyListeners for all batched state changes
+    notifyListeners();
 
     // Only perform search if there's text and we're on a searchable tab
     if (orderSearchCtrl.text.isNotEmpty && (index <= 3 || index == 5 || index == 6)) {
       searchOrders(orderSearchCtrl.text, context);
     }
 
-    // Lazy load data for tabs that haven't been loaded yet
+    // Lazy load data for tabs that haven't been loaded yet (with in-flight guards)
     // Tab 2: Trade Book
-    if (index == 2 && (_tradeBook == null || _tradeBook!.isEmpty)) {
+    if (index == 2 && (_tradeBook == null || _tradeBook!.isEmpty) && !_isFetchingTradeBook) {
       debugPrint("📥 [Order Book] Lazy loading Trade Book data");
-      fetchTradeBook(context);
+      _isFetchingTradeBook = true;
+      fetchTradeBook(context).whenComplete(() => _isFetchingTradeBook = false);
     }
-    // Tab 3: GTT Orders - always fetch to get latest data
-    if (index == 3) {
-      debugPrint("📥 [Order Book] Fetching GTT Orders data");
-      fetchGTTOrderBook(context, "");
+    // Tab 3: GTT Orders - only fetch if not already loaded or in-flight
+    if (index == 3 && (_gttOrderBookModel == null || _gttOrderBookModel!.isEmpty) && !_isFetchingGTT) {
+      debugPrint("📥 [Order Book] Lazy loading GTT Orders data");
+      _isFetchingGTT = true;
+      fetchGTTOrderBook(context, "").whenComplete(() => _isFetchingGTT = false);
     }
     // Tab 5: SIP Orders
-    if (index == 5 && _siporderBookModel == null) {
+    if (index == 5 && _siporderBookModel == null && !_isFetchingSIP) {
       debugPrint("📥 [Order Book] Lazy loading SIP Orders data");
-      fetchSipOrderHistory(context);
+      _isFetchingSIP = true;
+      fetchSipOrderHistory(context).whenComplete(() => _isFetchingSIP = false);
     }
 
     // Handle WebSocket subscription/unsubscription for order book tabs (0-3)
@@ -436,9 +471,70 @@ class OrderProvider extends DefaultChangeNotifier {
 
   // Method to unsubscribe from current active tab (called when leaving order book screen)
   void unsubscribeFromCurrentTab(BuildContext context) {
-    if (_selectedTab <= 3) {
-      debugPrint(
-          "📤 [Order Book] Unsubscribing from current tab ($_selectedTab) - leaving order book screen");
+    if (_selectedTab > 3) return;
+
+    // Collect tokens for current tab
+    final tokens = <String>{};
+
+    switch (_selectedTab) {
+      case 0:
+        if (_orderBookModel != null && _orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
+          for (var e in _orderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 1:
+        if (_orderBookModel != null && _orderBookModel!.isNotEmpty && _orderBookModel![0].stat != "Not_Ok") {
+          for (var e in _orderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        if (_executedOrder != null && _executedOrder!.isNotEmpty) {
+          for (var e in _executedOrder!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 2:
+        if (_tradeBook != null && _tradeBook!.isNotEmpty) {
+          for (var e in _tradeBook!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+      case 3:
+        if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
+          for (var e in _gttOrderBookModel!) {
+            if (e.exch != null && e.token != null && e.token!.isNotEmpty) {
+              tokens.add("${e.exch}|${e.token}");
+            }
+          }
+        }
+        break;
+    }
+
+    if (tokens.isEmpty) return;
+
+    debugPrint("📤 [Order Book] Unsubscribing ${tokens.length} tokens from tab $_selectedTab via WebSubscriptionManager");
+
+    if (kIsWeb) {
+      // On web, use WebSubscriptionManager for smart unsubscription with token protection
+      ref.read(webSubscriptionManagerProvider).unsubscribeTokens(
+        tokensToCheck: tokens,
+        context: context,
+        source: 'orderBook',
+      );
+    } else {
+      // On mobile, use direct unsubscription
       requestWSOrderBook(isSubscribe: false, context: context);
     }
   }
@@ -493,34 +589,34 @@ class OrderProvider extends DefaultChangeNotifier {
 
 // Change Basket name
   chngBsktName(String val, BuildContext context, bool isOpt) async {
-    print("=== DEBUG CHANGE BASKET ===");
-    print("Changing to basket: $val");
-    print("isOpt: $isOpt");
+    debugPrint("=== DEBUG CHANGE BASKET ===");
+    debugPrint("Changing to basket: $val");
+    debugPrint("isOpt: $isOpt");
 
     _selectedBsktName = val;
 
     // Refresh basket data from preferences to ensure latest state
     final userId = pref.clientId;
-    print("UserId in change: $userId");
+    debugPrint("UserId in change: $userId");
 
     if (userId != null && userId.isNotEmpty) {
       final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
-      print("User basket scrips in change: $userBasketScrips");
+      debugPrint("User basket scrips in change: $userBasketScrips");
 
       _bsktScrips =
           userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
     } else {
       final generalBasketScrips = pref.bsktScrips ?? "";
-      print("General basket scrips in change: $generalBasketScrips");
+      debugPrint("General basket scrips in change: $generalBasketScrips");
 
       _bsktScrips =
           generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
     }
 
-    print("Parsed _bsktScrips in change: $_bsktScrips");
+    debugPrint("Parsed _bsktScrips in change: $_bsktScrips");
     _bsktScripList = _bsktScrips[val] ?? [];
-    print("Set _bsktScripList for $val: ${_bsktScripList.length} items");
-    print("==========================");
+    debugPrint("Set _bsktScripList for $val: ${_bsktScripList.length} items");
+    debugPrint("==========================");
 
     if (_bsktScripList.isNotEmpty) {
       // Clean up expired scripts
@@ -544,7 +640,7 @@ class OrderProvider extends DefaultChangeNotifier {
             removeBsktScrip(index, val);
           }
         } catch (e) {
-          print('Error parsing expDate for ${item['tsym']}: $e');
+          debugPrint('Error parsing expDate for ${item['tsym']}: $e');
         }
       });
 
@@ -562,7 +658,7 @@ class OrderProvider extends DefaultChangeNotifier {
       // Only establish new connections if needed
       if (symbolsToSubscribe.isNotEmpty) {
         input = symbolsToSubscribe.join("#");
-        print("Subscribing to new basket scripts: $input");
+        debugPrint("Subscribing to new basket scripts: $input");
         ref.read(websocketProvider).establishConnection(
             channelInput: input, task: kIsWeb ? "d" : "t", context: context);
       }
@@ -628,7 +724,7 @@ class OrderProvider extends DefaultChangeNotifier {
         notifyBasketUpdates();
       }
     } catch (e) {
-      print("Error updating basket from socket data: $e");
+      debugPrint("Error updating basket from socket data: $e");
     }
   }
 
@@ -638,8 +734,13 @@ class OrderProvider extends DefaultChangeNotifier {
   }
 
   tabSize() {
+    _updateTabNamesSilent();
+    notifyListeners();
+  }
+
+  /// Updates tab names without calling notifyListeners (for batched updates)
+  void _updateTabNamesSilent() {
     _orderTabName = [
-      // Tab(text: _allOrder!.isNotEmpty ? "All (${_allOrder!.length})" : "All"),
       Tab(text: _openOrder!.isNotEmpty ? "Open ${_openOrder!.length}" : "Open"),
       Tab(
           text: _executedOrder!.isNotEmpty
@@ -655,10 +756,6 @@ class OrderProvider extends DefaultChangeNotifier {
             ? "GTT ${_gttOrderBookModel!.length}"
             : "GTT",
       ),
-      // Newly added tabs after GTT
-      // const Tab(text: "MF"),
-      // const Tab(text: "IPO"),
-      // const Tab(text: "Bonds"),
       Tab(
         text: _bsktList.isNotEmpty ? "Basket ${_bsktList.length}" : "Basket",
       ),
@@ -672,13 +769,176 @@ class OrderProvider extends DefaultChangeNotifier {
                 ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty
             ? "Alerts ${ref.read(marketWatchProvider).alertPendingModel!.length}"
             : "Alerts",
-        // ref.read(marketWatchProvider).alertPendingModel != null &&
-        //           ref.read(marketWatchProvider).alertPendingModel!.isNotEmpty)
-        //       ? "Alert (${ref.read(marketWatchProvider).alertPendingModel!.length})"
-        //       :
       )
     ];
-    notifyListeners();
+  }
+
+  /// Applies sorting to current tab's order lists without calling notifyListeners
+  void _applySortingSilent(String sorting) {
+    List<OrderBookModel>? mainListToSort;
+    List<OrderBookModel>? searchListToSort;
+
+    if (_selectedTab == 0) {
+      mainListToSort = _openOrder;
+      searchListToSort = _orderSearchItem;
+    } else if (_selectedTab == 1) {
+      mainListToSort = _executedOrder;
+      searchListToSort = _orderSearchItem;
+    } else {
+      mainListToSort = _allOrder;
+      searchListToSort = _orderSearchItem;
+    }
+
+    if (mainListToSort != null && mainListToSort.isNotEmpty) {
+      _applySortingToOrderList(mainListToSort, sorting);
+    }
+    if (searchListToSort != null && searchListToSort.isNotEmpty) {
+      _applySortingToOrderList(searchListToSort, sorting);
+    }
+  }
+
+  /// Re-runs search filter on current tab's data without calling notifyListeners
+  void _reapplySearchSilent(String value) {
+    if (value.isEmpty) return;
+    final upperValue = value.toUpperCase();
+    if (_selectedTab == 0 && _openOrder != null && _openOrder!.isNotEmpty) {
+      _orderSearchItem = _openOrder!
+          .where((e) => e.tsym!.toUpperCase().contains(upperValue))
+          .toList();
+    } else if (_selectedTab == 1 && _executedOrder != null && _executedOrder!.isNotEmpty) {
+      _orderSearchItem = _executedOrder!
+          .where((e) => e.tsym!.toUpperCase().contains(upperValue))
+          .toList();
+    } else if (_selectedTab == 2 && _tradeBook != null && _tradeBook!.isNotEmpty) {
+      _tradeBooksearch = _tradeBook!
+          .where((e) => e.tsym!.toUpperCase().contains(upperValue))
+          .toList();
+    } else if (_selectedTab == 3 && _gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
+      _gttOrderBookSearch = _gttOrderBookModel!
+          .where((e) => e.tsym!.toUpperCase().contains(upperValue))
+          .toList();
+    }
+  }
+
+  /// Updates basket order status without calling notifyListeners (for batched updates)
+  void _updateBasketOrderStatusSilent() {
+    try {
+      Set<String> basketsToProcess = Set<String>.from(_basketOrderIds.keys);
+
+      if (_selectedBsktName.isNotEmpty && _bsktScripList.isNotEmpty) {
+        bool hasItemOrders = _bsktScripList.any(
+            (item) => item['orderIds'] != null && item['orderIds'].isNotEmpty);
+        if (hasItemOrders) {
+          basketsToProcess.add(_selectedBsktName);
+        }
+      }
+
+      // Build order lookup map once for O(1) lookups
+      final Map<String, OrderBookModel> orderLookup = {};
+      if (_orderBookModel != null) {
+        for (var order in _orderBookModel!) {
+          if (order.norenordno != null) {
+            orderLookup[order.norenordno!] = order;
+          }
+        }
+      }
+
+      for (String basketName in basketsToProcess) {
+        List<String> orderIds = _basketOrderIds[basketName] ?? [];
+
+        if (orderIds.isEmpty && basketName == _selectedBsktName) {
+          Set<String> itemOrderIds = {};
+          for (var item in _bsktScripList) {
+            if (item['orderIds'] != null && item['orderIds'].isNotEmpty) {
+              itemOrderIds.addAll(List<String>.from(item['orderIds']));
+            }
+          }
+          orderIds = itemOrderIds.toList();
+          if (orderIds.isNotEmpty) {
+            _basketOrderIds[basketName] = orderIds;
+          }
+        }
+
+        if (orderIds.isEmpty) continue;
+
+        Map<String, String> orderIdToStatus = {};
+        Map<String, OrderBookModel> orderIdToModel = {};
+        int completedCount = 0;
+        int rejectedCount = 0;
+        int openCount = 0;
+
+        for (String orderId in orderIds) {
+          // O(1) lookup instead of linear search
+          OrderBookModel? order = orderLookup[orderId];
+
+          if (order != null && order.status != null) {
+            String actualStatus = order.status!;
+            orderIdToStatus[orderId] = actualStatus;
+            orderIdToModel[orderId] = order;
+
+            if (actualStatus == 'COMPLETE') {
+              completedCount++;
+            } else if (actualStatus == 'REJECTED' || actualStatus == 'CANCELED') {
+              rejectedCount++;
+            } else {
+              openCount++;
+            }
+          }
+        }
+
+        _updateBasketItemStatusesWithOrderBook(
+            basketName, orderIdToStatus, orderIdToModel);
+
+        if (completedCount == orderIds.length) {
+          _basketOverallStatus[basketName] = 'completed';
+        } else if (rejectedCount == orderIds.length) {
+          _basketOverallStatus[basketName] = 'failed';
+        } else if (rejectedCount > 0 &&
+            (rejectedCount + completedCount) == orderIds.length) {
+          _basketOverallStatus[basketName] = 'partially_completed';
+        } else if (completedCount > 0) {
+          _basketOverallStatus[basketName] = 'partially_filled';
+        } else {
+          _basketOverallStatus[basketName] = 'placed';
+        }
+      }
+
+      _saveOrderTrackingData();
+    } catch (e) {
+      debugPrint("Error updating basket order status: $e");
+    }
+  }
+
+  /// Validates basket order statuses without calling notifyListeners (for batched updates)
+  void _validateAllBasketOrderStatusesSilent() {
+    if (_orderBookModel == null || _orderBookModel!.isEmpty) return;
+
+    Set<String> currentOrderIds = {};
+    for (var order in _orderBookModel!) {
+      if (order.norenordno != null) {
+        currentOrderIds.add(order.norenordno!);
+      }
+    }
+
+    for (var element in _bsktScripList) {
+      if (element['orderIds'] != null) {
+        List<String> itemOrderIds = List<String>.from(element['orderIds']);
+
+        bool hasValidOrder = false;
+        for (String orderId in itemOrderIds) {
+          if (currentOrderIds.contains(orderId)) {
+            hasValidOrder = true;
+            break;
+          }
+        }
+
+        if (!hasValidOrder) {
+          element['orderStatus'] = null;
+          element['orderDetails'] = null;
+          element['orderIds'] = null;
+        }
+      }
+    }
   }
 
   showOrderSearch(bool value) {
@@ -744,7 +1004,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
   // A single search function to handle search for all order tabs
   searchOrders(String value, BuildContext context) {
-    print(
+    debugPrint(
         '🔍 [searchOrders] Called with value: "$value", _selectedTab: $_selectedTab');
 
     // Clear all previous search results
@@ -757,7 +1017,7 @@ class OrderProvider extends DefaultChangeNotifier {
     ref.read(notificationprovider).clearTriggeredAlertSearch();
 
     if (value.isNotEmpty) {
-      print('🔍 [searchOrders] Searching in tab $_selectedTab');
+      debugPrint('🔍 [searchOrders] Searching in tab $_selectedTab');
       switch (_selectedTab) {
         case 0: // Open Orders
           if (_openOrder != null && _openOrder!.isNotEmpty) {
@@ -780,38 +1040,38 @@ class OrderProvider extends DefaultChangeNotifier {
           }
           break;
         case 2: // Trade Book
-          print('🔍 [searchOrders] Case 2 - Trade Book');
-          print('🔍 [searchOrders] _tradeBook is null: ${_tradeBook == null}');
-          print(
+          debugPrint('🔍 [searchOrders] Case 2 - Trade Book');
+          debugPrint('🔍 [searchOrders] _tradeBook is null: ${_tradeBook == null}');
+          debugPrint(
               '🔍 [searchOrders] _tradeBook isEmpty: ${_tradeBook?.isEmpty ?? true}');
           if (_tradeBook != null && _tradeBook!.isNotEmpty) {
             _tradeBooksearch = _tradeBook!
                 .where((element) =>
                     element.tsym!.toUpperCase().contains(value.toUpperCase()))
                 .toList();
-            print(
+            debugPrint(
                 '🔍 [searchOrders] Trade Book search results: ${_tradeBooksearch?.length ?? 0}');
           } else {
-            print(
+            debugPrint(
                 '🔍 [searchOrders] Trade Book data is null or empty, setting empty results');
             _tradeBooksearch = [];
           }
           break;
         case 3: // GTT Orders
-          print('🔍 [searchOrders] Case 3 - GTT Orders');
-          print(
+          debugPrint('🔍 [searchOrders] Case 3 - GTT Orders');
+          debugPrint(
               '🔍 [searchOrders] _gttOrderBookModel is null: ${_gttOrderBookModel == null}');
-          print(
+          debugPrint(
               '🔍 [searchOrders] _gttOrderBookModel isEmpty: ${_gttOrderBookModel?.isEmpty ?? true}');
           if (_gttOrderBookModel != null && _gttOrderBookModel!.isNotEmpty) {
             _gttOrderBookSearch = _gttOrderBookModel!
                 .where((element) =>
                     element.tsym!.toUpperCase().contains(value.toUpperCase()))
                 .toList();
-            print(
+            debugPrint(
                 '🔍 [searchOrders] GTT search results: ${_gttOrderBookSearch?.length ?? 0}');
           } else {
-            print(
+            debugPrint(
                 '🔍 [searchOrders] GTT data is null or empty, setting empty results');
             _gttOrderBookSearch = [];
           }
@@ -1209,24 +1469,25 @@ class OrderProvider extends DefaultChangeNotifier {
       final result = await api.getPlaceOrder(placeOrderInput, _ip);
       return result;
     } catch (e) {
-      print("Error placing slice order: $e");
+      debugPrint("Error placing slice order: $e");
       return null;
     }
   }
 
   Future fetchOrderBook(context, bool websocCon) async {
     try {
-      await setPortfolioupdate('ob');
+      final freshOrders = List<OrderBookModel>.from(await _fetchPortfolioData('ob'));
       if (_orderBookModel!.isNotEmpty) {
-        if (_torderBookModel!.isNotEmpty) {
-          _orderBookModel = _torderBookModel;
+        if (freshOrders.isNotEmpty) {
+          _orderBookModel = freshOrders;
         }
       } else {
-        toggleLoadingOn(true);
+        loading = true;
+        notifyListeners(); // Show loading indicator immediately
         _executedOrder = [];
         _openOrder = [];
         _allOrder = [];
-        _orderBookModel = _torderBookModel;
+        _orderBookModel = freshOrders;
       }
 
       pref.setOBScrip(true);
@@ -1238,51 +1499,65 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_orderBookModel!.isNotEmpty) {
         if (_orderBookModel![0].stat != "Not_Ok") {
           ConstantName.sessCheck = true;
-          _executedOrder = [];
-          _openOrder = [];
-          _allOrder = [];
-          for (var element in _orderBookModel!) {
-            if (element.exch == "BFO" && element.dname != null) {
-              List<String> splitVal = element.dname!.split(" ");
+          final tempExecuted = <OrderBookModel>[];
+          final tempOpen = <OrderBookModel>[];
+          final tempAll = <OrderBookModel>[];
 
-              element.symbol = splitVal[0];
-              element.expDate = "${splitVal[1]} ${splitVal[2]}";
-              element.option = splitVal.length > 4
-                  ? "${splitVal[3]} ${splitVal[4]}"
-                  : splitVal[3];
-            } else {
-              Map spilitSymbol = spilitTsym(value: "${element.tsym}");
-
-              element.symbol = "${spilitSymbol["symbol"]}";
-              element.expDate = "${spilitSymbol["expDate"]}";
-              element.option = "${spilitSymbol["option"]}";
-            }
-            if (element.stat == "Ok") {
-              // Commented out to prevent console spam
-              // debugPrint("Order ${element.norenordno}: Status=${element.status}, Stat=${element.stat}");
-              if (element.status == "REJECTED" ||
-                  element.status == "CANCELED" ||
-                  element.status == "COMPLETE" ||
-                  element.status == "INVALID_STATUS_TYPE") {
-                _executedOrder!.add(element);
-                // debugPrint("  -> Added to _executedOrder (Status: ${element.status})");
+          // Process orders in batches and yield to event loop between batches.
+          // On web, compute() runs synchronously — without yielding, the main thread
+          // stays blocked for seconds and other XHR response callbacks (e.g. getLinkedScrips)
+          // can't execute, appearing "pending" even though the server already responded.
+          final orders = _orderBookModel!;
+          const batchSize = 200;
+          for (var i = 0; i < orders.length; i += batchSize) {
+            final end = (i + batchSize < orders.length) ? i + batchSize : orders.length;
+            for (var j = i; j < end; j++) {
+              final element = orders[j];
+              if (element.exch == "BFO" && element.dname != null) {
+                List<String> splitVal = element.dname!.split(" ");
+                element.symbol = splitVal[0];
+                element.expDate = "${splitVal[1]} ${splitVal[2]}";
+                element.option = splitVal.length > 4
+                    ? "${splitVal[3]} ${splitVal[4]}"
+                    : splitVal[3];
               } else {
-                _openOrder!.add(element);
-                // debugPrint("  -> Added to _openOrder (Status: ${element.status})");
+                Map spilitSymbol = spilitTsym(value: "${element.tsym}");
+                element.symbol = "${spilitSymbol["symbol"]}";
+                element.expDate = "${spilitSymbol["expDate"]}";
+                element.option = "${spilitSymbol["option"]}";
               }
-              _allOrder!.add(element);
-            } else {
-              // debugPrint("Order ${element.norenordno}: Stat=${element.stat}, Error=${element.emsg}");
-              // debugPrint("  -> NOT added to any list (stat != Ok)");
+              if (element.stat == "Ok") {
+                if (element.status == "REJECTED" ||
+                    element.status == "CANCELED" ||
+                    element.status == "COMPLETE" ||
+                    element.status == "INVALID_STATUS_TYPE") {
+                  tempExecuted.add(element);
+                } else {
+                  tempOpen.add(element);
+                }
+                tempAll.add(element);
+              }
+            }
+            // Yield to event loop between batches so pending XHR callbacks
+            // (like getLinkedScrips response) can be processed
+            if (end < orders.length) {
+              await Future.delayed(Duration.zero);
             }
           }
 
-          // Reapply the last sort method if one was used
+          _executedOrder = tempExecuted;
+          _openOrder = tempOpen;
+          _allOrder = tempAll;
+
+          // Reapply the last sort method without notifying (batched)
           if (_lastOrderSortMethod.isNotEmpty) {
-            filterOrders(sorting: _lastOrderSortMethod);
+            _applySortingSilent(_lastOrderSortMethod);
           }
 
-          notifyListeners();
+          // Re-run search if active (so search results reference fresh data)
+          if (orderSearchCtrl.text.trim().isNotEmpty) {
+            _reapplySearchSilent(orderSearchCtrl.text.trim());
+          }
 
           if (websocCon) {
             requestWSOrderBook(isSubscribe: true, context: context);
@@ -1295,37 +1570,42 @@ class OrderProvider extends DefaultChangeNotifier {
           }
         }
       }
-      tabSize();
+      // Update tab names without notifying (batched)
+      _updateTabNamesSilent();
       return _orderBookModel;
     } catch (e) {
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Order Book", "Error": "$e"});
-      notifyListeners();
-      print(e);
+      debugPrint(e.toString());
     } finally {
-      //
-
-      // Update basket order statuses after fetching order book
-      updateBasketOrderStatus();
+      // Update basket order statuses (without its own notifyListeners)
+      _updateBasketOrderStatusSilent();
 
       // Validate and clean up stale basket order statuses
-      validateAllBasketOrderStatuses();
+      _validateAllBasketOrderStatusesSilent();
 
-      toggleLoadingOn(false);
+      loading = false;
+      // Single notifyListeners for all state changes
+      notifyListeners();
     }
   }
 
   Future fetchTradeBook(context) async {
     try {
-      await setPortfolioupdate('tb');
+      // Show loader on first load (when no existing data)
+      if (_tradeBook == null || _tradeBook!.isEmpty) {
+        loading = true;
+        notifyListeners();
+      }
+      final freshTrades = List<TradeBookModel>.from(await _fetchPortfolioData('tb'));
       if (_tradeBook!.isNotEmpty) {
-        if (_ttradeBook!.isNotEmpty) {
-          _tradeBook = _ttradeBook;
+        if (freshTrades.isNotEmpty) {
+          _tradeBook = freshTrades;
         }
       } else {
-        _tradeBook = _ttradeBook;
+        _tradeBook = freshTrades;
       }
       pref.setTbScrip(true);
       pref.setTbPrice(true);
@@ -1360,30 +1640,33 @@ class OrderProvider extends DefaultChangeNotifier {
           _tradeBook = [];
         }
       }
-      tabSize();
-      notifyListeners();
-
+      _updateTabNamesSilent();
+      // Re-run search if active on trade book tab
+      if (orderSearchCtrl.text.trim().isNotEmpty && _selectedTab == 2) {
+        _reapplySearchSilent(orderSearchCtrl.text.trim());
+      }
       return _tradeBook;
     } catch (e) {
-      print("Trade book $e");
+      debugPrint("Trade book $e");
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API Trade Book", "Error": "$e"});
+    } finally {
+      loading = false;
       notifyListeners();
-    } finally {}
+    }
   }
 
   Future fetchGTTOrderBook(context, String initLoad) async {
     try {
-      await setPortfolioupdate('gtt');
-      // if (_gttOrderBookModel!.isNotEmpty) {
-      //   if (_tgttOrderBookModel!.isNotEmpty) {
-      //     _gttOrderBookModel = _tgttOrderBookModel;
-      //   }
-      // } else {
-      //   _gttOrderBookModel = _tgttOrderBookModel;
-      // }
+      // Show loader on first load (when no existing data)
+      if (_gttOrderBookModel == null || _gttOrderBookModel!.isEmpty) {
+        loading = true;
+        notifyListeners();
+      }
+      // _fetchPortfolioData('gtt') sets _gttOrderBookModel directly
+      await _fetchPortfolioData('gtt');
       if (_gttOrderBookModel!.isNotEmpty) {
         if (_gttOrderBookModel![0].stat == "Ok") {
           ConstantName.sessCheck = true;
@@ -1413,16 +1696,21 @@ class OrderProvider extends DefaultChangeNotifier {
           _gttOrderBookModel = [];
         }
       }
-      tabSize();
+      _updateTabNamesSilent();
+      // Re-run search if active on GTT tab
+      if (orderSearchCtrl.text.trim().isNotEmpty && _selectedTab == 3) {
+        _reapplySearchSilent(orderSearchCtrl.text.trim());
+      }
 
       return _gttOrderBookModel;
     } catch (e) {
-      print("GTT Order book $e");
+      debugPrint("GTT Order book $e");
       ref
           .read(indexListProvider)
           .logError
           .add({"type": "API GTT Order Book", "Error": "$e"});
     } finally {
+      loading = false;
       notifyListeners();
     }
   }
@@ -1474,7 +1762,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       return _triggeredGttOrders;
     } catch (e) {
-      print("Triggered GTT Orders $e");
+      debugPrint("Triggered GTT Orders $e");
       ref
           .read(indexListProvider)
           .logError
@@ -1487,7 +1775,7 @@ class OrderProvider extends DefaultChangeNotifier {
   Future fetchOrderHistory(String orderNum, BuildContext context) async {
     try {
       _orderHistoryModel = await api.getOrderHistory(orderNum);
-      print("${_orderHistoryModel[0].stat}");
+      debugPrint("${_orderHistoryModel[0].stat}");
       if (_orderHistoryModel[0].stat == "Not_Ok" &&
           _orderHistoryModel[0].emsg ==
               "Session Expired :  Invalid Session Key") {
@@ -1521,7 +1809,7 @@ class OrderProvider extends DefaultChangeNotifier {
             backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 16.0);
-        print("searchList");
+        debugPrint("searchList");
       }
     } else {
       _orderBookSearchItem = [];
@@ -1572,15 +1860,16 @@ class OrderProvider extends DefaultChangeNotifier {
       if (_cancelOrderModel!.stat == "Ok") {
         if (loop) {
           ConstantName.sessCheck = true;
-          await fetchOrderBook(context, true);
+          // Show success feedback immediately — don't block on order book refresh
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Cancelled');
           } else {
-          Navigator.pop(context);
-          successMessage(context, 'Order Cancelled');
-          Navigator.pop(context);
+            Navigator.pop(context);
+            successMessage(context, 'Order Cancelled');
+            Navigator.pop(context);
           }
-
+          // Refresh order book in background (non-blocking)
+          fetchOrderBook(context, true);
         }
       } else if (_cancelOrderModel!.stat == "Not_Ok" &&
           _cancelOrderModel!.emsg ==
@@ -1606,14 +1895,16 @@ class OrderProvider extends DefaultChangeNotifier {
           _cancelOrderModel!.dmsg == "success") {
         if (loop) {
           ConstantName.sessCheck = true;
-          await fetchOrderBook(context, true);
+          // Show success feedback immediately — don't block on order book refresh
           if (kIsWeb) {
             ResponsiveSnackBar.showSuccess(context, 'Order Exited');
           } else {
-          Navigator.pop(context);
-          successMessage(context, 'Order Exited');
-          Navigator.pop(context);
+            Navigator.pop(context);
+            successMessage(context, 'Order Exited');
+            Navigator.pop(context);
           }
+          // Refresh order book in background (non-blocking)
+          fetchOrderBook(context, true);
         }
       } else if (_cancelOrderModel!.stat == "Not_Ok" &&
           _cancelOrderModel!.emsg ==
@@ -1636,7 +1927,6 @@ class OrderProvider extends DefaultChangeNotifier {
       _modifyOrderModel = await api.getModifyOrder(input, _ip);
       if (_modifyOrderModel!.stat == "Ok") {
         ConstantName.sessCheck = true;
-        await fetchOrderBook(context, true);
         PlaceOrderModel modifyOrderData = PlaceOrderModel(
           norenordno:
               _modifyOrderModel!.result, // Order number from modify result
@@ -1645,29 +1935,18 @@ class OrderProvider extends DefaultChangeNotifier {
         );
         modifyOrderData.emsg = _modifyOrderModel!.emsg;
 
-        // ScaffoldMessenger.of(context)
-        //     .showSnackBar(successMessage(context, 'Order Modified'));
-
+        // Show feedback immediately — don't block on order book refresh
         if (kIsWeb) {
           // For web, the overlay is already closed by closeNotifier.onClose() in the modify screen
           // So we don't need to call Navigator.pop here
-
-          // Small delay to ensure overlay closes smoothly before showing confirmation
-          // await Future.delayed(const Duration(milliseconds: 100));
-
-          // // Show confirmation dialog
-          // showDialog(
-          //   context: context,
-          //   barrierColor: Colors.black.withOpacity(0.3), // Subtle dark backdrop
-          //   builder: (BuildContext context) =>
-          //       OrderConfirmationScreenWeb(orderData: [modifyOrderData]),
-          // );
         } else {
           Navigator.pop(context);
           Navigator.pushNamed(context, Routes.orderConfirmation, arguments: {
             'orderData': [modifyOrderData],
           });
         }
+        // Refresh order book in background (non-blocking)
+        fetchOrderBook(context, true);
       } else {
         if (_modifyOrderModel!.emsg ==
             "Session Expired :  Invalid Session Key") {
@@ -1689,7 +1968,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Modify Order", "Error": "$e"});
       notifyListeners();
-      print(e);
+      debugPrint(e.toString());
     } finally {}
   }
 
@@ -1717,7 +1996,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Order Margin", "Error": "$e"});
       notifyListeners();
-      print(e);
+      debugPrint(e.toString());
     } finally {}
   }
 
@@ -1740,7 +2019,7 @@ class OrderProvider extends DefaultChangeNotifier {
           .logError
           .add({"type": "API Brokerage", "Error": "$e"});
       notifyListeners();
-      print(e);
+      debugPrint(e.toString());
     } finally {}
   }
 
@@ -1840,33 +2119,33 @@ class OrderProvider extends DefaultChangeNotifier {
       // On web, WebSubscriptionManager handles all subscriptions
       // Skip unsubscribe here to avoid conflicts with multi-panel layout
       if (kIsWeb && !isSubscribe) {
-        print("ℹ️ [Order Book] Skipping unsubscribe on web (handled by WebSubscriptionManager)");
+        debugPrint("ℹ️ [Order Book] Skipping unsubscribe on web (handled by WebSubscriptionManager)");
         return;
       }
 
       // Print subscription/unsubscription details
       if (isSubscribe) {
-        print("═══════════════════════════════════════════════════════════");
-        print("📥 [Order Book] SUBSCRIBING to Tab $_selectedTab: $tabName");
-        print("   Total symbols: ${uniqueSymbols.length}");
+        debugPrint("═══════════════════════════════════════════════════════════");
+        debugPrint("📥 [Order Book] SUBSCRIBING to Tab $_selectedTab: $tabName");
+        debugPrint("   Total symbols: ${uniqueSymbols.length}");
         if (uniqueSymbols.length <= 10) {
-          print("   Symbols: ${uniqueSymbols.join(", ")}");
+          debugPrint("   Symbols: ${uniqueSymbols.join(", ")}");
         } else {
-          print("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
-          print("   ... and ${uniqueSymbols.length - 10} more");
+          debugPrint("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
+          debugPrint("   ... and ${uniqueSymbols.length - 10} more");
         }
-        print("═══════════════════════════════════════════════════════════");
+        debugPrint("═══════════════════════════════════════════════════════════");
       } else {
-        print("═══════════════════════════════════════════════════════════");
-        print("📤 [Order Book] UNSUBSCRIBING from Tab $_selectedTab: $tabName");
-        print("   Total symbols: ${uniqueSymbols.length}");
+        debugPrint("═══════════════════════════════════════════════════════════");
+        debugPrint("📤 [Order Book] UNSUBSCRIBING from Tab $_selectedTab: $tabName");
+        debugPrint("   Total symbols: ${uniqueSymbols.length}");
         if (uniqueSymbols.length <= 10) {
-          print("   Symbols: ${uniqueSymbols.join(", ")}");
+          debugPrint("   Symbols: ${uniqueSymbols.join(", ")}");
         } else {
-          print("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
-          print("   ... and ${uniqueSymbols.length - 10} more");
+          debugPrint("   First 10 symbols: ${uniqueSymbols.take(10).join(", ")}...");
+          debugPrint("   ... and ${uniqueSymbols.length - 10} more");
         }
-        print("═══════════════════════════════════════════════════════════");
+        debugPrint("═══════════════════════════════════════════════════════════");
       }
 
       if (input.isNotEmpty) {
@@ -1875,11 +2154,11 @@ class OrderProvider extends DefaultChangeNotifier {
             task: isSubscribe ? (kIsWeb ? "d" : "t") : "u",
             context: context);
       } else {
-        print(
+        debugPrint(
             "🚨 [Order Book] No symbols to ${isSubscribe ? 'subscribe' : 'unsubscribe'} for Tab $_selectedTab: $tabName");
       }
     } catch (e) {
-      print("❌ [Order Book] Error in requestWSOrderBook: $e");
+      debugPrint("❌ [Order Book] Error in requestWSOrderBook: $e");
     } finally {
       toggleLoadingOn(false);
     }
@@ -2585,9 +2864,9 @@ class OrderProvider extends DefaultChangeNotifier {
 
     final userId = pref.clientId;
 
-    print("=== DEBUG BASKET LOADING ===");
-    print("UserId: $userId");
-    print("bsktScrips : ${pref.bsktScrips}");
+    debugPrint("=== DEBUG BASKET LOADING ===");
+    debugPrint("UserId: $userId");
+    debugPrint("bsktScrips : ${pref.bsktScrips}");
 
     // Check both storages to find where the data actually exists
     final generalBasketScrips = pref.bsktScrips ?? "";
@@ -2595,8 +2874,8 @@ class OrderProvider extends DefaultChangeNotifier {
         ? (pref.getBasketScripsForUser(userId) ?? "")
         : "";
 
-    print("General bsktScrips: $generalBasketScrips");
-    print("User bsktScrips: $userBasketScrips");
+    debugPrint("General bsktScrips: $generalBasketScrips");
+    debugPrint("User bsktScrips: $userBasketScrips");
 
     // Use the storage that has data, prioritizing user-specific if both have data
     bool useUserStorage = false;
@@ -2608,7 +2887,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       if (userStorageInitialized) {
         useUserStorage = true;
-        print("Using user-specific storage (already initialized)");
+        debugPrint("Using user-specific storage (already initialized)");
       } else if (generalBasketScrips.isNotEmpty &&
           generalBasketScrips != "{}" &&
           generalBasketScrips.length > 10) {
@@ -2619,7 +2898,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
         if (!userListInitialized) {
           // First time migration - user storage is completely uninitialized
-          print("First-time migration from general to user-specific storage");
+          debugPrint("First-time migration from general to user-specific storage");
           await pref.setBasketScripForUser(userId, generalBasketScrips);
 
           final generalBasketList = pref.bsktList ?? "";
@@ -2628,18 +2907,18 @@ class OrderProvider extends DefaultChangeNotifier {
           }
 
           // Clear general storage after successful migration
-          print("Clearing general storage after migration");
+          debugPrint("Clearing general storage after migration");
           await pref.setBasketScrip("{}");
           await pref.setBasketList("[]");
 
           useUserStorage = true;
         } else {
           // User storage exists but is empty - user has cleared their baskets
-          print("User storage exists but empty - not migrating");
+          debugPrint("User storage exists but empty - not migrating");
           useUserStorage = true;
         }
       } else {
-        print("Both storages are empty or have minimal data");
+        debugPrint("Both storages are empty or have minimal data");
         useUserStorage = true; // Default to user storage for new users
       }
     }
@@ -2649,8 +2928,8 @@ class OrderProvider extends DefaultChangeNotifier {
       final userBasketList = pref.getBasketListForUser(userId) ?? "";
       final finalUserBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
 
-      print("Using User Basket List: $userBasketList");
-      print("Using User Basket Scrips: $finalUserBasketScrips");
+      debugPrint("Using User Basket List: $userBasketList");
+      debugPrint("Using User Basket Scrips: $finalUserBasketScrips");
 
       _bsktList = userBasketList.isEmpty ? [] : jsonDecode(userBasketList);
       _bsktScrips = finalUserBasketScrips.isEmpty
@@ -2660,8 +2939,8 @@ class OrderProvider extends DefaultChangeNotifier {
       // General storage
       final generalBasketList = pref.bsktList ?? "";
 
-      print("Using General Basket List: $generalBasketList");
-      print("Using General Basket Scrips: $generalBasketScrips");
+      debugPrint("Using General Basket List: $generalBasketList");
+      debugPrint("Using General Basket Scrips: $generalBasketScrips");
 
       _bsktList =
           generalBasketList.isEmpty ? [] : jsonDecode(generalBasketList);
@@ -2669,9 +2948,9 @@ class OrderProvider extends DefaultChangeNotifier {
           generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
     }
 
-    print("Parsed _bsktList: $_bsktList");
-    print("Parsed _bsktScrips: $_bsktScrips");
-    print("Selected basket: $_selectedBsktName");
+    debugPrint("Parsed _bsktList: $_bsktList");
+    debugPrint("Parsed _bsktScrips: $_bsktScrips");
+    debugPrint("Selected basket: $_selectedBsktName");
 
     if (_bsktList.isNotEmpty) {
       for (var element in _bsktList) {
@@ -2679,33 +2958,33 @@ class OrderProvider extends DefaultChangeNotifier {
         List scipList = _bsktScrips[basketName] ?? [];
         element['curLength'] = "${scipList.length}";
 
-        print("Basket: $basketName, Scripts count: ${scipList.length}");
+        debugPrint("Basket: $basketName, Scripts count: ${scipList.length}");
 
         if (_selectedBsktName == basketName) {
           _bsktScripList = List.from(scipList);
-          print(
+          debugPrint(
               "Set _bsktScripList for $basketName: ${_bsktScripList.length} items");
         }
       }
     }
 
-    print("Final _bsktScripList: ${_bsktScripList.length} items");
-    print("============================");
+    debugPrint("Final _bsktScripList: ${_bsktScripList.length} items");
+    debugPrint("============================");
 
     _isBasketLoading = false;
 
     // Restore order tracking data after loading baskets
     await _restoreOrderTrackingData();
 
-    print("=== AFTER BASKET LOAD ===");
-    print("_bsktList.length: ${_bsktList.length}");
-    print("_bsktList.isEmpty: ${_bsktList.isEmpty}");
-    print("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
-    print("Calling notifyListeners()...");
+    debugPrint("=== AFTER BASKET LOAD ===");
+    debugPrint("_bsktList.length: ${_bsktList.length}");
+    debugPrint("_bsktList.isEmpty: ${_bsktList.isEmpty}");
+    debugPrint("Order tracking restored for baskets: ${_basketOverallStatus.keys}");
+    debugPrint("Calling notifyListeners()...");
     tabSize();
     notifyListeners();
-    print("notifyListeners() completed");
-    print("========================");
+    debugPrint("notifyListeners() completed");
+    debugPrint("========================");
   } 
 
   // removeBasket(int index) async {
@@ -2768,13 +3047,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
   removeBsktScrip(int index, String bsktName) async {
     try {
-      print("=== DEBUG REMOVE BASKET SCRIP ===");
-      print("Removing index: $index from basket: $bsktName");
-      print("Current _bsktScripList length: ${_bsktScripList.length}");
+      debugPrint("=== DEBUG REMOVE BASKET SCRIP ===");
+      debugPrint("Removing index: $index from basket: $bsktName");
+      debugPrint("Current _bsktScripList length: ${_bsktScripList.length}");
 
       Map<String, dynamic> data = {};
       final userId = pref.clientId;
-      print("UserId in remove: $userId");
+      debugPrint("UserId in remove: $userId");
       // 1️⃣ Capture the removed item
       final removedItem = _bsktScripList[index];
       final List<String> removedOrderIds =
@@ -2783,29 +3062,29 @@ class OrderProvider extends DefaultChangeNotifier {
       // Get current basket scrips data
       if (userId != null && userId.isNotEmpty) {
         final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
-        print("User basket scrips before remove: $userBasketScrips");
+        debugPrint("User basket scrips before remove: $userBasketScrips");
         data = userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
       } else {
         final generalBasketScrips = pref.bsktScrips ?? "";
-        print("General basket scrips before remove: $generalBasketScrips");
+        debugPrint("General basket scrips before remove: $generalBasketScrips");
         data =
             generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
       }
 
-      print("Parsed data before remove: $data");
+      debugPrint("Parsed data before remove: $data");
 
       // Remove from local list
       if (index >= 0 && index < _bsktScripList.length) {
         final removedItem = _bsktScripList.removeAt(index);
-        print("Removed item: $removedItem");
-        print("_bsktScripList after removal: ${_bsktScripList.length} items");
+        debugPrint("Removed item: $removedItem");
+        debugPrint("_bsktScripList after removal: ${_bsktScripList.length} items");
       } else {
-        print("Invalid index: $index");
+        debugPrint("Invalid index: $index");
       }
 
       // Update the basket data with the modified list
       data[bsktName] = List.from(_bsktScripList);
-      print(
+      debugPrint(
           "Updated data for basket $bsktName: ${data[bsktName]?.length} items");
 
       // Also update the local _bsktScrips to keep it in sync
@@ -2813,20 +3092,20 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Save to preferences
       String jsonData = jsonEncode(data);
-      print("Saving JSON data: $jsonData");
+      debugPrint("Saving JSON data: $jsonData");
 
       if (userId != null && userId.isNotEmpty) {
         await pref.setBasketScripForUser(userId, jsonData);
-        print("Saved to user-specific storage");
+        debugPrint("Saved to user-specific storage");
 
         // Clear general storage to prevent conflicts after user makes changes
         if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
-          print("Clearing general storage to prevent conflicts");
+          debugPrint("Clearing general storage to prevent conflicts");
           await pref.setBasketScrip("{}");
         }
       } else {
         await pref.setBasketScrip(jsonData);
-        print("Saved to general storage");
+        debugPrint("Saved to general storage");
       }
 
       // 4️⃣ Only remove individual script orders if there actually were any
@@ -2837,13 +3116,13 @@ class OrderProvider extends DefaultChangeNotifier {
         removeScriptOrderTracking(bsktName, scriptKey, removedOrderIds);
       }
 
-      print("================================");
+      debugPrint("================================");
 
       // Refresh all basket data
       await getBasketName();
       notifyListeners();
     } catch (e) {
-      print("Error removing basket scrip: $e");
+      debugPrint("Error removing basket scrip: $e");
       // Still refresh basket data in case of error
       await getBasketName();
       notifyListeners();
@@ -2853,9 +3132,9 @@ class OrderProvider extends DefaultChangeNotifier {
   addToBasket(String basketName, Map<String, dynamic> basketItem,
       {BuildContext? context}) async {
     try {
-      print("=== DEBUG ADD TO BASKET ===");
-      print("Adding to basket: $basketName");
-      print("Item: $basketItem");
+      debugPrint("=== DEBUG ADD TO BASKET ===");
+      debugPrint("Adding to basket: $basketName");
+      debugPrint("Item: $basketItem");
 
       Map<String, dynamic> data = {};
       final userId = pref.clientId;
@@ -2863,18 +3142,18 @@ class OrderProvider extends DefaultChangeNotifier {
       // Get existing basket scrips data
       if (userId != null && userId.isNotEmpty) {
         final userBasketScrips = pref.getBasketScripsForUser(userId) ?? "";
-        print("User basket scrips: $userBasketScrips");
+        debugPrint("User basket scrips: $userBasketScrips");
         data = userBasketScrips.isEmpty ? {} : jsonDecode(userBasketScrips);
       } else {
         final generalBasketScrips = pref.bsktScrips ?? "";
-        print("General basket scrips: $generalBasketScrips");
+        debugPrint("General basket scrips: $generalBasketScrips");
         data =
             generalBasketScrips.isEmpty ? {} : jsonDecode(generalBasketScrips);
       }
 
       // Get current scripts in the basket
       List currentScripts = data[basketName] ?? [];
-      print("Current scripts count: ${currentScripts.length}");
+      debugPrint("Current scripts count: ${currentScripts.length}");
 
       // Check basket limit (frezQtyOrderSliceMaxLimit items max)
       if (currentScripts.length >= frezQtyOrderSliceMaxLimit) {
@@ -2940,7 +3219,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Add all split items to the basket
       currentScripts.addAll(itemsToAdd);
-      print("After adding: ${currentScripts.length}");
+      debugPrint("After adding: ${currentScripts.length}");
 
       // Update the data
       data[basketName] = currentScripts;
@@ -2948,30 +3227,30 @@ class OrderProvider extends DefaultChangeNotifier {
 
       // Save back to preferences
       String jsonData = jsonEncode(data);
-      print("Saving add JSON: $jsonData");
+      debugPrint("Saving add JSON: $jsonData");
 
       if (userId != null && userId.isNotEmpty) {
         await pref.setBasketScripForUser(userId, jsonData);
-        print("Saved to user-specific storage");
+        debugPrint("Saved to user-specific storage");
 
         // Clear general storage to prevent conflicts
         if (pref.bsktScrips != null && pref.bsktScrips!.isNotEmpty) {
-          print("Clearing general storage to prevent conflicts");
+          debugPrint("Clearing general storage to prevent conflicts");
           await pref.setBasketScrip("{}");
         }
       } else {
         await pref.setBasketScrip(jsonData);
-        print("Saved to general storage");
+        debugPrint("Saved to general storage");
       }
 
-      print("===========================");
+      debugPrint("===========================");
 
       // Refresh basket data
       await getBasketName();
       notifyListeners();
       return true; // Return true to indicate success
     } catch (e) {
-      print("Error adding to basket: $e");
+      debugPrint("Error adding to basket: $e");
       await getBasketName();
       notifyListeners();
       return false; // Return false to indicate failure
@@ -3199,8 +3478,13 @@ class OrderProvider extends DefaultChangeNotifier {
 
   Future fetchSipOrderHistory(BuildContext context) async {
     try {
+      // Show loader on first load (when no existing data)
+      if (_siporderBookModel == null) {
+        loading = true;
+        notifyListeners();
+      }
       _siporderBookModel = await api.getSipOrderBook();
-      tabSize();
+      _updateTabNamesSilent();
       List ltpArgs = [];
       if (_siporderBookModel != null) {
         if (_siporderBookModel!.sipDetails != null) {
@@ -3261,8 +3545,10 @@ class OrderProvider extends DefaultChangeNotifier {
           .read(indexListProvider)
           .logError
           .add({"type": "SIP ORDER HISTORY API", "Error": "$e"});
+    } finally {
+      loading = false;
       notifyListeners();
-    } finally {}
+    }
   }
 
   Future fetchSipOrderCancel(String sipOrderno, context) async {
@@ -3654,15 +3940,8 @@ class OrderProvider extends DefaultChangeNotifier {
   // Method to update basket order statuses from order book data
   void updateBasketOrderStatus() async {
     try {
-      // debugPrint("=== UPDATING BASKET ORDER STATUS ===");
-      // debugPrint("Order Book Model Count: ${_orderBookModel?.length ?? 0}");
-      // debugPrint("Executed Order Count: ${_executedOrder?.length ?? 0}");
-      // debugPrint("Open Order Count: ${_openOrder?.length ?? 0}");
-
-      // Get all baskets that need processing (those with tracking data OR current basket with item orders)
       Set<String> basketsToProcess = Set<String>.from(_basketOrderIds.keys);
 
-      // Also check if current basket has individual item order data
       if (_selectedBsktName.isNotEmpty && _bsktScripList.isNotEmpty) {
         bool hasItemOrders = _bsktScripList.any(
             (item) => item['orderIds'] != null && item['orderIds'].isNotEmpty);
@@ -3671,10 +3950,19 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
 
+      // Build order lookup map once for O(1) lookups
+      final Map<String, OrderBookModel> orderLookup = {};
+      if (_orderBookModel != null) {
+        for (var order in _orderBookModel!) {
+          if (order.norenordno != null) {
+            orderLookup[order.norenordno!] = order;
+          }
+        }
+      }
+
       for (String basketName in basketsToProcess) {
         List<String> orderIds = _basketOrderIds[basketName] ?? [];
 
-        // If no global order ids, try to collect from individual items
         if (orderIds.isEmpty && basketName == _selectedBsktName) {
           Set<String> itemOrderIds = {};
           for (var item in _bsktScripList) {
@@ -3684,67 +3972,34 @@ class OrderProvider extends DefaultChangeNotifier {
           }
           orderIds = itemOrderIds.toList();
           if (orderIds.isNotEmpty) {
-            _basketOrderIds[basketName] = orderIds; // Update global tracking
+            _basketOrderIds[basketName] = orderIds;
           }
         }
 
         if (orderIds.isEmpty) continue;
 
-        print("Processing basket: $basketName with ${orderIds.length} orders");
-
-        // Check each order ID against current order book
         Map<String, String> orderIdToStatus = {};
         Map<String, OrderBookModel> orderIdToModel = {};
         int completedCount = 0;
         int rejectedCount = 0;
-        int openCount = 0;
 
         for (String orderId in orderIds) {
-          debugPrint("  Checking order ID: $orderId");
-          // Find order in all order lists
-          OrderBookModel? order = _findOrderById(orderId);
+          // O(1) lookup instead of linear search
+          OrderBookModel? order = orderLookup[orderId];
 
           if (order != null && order.status != null) {
-            String actualStatus =
-                order.status!; // Keep original case (REJECTED, COMPLETE, etc.)
+            String actualStatus = order.status!;
             orderIdToStatus[orderId] = actualStatus;
             orderIdToModel[orderId] = order;
 
-            debugPrint("    Order $orderId found - Status: $actualStatus");
-            debugPrint("    Order TSYM: ${order.tsym}");
-            debugPrint("    Order Exchange: ${order.exch}");
-            debugPrint("    Order Stat: ${order.stat}");
-            debugPrint("    Order Error: ${order.emsg}");
-
-            // Count statuses
             if (actualStatus == 'COMPLETE') {
               completedCount++;
-              debugPrint("    -> Counted as COMPLETE");
             } else if (actualStatus == 'REJECTED' ||
                 actualStatus == 'CANCELED') {
               rejectedCount++;
-              debugPrint(
-                  "    -> Counted as REJECTED/CANCELED (should appear in executed)");
-            } else {
-              openCount++; // OPEN or other statuses
-              debugPrint("    -> Counted as OPEN/OTHER");
             }
-          } else {
-            // Order not found in order book - this means it's stale/expired
-            debugPrint("    Order $orderId NOT FOUND in current orderbook");
-            debugPrint("    This could mean:");
-            debugPrint("      - Order was never placed (failed immediately)");
-            debugPrint("      - Order is stale/expired");
-            debugPrint("      - Order book hasn't been refreshed yet");
-            // Don't add to orderIdToStatus map - let it be cleaned up
           }
         }
-
-        debugPrint("  Status Summary for basket $basketName:");
-        debugPrint("    Completed: $completedCount");
-        debugPrint("    Rejected/Canceled: $rejectedCount");
-        debugPrint("    Open: $openCount");
-        debugPrint("    Total tracked: ${orderIds.length}");
 
         // Update individual basket items with real order statuses
         _updateBasketItemStatusesWithOrderBook(
@@ -3757,20 +4012,12 @@ class OrderProvider extends DefaultChangeNotifier {
           _basketOverallStatus[basketName] = 'failed';
         } else if (rejectedCount > 0 &&
             (rejectedCount + completedCount) == orderIds.length) {
-          // Some rejected, some completed, none open
           _basketOverallStatus[basketName] = 'partially_completed';
         } else if (completedCount > 0) {
-          // Some completed, others still open/processing
           _basketOverallStatus[basketName] = 'partially_filled';
         } else {
-          // All orders still open/processing
           _basketOverallStatus[basketName] = 'placed';
         }
-
-        print(
-            "Basket $basketName final status: ${_basketOverallStatus[basketName]}");
-        print(
-            "Counts - Complete: $completedCount, Rejected: $rejectedCount, Open: $openCount");
       }
 
       // Save updated tracking data
@@ -3778,65 +4025,37 @@ class OrderProvider extends DefaultChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print("Error updating basket order status: $e");
+      debugPrint("Error updating basket order status: $e");
     }
   }
 
   // Helper method to find order by ID in all order lists
   OrderBookModel? _findOrderById(String orderId) {
-    debugPrint("    _findOrderById: Searching for order ID: $orderId");
-
-    // Search in all orders (orderBookModel)
     if (_orderBookModel != null) {
       try {
-        OrderBookModel? found = _orderBookModel!.firstWhere(
+        return _orderBookModel!.firstWhere(
           (order) => order.norenordno == orderId,
         );
-        debugPrint("      Found in _orderBookModel");
-        return found;
-      } catch (e) {
-        debugPrint("      Not found in _orderBookModel");
-      }
+      } catch (_) {}
     }
 
-    // Search in executed orders (REJECTED, CANCELED, COMPLETE should be here)
-    if (_executedOrder != null) {
-      try {
-        OrderBookModel? found = _executedOrder!.firstWhere(
-          (order) => order.norenordno == orderId,
-        );
-        debugPrint("      Found in _executedOrder (status: ${found.status})");
-        return found;
-      } catch (e) {
-        debugPrint("      Not found in _executedOrder");
-      }
-    }
-
-    // Search in open orders
-    if (_openOrder != null) {
-      try {
-        OrderBookModel? found = _openOrder!.firstWhere(
-          (order) => order.norenordno == orderId,
-        );
-        debugPrint("      Found in _openOrder");
-        return found;
-      } catch (e) {
-        debugPrint("      Not found in _openOrder");
-      }
-    }
-
-    // Search in executed orders
     if (_executedOrder != null) {
       try {
         return _executedOrder!.firstWhere(
           (order) => order.norenordno == orderId,
         );
-      } catch (e) {
-        // Order not found
-      }
+      } catch (_) {}
     }
 
-    return null; // Order not found anywhere
+    if (_openOrder != null) {
+      try {
+        return _openOrder!.firstWhere(
+          (order) => order.norenordno == orderId,
+        );
+      } catch (_) {}
+    }
+
+    return null;
   }
 
   // Method to update individual basket items with order book data
@@ -3872,9 +4091,6 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // Set the primary status for this item (worst case scenario)
         if (itemStatuses.isEmpty) {
-          // No valid order found in orderbook, reset order status
-          print(
-              "DEBUG: Resetting order status for ${element['tsym']} - no valid orders found");
           element['orderStatus'] = null;
           element['orderDetails'] = null;
         } else if (itemStatuses.contains('REJECTED')) {
@@ -3894,8 +4110,6 @@ class OrderProvider extends DefaultChangeNotifier {
           element['orderDetails'] = itemOrderDetails;
         }
 
-        print(
-            "Updated item ${element['tsym']}: status=${element['orderStatus']}, details=$itemOrderDetails");
       } else {
         // No order IDs means the item was never placed, reset any existing status
         element['orderStatus'] = null;
@@ -3934,14 +4148,14 @@ class OrderProvider extends DefaultChangeNotifier {
 
         // If no valid orders found, reset the status
         if (!hasValidOrder) {
-          print(
+          debugPrint(
               "DEBUG: Found stale order for ${element['tsym']}, orderIds: $itemOrderIds");
-          print(
+          debugPrint(
               "DEBUG: Current orderbook has ${currentOrderIds.length} orders");
           element['orderStatus'] = null;
           element['orderDetails'] = null;
           element['orderIds'] = null; // Also clear the order IDs
-          print(
+          debugPrint(
               "Reset stale order status for ${element['tsym']} - orders not found in current orderbook");
         }
       }
@@ -3961,7 +4175,7 @@ class OrderProvider extends DefaultChangeNotifier {
         // Save to user-specific preferences
         final updatedBasketData = jsonEncode(_bsktScrips);
         await pref.setBasketScripForUser(userId, updatedBasketData);
-        print(
+        debugPrint(
             "DEBUG: Saved cleaned basket data for user $userId, basket: $basketName");
       } else {
         // Update the basket data in memory
@@ -3970,11 +4184,11 @@ class OrderProvider extends DefaultChangeNotifier {
         // Save to general preferences
         final updatedBasketData = jsonEncode(_bsktScrips);
         await pref.setBasketScrip(updatedBasketData);
-        print(
+        debugPrint(
             "DEBUG: Saved cleaned basket data to general preferences, basket: $basketName");
       }
     } catch (e) {
-      print("ERROR: Failed to save cleaned basket data: $e");
+      debugPrint("ERROR: Failed to save cleaned basket data: $e");
     }
   }
 
@@ -4012,7 +4226,7 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      print("Error updating basket item statuses: $e");
+      debugPrint("Error updating basket item statuses: $e");
     }
   }
 
@@ -4079,7 +4293,7 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      print("Error clearing basket from persistent storage: $e");
+      debugPrint("Error clearing basket from persistent storage: $e");
     }
   }
 
@@ -4157,7 +4371,7 @@ class OrderProvider extends DefaultChangeNotifier {
         }
       }
     } catch (e) {
-      print("Error removing script from persistent storage: $e");
+      debugPrint("Error removing script from persistent storage: $e");
     }
   }
 
@@ -4201,7 +4415,7 @@ class OrderProvider extends DefaultChangeNotifier {
                   MapEntry(key, List<Map<String, dynamic>>.from(value))));
         }
       } catch (e) {
-        print("Error reading existing basket items data: $e");
+        debugPrint("Error reading existing basket items data: $e");
       }
 
       // Update current basket's item data
@@ -4244,7 +4458,7 @@ class OrderProvider extends DefaultChangeNotifier {
         await pref.setOrderTracking(jsonData);
       }
     } catch (e) {
-      print("Error saving order tracking data: $e");
+      debugPrint("Error saving order tracking data: $e");
     }
   }
 
@@ -4275,11 +4489,11 @@ class OrderProvider extends DefaultChangeNotifier {
         Map<String, dynamic> basketItemsData = data['basketItemsData'] ?? {};
         _restoreBasketItemOrderDataFromSaved(basketItemsData);
 
-        print(
+        debugPrint(
             "Restored order tracking for baskets: ${_basketOverallStatus.keys}");
       }
     } catch (e) {
-      print("Error restoring order tracking data: $e");
+      debugPrint("Error restoring order tracking data: $e");
     }
   }
 
@@ -4293,7 +4507,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
     if (savedItems == null || savedItems.isEmpty) return;
 
-    print(
+    debugPrint(
         "Restoring saved order data for basket: $basketName with ${savedItems.length} saved items");
 
     // Match saved items with current basket items using proper index-based matching
@@ -4313,7 +4527,7 @@ class OrderProvider extends DefaultChangeNotifier {
           currentItem['filledQty'] = savedItem['filledQty'];
           currentItem['rejectionReason'] = savedItem['rejectionReason'];
 
-          print(
+          debugPrint(
               "Restored saved data for item ${currentItem['tsym']} at index $index: status=${currentItem['orderStatus']}");
           break;
         }
@@ -4330,7 +4544,7 @@ class OrderProvider extends DefaultChangeNotifier {
 
     if (orderIds.isEmpty) return;
 
-    print(
+    debugPrint(
         "Restoring order data for basket: $basketName with ${orderIds.length} orders");
 
     // For each basket item, restore its order tracking data if it exists
@@ -4363,7 +4577,7 @@ class OrderProvider extends DefaultChangeNotifier {
             element['orderStatus'] = order.status!;
           }
 
-          print(
+          debugPrint(
               "Restored order data for item ${element['tsym']}: status=${element['orderStatus']}");
         }
       }

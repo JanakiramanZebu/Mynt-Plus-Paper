@@ -27,6 +27,7 @@ import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../models/marketwatch_model/get_quotes.dart';
 import '../../../../models/order_book_model/order_book_model.dart';
 import '../../../../utils/responsive_navigation.dart';
+import '../../../../utils/rupee_convert_format.dart';
 import '../../../../provider/strategy_builder_provider.dart';
 import '../strategy_builder/strategy_builder_screen.dart';
 
@@ -202,7 +203,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           Expanded(
             child: _buildStatCard(
               label: 'Total P&L',
-              value: totPnL,
+              value: totPnL.toIndianFormat(),
               valueColor: _getValueColor(totPnL, theme),
               theme: theme,
             ),
@@ -211,7 +212,7 @@ class _PositionScreenWebState extends ConsumerState<PositionScreenWeb> {
           Expanded(
             child: _buildStatCard(
               label: 'Total MTM',
-              value: totMtM,
+              value: totMtM.toIndianFormat(),
               valueColor: _getValueColor(totMtM, theme),
               theme: theme,
             ),

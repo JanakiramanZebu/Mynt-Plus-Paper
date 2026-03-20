@@ -52,7 +52,8 @@ import 'package:flutter/material.dart'
         BoxShadow,
         Offset,
         RawScrollbar,
-        Radius;
+        Radius,
+        ListView;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mynt_plus/res/res.dart';
@@ -62,7 +63,8 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../provider/portfolio_provider.dart';
 import '../../../res/res.dart';
-import '../../../provider/websocket_provider.dart';
+// websocket_provider import removed — holdings now uses provider-only path (no stream subscriptions)
+import '../../../utils/rupee_convert_format.dart';
 import '../../../provider/market_watch_provider.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
@@ -850,40 +852,35 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                     thickness: 6,
                     radius: const Radius.circular(3),
                     interactive: true,
-                    child: SingleChildScrollView(
+                    child: ListView.builder(
                       controller: _verticalScrollController,
-                      scrollDirection: Axis.vertical,
-                      child: shadcn.Table(
-                        key: ValueKey(
-                            'table_${_sortColumnIndex}_$_sortAscending'),
-                        columnWidths: {
-                          0: shadcn.FixedTableSize(columnWidths[0]!),
-                          1: shadcn.FixedTableSize(columnWidths[1]!),
-                          2: shadcn.FixedTableSize(columnWidths[2]!),
-                          3: shadcn.FixedTableSize(columnWidths[3]!),
-                          4: shadcn.FixedTableSize(columnWidths[4]!),
-                          5: shadcn.FixedTableSize(columnWidths[5]!),
-                          6: shadcn.FixedTableSize(columnWidths[6]!),
-                          7: shadcn.FixedTableSize(columnWidths[7]!),
-                        },
-                        defaultRowHeight: const shadcn.FixedTableSize(50),
-                        rows: [
-                          // Data Rows
-                          ...displayHoldings.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final holding = entry.value;
-                            final exchTsym =
-                                holding.exchTsym?.isNotEmpty == true
-                                    ? holding.exchTsym![0]
-                                    : null;
-                            final token = exchTsym?.token ?? '';
-                            final qty = holding.currentQty ?? 0;
-                            // Include npoadt1qty (Non-POA T1 holdings) in financial calculations
-                            final totalQty = qty + int.parse(holding.npoadt1qty ?? "0");
-                            final avgPrice =
-                                double.tryParse(holding.avgPrc ?? '0') ?? 0.0;
+                      itemCount: displayHoldings.length,
+                      itemExtent: 50.0,
+                      itemBuilder: (context, index) {
+                        final holding = displayHoldings[index];
+                        final exchTsym =
+                            holding.exchTsym?.isNotEmpty == true
+                                ? holding.exchTsym![0]
+                                : null;
+                        final token = exchTsym?.token ?? '';
+                        final qty = holding.currentQty ?? 0;
 
-                            return shadcn.TableRow(
+                        return shadcn.Table(
+                          key: ValueKey(
+                              'row_${token}_${_sortColumnIndex}_$_sortAscending'),
+                          columnWidths: {
+                            0: shadcn.FixedTableSize(columnWidths[0]!),
+                            1: shadcn.FixedTableSize(columnWidths[1]!),
+                            2: shadcn.FixedTableSize(columnWidths[2]!),
+                            3: shadcn.FixedTableSize(columnWidths[3]!),
+                            4: shadcn.FixedTableSize(columnWidths[4]!),
+                            5: shadcn.FixedTableSize(columnWidths[5]!),
+                            6: shadcn.FixedTableSize(columnWidths[6]!),
+                            7: shadcn.FixedTableSize(columnWidths[7]!),
+                          },
+                          defaultRowHeight: const shadcn.FixedTableSize(50),
+                          rows: [
+                            shadcn.TableRow(
                               cells: [
                                 // Instrument with action buttons on hover
                                 buildCellWithHover(
@@ -1124,16 +1121,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: token.isNotEmpty
-                                        ? _LTPCell(
-                                            token: token,
-                                            initialLtp:
-                                                exchTsym?.lp ?? '0.00',
-                                          )
-                                        : Text(
-                                            exchTsym?.lp ?? '0.00',
-                                            style: _getTextStyle(context),
-                                          ),
+                                    child: Text(
+                                      exchTsym?.lp ?? '0.00',
+                                      style: _getTextStyle(context),
+                                    ),
                                   ),
                                 ),
                                 // Invested
@@ -1146,7 +1137,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   child: Align(
                                     alignment: Alignment.centerRight,
                                     child: Text(
-                                      holding.invested ?? '0.00',
+                                      (holding.invested ?? '0.00').toIndianFormat(),
                                       style: _getTextStyle(context),
                                     ),
                                   ),
@@ -1160,18 +1151,10 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: token.isNotEmpty
-                                        ? _CurrentValueCell(
-                                            token: token,
-                                            qty: totalQty,
-                                            initialValue:
-                                                holding.currentValue ??
-                                                    '0.00',
-                                          )
-                                        : Text(
-                                            holding.currentValue ?? '0.00',
-                                            style: _getTextStyle(context),
-                                          ),
+                                    child: Text(
+                                      (holding.currentValue ?? '0.00').toIndianFormat(),
+                                      style: _getTextStyle(context),
+                                    ),
                                   ),
                                 ),
                                 // Day P&L - with WebSocket updates (includes percentage)
@@ -1183,20 +1166,9 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: token.isNotEmpty
-                                        ? _DayPnLCell(
-                                            token: token,
-                                            qty: totalQty,
-                                            close: double.tryParse(
-                                                    exchTsym?.close ?? '0') ??
-                                                0.0,
-                                            initialValue:
-                                                exchTsym?.oneDayChg ?? '0.00',
-                                            initialPercent:
-                                                exchTsym?.perChange ?? '0.00',
-                                          )
-                                        : _buildColoredText(
-                                            '${exchTsym?.oneDayChg ?? '0.00'}(${exchTsym?.perChange ?? '0.00'}%)'),
+                                    child: _buildColoredText(
+                                      '${(exchTsym?.oneDayChg ?? '0.00').toIndianFormat()}(${exchTsym?.perChange ?? '0.00'}%)',
+                                    ),
                                   ),
                                 ),
                                 // Overall P&L - with WebSocket updates (includes percentage)
@@ -1208,26 +1180,16 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: token.isNotEmpty
-                                        ? _OverallPnLCell(
-                                            token: token,
-                                            qty: totalQty,
-                                            avgPrice: avgPrice,
-                                            initialValue:
-                                                exchTsym?.profitNloss ??
-                                                    '0.00',
-                                            initialPercent:
-                                                exchTsym?.pNlChng ?? '0.00',
-                                          )
-                                        : _buildColoredText(
-                                            '${exchTsym?.profitNloss ?? '0.00'}(${exchTsym?.pNlChng ?? '0.00'}%)'),
+                                    child: _buildColoredText(
+                                      '${(exchTsym?.profitNloss ?? '0.00').toIndianFormat()}(${exchTsym?.pNlChng ?? '0.00'}%)',
+                                    ),
                                   ),
                                 ),
                               ],
-                            );
-                          }),
-                        ],
-                      ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -1698,338 +1660,7 @@ class _TableExample1State extends ConsumerState<TableExample1> {
   }
 }
 
-// ==================== WEBSOCKET CELLS ====================
+// Stream-based WebSocket cells removed — holdings now uses provider-only path
+// (portfolioProvider.updateHoldingValues → notifyListeners → ref.watch rebuild)
+// This eliminates ~600-800 redundant stream callbacks/sec with 50 holdings
 
-/// LTP Cell with WebSocket updates
-class _LTPCell extends ConsumerStatefulWidget {
-  final String token;
-  final String initialLtp;
-
-  const _LTPCell({required this.token, required this.initialLtp});
-
-  @override
-  ConsumerState<_LTPCell> createState() => _LTPCellState();
-}
-
-class _LTPCellState extends ConsumerState<_LTPCell> {
-  late String ltp;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    ltp = widget.initialLtp;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != 'null') {
-        setState(() => ltp = newLtp);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      ltp,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
-      ),
-    );
-  }
-}
-
-/// Current Value Cell with WebSocket updates
-class _CurrentValueCell extends ConsumerStatefulWidget {
-  final String token;
-  final int qty;
-  final String initialValue;
-
-  const _CurrentValueCell({
-    required this.token,
-    required this.qty,
-    required this.initialValue,
-  });
-
-  @override
-  ConsumerState<_CurrentValueCell> createState() => _CurrentValueCellState();
-}
-
-class _CurrentValueCellState extends ConsumerState<_CurrentValueCell> {
-  late String currentValue;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    currentValue = widget.initialValue;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        final newValue = (ltp * widget.qty).toStringAsFixed(2);
-        if (newValue != currentValue) {
-          setState(() => currentValue = newValue);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      currentValue,
-      style: MyntWebTextStyles.tableCell(
-        context,
-        darkColor: MyntColors.textPrimaryDark,
-        lightColor: MyntColors.textPrimary,
-        fontWeight: MyntFonts.medium,
-      ),
-    );
-  }
-}
-
-/// Overall P&L Cell with WebSocket updates (includes percentage)
-class _OverallPnLCell extends ConsumerStatefulWidget {
-  final String token;
-  final int qty;
-  final double avgPrice;
-  final String initialValue;
-  final String initialPercent;
-
-  const _OverallPnLCell({
-    required this.token,
-    required this.qty,
-    required this.avgPrice,
-    required this.initialValue,
-    required this.initialPercent,
-  });
-
-  @override
-  ConsumerState<_OverallPnLCell> createState() => _OverallPnLCellState();
-}
-
-class _OverallPnLCellState extends ConsumerState<_OverallPnLCell> {
-  late String overallPnL;
-  late String overallPercent;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    overallPnL = widget.initialValue;
-    overallPercent = widget.initialPercent;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        final pnlValue = (ltp - widget.avgPrice) * widget.qty;
-        final newPnL = pnlValue.toStringAsFixed(2);
-
-        // Calculate percentage: ((LTP - AvgPrice) / AvgPrice) * 100
-        String newPercent = '0.00';
-        if (widget.avgPrice != 0) {
-          final percentValue =
-              ((ltp - widget.avgPrice) / widget.avgPrice) * 100;
-          newPercent = percentValue.toStringAsFixed(2);
-        }
-
-        if (newPnL != overallPnL || newPercent != overallPercent) {
-          setState(() {
-            overallPnL = newPnL;
-            overallPercent = newPercent;
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getCellColor(String value) {
-    final numValue = double.tryParse(value) ?? 0.0;
-    if (numValue > 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit);
-    }
-    if (numValue < 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.lossDark, light: MyntColors.loss);
-    }
-    return resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _getCellColor(overallPnL);
-    final baseStyle = MyntWebTextStyles.tableCell(
-      context,
-      color: color,
-      darkColor: color,
-      lightColor: color,
-      fontWeight: MyntFonts.medium,
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(overallPnL, textAlign: TextAlign.end, style: baseStyle),
-        Text(
-          '$overallPercent%',
-          textAlign: TextAlign.end,
-          style: baseStyle.copyWith(
-            fontSize: 10,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Day P&L Cell with WebSocket updates (includes percentage)
-class _DayPnLCell extends ConsumerStatefulWidget {
-  final String token;
-  final int qty;
-  final double close;
-  final String initialValue;
-  final String initialPercent;
-
-  const _DayPnLCell({
-    required this.token,
-    required this.qty,
-    required this.close,
-    required this.initialValue,
-    required this.initialPercent,
-  });
-
-  @override
-  ConsumerState<_DayPnLCell> createState() => _DayPnLCellState();
-}
-
-class _DayPnLCellState extends ConsumerState<_DayPnLCell> {
-  late String dayPnL;
-  late String dayPercent;
-  StreamSubscription? _subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    dayPnL = widget.initialValue;
-    dayPercent = widget.initialPercent;
-
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
-
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null && newLtp != '0.00' && newLtp != 'null') {
-        final ltp = double.tryParse(newLtp) ?? 0.0;
-        // Day P&L = (LTP - Close) * Qty
-        final dayPnLValue = (ltp - widget.close) * widget.qty;
-        final newPnL = dayPnLValue.toStringAsFixed(2);
-
-        // Day Percentage = ((LTP - Close) / Close) * 100
-        String newPercent = '0.00';
-        if (widget.close != 0) {
-          final percentValue = ((ltp - widget.close) / widget.close) * 100;
-          newPercent = percentValue.toStringAsFixed(2);
-        }
-
-        if (newPnL != dayPnL || newPercent != dayPercent) {
-          setState(() {
-            dayPnL = newPnL;
-            dayPercent = newPercent;
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Color _getCellColor(String value) {
-    final numValue = double.tryParse(value) ?? 0.0;
-    if (numValue > 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.profitDark, light: MyntColors.profit);
-    }
-    if (numValue < 0) {
-      return resolveThemeColor(context,
-          dark: MyntColors.lossDark, light: MyntColors.loss);
-    }
-    return resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _getCellColor(dayPnL);
-    final baseStyle = MyntWebTextStyles.tableCell(
-      context,
-      color: color,
-      darkColor: color,
-      lightColor: color,
-      fontWeight: MyntFonts.medium,
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(dayPnL, textAlign: TextAlign.end, style: baseStyle),
-        Text(
-          '$dayPercent%',
-          textAlign: TextAlign.end,
-          style: baseStyle.copyWith(
-            fontSize: 10,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textPrimaryDark,
-              light: MyntColors.textPrimary,
-            ),
-            fontWeight: MyntFonts.medium,
-          ),
-        ),
-      ],
-    );
-  }
-}

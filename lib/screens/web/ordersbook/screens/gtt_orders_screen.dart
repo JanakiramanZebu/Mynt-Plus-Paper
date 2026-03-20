@@ -57,6 +57,7 @@ import 'package:flutter/material.dart'
         FontWeight,
         Radius,
         RawScrollbar,
+        ListView,
         MediaQuery,
         ValueNotifier,
         ValueListenableBuilder;
@@ -384,100 +385,99 @@ class _GttOrdersScreenState extends ConsumerState<GttOrdersScreen> {
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
-                          child: SingleChildScrollView(
+                          child: ListView.builder(
                             controller: _verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: shadcn.Table(
-                              key: ValueKey(
-                                  'table_${_sortColumnIndex}_$_sortAscending'),
-                              columnWidths: {
-                                0: shadcn.FixedTableSize(columnWidths[0]!),
-                                1: shadcn.FixedTableSize(columnWidths[1]!),
-                                2: shadcn.FixedTableSize(columnWidths[2]!),
-                                3: shadcn.FixedTableSize(columnWidths[3]!),
-                                4: shadcn.FixedTableSize(columnWidths[4]!),
-                                5: shadcn.FixedTableSize(columnWidths[5]!),
-                                6: shadcn.FixedTableSize(columnWidths[6]!),
-                              },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: sortedOrders.asMap().entries.map((entry) {
-                                final index = entry.key;
-                                final gttOrder = entry.value;
-
-                                return shadcn.TableRow(
-                                  cells: [
-                                    // Created on (date)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 0,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: Text(
-                                        _formatCreatedDate(gttOrder),
-                                        style: _getTextStyle(context),
+                            itemCount: sortedOrders.length,
+                            itemExtent: 50.0,
+                            itemBuilder: (context, index) {
+                              final gttOrder = sortedOrders[index];
+                              return shadcn.Table(
+                                columnWidths: {
+                                  0: shadcn.FixedTableSize(columnWidths[0]!),
+                                  1: shadcn.FixedTableSize(columnWidths[1]!),
+                                  2: shadcn.FixedTableSize(columnWidths[2]!),
+                                  3: shadcn.FixedTableSize(columnWidths[3]!),
+                                  4: shadcn.FixedTableSize(columnWidths[4]!),
+                                  5: shadcn.FixedTableSize(columnWidths[5]!),
+                                  6: shadcn.FixedTableSize(columnWidths[6]!),
+                                },
+                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                rows: [
+                                  shadcn.TableRow(
+                                    cells: [
+                                      // Created on (date)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 0,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: Text(
+                                          _formatCreatedDate(gttOrder),
+                                          style: _getTextStyle(context),
+                                        ),
                                       ),
-                                    ),
-                                    // Instrument
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 1,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: ValueListenableBuilder<int?>(
-                                        valueListenable: _hoveredRowIndex,
-                                        builder: (context, hoveredIndex, _) {
-                                          final isRowHovered = hoveredIndex == index ||
-                                              (_activePopoverController != null && _popoverRowIndex == index);
-                                          return _buildInstrumentCell(
-                                              gttOrder, theme, isRowHovered,
-                                              rowIndex: index);
-                                        },
+                                      // Instrument
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 1,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: ValueListenableBuilder<int?>(
+                                          valueListenable: _hoveredRowIndex,
+                                          builder: (context, hoveredIndex, _) {
+                                            final isRowHovered = hoveredIndex == index ||
+                                                (_activePopoverController != null && _popoverRowIndex == index);
+                                            return _buildInstrumentCell(
+                                                gttOrder, theme, isRowHovered,
+                                                rowIndex: index);
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                    // Type (SINGLE/OCO + BUY/SELL badges)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 2,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: _buildTypeCell(gttOrder),
-                                    ),
-                                    // Trigger (with percentage)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 3,
-                                      alignRight: true,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: _buildTriggerCell(gttOrder),
-                                    ),
-                                    // LTP
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 4,
-                                      alignRight: true,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: _buildLTPCell(gttOrder, theme),
-                                    ),
-                                    // Qty. (0 / totalQty - GTT orders are pending triggers)
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 5,
-                                      alignRight: true,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: Text(
-                                        '${gttOrder.qty ?? 0}',
-                                        style: _getTextStyle(context),
+                                      // Type (SINGLE/OCO + BUY/SELL badges)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 2,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: _buildTypeCell(gttOrder),
                                       ),
-                                    ),
-                                    // Status
-                                    buildCellWithHover(
-                                      rowIndex: index,
-                                      columnIndex: 6,
-                                      alignRight: true,
-                                      onTap: () => _showGttOrderDetail(gttOrder),
-                                      child: _buildStatusCell(gttOrder, theme),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
+                                      // Trigger (with percentage)
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 3,
+                                        alignRight: true,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: _buildTriggerCell(gttOrder),
+                                      ),
+                                      // LTP
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 4,
+                                        alignRight: true,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: _buildLTPCell(gttOrder, theme),
+                                      ),
+                                      // Qty.
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 5,
+                                        alignRight: true,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: Text(
+                                          '${gttOrder.qty ?? 0}',
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ),
+                                      // Status
+                                      buildCellWithHover(
+                                        rowIndex: index,
+                                        columnIndex: 6,
+                                        alignRight: true,
+                                        onTap: () => _showGttOrderDetail(gttOrder),
+                                        child: _buildStatusCell(gttOrder, theme),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                 ),
@@ -1649,23 +1649,51 @@ class _GttLTPCell extends ConsumerStatefulWidget {
 class _GttLTPCellState extends ConsumerState<_GttLTPCell> {
   late String ltp;
   StreamSubscription? _subscription;
+  bool _didSetupSubscription = false;
 
   @override
   void initState() {
     super.initState();
     ltp = widget.initialLtp;
+  }
 
-    _subscription = ref.read(websocketProvider).socketDataStream.listen((data) {
-      if (!mounted || !data.containsKey(widget.token)) return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-      final newLtp = data[widget.token]['lp']?.toString();
-      if (newLtp != null &&
-          newLtp != ltp &&
-          newLtp != '0.00' &&
-          newLtp != 'null') {
-        setState(() => ltp = newLtp);
+    if (!_didSetupSubscription && widget.token.isNotEmpty) {
+      _didSetupSubscription = true;
+
+      // Check existing socket data first (tokens may already be subscribed via watchlist)
+      final existingData = ref.read(websocketProvider).socketDatas;
+      if (existingData.containsKey(widget.token)) {
+        final existingLtp = existingData[widget.token]['lp']?.toString();
+        if (existingLtp != null &&
+            existingLtp != '0.00' &&
+            existingLtp != 'null' &&
+            existingLtp != '0') {
+          ltp = existingLtp;
+        }
       }
-    });
+
+      // Subscribe for future updates
+      Future.microtask(() {
+        if (!mounted) return;
+
+        _subscription =
+            ref.read(websocketProvider).socketDataStream.listen((data) {
+          if (!mounted || !data.containsKey(widget.token)) return;
+
+          final newLtp = data[widget.token]['lp']?.toString();
+          if (newLtp != null &&
+              newLtp != ltp &&
+              newLtp != '0.00' &&
+              newLtp != 'null') {
+            setState(() => ltp = newLtp);
+          }
+        });
+      });
+    }
   }
 
   @override

@@ -204,12 +204,15 @@ DateTime parseDate(String dateStr) {
   return DateFormat('ddMMyyyy').parse(dateStr);
 }
 
+// Cached compiled RegExp — avoids recompilation on every call (1500× per fetchOrderBook)
+final RegExp _tsymDatePattern = RegExp(r'\d{2}[A-Z]{3}\d{2,4}');
+
 Map spilitTsym({required String value}) {
   String symbol = "";
   String expDate = "";
   String option = "";
-  // Format the date in the desired format
-  RegExp datePattern = RegExp(r'\d{2}[A-Z]{3}\d{2,4}');
+  // Use cached compiled pattern
+  final RegExp datePattern = _tsymDatePattern;
 
   String? dateMatch = datePattern.firstMatch(value)?.group(0);
 

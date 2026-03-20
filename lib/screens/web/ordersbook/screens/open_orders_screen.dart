@@ -569,201 +569,23 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final orderBook = ref.watch(orderProvider);
+    // Selective watches — only rebuild when relevant data changes
+    final openOrder = ref.watch(orderProvider.select((p) => p.openOrder));
+    final orderSearchItem = ref.watch(orderProvider.select((p) => p.orderSearchItem));
+    final isLoading = ref.watch(orderProvider.select((p) => p.loading));
+    final selectedTab = ref.watch(orderProvider.select((p) => p.selectedTab));
+    final orderBook = ref.read(orderProvider);
 
     // Get orders (search or regular)
     // Only show search results if we're on the Open Orders tab (index 0)
     final searchQuery = orderBook.orderSearchCtrl.text.trim();
-    final isOpenOrdersTab = orderBook.selectedTab == 0;
+    final isOpenOrdersTab = selectedTab == 0;
     final orders = (searchQuery.isNotEmpty && isOpenOrdersTab)
-        ? (orderBook.orderSearchItem ?? [])
-        : (orderBook.openOrder ?? []);
+        ? (orderSearchItem ?? [])
+        : (openOrder ?? []);
 
     // Sort orders (only if not empty)
     final sortedOrders = orders.isNotEmpty ? _getSortedOrders(orders) : <OrderBookModel>[];
-    final actionHandler = OrderActionHandler(ref: ref, context: context);
-
-    // Build data rows - 9 columns: Select, Time, Type, Instrument, Product, Qty., LTP, Price, Status
-    final dataRows = <shadcn.TableRow>[];
-    for (var i = 0; i < sortedOrders.length; i++) {
-      final order = sortedOrders[i];
-      final uniqueId =
-          order.norenordno?.toString() ?? order.token?.toString() ?? '';
-      final isPending = order.status == "PENDING" ||
-          order.status == "OPEN" ||
-          order.status == "TRIGGER_PENDING";
-
-      dataRows.add(
-        shadcn.TableRow(
-          cells: [
-            // Column 0: Select checkbox
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 0,
-              child: _buildCheckboxCell(order, orderBook, i, isPending),
-            ),
-            // Column 1: Time
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 1,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                _formatTime(order.norentm ?? '0.00'),
-                style: _getTextStyle(context),
-                overflow: TextOverflow.ellipsis,
-                softWrap: false,
-              ),
-            ),
-            // Column 2: Type (BUY/SELL)
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 2,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                order.trantype == "S" ? "SELL" : "BUY",
-                style: _getTextStyle(
-                  context,
-                  color: order.trantype == "S"
-                      ? resolveThemeColor(context,
-                          dark: MyntColors.lossDark, light: MyntColors.loss)
-                      : resolveThemeColor(context,
-                          dark: MyntColors.profitDark,
-                          light: MyntColors.profit),
-                ),
-              ),
-            ),
-            // Column 3: Instrument - PERFORMANCE FIX: Use ValueListenableBuilder for hover-dependent UI
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 3,
-              child: ValueListenableBuilder<int?>(
-                valueListenable: _hoveredRowIndex,
-                builder: (context, hoveredIndex, _) {
-                  // Row is hovered if mouse is over it OR if its dropdown menu is open
-                  final isHovered = hoveredIndex == i ||
-                      (_activePopoverController != null && _popoverRowIndex == i);
-                  return _buildInstrumentCell(
-                    order,
-                    theme,
-                    uniqueId,
-                    actionHandler,
-                    isHovered,
-                    rowIndex: i,
-                  );
-                },
-              ),
-            ),
-            // Column 4: Product
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 4,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                order.sPrdtAli ?? order.prd ?? '',
-                style: _getTextStyle(context),
-                overflow: TextOverflow.ellipsis,
-                softWrap: false,
-              ),
-            ),
-            // Column 5: Qty. (filledQty / totalQty) - MCX divided by lot size
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 5,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                _formatOrderQty(order),
-                style: _getTextStyle(context),
-              ),
-            ),
-            // Column 6: LTP (with dynamic colors based on order price)
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 6,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: _OrderLTPCell(
-                token: order.token ?? '',
-                initialLtp: CellFormatters.getValidLTP(order),
-                trantype: order.trantype ?? 'B',
-                orderPrice: order.prc ?? '0',
-              ),
-            ),
-            // Column 7: Price (default text color)
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 7,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Text(
-                CellFormatters.getValidPrice(order),
-                style: _getTextStyle(context),
-              ),
-            ),
-            // Column 8: Status (aligned right)
-            buildCellWithHover(
-              rowIndex: i,
-              columnIndex: 8,
-              alignRight: true,
-              onTap: () => actionHandler.openOrderDetail(order),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(CellFormatters.getStatusText(order))
-                      .withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  CellFormatters.getStatusText(order).toUpperCase(),
-                  style: MyntWebTextStyles.para(
-                    context,
-                    color: _getStatusColor(CellFormatters.getStatusText(order)),
-                    fontWeight: MyntFonts.medium,
-                  ),
-                ),
-              ),
-            ),
-            // Old columns (commented out):
-            // buildCellWithHover(
-            //   rowIndex: i,
-            //   columnIndex: 3,
-            //   onTap: () => actionHandler.openOrderDetail(order),
-            //   child: Text(
-            //     order.prctyp ?? '',
-            //     style: _getTextStyle(context),
-            //     overflow: TextOverflow.visible,
-            //     softWrap: false,
-            //   ),
-            // ),
-            // buildCellWithHover(
-            //   rowIndex: i,
-            //   columnIndex: 6,
-            //   alignRight: true,
-            //   onTap: () => actionHandler.openOrderDetail(order),
-            //   child: Text(
-            //     order.avgprc ?? '0.00',
-            //     style: _getTextStyle(context),
-            //   ),
-            // ),
-            // buildCellWithHover(
-            //   rowIndex: i,
-            //   columnIndex: 9,
-            //   alignRight: true,
-            //   onTap: () => actionHandler.openOrderDetail(order),
-            //   child: Text(
-            //     (order.trgprc != null &&
-            //             order.trgprc != '0' &&
-            //             order.trgprc != '0.00')
-            //         ? order.trgprc!
-            //         : '0.00',
-            //     style: _getTextStyle(context),
-            //   ),
-            // ),
-          ],
-        ),
-      );
-    }
 
     // Return shadcn Table with proper structure
     // 9 columns: Select, Time, Type, Instrument, Product, Qty., LTP, Price, Status
@@ -872,7 +694,7 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                       // Scrollable Body (vertical scroll) - shows loader/no data/table rows
                       Expanded(
                         child: sortedOrders.isEmpty
-                            ? (orderBook.loading
+                            ? (isLoading
                                 ? Center(child: MyntLoader.simple())
                                 : Center(
                                     child: Padding(
@@ -900,26 +722,158 @@ class _OpenOrdersScreenState extends ConsumerState<OpenOrdersScreen> {
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
-                          child: SingleChildScrollView(
+                          child: ListView.builder(
                             controller: widget.verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: shadcn.Table(
-                              key: ValueKey(
-                                  'table_${_sortColumnIndex}_$_sortAscending'),
-                              columnWidths: {
-                                0: shadcn.FixedTableSize(selectWidth),
-                                1: shadcn.FixedTableSize(timeWidth),
-                                2: shadcn.FixedTableSize(typeWidth),
-                                3: shadcn.FixedTableSize(instrumentWidth),
-                                4: shadcn.FixedTableSize(productWidth),
-                                5: shadcn.FixedTableSize(qtyWidth),
-                                6: shadcn.FixedTableSize(ltpWidth),
-                                7: shadcn.FixedTableSize(priceWidth),
-                                8: shadcn.FixedTableSize(statusWidth),
-                              },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: dataRows,
-                            ),
+                            itemCount: sortedOrders.length,
+                            itemExtent: 50.0,
+                            itemBuilder: (context, i) {
+                              final order = sortedOrders[i];
+                              final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+                              final isPending = order.status == "PENDING" || order.status == "OPEN" || order.status == "TRIGGER_PENDING";
+                              final actionHandler = OrderActionHandler(ref: ref, context: context);
+                              return shadcn.Table(
+                                columnWidths: {
+                                  0: shadcn.FixedTableSize(selectWidth),
+                                  1: shadcn.FixedTableSize(timeWidth),
+                                  2: shadcn.FixedTableSize(typeWidth),
+                                  3: shadcn.FixedTableSize(instrumentWidth),
+                                  4: shadcn.FixedTableSize(productWidth),
+                                  5: shadcn.FixedTableSize(qtyWidth),
+                                  6: shadcn.FixedTableSize(ltpWidth),
+                                  7: shadcn.FixedTableSize(priceWidth),
+                                  8: shadcn.FixedTableSize(statusWidth),
+                                },
+                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                rows: [
+                                  shadcn.TableRow(
+                                    cells: [
+                                      // Column 0: Select checkbox
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 0,
+                                        child: _buildCheckboxCell(order, orderBook, i, isPending),
+                                      ),
+                                      // Column 1: Time
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 1,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Text(
+                                          _formatTime(order.norentm ?? '0.00'),
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                      // Column 2: Type (BUY/SELL)
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 2,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Text(
+                                          order.trantype == "S" ? "SELL" : "BUY",
+                                          style: _getTextStyle(
+                                            context,
+                                            color: order.trantype == "S"
+                                                ? resolveThemeColor(context,
+                                                    dark: MyntColors.lossDark, light: MyntColors.loss)
+                                                : resolveThemeColor(context,
+                                                    dark: MyntColors.profitDark, light: MyntColors.profit),
+                                          ),
+                                        ),
+                                      ),
+                                      // Column 3: Instrument
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 3,
+                                        child: ValueListenableBuilder<int?>(
+                                          valueListenable: _hoveredRowIndex,
+                                          builder: (context, hoveredIndex, _) {
+                                            final isHovered = hoveredIndex == i ||
+                                                (_activePopoverController != null && _popoverRowIndex == i);
+                                            return _buildInstrumentCell(
+                                              order, theme, uniqueId, actionHandler, isHovered,
+                                              rowIndex: i,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      // Column 4: Product
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 4,
+                                        alignRight: true,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Text(
+                                          order.sPrdtAli ?? order.prd ?? '',
+                                          style: _getTextStyle(context),
+                                          overflow: TextOverflow.ellipsis,
+                                          softWrap: false,
+                                        ),
+                                      ),
+                                      // Column 5: Qty.
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 5,
+                                        alignRight: true,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Text(
+                                          _formatOrderQty(order),
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ),
+                                      // Column 6: LTP
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 6,
+                                        alignRight: true,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: _OrderLTPCell(
+                                          token: order.token ?? '',
+                                          initialLtp: CellFormatters.getValidLTP(order),
+                                          trantype: order.trantype ?? 'B',
+                                          orderPrice: order.prc ?? '0',
+                                        ),
+                                      ),
+                                      // Column 7: Price
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 7,
+                                        alignRight: true,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Text(
+                                          CellFormatters.getValidPrice(order),
+                                          style: _getTextStyle(context),
+                                        ),
+                                      ),
+                                      // Column 8: Status
+                                      buildCellWithHover(
+                                        rowIndex: i,
+                                        columnIndex: 8,
+                                        alignRight: true,
+                                        onTap: () => actionHandler.openOrderDetail(order),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: _getStatusColor(CellFormatters.getStatusText(order))
+                                                .withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            CellFormatters.getStatusText(order).toUpperCase(),
+                                            style: MyntWebTextStyles.para(
+                                              context,
+                                              color: _getStatusColor(CellFormatters.getStatusText(order)),
+                                              fontWeight: MyntFonts.medium,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ),
