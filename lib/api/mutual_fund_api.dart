@@ -147,6 +147,24 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
+  /// Fetch scheme data for multiple ISINs in a single API call.
+  /// Returns a list of raw JSON maps with fund details (NAV, AUM, CAGR, etc.)
+  Future<List<Map<String, dynamic>>> getSchemesByIsins(List<String> isins) async {
+    try {
+      final uri = Uri.parse(apiLinks.mfGetSchemesByIsins);
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode({"isins": isins}));
+      final json = jsonDecode(res.body);
+      if (json['data'] != null && json['data'] is List) {
+        return List<Map<String, dynamic>>.from(json['data']);
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<TopSchemesModel> getTopSchemes() async {
     try {
       final uri = Uri.parse(apiLinks.topSchemes);

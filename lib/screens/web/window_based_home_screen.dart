@@ -57,6 +57,7 @@ import '../Mobile/bonds/bonds_main_screen.dart';
 import '../../../utils/custom_navigator.dart';
 import '../../../routes/route_names.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'collection_basket/basketlist_dashboard_web.dart';
 import 'webhook/webhook_tradingview_screen.dart';
 import '../../models/marketwatch_model/get_quotes.dart';
 import 'market_watch/chart_with_depth_web.dart';
@@ -450,6 +451,12 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return const ScalperScreenWeb(embedded: true);
       case ScreenType.tradingViewWebHook:
         return const WebHookTradingViewScreen();
+      case ScreenType.basketDashboard:
+        return const StrategyDashboardScreenWeb();
+      case ScreenType.createBasketStrategy:
+      case ScreenType.benchmarkBacktest:
+      case ScreenType.saveBasketStrategy:
+        return const SizedBox.shrink();
     }
   }
 
@@ -509,6 +516,14 @@ class _WindowBasedHomeScreenState extends ConsumerState<WindowBasedHomeScreen>
         return 'Scalper';
       case ScreenType.tradingViewWebHook:
         return 'WebHook';
+      case ScreenType.basketDashboard:
+        return 'Baskets';
+      case ScreenType.createBasketStrategy:
+        return 'Create Strategy';
+      case ScreenType.benchmarkBacktest:
+        return 'Backtest Analysis';
+      case ScreenType.saveBasketStrategy:
+        return 'Save Strategy';
     }
   }
 

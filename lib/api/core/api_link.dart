@@ -372,6 +372,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
       "$newvenketmfurl/dashboard/getCategoryschemes";
   String get mfnewwatchlist => "$newvenketmfurl/dashboard/watchlist_for_mobile";
   String get mfnewsearch => "$newvenketmfurl/dashboard/mfsearch";
+  String get mfGetSchemesByIsins => "$newvenketmfurl/dashboard/get_schemes_by_isins";
   String get mfsinglepageapi => "$newvenketmfurl/singlepage/getFactSheetData";
   String get mfsinglepagechartapi => "$newvenketmfurl/singlepage/getNavGraph";
   String get mforderbookapi => "$newvenketmfurl/singlepage/getNavGraph";
@@ -388,6 +389,8 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get mfsippausenew => "$newvenketmfurl/order/xsip_pause";
   String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
   String get mandatecreatenew => "$newvenketmfurl/order/mandate_creation";
-  
+
+  String get mfbasketanalysis => "$dashBoardURL/mfbasket/collections/portfolio_store";
+  String get mfbaskbacktest => "$dashBoardURL/mfbasket/collections/portfolio_analysis";
 
 }

@@ -66,8 +66,17 @@ class _MfOrderBookScreenWeb extends ConsumerState<MfOrderBookScreenWeb>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    final mfInitialTab = ref.read(mfProvider).mfPortfolioInitialTab;
+    _tabController = TabController(length: 2, vsync: this, initialIndex: mfInitialTab);
+    // Reset after consuming
+    ref.read(mfProvider).setMfPortfolioInitialTab(0);
     _tabController.addListener(_onTabChanged);
+    // If starting on Orders tab, fetch immediately (no tab-change event fires)
+    if (mfInitialTab == 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(mfProvider).fetchMfOrderbook(context);
+      });
+    }
     // Listen to hover changes for popover management
     _hoveredRowIndex.addListener(_onHoverChanged);
     // Listen to scroll for lazy loading orders

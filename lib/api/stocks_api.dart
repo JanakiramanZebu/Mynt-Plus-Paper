@@ -387,10 +387,14 @@ mixin StocksAPI on ApiCore {
     }
   }
 
-  Future<SavedStrategyModel> fetchbasketlist() async {
+ Future<SavedStrategyModel> fetchbasketlist() async {
     try {
-      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
-      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId}));
+      final uri = Uri.parse(apiLinks.mfbasketanalysis);
+      final payload = {
+        "client_id": prefs.clientId,
+        "type_in": "get",
+      };
+      final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode(payload));
       final json = jsonDecode(res.body);
       print("fetchbasketlist response: ${res.body}");
       return SavedStrategyModel.fromJson(json as Map<String, dynamic>);
@@ -409,7 +413,7 @@ mixin StocksAPI on ApiCore {
     required String invesmentdetail,
   }) async {
     try {
-      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      final uri = Uri.parse(apiLinks.mfbasketanalysis);
       
       final payload = {
         "client_id": prefs.clientId,
@@ -422,17 +426,17 @@ mixin StocksAPI on ApiCore {
         "investment_details":invesmentdetail,
       };
       
+      print("=== CREATE STRATEGY ===");
+      print("Create payload: ${jsonEncode(payload)}");
       final res = await apiClient.post(
-        uri, 
+        uri,
         headers: defaultHeaders,
         body: jsonEncode(payload),
       );
-      
-      
       final json = jsonDecode(res.body);
-      print("createbasketsStrategy response: ${res.body}");
+      print("Create response status: ${res.statusCode}");
+      print("Create response body: ${res.body}");
       return json;
-
     } catch (e) {
       print("createbasketsStrategy Error: $e");
       rethrow;
@@ -449,7 +453,7 @@ mixin StocksAPI on ApiCore {
     required String invesmentdetail,
   }) async {
     try {
-      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+      final uri = Uri.parse(apiLinks.mfbasketanalysis);
       
       final payload = {
         "client_id": prefs.clientId,
@@ -481,7 +485,7 @@ mixin StocksAPI on ApiCore {
 
   Future<Response> deletebasketsStrategy(String uuid) async {
     try {
-      final uri = Uri.parse("http://192.168.5.207:8005/collections/portfolio_store");
+     final uri = Uri.parse(apiLinks.mfbasketanalysis);
       final res = await apiClient.post(uri, headers: defaultHeaders, body: jsonEncode({"client_id": prefs.clientId, "type_in": "remove", "id": uuid}));
       return res;
     } catch (e) {
@@ -509,10 +513,10 @@ mixin StocksAPI on ApiCore {
       "compare_symbol": request.compareSymbol,
     };
 
-    print("Backtest API Payload: ${jsonEncode(payload)}");
+   
 
     final response = await apiClient.post(
-      Uri.parse("http://192.168.5.207:8005/collections/portfolio_analysis"),
+      Uri.parse(apiLinks.mfbaskbacktest),
       headers: defaultHeaders,
       body: jsonEncode(payload),
     );

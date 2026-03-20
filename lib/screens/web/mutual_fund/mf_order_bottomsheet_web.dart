@@ -444,7 +444,6 @@ class _MfOrderBottomsheetWeb extends State<MfOrderBottomsheetWeb> {
                                 ],
                                 if (mfOrder.mfOrderTpye != "SIP") ...[
                                   const SizedBox(height: 14),
-              
                                   Text(
                                     "Pay With",
                                     style: MyntWebTextStyles.title(

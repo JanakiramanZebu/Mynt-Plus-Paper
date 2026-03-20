@@ -963,6 +963,20 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
 
     final List<Map<String, dynamic>> tools = [
       {
+        'title': 'MF Stratergy',
+      'subtitle': 'Mutual Funds • Smart Investing',
+    'description': 'Create and invest in curated mutual fund baskets with a single tap. Diversify your portfolio and manage multiple funds effortlessly.',
+        'badge': 'NEW',
+        'isIcon' :false,
+        'accentColor': const Color(0xFF16C4C5),
+        'svgAsset': assets.mfIcon,
+        'onTap': () {
+          if (WebNavigationHelper.isAvailable) {
+            WebNavigationHelper.navigateTo('basketDashboard');
+          }
+        },
+      },
+      {
         'title': 'WebHook Trading',
         'subtitle': 'TradingView • Auto Alert',
         'description':
@@ -970,6 +984,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFFEC4899),
         'badge': 'NEW',
         'icon': Icons.webhook,
+        'isIcon' :true,
         'onTap': () {
           if (WebNavigationHelper.isAvailable) {
             WebNavigationHelper.navigateTo('tradingViewWebHook');
@@ -984,6 +999,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFF0EA5E9),
         'badge': 'NEW',
         'icon': Icons.auto_graph_rounded,
+        'isIcon' :true,
         'onTap': () {
           // Navigate to orders screen and switch to SIP tab (index 5)
           ref.read(orderProvider).changeTabIndex(5, context);
@@ -1000,6 +1016,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFF3B82F6),
         'badge': 'NEW',
         'icon': Icons.rocket_launch_rounded,
+        'isIcon' :true,
         'onTap': () {
           if (WebNavigationHelper.isAvailable) {
             WebNavigationHelper.navigateTo('scalper');
@@ -1014,6 +1031,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFF8B5CF6),
         'badge': 'NEW',
         'icon': Icons.show_chart,
+        'isIcon' :true,
         'onTap': () {
           if (WebNavigationHelper.isAvailable) {
             WebNavigationHelper.navigateTo('strategyBuilder');
@@ -1028,6 +1046,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFF10B981),
         'badge': null,
         'icon': Icons.bar_chart_rounded,
+        'isIcon' :true,
         'onTap': () async {
           final funds = ref.read(fundProvider);
           await funds.fetchHstoken(context);
@@ -1042,6 +1061,7 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
         'accentColor': const Color(0xFFF59E0B),
         'badge': null,
         'icon': Icons.card_giftcard_rounded,
+        'isIcon' :true,
         'onTap': () {
           final Preferences pref = locator<Preferences>();
           final url =
@@ -1197,11 +1217,14 @@ class _DashboardScreenWebState extends ConsumerState<DashboardScreenWeb> {
                                             ],
                                           ),
                                           child: Center(
-                                            child: Icon(
-                                              tool['icon'] as IconData,
-                                              size: 24,
-                                              color: Colors.white,
-                                            ),
+                                            child:  tool['isIcon'] == true
+                                  ?  Icon(tool['icon'] as IconData, size: 24, color: Colors.white)
+                                  : SvgPicture.asset(
+                                      tool['svgAsset'] as String,
+                                      width: 24,
+                                      height: 24,
+                                      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                    ),
                                           ),
                                         ),
                                       ),

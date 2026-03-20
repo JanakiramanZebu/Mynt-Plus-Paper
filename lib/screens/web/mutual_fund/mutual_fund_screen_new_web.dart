@@ -20,6 +20,7 @@ class MutualFundNewScreenWeb extends ConsumerStatefulWidget {
       onCategoryTap; // Callback when category is tapped
   final VoidCallback? onSipCalculatorTap;
   final VoidCallback? onCagrCalculatorTap;
+  final VoidCallback? onStrategyTap;
 
   const MutualFundNewScreenWeb({
     super.key,
@@ -29,6 +30,7 @@ class MutualFundNewScreenWeb extends ConsumerStatefulWidget {
     this.onCategoryTap,
     this.onSipCalculatorTap,
     this.onCagrCalculatorTap,
+    this.onStrategyTap,
   });
 
   @override
@@ -209,7 +211,7 @@ class _MutualFundNewScreenWebState extends ConsumerState<MutualFundNewScreenWeb>
                   child: nfoCard(context, mfData, theme),
                 ),
                 const SizedBox(width: 32),
-                const Expanded(child: SizedBox()), // Empty column for balance
+                Expanded(child: _strategyCard(context, theme)),
               ],
             ),
           ),
@@ -864,6 +866,73 @@ class _MutualFundNewScreenWebState extends ConsumerState<MutualFundNewScreenWeb>
                   const SizedBox(height: 4),
                   Text(
                     "Invest in new funds at launch price",
+                    style: MyntWebTextStyles.para(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textSecondaryDark
+                          : MyntColors.textSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _strategyCard(BuildContext context, ThemesProvider theme) {
+    return InkWell(
+      onTap: () {
+        if (widget.onStrategyTap != null) {
+          widget.onStrategyTap!();
+        } else {
+          Navigator.pushNamed(context, Routes.basketScreen);
+        }
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(12.0),
+        decoration: BoxDecoration(
+          color: theme.isDarkMode ? Colors.transparent : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: theme.isDarkMode
+                ? colors.textSecondaryDark
+                : const Color(0xFFECEDEE),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(
+            assets.mfIcon,
+              width: 25,
+              height: 25,
+               colorFilter: const ColorFilter.mode(MyntColors.primary, BlendMode.srcIn)
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "MF Strategy",
+                    style: MyntWebTextStyles.body(
+                      context,
+                      color: theme.isDarkMode
+                          ? MyntColors.textPrimaryDark
+                          : MyntColors.textPrimary,
+                      fontWeight: MyntFonts.medium,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Build & invest in custom fund baskets",
                     style: MyntWebTextStyles.para(
                       context,
                       color: theme.isDarkMode
