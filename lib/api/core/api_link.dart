@@ -390,7 +390,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get mfredemptionenew => "$newvenketmfurl/order/PlaceRedeemOrder";
   String get mandatecreatenew => "$newvenketmfurl/order/mandate_creation";
 
-  String get mfbasketanalysis => "https://r3ljq6dl-8005.inc1.devtunnels.ms/collections/portfolio_store";
-  
+  String get mfbasketanalysis => "$dashBoardURL/mfbasket/collections/portfolio_store";
+  String get mfbaskbacktest => "$dashBoardURL/mfbasket/collections/portfolio_analysis";
 
 }

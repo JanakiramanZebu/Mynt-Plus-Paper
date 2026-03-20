@@ -516,7 +516,7 @@ mixin StocksAPI on ApiCore {
    
 
     final response = await apiClient.post(
-      Uri.parse("https://r3ljq6dl-8005.inc1.devtunnels.ms/collections/portfolio_analysis"),
+      Uri.parse(apiLinks.mfbaskbacktest),
       headers: defaultHeaders,
       body: jsonEncode(payload),
     );
