@@ -1,8 +1,9 @@
 class SavedStrategyModel {
   String? msg;
   List<Data>? data;
+  List<String>? basketNames;
 
-  SavedStrategyModel({this.msg, this.data});
+  SavedStrategyModel({this.msg, this.data, this.basketNames});
 
   SavedStrategyModel.fromJson(Map<String, dynamic> json) {
     msg = json['msg'];
@@ -12,6 +13,9 @@ class SavedStrategyModel {
         data!.add(Data.fromJson(v));
       });
     }
+    if (json['basket_names'] != null) {
+      basketNames = List<String>.from(json['basket_names']);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -19,6 +23,9 @@ class SavedStrategyModel {
     data['msg'] = msg;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
+    }
+    if (basketNames != null) {
+      data['basket_names'] = basketNames;
     }
     return data;
   }

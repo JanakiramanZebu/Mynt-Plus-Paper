@@ -9,7 +9,6 @@ import 'package:mynt_plus/sharedWidget/no_data_found.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 import '../../../../provider/dashboard_provider.dart';
-import '../../../../sharedWidget/mynt_loader.dart';
 
 class BenchMarkBacktestScreenWeb extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
@@ -38,17 +37,6 @@ class _BenchMarkBacktestScreenState
           light: MyntColors.backgroundColor),
       body: Consumer(
         builder: (context, ref, child) {
-          if (strategy.isStrategyLoading) {
-            return Center(
-              child: Container(
-                color: resolveThemeColor(context,
-                    dark: MyntColors.backgroundColorDark,
-                    light: MyntColors.backgroundColor),
-                child: MyntLoader.branded(),
-              ),
-            );
-          }
-
           if (strategy.analysisData == null) {
             return const Center(
               child: NoDataFound(),
@@ -56,6 +44,9 @@ class _BenchMarkBacktestScreenState
           }
 
           final data = strategy.analysisData!;
+          if (data.total.chartData.isEmpty) {
+            return const Center(child: NoDataFound());
+          }
           final xirrDifference = data.total.xirr - data.benchmark.xirr;
 
           // Build chart data points
@@ -73,6 +64,13 @@ class _BenchMarkBacktestScreenState
             final strategyVal = data.total.chartData[index] / 1000;
             return _BacktestChartPoint(dateTime, benchmarkVal, strategyVal);
           });
+
+          // Y-axis minimum: start from the investment amount so both lines rise from the bottom
+          final double yAxisMin = chartPoints.isNotEmpty
+              ? chartPoints.first.strategy < chartPoints.first.benchmark
+                  ? chartPoints.first.strategy * 0.95
+                  : chartPoints.first.benchmark * 0.95
+              : 0.0;
 
           // Dynamic x-axis interval - calculated inside LayoutBuilder below
           String xAxisDateFormat = 'MMM yy';
@@ -202,9 +200,10 @@ class _BenchMarkBacktestScreenState
                                 ? DateTime(chartPoints.last.date.year, chartPoints.last.date.month + 1, 1)
                                 : null,
                           ),
-                          primaryYAxis: const NumericAxis(
+                          primaryYAxis: NumericAxis(
                             isVisible: false,
-                            majorGridLines: MajorGridLines(width: 0),
+                            majorGridLines: const MajorGridLines(width: 0),
+                            minimum: yAxisMin,
                           ),
                           tooltipBehavior: TooltipBehavior(
                             enable: true,
@@ -594,7 +593,7 @@ class _BenchMarkBacktestScreenState
                             _buildIndicatorRow(
                               context,
                               'XIRR',
-                              '${data.total.xirr}',
+                              '${data.total.xirr}%',
                               'SHARPE RATIO',
                               '${data.total.sharpeRatio}',
                               '',
@@ -608,9 +607,9 @@ class _BenchMarkBacktestScreenState
                             _buildIndicatorRow(
                               context,
                               'MAX DRAWDOWN',
-                              '${data.total.maxDrawdown}',
+                              '${data.total.maxDrawdown}%',
                               'VOLATILITY',
-                              '${data.total.volatility}',
+                              '${data.total.volatility}%',
                               '',
                               '',
                               valueColor1: resolveThemeColor(context,
@@ -1030,22 +1029,50 @@ class _BenchMarkBacktestScreenState
   }
 
   String _formatNumber(double number) {
-    if (number >= 100000) {
-      return '${(number / 100000).toStringAsFixed(1)}L';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}K';
-    } else {
-      return number.toStringAsFixed(0);
+    final formatted = number.toStringAsFixed(2);
+    final parts = formatted.split('.');
+    final intPart = parts[0];
+    final decPart = parts[1];
+    final isNegative = intPart.startsWith('-');
+    final digits = isNegative ? intPart.substring(1) : intPart;
+    final buffer = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i > 0) {
+        final fromRight = digits.length - i;
+        if (fromRight == 3 || (fromRight > 3 && (fromRight - 3) % 2 == 0)) {
+          buffer.write(',');
+        }
+      }
+      buffer.write(digits[i]);
     }
+    return '${isNegative ? '-' : ''}${buffer.toString()}.$decPart';
   }
+
+  // Widget _buildShortLongTermTaxRow(
+  //     PortfolioAnalysisModel data, BuildContext context) {
+  //   double shortTermTax = 0.0;
+  //   double longTermTax = 0.0;
+  //   for (final entry in data.taxDetails.categories.entries) {
+  //     if (entry.key.toUpperCase() == 'EQUITY') {
+  //       shortTermTax += entry.value.tax;
+  //     } else {
+  //       longTermTax += entry.value.tax;
+  //     }
+  //   }
+  //   return _buildIndicatorRow(
+  //     context,
+  //     'SHORT TERM GAIN TAX', _formatNumber(shortTermTax),
+  //     'LONG TERM GAIN TAX', _formatNumber(longTermTax),
+  //     '', '',
+  //     valueColor1: _getPnlColor(shortTermTax),
+  //     valueColor2: _getPnlColor(longTermTax),
+  //   );
+  // }
 
   Widget _buildTaxContent(
       PortfolioAnalysisModel data, BuildContext context) {
     final totalGains = data.total.gain;
-    final equityTax = data.taxDetails.equity.tax;
-    final debtTax = data.taxDetails.debt.tax;
-    final hybridTax = data.taxDetails.hybrid.tax;
-    final totalTax = equityTax + debtTax + hybridTax;
+    final totalTax = data.taxDetails.totalTax; // sums ALL categories from API
     final postTaxGains = totalGains - totalTax;
 
     return Column(
@@ -1054,7 +1081,7 @@ class _BenchMarkBacktestScreenState
           context,
           'GAIN',
           _formatNumber(totalGains),
-          'TAX',
+          'TOTAL TAX',
           _formatNumber(totalTax),
           'POST TAX',
           _formatNumber(postTaxGains),
@@ -1062,18 +1089,10 @@ class _BenchMarkBacktestScreenState
           valueColor2: resolveThemeColor(context,
               dark: MyntColors.lossDark, light: MyntColors.loss),
         ),
-        const SizedBox(height: 14),
-        _buildIndicatorRow(
-          context,
-          'SHORT TERM GAIN TAX',
-          '${data.taxDetails.equity.tax}',
-          'LONG TERM GAIN TAX',
-          '${data.taxDetails.debt.tax}',
-          '',
-          '',
-          valueColor1: _getPnlColor(data.taxDetails.equity.tax),
-          valueColor2: _getPnlColor(data.taxDetails.debt.tax),
-        ),
+        // if (data.taxDetails.categories.isNotEmpty) ...[
+        //   const SizedBox(height: 14),
+        //   _buildShortLongTermTaxRow(data, context),
+        // ],
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,

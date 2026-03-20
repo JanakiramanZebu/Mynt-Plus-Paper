@@ -457,7 +457,7 @@ class _SaveStrategyScreenWebState extends ConsumerState<SaveStrategyScreenWeb> {
 
     try {
       strategy.backtestAnalysis(
-          uuid: strategy.editingStrategy?.data?.first.uuid ?? '');
+          uuid: strategy.editingStrategy?.data?.firstOrNull?.uuid ?? '');
 
       widget.onBacktest?.call();
     } catch (e) {

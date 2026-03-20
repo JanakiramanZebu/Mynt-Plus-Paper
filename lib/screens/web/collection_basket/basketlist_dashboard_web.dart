@@ -9,6 +9,7 @@ import 'package:mynt_plus/res/mynt_web_text_styles.dart';
 import 'package:mynt_plus/sharedWidget/common_buttons_web.dart';
 import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/no_data_found_web.dart';
+import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
 
@@ -70,7 +71,11 @@ class _StrategyDashboardScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(dashboardProvider).fetchbasketlist();
+      ref.read(dashboardProvider).fetchbasketlist().then((_) {}).catchError((e) {
+        if (mounted) {
+          error(context, 'Failed to load strategies. Please try again.');
+        }
+      });
     });
   }
 
@@ -82,7 +87,8 @@ class _StrategyDashboardScreenState
           light: MyntColors.backgroundColor),
       body: Consumer(builder: (context, ref, child) {
         final strategy = ref.watch(dashboardProvider);
-        if (strategy.isStrategyLoading) {
+        // Show loader only on first load (no data yet). On re-visits, data refreshes silently.
+        if (strategy.isStrategyLoading && strategy.savedStrategies == null) {
           return Center(
             child: Container(
               color: resolveThemeColor(context,
@@ -368,15 +374,24 @@ class _StrategyDashboardScreenState
   void _showStrategyNameDialog() {
     final nameController = TextEditingController();
     final nameFocusNode = FocusNode();
+    bool submitted = false;
+    bool focusRequested = false;
+    final existingNames = ref.read(dashboardProvider).savedStrategies?.basketNames
+        ?.map((n) => n.toLowerCase().trim())
+        .toSet() ?? <String>{};
 
-    showDialog(
+    showDialog<String>(
       context: context,
       barrierDismissible: true,
       builder: (dialogContext) {
         String? nameError;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          nameFocusNode.requestFocus();
-        });
+        // Only request focus once on first build, never after submission.
+        if (!focusRequested) {
+          focusRequested = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!submitted) nameFocusNode.requestFocus();
+          });
+        }
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             void submit() {
@@ -385,11 +400,13 @@ class _StrategyDashboardScreenState
                 setDialogState(() => nameError = 'Please enter a strategy name');
                 return;
               }
-              Navigator.of(dialogContext).pop();
-              ref.read(dashboardProvider).clearStrategy();
-              ref.read(dashboardProvider).setPendingStrategyName(name);
-              ref.read(dashboardProvider).shocustomButton(false);
-              widget.onCreateStrategy?.call();
+              if (existingNames.contains(name.toLowerCase())) {
+                setDialogState(() => nameError = 'A strategy with this name already exists');
+                return;
+              }
+              // Mark submitted BEFORE pop so any in-flight postFrameCallback skips requestFocus.
+              submitted = true;
+              Navigator.of(dialogContext).pop(name);
             }
 
             return Dialog(
@@ -455,10 +472,21 @@ class _StrategyDashboardScreenState
                                 height: 40,
                                 inputFormatters: [
                                   FilteringTextInputFormatter.allow(
-                                      RegExp(r'[a-zA-Z0-9 \-.]')),
+                                      RegExp(r'[a-zA-Z0-9 ]')),
+                                  TextInputFormatter.withFunction(
+                                      (oldValue, newValue) {
+                                    if (newValue.text.isEmpty) return newValue;
+                                    final capitalized =
+                                        newValue.text[0].toUpperCase() +
+                                            newValue.text.substring(1);
+                                    return newValue.copyWith(text: capitalized);
+                                  }),
                                 ],
-                                onChanged: (_) {
-                                  if (nameError != null) {
+                                onChanged: (value) {
+                                  final trimmed = value.trim();
+                                  if (trimmed.isNotEmpty && existingNames.contains(trimmed.toLowerCase())) {
+                                    setDialogState(() => nameError = 'A strategy with this name already exists');
+                                  } else if (nameError != null) {
                                     setDialogState(() => nameError = null);
                                   }
                                 },
@@ -491,9 +519,19 @@ class _StrategyDashboardScreenState
           },
         );
       },
-    ).then((_) {
-      nameController.dispose();
-      nameFocusNode.dispose();
+    ).then((name) {
+      // .then() fires when Navigator.pop() is called, but the exit animation
+      // is still running (~300ms). Delay dispose until after animation ends.
+      Future.delayed(const Duration(milliseconds: 400), () {
+        nameController.dispose();
+        nameFocusNode.dispose();
+      });
+      if (name != null && name.isNotEmpty && mounted) {
+        ref.read(dashboardProvider).clearStrategy();
+        ref.read(dashboardProvider).setPendingStrategyName(name);
+        ref.read(dashboardProvider).shocustomButton(false);
+        widget.onCreateStrategy?.call();
+      }
     });
   }
 
@@ -771,7 +809,6 @@ class _StrategyCardWidgetState extends State<_StrategyCardWidget> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Container(
-          height: 140,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: darkMode
@@ -870,41 +907,58 @@ class _StrategyCardWidgetState extends State<_StrategyCardWidget> {
                           widget.strategyData.basketName ?? 'Unnamed Strategy',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: MyntWebTextStyles.body(
+                          style: MyntWebTextStyles.title(
                             context,
                             darkColor: MyntColors.textPrimaryDark,
                             lightColor: MyntColors.textPrimary,
-                            fontWeight: MyntFonts.bold,
+                            fontWeight: MyntFonts.semiBold,
                           ),
-                        ),
+                        ), 
                         if (allocationList.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          RichText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            text: TextSpan(
-                              children: [
-                                for (int i = 0; i < allocationList.length; i++) ...[
-                                  TextSpan(
-                                    text: '${allocationList[i].label} ${allocationList[i].percentage.toStringAsFixed(0)}%',
-                                    style: MyntWebTextStyles.para(
-                                      context,
-                                      fontWeight: MyntFonts.medium,
-                                      color: allocationList[i].color,
-                                    ),
-                                  ),
-                                  if (i < allocationList.length - 1)
-                                    TextSpan(
-                                      text: ' · ',
-                                      style: MyntWebTextStyles.para(
-                                        context,
-                                        darkColor: MyntColors.textSecondaryDark,
-                                        lightColor: MyntColors.textSecondary,
-                                      ),
-                                    ),
-                                ],
-                              ],
-                            ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 36,
+                                height: 36,
+                                child: CustomPaint(
+                                  painter: _DonutChartPainter(allocationList),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: allocationList.map((a) {
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: a.color,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${a.label} ${a.percentage.toStringAsFixed(0)}%',
+                                          style: MyntWebTextStyles.para(
+                                            context,
+                                            fontWeight: MyntFonts.medium,
+                                            darkColor: MyntColors.textSecondaryDark,
+                                            lightColor: MyntColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ],
@@ -1221,6 +1275,35 @@ class _AllocationEntry {
   final Color color;
 
   const _AllocationEntry(this.label, this.percentage, this.color);
+}
+
+class _DonutChartPainter extends CustomPainter {
+  final List<_AllocationEntry> allocations;
+
+  _DonutChartPainter(this.allocations);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    const strokeWidth = 5.0;
+    final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
+
+    double startAngle = -1.5708; // -π/2 (start from top)
+    for (final a in allocations) {
+      final sweepAngle = (a.percentage / 100) * 6.2832; // 2π
+      final paint = Paint()
+        ..color = a.color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.butt;
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutChartPainter oldDelegate) => false;
 }
 
 

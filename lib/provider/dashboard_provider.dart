@@ -98,7 +98,6 @@ class DashboardProvider extends DefaultChangeNotifier {
       _portfolioError = e.toString();
       rethrow;
     } finally {
-      _portfolioError = null;
       portfolioloader(false);
       notifyListeners();
     }
@@ -866,7 +865,7 @@ Color getSectorAllocationColor(String sector) {
     try {
       strategyLoader(true);
 
-      final uuid = _editingStrategy!.data?.first.uuid ?? '';
+      final uuid = _editingStrategy?.data?.firstOrNull?.uuid ?? '';
       final schemaValues = _convertFundsToSchemaValues(_selectedFunds);
 
       await api.updatebasketsStrategy(
@@ -1021,6 +1020,10 @@ Color getSectorAllocationColor(String sector) {
   }
 
   Future<void> deleteStrategy(String strategyId, BuildContext context) async {
+    if (_isAutoSaving) {
+      warningMessage(context, "Please wait, saving in progress...");
+      return;
+    }
     try {
       strategyLoader(true);
       print('=== DELETE STRATEGY ===');
@@ -1223,6 +1226,8 @@ Color getSectorAllocationColor(String sector) {
 
       _redistributePercentages();
       _updateAllControllerValues();
+      final amount = double.tryParse(_basketInvestAmountController.text) ?? 100000;
+      calculateBasketAllocations(amount > 0 ? amount : 100000);
       notifyListeners();
     }
   }
@@ -1230,11 +1235,12 @@ Color getSectorAllocationColor(String sector) {
   void removeFundFromStrategy(FundListModel fund) {
     _selectedFunds.removeWhere((f) => f.name == fund.name);
 
-    _percentageControllers[fund.name]?.dispose();
-    _percentageControllers.remove(fund.name);
+    _percentageControllers.remove(fund.name)?.dispose();
 
     _redistributePercentages();
     _updateAllControllerValues();
+    final amount = double.tryParse(_basketInvestAmountController.text) ?? 100000;
+    calculateBasketAllocations(amount > 0 ? amount : 100000);
     notifyListeners();
   }
 
@@ -1271,6 +1277,11 @@ Color getSectorAllocationColor(String sector) {
       // call _updateAllControllerValues, which only updates when text changes,
       // preserving the cursor for the field currently being typed in.
       _autoRedistributePercentages(index);
+      // Recalculate per-fund allocations so Amount/Units/errors update live
+      final amount = double.tryParse(_basketInvestAmountController.text);
+      if (amount != null && amount > 0) {
+        calculateBasketAllocations(amount);
+      }
       notifyListeners();
     }
   }
@@ -1358,6 +1369,11 @@ Color getSectorAllocationColor(String sector) {
   /// Public method to sync controllers after external weight changes
   void updateAllControllers() {
     _updateAllControllerValues();
+    // Recalculate per-fund allocations so Amount/Units update when scheme changes
+    final amount = double.tryParse(_basketInvestAmountController.text);
+    if (amount != null && amount > 0) {
+      calculateBasketAllocations(amount);
+    }
     notifyListeners();
   }
 
@@ -1445,7 +1461,7 @@ Color getSectorAllocationColor(String sector) {
     _strategyNameController.text = strategyName;
     _selectedFunds.clear();
     _selectedFunds.addAll(funds);
-    _selectedDuration = '5Y'; // Default duration for predefined strategies
+    _selectedDuration = '3Y'; // Default duration for predefined strategies
     _initializeControllers();
     notifyListeners();
   }
@@ -1802,8 +1818,7 @@ Color getSectorAllocationColor(String sector) {
   // Get total post-tax gains
   double get totalPostTaxGains {
     if (_analysisData == null) return 0.0;
-    return _analysisData!.taxDetails.equity.postGainTotal + 
-           _analysisData!.taxDetails.debt.postGainTotal;
+    return _analysisData!.taxDetails.totalPostGainTotal;
   }
   
   // Get total tax liability

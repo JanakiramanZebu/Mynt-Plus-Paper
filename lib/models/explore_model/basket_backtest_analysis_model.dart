@@ -82,11 +82,7 @@ class PortfolioAnalysisModel {
         taxDetails: _safeFromJson<TaxDetails>(
           json['tax_details'], 
           (data) => TaxDetails.fromJson(data),
-          () => TaxDetails(
-            equity: TaxCategory(tax: 0.0, postGainTotal: 0.0),
-            debt: TaxCategory(tax: 0.0, postGainTotal: 0.0),
-            hybrid: TaxCategory(tax: 0.0, postGainTotal: 0.0),
-          ),
+          () => TaxDetails(categories: {}),
         ),
       );
     } catch (e) {
@@ -381,22 +377,30 @@ class HybridScheme {
 }
 
 class TaxDetails {
-  final TaxCategory equity;
-  final TaxCategory debt;
-  final TaxCategory hybrid;
+  /// All categories from the API (EQUITY, HYBRID, FIXED INCOME, DEBT, etc.)
+  final Map<String, TaxCategory> categories;
 
-  TaxDetails({
-    required this.equity,
-    required this.debt,
-    required this.hybrid,
-  });
+  TaxDetails({required this.categories});
+
+  /// Sum of tax across ALL categories the API returns
+  double get totalTax => categories.values.fold(0.0, (sum, c) => sum + c.tax);
+
+  /// Sum of post-gain total across all categories
+  double get totalPostGainTotal => categories.values.fold(0.0, (sum, c) => sum + c.postGainTotal);
+
+  // Backward-compatible getters for existing mobile code
+  TaxCategory get equity => categories['EQUITY'] ?? TaxCategory(tax: 0.0, postGainTotal: 0.0);
+  TaxCategory get debt => categories['DEBT'] ?? TaxCategory(tax: 0.0, postGainTotal: 0.0);
+  TaxCategory get hybrid => categories['HYBRID'] ?? TaxCategory(tax: 0.0, postGainTotal: 0.0);
 
   factory TaxDetails.fromJson(Map<String, dynamic> json) {
-    return TaxDetails(
-      equity: TaxCategory.fromJson(json['EQUITY']),
-      debt: TaxCategory.fromJson(json['DEBT']),
-      hybrid: TaxCategory.fromJson(json['HYBRID']),
-    );
+    final cats = <String, TaxCategory>{};
+    for (final entry in json.entries) {
+      if (entry.value is Map<String, dynamic>) {
+        cats[entry.key] = TaxCategory.fromJson(entry.value as Map<String, dynamic>);
+      }
+    }
+    return TaxDetails(categories: cats);
   }
 }
 

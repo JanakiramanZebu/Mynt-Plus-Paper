@@ -98,7 +98,7 @@ import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
 import 'collection_basket/basketlist_dashboard_web.dart';
 import 'collection_basket/create_baskerscreen_web.dart' as basket_create;
-import 'collection_basket/strategy_builder_screen_v2.dart';
+import 'collection_basket/collection_basket_builder.dart';
 import 'collection_basket/benchmark_backtest_web.dart';
 import 'collection_basket/save_strategy_screen_web.dart';
 import 'market_watch/tv_chart/chart_iframe_guard.dart';
@@ -2738,7 +2738,7 @@ class _CustomizableSplitHomeScreenState
           },
         );
       case ScreenType.createBasketStrategy:
-        return StrategyBuilderScreenV2(
+        return CollectionBasketBuilder(
           onBack: _goBackInRightPanel,
         );
       case ScreenType.benchmarkBacktest:

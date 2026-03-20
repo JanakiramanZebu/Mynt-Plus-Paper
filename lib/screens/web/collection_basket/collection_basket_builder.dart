@@ -15,30 +15,34 @@ import 'package:mynt_plus/sharedWidget/mynt_loader.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shadcn hide Colors;
 
-import 'basket_invest_dialog.dart';
+import 'package:mynt_plus/provider/mf_provider.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
 import 'benchmark_backtest_web.dart';
 
-class StrategyBuilderScreenV2 extends ConsumerStatefulWidget {
+class CollectionBasketBuilder extends ConsumerStatefulWidget {
   final VoidCallback? onBack;
 
-  const StrategyBuilderScreenV2({
+  const CollectionBasketBuilder({
     super.key,
     this.onBack,
   });
 
   @override
-  ConsumerState<StrategyBuilderScreenV2> createState() =>
-      _StrategyBuilderScreenV2State();
+  ConsumerState<CollectionBasketBuilder> createState() =>
+      _CollectionBasketBuilderState();
 }
 
-class _StrategyBuilderScreenV2State
-    extends ConsumerState<StrategyBuilderScreenV2> {
+class _CollectionBasketBuilderState
+    extends ConsumerState<CollectionBasketBuilder> {
   // Track which categories are expanded
   final Map<String, bool> _expandedCategories = {};
   final Map<String, FocusNode> _weightFocusNodes = {};
   late ScrollController _tableScrollController;
+  late ScrollController _orderScrollController;
   bool _isBacktestLoading = false;
   bool _isInvestLoading = false;
+  bool _investInitialized = false;
+  String? _backtestError;
   final GlobalKey _weightSchemeKey = GlobalKey();
   OverlayEntry? _weightSchemeOverlay;
 
@@ -46,13 +50,29 @@ class _StrategyBuilderScreenV2State
   void initState() {
     super.initState();
     _tableScrollController = ScrollController();
-    // Basketsearch is called lazily when user opens the search dialog
+    _orderScrollController = ScrollController();
+    // If already in editing mode on open, initialize invest state
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initInvestStateIfNeeded();
+    });
   }
 
+  void _initInvestStateIfNeeded() {
+    if (!mounted) return;
+    final strategy = ref.read(dashboardProvider);
+    if (strategy.isEditingMode && strategy.selectedFunds.isNotEmpty && !_investInitialized) {
+      _investInitialized = true;
+      strategy.resetBasketInvest();
+      strategy.basketInvestAmountController.text = '100000';
+      strategy.calculateBasketAllocations(100000);
+      // enrichFundsByIsins already called by loadStrategy — no need to call again
+    }
+  }
 
   @override
   void dispose() {
     _tableScrollController.dispose();
+    _orderScrollController.dispose();
     _removeWeightSchemeOverlay();
     for (final node in _weightFocusNodes.values) {
       node.dispose();
@@ -75,6 +95,11 @@ class _StrategyBuilderScreenV2State
   Widget build(BuildContext context) {
     final strategy = ref.watch(dashboardProvider);
 
+    // Lazy-init invest state once strategy is saved (isEditingMode flips true after autoSaveFundChange)
+    if (strategy.isEditingMode && strategy.selectedFunds.isNotEmpty && !_investInitialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _initInvestStateIfNeeded());
+    }
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -85,27 +110,59 @@ class _StrategyBuilderScreenV2State
           backgroundColor: resolveThemeColor(context,
               dark: MyntColors.backgroundColorDark,
               light: MyntColors.backgroundColor),
-          body: Row(
-            children: [
-              // LEFT PANEL - Strategy Builder
-              Expanded(
-                flex: 1,
-                child: _buildLeftPanel(strategy),
-              ),
-              // Divider + RIGHT PANEL — only when backtest results or loading
-              if (strategy.analysisData != null || _isBacktestLoading) ...[
-                Container(
-                  width: 1,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.dividerDark,
-                      light: MyntColors.divider),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: _buildRightPanel(strategy),
-                ),
-              ],
-            ],
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final hasBacktest = strategy.analysisData != null || _isBacktestLoading;
+              // Both panels split equally — wrap if each half is too narrow for content
+              final halfWidth = (constraints.maxWidth - 1) / 2; // -1 for divider
+              // Split-mode table min widths: Fund Name ~120, Weight ~100, Amount ~90, Units ~80, Lock ~40, Delete ~40 + padding
+              final showInvestCols = strategy.selectedFunds.isNotEmpty;
+              final minTableWidth = showInvestCols ? 510.0 : 320.0; // sum of actual min column widths + padding
+              final canFitSideBySide = !hasBacktest || halfWidth >= minTableWidth;
+
+              if (!hasBacktest || canFitSideBySide) {
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: _buildLeftPanel(strategy),
+                    ),
+                    if (hasBacktest) ...[
+                      Container(
+                        width: 1,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.dividerDark,
+                            light: MyntColors.divider),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: _buildRightPanel(strategy),
+                      ),
+                    ],
+                  ],
+                );
+              } else {
+                // Stack vertically when not enough width
+                return Column(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: _buildLeftPanel(strategy),
+                    ),
+                    Container(
+                      height: 1,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: _buildRightPanel(strategy),
+                    ),
+                  ],
+                );
+              }
+            },
           ),
       ),
     );
@@ -118,7 +175,7 @@ class _StrategyBuilderScreenV2State
       children: [
         // Header with search + action buttons
         _buildLeftHeader(strategy),
-        // Content area - always show selected funds
+        // Content area — always shows funds table
         Expanded(
           child: strategy.selectedFunds.isEmpty
               ? Center(
@@ -131,6 +188,9 @@ class _StrategyBuilderScreenV2State
                 )
               : _buildSelectedFundsTable(strategy),
         ),
+        // Invest footer — show whenever funds are present (works for both create and edit)
+        if (strategy.selectedFunds.isNotEmpty)
+          _buildInvestFooter(strategy),
       ],
     );
   }
@@ -270,46 +330,14 @@ class _StrategyBuilderScreenV2State
         const SizedBox(width: 8),
         _buildWeightSchemeDropdown(),
       ],
-      if (!strategy.isEditingMode && strategy.selectedFunds.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: SizedBox(
-            height: 40,
-            child: ElevatedButton(
-              onPressed: strategy.isStrategyValid
-                  ? () => _showSaveStrategyDialog()
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: resolveThemeColor(context,
-                    dark: MyntColors.secondary,
-                    light: MyntColors.primary),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: resolveThemeColor(context,
-                    dark: MyntColors.secondary.withValues(alpha: 0.4),
-                    light: MyntColors.primary.withValues(alpha: 0.4)),
-                disabledForegroundColor: Colors.white70,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Save',
-                style: MyntWebTextStyles.body(context,
-                    fontWeight: MyntFonts.semiBold,
-                    color: Colors.white),
-              ),
-            ),
-          ),
-        ),
       // Analyse button
       if (strategy.selectedFunds.isNotEmpty) ...[
         const SizedBox(width: 8),
         SizedBox(
-          height: 40,
-          child: ElevatedButton(
-            onPressed: () {
+            height: 40,
+            child: MyntOutlinedButton(
+              label: "Backtest",
+                 onPressed: () {
               if (strategy.isStrategyValid) {
                 strategy.stratergySavebackbutton(false);
                 _handleAnalyseAction(context, popDialog: false);
@@ -319,117 +347,11 @@ class _StrategyBuilderScreenV2State
                         'Please fix validation errors before proceeding');
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: resolveThemeColor(context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary),
-              overlayColor: resolveThemeColor(context,
-                  dark: MyntColors.primaryDark,
-                  light: MyntColors.primary),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-                side: BorderSide(
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary),
-                ),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              'Backtest',
-              style: MyntWebTextStyles.body(context,
-                  fontWeight: MyntFonts.semiBold,
-                  color: resolveThemeColor(context,
-                      dark: MyntColors.primaryDark,
-                      light: MyntColors.primary)),
+              textColor: resolveThemeColor(context,
+                  dark: MyntColors.textWhite, light: MyntColors.primary),
             ),
           ),
-        ),
-      ],
-      // Settings icon — investment preferences
-     
-      // Invest button
-      if (strategy.selectedFunds.isNotEmpty && strategy.isEditingMode) ...[
-        const SizedBox(width: 8),
-        SizedBox(
-          height: 40,
-          child: ElevatedButton(
-            onPressed: _isInvestLoading ? null : () async {
-              if (strategy.isStrategyValid) {
-                setState(() => _isInvestLoading = true);
-                try {
-                  if (strategy.hasStrategyChanged) {
-                    await ref.read(dashboardProvider).updateStrategy(context);
-                  }
-                } finally {
-                  if (mounted) setState(() => _isInvestLoading = false);
-                }
-                if (mounted) showBasketInvestDialog(context);
-              } else {
-                error(context,
-                    strategy.getStrategyValidationError() ??
-                        'Please fix validation errors before proceeding');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: resolveThemeColor(context,
-                  dark: MyntColors.secondary,
-                  light: MyntColors.primary),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              elevation: 0,
-            ),
-            child: _isInvestLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : Builder(builder: (_) {
-                    double minTotal = 0;
-                    for (final fund in strategy.selectedFunds) {
-                      if (fund.percentage > 0) {
-                        final needed = fund.minimumPurchaseAmount / (fund.percentage / 100);
-                        if (needed > minTotal) minTotal = needed;
-                      }
-                    }
-                    final minAmount = minTotal.ceil();
-                    return Text(
-                      minAmount > 0 ? 'Invest (₹$minAmount)' : 'Invest',
-                      style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white),
-                    );
-                  }),
-          ),
-        ),
-      ],
-       if (strategy.selectedFunds.isNotEmpty && strategy.isEditingMode) ...[
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 40,
-          height: 40,
-          child: IconButton(
-            tooltip: 'Investment settings',
-            onPressed: () => _showInvestmentDetailsDialog(context, settingsMode: true),
-            icon: Icon(
-              Icons.settings_outlined,
-              size: 20,
-              color: resolveThemeColor(context,
-                  dark: MyntColors.textPrimaryDark,
-                  light: MyntColors.textPrimary),
-            ),
-          ),
-        ),
+       
       ],
     ];
   }
@@ -466,7 +388,13 @@ class _StrategyBuilderScreenV2State
       },
     ).then((_) {
       if (mounted) {
-        ref.read(dashboardProvider).autoSaveFundChange(context);
+        final s = ref.read(dashboardProvider);
+        s.autoSaveFundChange(context);
+        if (s.selectedFunds.isNotEmpty) {
+          final amount = double.tryParse(s.basketInvestAmountController.text) ?? 100000;
+          s.calculateBasketAllocations(amount > 0 ? amount : 100000);
+          s.enrichFundsByIsins();
+        }
       }
     });
   }
@@ -484,11 +412,16 @@ class _StrategyBuilderScreenV2State
         final availableWidth = constraints.maxWidth - 32; // 16px padding each side
 
         // ── Column width calculation (like holdings table) ──
-        // Full: Fund Name, NAV, AUM, 1yr CAGR, Weight %, Lock, Delete
-        // Split: Fund Name, Weight %, Lock, Delete (hide NAV, AUM & 1yr CAGR)
+        // Full: Fund Name, AUM, 1yr CAGR, NAV, Weight %, [Amount, Units,] Lock, Delete
+        // Split: Fund Name, Weight %, [Amount, Units,] Lock, Delete
+        final showInvestCols = strategy.selectedFunds.isNotEmpty;
         final headers = isSplit
-            ? ['Fund Name', 'Weight %', '', '']
-            : ['Fund Name', 'NAV', 'AUM', '1yr CAGR', 'Weight %', '', ''];
+            ? (showInvestCols
+                ? ['Fund Name', 'Wt %', 'Amount', 'Units', '', '']
+                : ['Fund Name', 'Wt %', '', ''])
+            : (showInvestCols
+                ? ['Fund Name', 'AUM', '1yr CAGR', 'NAV', 'Weight %', 'Amount', 'Units', '', '']
+                : ['Fund Name', 'AUM', '1yr CAGR', 'NAV', 'Weight %', '', '']);
         final colCount = headers.length;
         const textStyle = TextStyle(fontSize: 14);
         const padding = 24.0;
@@ -510,31 +443,45 @@ class _StrategyBuilderScreenV2State
               switch (col) {
                 case 0: cellText = fund.name; break;
                 case 1: cellText = '100'; break; // Weight %
-                case 2: cellText = ''; break; // lock icon
-                case 3: cellText = ''; break; // delete icon
+                case 2: cellText = showInvestCols ? '₹1,00,000' : ''; break;
+                case 3: cellText = showInvestCols ? '1234.5678' : ''; break;
+                case 4: cellText = ''; break; // lock icon
+                case 5: cellText = ''; break; // delete icon
               }
             } else {
               switch (col) {
                 case 0: cellText = fund.name; break;
-                case 1: cellText = fund.nav > 0 ? '₹${fund.nav.toStringAsFixed(2)}' : '-'; break;
-                case 2: cellText = fund.aum > 0 ? fund.aum.toStringAsFixed(2) : '-'; break;
-                case 3: cellText = fund.fiveYearCAGR > 0 ? '${fund.fiveYearCAGR.toStringAsFixed(2)}%' : '-'; break;
+                case 1: cellText = fund.aum > 0 ? fund.aum.toStringAsFixed(2) : '-'; break;
+                case 2: cellText = fund.fiveYearCAGR > 0 ? '${fund.fiveYearCAGR.toStringAsFixed(2)}%' : '-'; break;
+                case 3: cellText = fund.nav > 0 ? '₹${fund.nav.toStringAsFixed(2)}' : '-'; break;
                 case 4: cellText = '100'; break; // max possible weight text
-                case 5: cellText = ''; break; // lock icon
-                case 6: cellText = ''; break; // delete icon
+                case 5: cellText = showInvestCols ? '₹1,00,000' : ''; break;
+                case 6: cellText = showInvestCols ? '1234.5678' : ''; break;
+                case 7: cellText = ''; break; // lock icon
+                case 8: cellText = ''; break; // delete icon
               }
             }
             final cellWidth = _measureTextWidth(cellText, textStyle);
             if (cellWidth > maxWidth) maxWidth = cellWidth;
           }
 
-          // Absolute minimums for icon columns
+          // Absolute minimums for special columns
           if (isSplit) {
-            if (col == 2 || col == 3) maxWidth = maxWidth < 40 ? 40 : maxWidth; // icon cols
-            if (col == 1) maxWidth = maxWidth < 80 ? 80 : maxWidth; // Weight
+            final lockCol = showInvestCols ? 4 : 2;
+            final deleteCol = showInvestCols ? 5 : 3;
+            if (col == lockCol || col == deleteCol) maxWidth = maxWidth < 40 ? 40 : maxWidth;
+            if (col == 1) maxWidth = maxWidth < 100 ? 100 : maxWidth; // Weight stepper (- N +)
+            if (showInvestCols && col == 2) maxWidth = maxWidth < 90 ? 90 : maxWidth; // Amount
+            if (showInvestCols && col == 3) maxWidth = maxWidth < 95 ? 95 : maxWidth; // Units
           } else {
-            if (col == 5 || col == 6) maxWidth = maxWidth < 40 ? 40 : maxWidth; // icon cols
-            if (col == 4) maxWidth = maxWidth < 80 ? 80 : maxWidth; // Weight
+            final lockCol = showInvestCols ? 7 : 5;
+            final deleteCol = showInvestCols ? 8 : 6;
+            if (col == lockCol || col == deleteCol) maxWidth = maxWidth < 40 ? 40 : maxWidth;
+            if (col == 1) maxWidth = maxWidth < 90 ? 90 : maxWidth; // AUM
+            if (col == 2) maxWidth = maxWidth < 80 ? 80 : maxWidth; // 1yr CAGR
+            if (col == 3) maxWidth = maxWidth < 80 ? 80 : maxWidth; // NAV
+            if (col == 4) maxWidth = maxWidth < 100 ? 100 : maxWidth; // Weight stepper
+            if (showInvestCols && col == 5) maxWidth = maxWidth < 90 ? 90 : maxWidth; // Amount
           }
 
           minWidths[col] = maxWidth + padding;
@@ -552,8 +499,12 @@ class _StrategyBuilderScreenV2State
           // Extra space - distribute proportionally
           final extraSpace = availableWidth - totalMinWidth;
           final growthFactors = isSplit
-              ? <int, double>{0: 2.0, 1: 0.5, 2: 0.1, 3: 0.1}
-              : <int, double>{0: 2.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 0.5, 5: 0.1, 6: 0.1};
+              ? (showInvestCols
+                  ? <int, double>{0: 2.0, 1: 0.5, 2: 0.3, 3: 0.3, 4: 0.1, 5: 0.1}
+                  : <int, double>{0: 2.0, 1: 0.5, 2: 0.1, 3: 0.1})
+              : (showInvestCols
+                  ? <int, double>{0: 2.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 0.5, 5: 0.5, 6: 0.5, 7: 0.1, 8: 0.1}
+                  : <int, double>{0: 2.0, 1: 1.0, 2: 1.0, 3: 1.0, 4: 0.5, 5: 0.1, 6: 0.1});
           final totalGrowth = growthFactors.values.fold<double>(0, (s, v) => s + v);
           for (int i = 0; i < colCount; i++) {
             columnWidthValues[i] = columnWidthValues[i]! +
@@ -563,8 +514,12 @@ class _StrategyBuilderScreenV2State
           // Not enough space - shrink proportionally
           final excessWidth = totalMinWidth - availableWidth;
           final absoluteMinWidths = isSplit
-              ? <int, double>{0: 140.0, 1: 80.0, 2: 40.0, 3: 40.0}
-              : <int, double>{0: 140.0, 1: 70.0, 2: 70.0, 3: 65.0, 4: 80.0, 5: 40.0, 6: 40.0};
+              ? (showInvestCols
+                  ? <int, double>{0: 120.0, 1: 100.0, 2: 90.0, 3: 95.0, 4: 40.0, 5: 40.0}
+                  : <int, double>{0: 120.0, 1: 100.0, 2: 40.0, 3: 40.0})
+              : (showInvestCols
+                  ? <int, double>{0: 140.0, 1: 90.0, 2: 80.0, 3: 80.0, 4: 100.0, 5: 90.0, 6: 70.0, 7: 40.0, 8: 40.0}
+                  : <int, double>{0: 140.0, 1: 90.0, 2: 80.0, 3: 80.0, 4: 100.0, 5: 40.0, 6: 40.0});
           final shrinkableAmounts = <int, double>{};
           double totalShrinkable = 0.0;
           for (int i = 0; i < colCount; i++) {
@@ -607,9 +562,52 @@ class _StrategyBuilderScreenV2State
             });
           }
 
-          // Category group header row
+          // Category group header row — content spans all columns except the last (chevron)
+          final categoryHeaderContent = Row(
+            children: [
+              Container(
+                width: 4,
+                height: 24,
+                color: categoryColor,
+                margin: const EdgeInsets.only(right: 10),
+              ),
+              Text(
+                category.toUpperCase(),
+                style: MyntWebTextStyles.tableHeader(context,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary,
+                    fontWeight: MyntFonts.semiBold),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: categoryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  '${funds.length}',
+                  style: MyntWebTextStyles.para(context,
+                      fontWeight: MyntFonts.semiBold,
+                      color: categoryColor),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '(${totalPercent.toStringAsFixed(0)}%)',
+                style: MyntWebTextStyles.tableHeader(context,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary,
+                    fontWeight: MyntFonts.medium),
+              ),
+              const Spacer(),
+            ],
+          );
+
           bodyRows.add(shadcn.TableRow(
             cells: [
+              // First cell with OverflowBox so content extends over empty cells
               shadcn.TableCell(
                 child: GestureDetector(
                   onTap: onTapCategory,
@@ -617,45 +615,11 @@ class _StrategyBuilderScreenV2State
                     color: categoryBg,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 4,
-                          height: 24,
-                          color: categoryColor,
-                          margin: const EdgeInsets.only(right: 10),
-                        ),
-                        Text(
-                          category.toUpperCase(),
-                          style: MyntWebTextStyles.tableHeader(context,
-                              darkColor: MyntColors.textPrimaryDark,
-                              lightColor: MyntColors.textPrimary,
-                              fontWeight: MyntFonts.semiBold),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: categoryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Text(
-                            '${funds.length}',
-                            style: MyntWebTextStyles.para(context,
-                                fontWeight: MyntFonts.semiBold,
-                                color: categoryColor),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '(${totalPercent.toStringAsFixed(0)}%)',
-                          style: MyntWebTextStyles.tableHeader(context,
-                              darkColor: MyntColors.textSecondaryDark,
-                              lightColor: MyntColors.textSecondary,
-                              fontWeight: MyntFonts.medium),
-                        ),
-                      ],
+                    clipBehavior: Clip.none,
+                    child: OverflowBox(
+                      maxWidth: availableWidth - 40, // full width minus chevron col
+                      alignment: Alignment.centerLeft,
+                      child: categoryHeaderContent,
                     ),
                   ),
                 ),
@@ -721,34 +685,45 @@ class _StrategyBuilderScreenV2State
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Tooltip(
-                            message: fund.name,
-                            preferBelow: true,
-                            child: Text(
-                              fund.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: MyntWebTextStyles.tableCell(context,
-                                  darkColor: MyntColors.textPrimaryDark,
-                                  lightColor: MyntColors.textPrimary,
-                                  fontWeight: MyntFonts.medium),
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Tooltip(
+                                message: fund.name,
+                                preferBelow: true,
+                                child: Text(
+                                  fund.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: MyntWebTextStyles.tableCell(context,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary,
+                                      fontWeight: MyntFonts.medium),
+                                ),
+                              ),
+                              if (showInvestCols) Builder(builder: (_) {
+                                final allocation = strategy.basketAllocations
+                                    .where((a) => a.fund.isin == fund.isin)
+                                    .firstOrNull;
+                                if (allocation != null && !allocation.isValid) {
+                                  return Text(
+                                    'Min ₹${fund.minimumPurchaseAmount.toStringAsFixed(0)}',
+                                    style: MyntWebTextStyles.tableCell(context,
+                                        color: Colors.red,
+                                        darkColor: Colors.red,
+                                        lightColor: Colors.red,
+                                        fontWeight: MyntFonts.medium).copyWith(fontSize: 10),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              }),
+                            ],
                           ),
                         ),
                       ],
                     ),
                     alignRight: false,
-                  ),
-                  if (!isSplit)
-                  _buildDataCell(
-                    child: Text(
-                      fund.nav > 0 ? '₹${fund.nav.toStringAsFixed(2)}' : '-',
-                      style: MyntWebTextStyles.tableCell(context,
-                          darkColor: MyntColors.textPrimaryDark,
-                          lightColor: MyntColors.textPrimary,
-                          fontWeight: MyntFonts.medium),
-                    ),
-                    alignRight: true,
                   ),
                   if (!isSplit)
                   _buildDataCell(
@@ -774,6 +749,17 @@ class _StrategyBuilderScreenV2State
                     ),
                     alignRight: true,
                   ),
+                  if (!isSplit)
+                  _buildDataCell(
+                    child: Text(
+                      fund.nav > 0 ? '₹${fund.nav.toStringAsFixed(2)}' : '-',
+                      style: MyntWebTextStyles.tableCell(context,
+                          darkColor: MyntColors.textPrimaryDark,
+                          lightColor: MyntColors.textPrimary,
+                          fontWeight: MyntFonts.medium),
+                    ),
+                    alignRight: true,
+                  ),
                   shadcn.TableCell(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -781,27 +767,41 @@ class _StrategyBuilderScreenV2State
                       child: _buildWeightField(context, fund, strategy, dark),
                     ),
                   ),
-                  // Units column - commented out: only shown in invest dialog where amount is known
-                  // _buildDataCell(
-                  //   child: Builder(builder: (context) {
-                  //     final allocation = strategy.basketAllocations
-                  //         .where((a) => a.fund.isin == fund.isin)
-                  //         .firstOrNull;
-                  //     final units = allocation?.estimatedUnits ?? 0;
-                  //     return Text(
-                  //       units > 0 ? units.toStringAsFixed(4) : '-',
-                  //       style: MyntWebTextStyles.tableCell(context,
-                  //           darkColor: units > 0
-                  //               ? MyntColors.textPrimaryDark
-                  //               : MyntColors.textSecondaryDark,
-                  //           lightColor: units > 0
-                  //               ? MyntColors.textPrimary
-                  //               : MyntColors.textSecondary,
-                  //           fontWeight: MyntFonts.medium),
-                  //     );
-                  //   }),
-                  //   alignRight: true,
-                  // ),
+                  if (showInvestCols)
+                    _buildDataCell(
+                      child: Builder(builder: (context) {
+                        final allocation = strategy.basketAllocations
+                            .where((a) => a.fund.isin == fund.isin)
+                            .firstOrNull;
+                        final amount = allocation?.allocatedAmount ?? 0;
+                        final isValid = allocation?.isValid ?? true;
+                        return Text(
+                          amount > 0 ? '₹${_formatAmount(amount)}' : '-',
+                          style: MyntWebTextStyles.tableCell(context,
+                              darkColor: !isValid ? Colors.red : MyntColors.textPrimaryDark,
+                              lightColor: !isValid ? Colors.red : MyntColors.textPrimary,
+                              fontWeight: MyntFonts.semiBold),
+                        );
+                      }),
+                      alignRight: true,
+                    ),
+                  if (showInvestCols)
+                    _buildDataCell(
+                      child: Builder(builder: (context) {
+                        final allocation = strategy.basketAllocations
+                            .where((a) => a.fund.isin == fund.isin)
+                            .firstOrNull;
+                        final units = allocation?.estimatedUnits ?? 0;
+                        return Text(
+                          units > 0 ? units.toStringAsFixed(4) : '-',
+                          style: MyntWebTextStyles.tableCell(context,
+                              darkColor: MyntColors.textSecondaryDark,
+                              lightColor: MyntColors.textSecondary,
+                              fontWeight: MyntFonts.medium),
+                        );
+                      }),
+                      alignRight: true,
+                    ),
                   shadcn.TableCell(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -868,11 +868,12 @@ class _StrategyBuilderScreenV2State
                   shadcn.TableHeader(
                     cells: [
                       _buildHeaderCell('Fund Name', false),
-                      if (!isSplit) _buildHeaderCell('NAV', true),
                       if (!isSplit) _buildHeaderCell('AUM', true),
                       if (!isSplit) _buildHeaderCell('1yr CAGR', true),
+                      if (!isSplit) _buildHeaderCell('NAV', true),
                       _buildHeaderCell('Weight %', true),
-                      // _buildHeaderCell('Units', true), // Only shown in invest dialog
+                      if (showInvestCols) _buildHeaderCell('Amount', true),
+                      if (showInvestCols) _buildHeaderCell('Units', true),
                       _buildHeaderCell('', true),
                       _buildHeaderCell('', true),
                     ],
@@ -898,7 +899,7 @@ class _StrategyBuilderScreenV2State
                     controller: _tableScrollController,
                     child: shadcn.Table(
                       columnWidths: columnWidths,
-                      defaultRowHeight: const shadcn.FixedTableSize(50),
+                      defaultRowHeight: shadcn.FixedTableSize(showInvestCols ? 60 : 50),
                       rows: bodyRows,
                     ),
                   ),
@@ -1310,6 +1311,467 @@ class _StrategyBuilderScreenV2State
     );
   }
 
+  void _showOrderProgressDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Order Progress',
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (ctx, animation, secondaryAnimation) => const SizedBox.shrink(),
+      transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: Consumer(
+                builder: (ctx, ref, _) {
+                  final strategy = ref.watch(dashboardProvider);
+                  final screenWidth = MediaQuery.of(ctx).size.width;
+                  final dialogWidth = (screenWidth * 0.4).clamp(420.0, 560.0);
+
+                  return shadcn.Card(
+                    borderRadius: BorderRadius.circular(8),
+                    padding: EdgeInsets.zero,
+                    child: SizedBox(
+                      width: dialogWidth,
+                      height: MediaQuery.of(ctx).size.height * 0.65,
+                      child: Column(
+                        children: [
+                          // Header
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: shadcn.Theme.of(ctx).colorScheme.border,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Order Summary',
+                                  style: MyntWebTextStyles.title(ctx,
+                                      fontWeight: MyntFonts.semiBold,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary),
+                                ),
+                                if (!strategy.isBasketOrdering)
+                                  MyntCloseButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          // Order list — reuse inline builder
+                          Expanded(child: _buildOrderProgress(strategy)),
+                          // Footer: total + view order book (after complete)
+                          if (strategy.basketOrderCompleted)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  top: BorderSide(
+                                    color: shadcn.Theme.of(ctx).colorScheme.border,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'Total Invested: ₹${_formatAmount(strategy.basketOrderResults.where((r) => r.isSuccess).fold(0.0, (sum, r) => sum + r.amount))}',
+                                    style: MyntWebTextStyles.body(ctx,
+                                        fontWeight: MyntFonts.medium,
+                                        darkColor: MyntColors.textSecondaryDark,
+                                        lightColor: MyntColors.textSecondary),
+                                  ),
+                                  const Spacer(),
+                                  SizedBox(
+                                    height: 40,
+                                    child: MyntPrimaryButton(
+                                      label: 'View Order Book',
+                                      onPressed: () {
+                                        Navigator.pop(ctx);
+                                        Future.delayed(
+                                          const Duration(milliseconds: 300),
+                                          strategy.resetBasketInvest,
+                                        );
+                                        ref.read(mfProvider).mfExTabchange(2);
+                                        ref.read(mfProvider).setMfPortfolioInitialTab(1);
+                                        if (WebNavigationHelper.isAvailable) {
+                                          WebNavigationHelper.navigateTo('mutualFund');
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ─── INVEST FOOTER ────────────────────────────────────────────────────
+
+  String _formatAmount(double amount) {
+    if (amount >= 10000000) {
+      return '${(amount / 10000000).toStringAsFixed(2)} Cr';
+    } else if (amount >= 100000) {
+      return '${(amount / 100000).toStringAsFixed(2)} L';
+    }
+    return amount.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+$)'),
+      (Match match) => '${match[1]},',
+    );
+  }
+
+  Widget _buildInvestFooter(DashboardProvider strategy) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dividerDark, light: MyntColors.divider),
+          ),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          // Label + amount field on the left
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Investment Amount',
+                    style: MyntWebTextStyles.para(context,
+                        fontWeight: MyntFonts.medium,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary),
+                  ),
+                  if (strategy.isFetchingNav) ...[
+                    const SizedBox(width: 6),
+                    const SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(MyntColors.primary),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Fetching NAV...',
+                      style: MyntWebTextStyles.caption(context,
+                          fontWeight: MyntFonts.regular,
+                          darkColor: MyntColors.textSecondaryDark,
+                          lightColor: MyntColors.textSecondary),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              SizedBox(
+                width: 200,
+                height: 40,
+                child: MyntFormTextField(
+                  controller: strategy.basketInvestAmountController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  placeholder: 'Enter amount',
+                  height: 40,
+                  leadingWidget: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: SvgPicture.asset(
+                      assets.ruppeIcon,
+                      colorFilter: ColorFilter.mode(
+                        resolveThemeColor(context,
+                            dark: MyntColors.textSecondaryDark,
+                            light: MyntColors.textSecondary),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    final amount = double.tryParse(value);
+                    if (amount != null && amount > 0) {
+                      strategy.calculateBasketAllocations(amount);
+                    } else {
+                      strategy.calculateBasketAllocations(0);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Place Order button on the right
+          SizedBox(
+            height: 40,
+            width: 200,
+            child: ElevatedButton(
+              onPressed: _isInvestLoading ? null : () async {
+                if (!strategy.isStrategyValid) {
+                  error(context,
+                      strategy.getStrategyValidationError() ??
+                          'Please fix validation errors before proceeding');
+                  return;
+                }
+                if (strategy.basketAllocations.isEmpty) {
+                  error(context, 'Please enter an investment amount');
+                  return;
+                }
+                if (strategy.basketInvestError != null) {
+                  error(context, strategy.basketInvestError!);
+                  return;
+                }
+                if (!strategy.isBasketReadyToOrder) {
+                  error(context, 'Please fix allocation errors before placing order');
+                  return;
+                }
+                if (strategy.hasStrategyChanged) {
+                  setState(() => _isInvestLoading = true);
+                  try {
+                    await ref.read(dashboardProvider).updateStrategy(context);
+                  } finally {
+                    if (mounted) setState(() => _isInvestLoading = false);
+                  }
+                }
+                if (mounted) {
+                  strategy.placeBasketLumpsumOrders();
+                  _showOrderProgressDialog();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: resolveThemeColor(context,
+                    dark: MyntColors.secondary, light: MyntColors.primary),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                elevation: 0,
+              ),
+              child: _isInvestLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Place Order',
+                      style: MyntWebTextStyles.body(context,
+                          fontWeight: MyntFonts.bold, color: Colors.white),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── ORDER PROGRESS ───────────────────────────────────────────────────
+
+  Widget _buildOrderProgress(DashboardProvider strategy) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Text(
+                'Order List',
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.semiBold,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary),
+              ),
+              if (strategy.isBasketOrdering) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '(Placing order ${strategy.currentOrderIndex + 1} of ${strategy.basketAllocations.length})',
+                  style: MyntWebTextStyles.para(context,
+                      fontWeight: MyntFonts.medium,
+                      darkColor: MyntColors.textSecondaryDark,
+                      lightColor: MyntColors.textSecondary),
+                ),
+              ],
+            ],
+          ),
+        ),
+        Expanded(
+          child: ScrollConfiguration(
+            behavior: const MaterialScrollBehavior().copyWith(scrollbars: false),
+            child: RawScrollbar(
+              controller: _orderScrollController,
+              thumbVisibility: true,
+              thickness: 6,
+              radius: const Radius.circular(0),
+              thumbColor: resolveThemeColor(context,
+                      dark: MyntColors.textSecondaryDark,
+                      light: MyntColors.textSecondary)
+                  .withValues(alpha: 0.5),
+              child: ListView.separated(
+                controller: _orderScrollController,
+                padding: EdgeInsets.zero,
+                itemCount: strategy.basketAllocations.length,
+                separatorBuilder: (_, __) => Divider(
+                  height: 0,
+                  thickness: 1,
+                  color: resolveThemeColor(context,
+                      dark: MyntColors.dividerDark, light: MyntColors.divider),
+                ),
+                itemBuilder: (_, index) {
+                  final allocation = strategy.basketAllocations[index];
+                  final hasResult = index < strategy.basketOrderResults.length;
+                  final result = hasResult ? strategy.basketOrderResults[index] : null;
+
+                  Widget? statusBadge;
+                  if (!hasResult) {
+                    if (index == strategy.currentOrderIndex && strategy.isBasketOrdering) {
+                      statusBadge = const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(MyntColors.primary),
+                        ),
+                      );
+                    }
+                  } else {
+                    final statusColor = result!.isSuccess ? Colors.green : Colors.red;
+                    final statusText = result.isSuccess ? 'CONFIRMED' : 'FAILED';
+                    statusBadge = Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        statusText,
+                        style: MyntWebTextStyles.para(context,
+                            fontWeight: MyntFonts.medium, color: statusColor),
+                      ),
+                    );
+                  }
+
+                  final tooltipMessage = result?.message ?? '';
+                  final orderItem = Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 24,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  allocation.fund.name,
+                                  style: MyntWebTextStyles.body(context,
+                                      fontWeight: MyntFonts.medium,
+                                      darkColor: MyntColors.textPrimaryDark,
+                                      lightColor: MyntColors.textPrimary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (statusBadge != null) ...[
+                                const SizedBox(width: 8),
+                                statusBadge,
+                              ],
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '₹${_formatAmount(allocation.allocatedAmount)}',
+                            style: MyntWebTextStyles.para(context,
+                                fontWeight: MyntFonts.medium,
+                                darkColor: MyntColors.textSecondaryDark,
+                                lightColor: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  return tooltipMessage.isNotEmpty
+                      ? Tooltip(
+                          message: tooltipMessage,
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: orderItem,
+                        )
+                      : orderItem;
+                },
+              ),
+            ),
+          ),
+        ),
+        // Email instruction info box
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: resolveThemeColor(context,
+                  dark: Colors.blue.withValues(alpha: 0.08),
+                  light: Colors.blue.withValues(alpha: 0.06)),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: resolveThemeColor(context,
+                    dark: Colors.blue.withValues(alpha: 0.2),
+                    light: Colors.blue.withValues(alpha: 0.15)),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline,
+                    size: 16,
+                    color: resolveThemeColor(context,
+                        dark: Colors.blue.shade300, light: Colors.blue.shade600)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Please check your registered email for payment instructions from BSE to complete your investment.',
+                    style: MyntWebTextStyles.para(context,
+                        fontWeight: MyntFonts.medium,
+                        color: resolveThemeColor(context,
+                            dark: Colors.blue.shade300,
+                            light: Colors.blue.shade700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ─── RIGHT PANEL ──────────────────────────────────────────────────────
 
   String _formatInvestAmount(double number) {
@@ -1324,12 +1786,59 @@ class _StrategyBuilderScreenV2State
       return Center(child: MyntLoader.branded());
     }
 
-    if (strategy.analysisData == null) {
-      return const NoDataFoundWeb(
-        title: 'Backtest Results',
-        subtitle: 'Add funds and click Analyse to see results',
-        primaryEnabled: false,
-        secondaryEnabled: false,
+    if (_backtestError != null || strategy.analysisData == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _backtestError != null ? Icons.error_outline : Icons.analytics_outlined,
+                size: 48,
+                color: resolveThemeColor(context,
+                    dark: MyntColors.textSecondaryDark,
+                    light: MyntColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _backtestError != null ? 'Backtest Failed' : 'No Results',
+                style: MyntWebTextStyles.body(context,
+                    fontWeight: MyntFonts.semiBold,
+                    darkColor: MyntColors.textPrimaryDark,
+                    lightColor: MyntColors.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _backtestError ?? 'No backtest results available for this strategy.',
+                textAlign: TextAlign.center,
+                style: MyntWebTextStyles.para(context,
+                    fontWeight: MyntFonts.medium,
+                    darkColor: MyntColors.textSecondaryDark,
+                    lightColor: MyntColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 36,
+                child: ElevatedButton.icon(
+                  onPressed: () => _performBacktest(context),
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: Text('Retry', style: MyntWebTextStyles.body(context,
+                      fontWeight: MyntFonts.medium, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: resolveThemeColor(context,
+                        dark: MyntColors.secondary, light: MyntColors.primary),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -1374,8 +1883,25 @@ class _StrategyBuilderScreenV2State
                 ),
               ),
               const Spacer(),
-           
-              const SizedBox(width: 8),
+              if (ref.watch(dashboardProvider).isEditingMode) ...[
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: IconButton(
+                    tooltip: 'Investment settings',
+                    padding: EdgeInsets.zero,
+                    onPressed: () => _showInvestmentDetailsDialog(context, settingsMode: true),
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      size: 18,
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.textSecondaryDark,
+                          light: MyntColors.textSecondary),
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 4),
               InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: () {
@@ -1516,6 +2042,11 @@ class _StrategyBuilderScreenV2State
                                     onPressed: () async {
                                       final strategy =
                                           ref.read(dashboardProvider);
+                                      if (strategy.selectedFunds.isEmpty) {
+                                        Navigator.of(ctx).pop();
+                                        error(context, 'Please add at least one fund before saving');
+                                        return;
+                                      }
                                       strategy.stratergySavebackbutton(true);
                                       if (strategy.isEditingMode) {
                                         // Close dialog and navigate back first, then save in background
@@ -1556,33 +2087,44 @@ class _StrategyBuilderScreenV2State
       if (!strategy.isEditingMode || strategy.hasStrategyChanged) {
         if (strategy.isEditingMode) {
           await strategy.updateStrategy(context);
+          if (!mounted) return;
         } else {
           _showSaveStrategyDialog(triggerBacktest: true);
           return;
         }
       }
+      if (!mounted) return;
       await _performBacktest(context);
-    } catch (e) {}
+    } catch (e) {
+      if (mounted) {
+        error(context, 'Failed to analyse strategy. Please try again.');
+      }
+    }
   }
 
   Future<void> _performBacktest(BuildContext context) async {
     final strategy = ref.read(dashboardProvider);
-    setState(() => _isBacktestLoading = true);
+    setState(() {
+      _isBacktestLoading = true;
+      _backtestError = null;
+    });
     try {
       await strategy.backtestAnalysis(
-          uuid: strategy.editingStrategy?.data?.first.uuid ?? '');
-      if (strategy.analysisData != null) {
-        setState(() => _isBacktestLoading = false);
-      } else {
-        setState(() => _isBacktestLoading = false);
-        if (mounted) {
-          error(context, 'Failed to get backtest data. Please try again.');
-        }
+          uuid: strategy.editingStrategy?.data?.firstOrNull?.uuid ?? '');
+      if (mounted) {
+        setState(() {
+          _isBacktestLoading = false;
+          if (strategy.analysisData == null) {
+            _backtestError = 'No backtest results available for this strategy.';
+          }
+        });
       }
     } catch (e) {
-      setState(() => _isBacktestLoading = false);
       if (mounted) {
-        error(context, 'Failed to start backtest. Please try again.');
+        setState(() {
+          _isBacktestLoading = false;
+          _backtestError = e.toString().replaceFirst('Exception: ', '');
+        });
       }
     }
   }
@@ -1729,13 +2271,11 @@ class _StrategyBuilderScreenV2State
                                   width: double.infinity,
                                   height: 44,
                                   child: MyntPrimaryButton(
-                                    label: settingsMode ? 'Set' : strategy.backtestButtonText,
+                                    label: strategy.backtestButtonText,
                                     isFullWidth: true,
                                     onPressed: () {
-                                      if (settingsMode) {
+                                      if (strategy.isStrategyValid) {
                                         confirmed = true;
-                                        Navigator.pop(ctx);
-                                      } else if (strategy.isStrategyValid) {
                                         _handleAnalyseAction(ctx);
                                       } else {
                                         error(ctx,
@@ -1867,6 +2407,12 @@ class _StrategyBuilderScreenV2State
                     _navigateBack();
                   } else if (triggerBacktest) {
                     _performBacktest(context);
+                  } else {
+                    // New strategy just saved — initialize invest state
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _investInitialized = false;
+                      _initInvestStateIfNeeded();
+                    });
                   }
                 },
                 onBacktest: () {
@@ -1987,6 +2533,18 @@ class _SaveStrategyDialogContentState
                   controller: strategy.strategyNameController,
                   placeholder: 'Enter strategy Name',
                   height: 40,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'[a-zA-Z0-9 ]')),
+                    TextInputFormatter.withFunction(
+                        (oldValue, newValue) {
+                      if (newValue.text.isEmpty) return newValue;
+                      final capitalized =
+                          newValue.text[0].toUpperCase() +
+                              newValue.text.substring(1);
+                      return newValue.copyWith(text: capitalized);
+                    }),
+                  ],
                   onChanged: (value) {
                     if (strategy.strategyNameError != null) {
                       strategy.clearStrategyNameError();
@@ -2023,9 +2581,11 @@ class _SaveStrategyDialogContentState
                         strategy.stratergySavebackbutton(true);
                         if (strategy.isEditingMode) {
                           await strategy.updateStrategy(context);
+                          if (!mounted) return;
                           widget.onSaved();
                         } else {
                           await strategy.saveStrategy(name, context);
+                          if (!mounted) return;
                           widget.onSaved();
                         }
                       } catch (e) {
