@@ -1166,8 +1166,9 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: _buildColoredText(
-                                      '${(exchTsym?.oneDayChg ?? '0.00').toIndianFormat()}(${exchTsym?.perChange ?? '0.00'}%)',
+                                    child: _buildPnLColumn(
+                                      exchTsym?.oneDayChg ?? '0.00',
+                                      exchTsym?.perChange ?? '0.00',
                                     ),
                                   ),
                                 ),
@@ -1180,8 +1181,9 @@ class _TableExample1State extends ConsumerState<TableExample1> {
                                   exchTsym: exchTsym,
                                   child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: _buildColoredText(
-                                      '${(exchTsym?.profitNloss ?? '0.00').toIndianFormat()}(${exchTsym?.pNlChng ?? '0.00'}%)',
+                                    child: _buildPnLColumn(
+                                      exchTsym?.profitNloss ?? '0.00',
+                                      exchTsym?.pNlChng ?? '0.00',
                                     ),
                                   ),
                                 ),
@@ -1226,6 +1228,38 @@ class _TableExample1State extends ConsumerState<TableExample1> {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildPnLColumn(String pnlValue, String percentValue) {
+    final numValue =
+        double.tryParse(pnlValue.replaceAll(RegExp(r'[^0-9.-]'), '')) ?? 0.0;
+    final color = _getValueColor(numValue);
+    final baseStyle = _getTextStyle(context, color: color);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          pnlValue.toIndianFormat(),
+          textAlign: TextAlign.end,
+          style: baseStyle,
+        ),
+        Text(
+          '$percentValue%',
+          textAlign: TextAlign.end,
+          style: baseStyle.copyWith(
+            fontSize: 10,
+            color: resolveThemeColor(
+              context,
+              dark: MyntColors.textPrimaryDark,
+              light: MyntColors.textPrimary,
+            ),
+            fontWeight: MyntFonts.medium,
+          ),
+        ),
+      ],
     );
   }
 
