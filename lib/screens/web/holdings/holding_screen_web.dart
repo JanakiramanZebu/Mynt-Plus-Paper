@@ -15,9 +15,12 @@ import '../../../../provider/websocket_provider.dart';
 import '../../../../res/res.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
+import '../../../../locator/locator.dart';
+import '../../../../locator/preference.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
 import '../../../utils/rupee_convert_format.dart';
+import 'holdings_download_helper.dart';
 
 class HoldingScreenWeb extends ConsumerWidget {
   final List<dynamic> listofHolding;
@@ -693,12 +696,16 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
                 _buildEdisButton(theme, portfolioData),
                 const SizedBox(width: 12),
               ],
+              // Download button
+              if (_selectedTabIndex == 0)
+                _buildDownloadButton(theme, portfolioData),
+              if (_selectedTabIndex == 0) const SizedBox(width: 12),
               // Reload button - triggers manual refresh
               _buildIconButton(
                 icon: Icons.refresh,
                 onPressed: () {
                   _handleManualRefresh();
-                  
+
                 },
                 theme: theme,
               ),
@@ -853,6 +860,78 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
           ),
         ),
       ),
+    );
+  }
+
+  // Download button (PDF / Excel)
+  Widget _buildDownloadButton(
+      ThemesProvider theme, PortfolioProvider portfolioData) {
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.download,
+        size: 24,
+        color: theme.isDarkMode
+            ? MyntColors.textWhite
+            : MyntColors.textPrimary,
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      tooltip: 'Download',
+      color: resolveThemeColor(context,
+          dark: MyntColors.cardDark, light: MyntColors.card),
+      onSelected: (value) {
+        final pref = locator<Preferences>();
+        final clientId = pref.clientId ?? '';
+        final clientName = pref.clientName ?? '';
+        final holdings = portfolioData.holdingsModel ?? [];
+        final socketData = ref.read(websocketProvider).socketDatas;
+
+        if (value == 'pdf') {
+          HoldingsDownloadHelper.downloadPdf(
+            holdings: holdings,
+            clientId: clientId,
+            clientName: clientName,
+            totalInvested: double.tryParse(portfolioData.totInvesHold) ?? 0,
+            totalCurrentValue: portfolioData.totalCurrentVal,
+            totalPnl: portfolioData.totalPnlHolding,
+            totalDayChange: portfolioData.oneDayChng,
+            socketData: socketData,
+          );
+        } else if (value == 'excel') {
+          HoldingsDownloadHelper.downloadExcel(
+            holdings: holdings,
+            clientId: clientId,
+            clientName: clientName,
+            totalInvested: double.tryParse(portfolioData.totInvesHold) ?? 0,
+            totalCurrentValue: portfolioData.totalCurrentVal,
+            totalPnl: portfolioData.totalPnlHolding,
+            totalDayChange: portfolioData.oneDayChng,
+            socketData: socketData,
+          );
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'pdf',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf, size: 18, color: Colors.red[700]),
+              const SizedBox(width: 8),
+              const Text('Download PDF'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'excel',
+          child: Row(
+            children: [
+              Icon(Icons.table_chart, size: 18, color: Colors.green[700]),
+              const SizedBox(width: 8),
+              const Text('Download Excel'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

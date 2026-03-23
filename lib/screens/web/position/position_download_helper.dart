@@ -49,20 +49,26 @@ class PositionDownloadHelper {
 
     // Build table data rows
     final tableRows = positions
-        .map((p) => [
-              p.tsym ?? p.symbol ?? '',
-              p.exch ?? '',
-              p.sPrdtAli ?? p.prd ?? '',
-              p.qty ?? p.netqty ?? '0',
-              _formatNumber(p.avgPrc ?? p.netavgprc),
-              _formatNumber(p.lp),
-              _formatNumber(p.profitNloss),
-              _formatNumber(p.mTm),
-              _formatNumber(p.daybuyqty),
-              _formatNumber(p.daysellqty),
-              _formatNumber(p.daybuyavgprc),
-              _formatNumber(p.daysellavgprc),
-            ])
+        .asMap()
+        .entries
+        .map((entry) {
+          final i = entry.key;
+          final p = entry.value;
+          return [
+            '${i + 1}',
+            p.exch ?? '',
+            p.tsym ?? p.symbol ?? '',
+            p.sPrdtAli ?? p.prd ?? '',
+            _formatNumber(p.daybuyqty),
+            _formatNumber(p.daybuyavgprc),
+            _formatNumber(p.daysellqty),
+            _formatNumber(p.daysellavgprc),
+            p.netqty ?? p.qty ?? '0',
+            _formatNumber(p.netavgprc ?? p.avgPrc),
+            _formatNumber(p.lp),
+            _formatNumber(p.profitNloss),
+          ];
+        })
         .toList();
 
     final headerStyle = pw.TextStyle(
@@ -82,54 +88,36 @@ class PositionDownloadHelper {
         header: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            // Logo + Title row
+            // Logo + Title + Client info row
             pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 if (logoImage != null)
                   pw.Image(logoImage, width: 60, height: 30)
                 else
                   pw.SizedBox(width: 60),
-                pw.Text('Position Book', style: titleStyle),
-                pw.SizedBox(width: 60),
+                pw.Expanded(
+                  child: pw.Center(
+                    child: pw.Text('Position Book', style: titleStyle),
+                  ),
+                ),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  children: [
+                    pw.Text('Client Name  :  $clientName',
+                        style: headerStyle),
+                    pw.SizedBox(height: 2),
+                    pw.Text('Client Code   :  $clientId',
+                        style: headerStyle),
+                  ],
+                ),
               ],
             ),
             pw.Divider(thickness: 0.5),
-            pw.SizedBox(height: 4),
-            // Client info
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Client Name  :  $clientName',
-                          style: headerStyle),
-                      pw.SizedBox(height: 2),
-                      pw.Text('Client Code   :  $clientId',
-                          style: headerStyle),
-                    ],
-                  ),
-                ),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text('Date  :  $dateStr', style: headerStyle),
-                      pw.SizedBox(height: 2),
-                      pw.Text('Time  :  $timeStr', style: headerStyle),
-                    ],
-                  ),
-                ),
-              ],
-            ),
             pw.SizedBox(height: 10),
             // Summary boxes
             pw.Row(
               children: [
-                _summaryBox('Total Positions', positions.length.toString()),
-                pw.SizedBox(width: 4),
                 _summaryBox('Total P&L', totalPnl.toStringAsFixed(2),
                     color: totalPnl >= 0 ? PdfColors.green : PdfColors.red),
                 pw.SizedBox(width: 4),
@@ -144,6 +132,14 @@ class PositionDownloadHelper {
           children: [
             pw.Divider(thickness: 0.5),
             pw.SizedBox(height: 2),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.end,
+              children: [
+                pw.Text('Date: $dateStr  |  Time: $timeStr',
+                    style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+            pw.SizedBox(height: 4),
             pw.Text(
               'Zebu Share And Wealth Management Private Limited',
               style:
@@ -179,32 +175,32 @@ class PositionDownloadHelper {
             cellAlignment: pw.Alignment.centerLeft,
             headerAlignment: pw.Alignment.centerLeft,
             columnWidths: {
-              0: const pw.FlexColumnWidth(2.5), // Instrument
-              1: const pw.FlexColumnWidth(1),   // Exchange
-              2: const pw.FlexColumnWidth(1),   // Product
-              3: const pw.FlexColumnWidth(1),   // Qty
-              4: const pw.FlexColumnWidth(1.2), // Avg Price
-              5: const pw.FlexColumnWidth(1.2), // LTP
-              6: const pw.FlexColumnWidth(1.2), // P&L
-              7: const pw.FlexColumnWidth(1.2), // MTM
-              8: const pw.FlexColumnWidth(1),   // Buy Qty
-              9: const pw.FlexColumnWidth(1),   // Sell Qty
-              10: const pw.FlexColumnWidth(1.2), // Buy Avg
-              11: const pw.FlexColumnWidth(1.2), // Sell Avg
+              0: const pw.FlexColumnWidth(0.6),  // S.No
+              1: const pw.FlexColumnWidth(1),    // Exchange
+              2: const pw.FlexColumnWidth(2),    // Symbol
+              3: const pw.FlexColumnWidth(1),    // Product
+              4: const pw.FlexColumnWidth(1),    // Buy Qty
+              5: const pw.FlexColumnWidth(1.2),  // Buy Price
+              6: const pw.FlexColumnWidth(1),    // Sell Qty
+              7: const pw.FlexColumnWidth(1.2),  // Sell Price
+              8: const pw.FlexColumnWidth(1),    // Net Qty
+              9: const pw.FlexColumnWidth(1.2),  // Net Price
+              10: const pw.FlexColumnWidth(1.2), // LTP
+              11: const pw.FlexColumnWidth(1.2), // P&L
             },
             headers: [
-              'Instrument',
+              'S.No',
               'Exchange',
+              'Symbol',
               'Product',
-              'Qty',
-              'Avg Price',
+              'Buy Qty',
+              'Buy Price',
+              'Sell Qty',
+              'Sell Price',
+              'Net Qty',
+              'Net Price',
               'LTP',
               'P&L',
-              'MTM',
-              'Buy Qty',
-              'Sell Qty',
-              'Buy Avg',
-              'Sell Avg',
             ],
             data: tableRows,
           ),
