@@ -31,10 +31,16 @@ class _WebHookTradingViewScreenState
   // Form state
   bool _isSell = false; // false = BUY, true = SELL
   String _symbolType = 'dyn'; // 'dyn' or 'stat'
-  String _productType = 'I'; // 'I' = Intraday, 'C' = Delivery, 'M' = NRML
+  String _productType = 'I'; // 'I' = Intraday, 'C' = Delivery, 'M' = NRML, 'H' = CO, 'B' = BO
   String _orderType = 'MKT'; // 'MKT' or 'LMT'
   String _quantity = '0';
   String _limitPrice = '0';
+
+  // CO-BO state
+  bool _isCoverOrder = true; // true = Cover Order (H), false when Bracket is selected
+  bool _isBracketOrder = false; // true = Bracket Order (B)
+  String _stoploss = '0';
+  String _target = '0';
 
   // JSON visibility – auto-shown when webhook data loads from API
   bool _isGenerated = false;
@@ -92,6 +98,8 @@ class _WebHookTradingViewScreenState
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _stoplossController = TextEditingController();
+  final TextEditingController _targetController = TextEditingController();
   List<ScripValue> _searchResults = [];
   Timer? _debounceTimer;
 
@@ -103,6 +111,8 @@ class _WebHookTradingViewScreenState
     super.initState();
     _qtyController.text = _quantity;
     _priceController.text = _limitPrice;
+    _stoplossController.text = _stoploss;
+    _targetController.text = _target;
     _fetchWebhookList();
   }
 
@@ -152,6 +162,8 @@ class _WebHookTradingViewScreenState
     _searchController.dispose();
     _qtyController.dispose();
     _priceController.dispose();
+    _stoplossController.dispose();
+    _targetController.dispose();
     _debounceTimer?.cancel();
     _hoveredLogRow.dispose();
     super.dispose();
@@ -299,6 +311,7 @@ class _WebHookTradingViewScreenState
       _searchController.text = scrip.tsym ?? '';
       _searchResults = [];
       _productType = 'I';
+      _resetCOBOState();
     });
   }
 
@@ -308,7 +321,14 @@ class _WebHookTradingViewScreenState
       _searchController.clear();
       _searchResults = [];
       _productType = 'I';
+      _resetCOBOState();
     });
+  }
+
+  void _resetCOBOState() {
+    _isCoverOrder = true;
+    _isBracketOrder = false;
+    _resetCOBOFields();
   }
 
   String _buildJsonString() {
@@ -332,7 +352,11 @@ class _WebHookTradingViewScreenState
 
     final prc = _orderType == 'MKT' ? '0' : _limitPrice;
     String prd;
-    if (_productType == 'I') {
+    if (_productType == 'H') {
+      prd = 'H'; // Cover Order
+    } else if (_productType == 'B') {
+      prd = 'B'; // Bracket Order
+    } else if (_productType == 'I') {
       prd = 'I';
     } else if (_productType == 'C' ||
         _selectedScrip?.exch == 'NSE' ||
@@ -343,7 +367,32 @@ class _WebHookTradingViewScreenState
     }
     final trantype = _isSell ? 'S' : 'B';
 
-    return '{"clientid":"$clientId","exch":"$exch","tsym":"$tsym","prc":"$prc","prd":"$prd","trantype":"$trantype","prctyp":"$_orderType","ret":"DAY","qty":"$_quantity"}';
+    // Build base JSON map
+    final jsonMap = <String, String>{
+      'clientid': clientId,
+      'exch': exch,
+      'tsym': tsym,
+      'prc': prc,
+      'prd': prd,
+      'trantype': trantype,
+      'prctyp': _orderType,
+      'ret': 'DAY',
+      'qty': _quantity,
+    };
+
+    // Add CO-BO specific fields
+    if (_isCOBO) {
+      // Stoploss (blprc) - required for both CO and BO
+      jsonMap['blprc'] = _stoploss;
+
+      // Target (bpprc) - only for Bracket Order
+      if (_isBracketOrder) {
+        jsonMap['bpprc'] = _target;
+      }
+
+    }
+
+    return jsonEncode(jsonMap);
   }
 
   void _copyToClipboard(String text, String label) {
@@ -1051,6 +1100,18 @@ class _WebHookTradingViewScreenState
               ),
             ],
           ),
+
+          // ── CO-BO Section (visible only when CO-BO product type selected) ──
+          if (_isCOBO) ...[
+            const SizedBox(height: 20),
+            _buildCOBOSection(
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              borderColor: borderColor,
+              inputBg: inputBg,
+              primaryColor: primaryColor,
+            ),
+          ],
         ],
       ),
     );
@@ -1772,6 +1833,12 @@ class _WebHookTradingViewScreenState
       case 'M':
         productLabel = 'NRML';
         break;
+      case 'H':
+        productLabel = 'Cover Order';
+        break;
+      case 'B':
+        productLabel = 'Bracket Order';
+        break;
       default:
         productLabel = prd;
     }
@@ -2241,6 +2308,166 @@ class _WebHookTradingViewScreenState
     );
   }
 
+  bool get _isCOBO => _productType == 'H' || _productType == 'B';
+
+  // ── CO-BO Section ──
+  Widget _buildCOBOSection({
+    required Color textColor,
+    required Color subtitleColor,
+    required Color borderColor,
+    required Color inputBg,
+    required Color primaryColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Cover / Bracket Toggle (mutually exclusive) ──
+          Row(
+            children: [
+              // Cover - Only SL
+              _buildCOBOCheckbox(
+                label: 'Cover - Only SL',
+                value: _isCoverOrder,
+                onChanged: (val) {
+                  setState(() {
+                    _isCoverOrder = val ?? false;
+                    _isBracketOrder = !_isCoverOrder;
+                    _productType = _isCoverOrder ? 'H' : 'B';
+                    if (_isCoverOrder) {
+                      // Clear bracket-only fields
+                      _target = '0';
+                      _targetController.text = '0';
+                    }
+                  });
+                },
+                primaryColor: primaryColor,
+                textColor: textColor,
+              ),
+              const SizedBox(width: 32),
+              // Bracket - TGT / SL
+              _buildCOBOCheckbox(
+                label: 'Bracket - TGT / SL',
+                value: _isBracketOrder,
+                onChanged: (val) {
+                  setState(() {
+                    _isBracketOrder = val ?? false;
+                    _isCoverOrder = !_isBracketOrder;
+                    _productType = _isBracketOrder ? 'B' : 'H';
+                  });
+                },
+                primaryColor: primaryColor,
+                textColor: textColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // ── Row: Stoploss | Target (BO only) ──
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFieldLabel('Stoploss (in Rs)', subtitleColor),
+                    const SizedBox(height: 10),
+                    MyntTextField(
+                      controller: _stoplossController,
+                      placeholder: '0.00',
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      onChanged: (val) => setState(() => _stoploss = val),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: IgnorePointer(
+                  ignoring: !_isBracketOrder,
+                  child: Opacity(
+                    opacity: _isBracketOrder ? 1.0 : 0.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFieldLabel('Target (in Rs)', subtitleColor),
+                        const SizedBox(height: 10),
+                        MyntTextField(
+                          controller: _targetController,
+                          placeholder: '0.00',
+                          enabled: _isBracketOrder,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.]')),
+                          ],
+                          onChanged: (val) => setState(() => _target = val),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCOBOCheckbox({
+    required String label,
+    required bool value,
+    required ValueChanged<bool?> onChanged,
+    required Color primaryColor,
+    required Color textColor,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: 20,
+          height: 20,
+          child: Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: primaryColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            side: BorderSide(
+              color: resolveThemeColor(context,
+                  dark: MyntColors.cardBorderDark,
+                  light: MyntColors.cardBorder),
+              width: 1.5,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: MyntWebTextStyles.body(
+            context,
+            fontWeight: value ? MyntFonts.semiBold : MyntFonts.regular,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildProductTypeChips({required Color primaryColor}) {
     final options = <String, String>{'I': 'Intraday'};
     if (_symbolType == 'stat' && _selectedScrip != null) {
@@ -2252,12 +2479,37 @@ class _WebHookTradingViewScreenState
     } else {
       options['C'] = 'Delivery';
     }
+    
+    options['CO-BO'] = 'CO - BO';
+
+    // Map the internal product type to the chip key for selection
+    final selectedKey = _isCOBO ? 'CO-BO' : _productType;
 
     return _buildChipGroup(
       options: options,
-      selected: _productType,
-      onSelected: (val) => setState(() => _productType = val),
+      selected: selectedKey,
+      onSelected: (val) {
+        setState(() {
+          if (val == 'CO-BO') {
+            // Default to Cover Order when CO-BO is first selected
+            _productType = 'H';
+            _isCoverOrder = true;
+            _isBracketOrder = false;
+            _resetCOBOFields();
+          } else {
+            _productType = val;
+            _resetCOBOFields();
+          }
+        });
+      },
     );
+  }
+
+  void _resetCOBOFields() {
+    _stoploss = '0';
+    _target = '0';
+    _stoplossController.text = '0';
+    _targetController.text = '0';
   }
 
   Widget _buildQuantityInput(

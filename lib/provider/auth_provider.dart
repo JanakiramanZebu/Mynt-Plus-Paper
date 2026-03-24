@@ -2025,11 +2025,10 @@ class AuthProvider extends DefaultChangeNotifier {
                 ];
                 Future.wait(marketFutures); // Don't await - let it run in background
                 
-                // Batch 3: Order and trade data (load in background)
+                // Batch 3: Order data (load in background)
+                // Only fetch order book on login — trade book and GTT are lazy-loaded when user opens those tabs
                 Future.microtask(() {
                   ref.read(orderProvider).fetchOrderBook(context, false);
-                  ref.read(orderProvider).fetchTradeBook(context);
-                  ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
                 });
                 
                 // Batch 4: Portfolio additional data (load in background)
@@ -2097,16 +2096,13 @@ class AuthProvider extends DefaultChangeNotifier {
             ref.read(userProfileProvider).getProfileimage();
 
             // Load remaining data in parallel
+            // Only fetch order book on login — trade book and GTT are lazy-loaded when user opens those tabs
             final futures = [
               ref.read(orderProvider).fetchOrderBook(context, false),
               ref.read(portfolioProvider).fetchPositionBook(context, false),
-              ref.read(orderProvider).fetchTradeBook(context),
               ref.read(portfolioProvider).fetchOplist(context)
             ];
             await Future.wait(futures);
-            
-            // Load other data in background
-            ref.read(orderProvider).fetchGTTOrderBook(context, "initLoad");
             ref.read(transcationProvider).fetchcwithdraw(context);
             ref.read(transcationProvider).fetchfundbank(context);
             ref.read(userProfileProvider).fetchUserDetail(context);

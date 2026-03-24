@@ -180,15 +180,20 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.watch(themeProvider);
-    final orderBook = ref.watch(orderProvider);
+    // Selective watches — only rebuild when relevant data changes
+    final executedOrder = ref.watch(orderProvider.select((p) => p.executedOrder));
+    final orderSearchItem = ref.watch(orderProvider.select((p) => p.orderSearchItem));
+    final isLoading = ref.watch(orderProvider.select((p) => p.loading));
+    final selectedTab = ref.watch(orderProvider.select((p) => p.selectedTab));
+    final orderBook = ref.read(orderProvider);
 
     // Get executed orders (search or regular)
     // Only show search results if we're on the Executed Orders tab (index 1)
     final searchQuery = orderBook.orderSearchCtrl.text.trim();
-    final isExecutedOrdersTab = orderBook.selectedTab == 1;
+    final isExecutedOrdersTab = selectedTab == 1;
     final orders = (searchQuery.isNotEmpty && isExecutedOrdersTab)
-        ? (orderBook.orderSearchItem ?? [])
-        : (orderBook.executedOrder ?? []);
+        ? (orderSearchItem ?? [])
+        : (executedOrder ?? []);
 
     // Sort orders (only if not empty)
     final sortedOrders = orders.isNotEmpty ? _getSortedOrders(orders) : <OrderBookModel>[];
@@ -285,7 +290,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                       // Scrollable Body (vertical scroll) - shows loader/no data/table rows
                       Expanded(
                         child: sortedOrders.isEmpty
-                            ? (orderBook.loading
+                            ? (isLoading
                                 ? Center(child: MyntLoader.simple())
                                 : Center(
                                     child: Padding(
@@ -313,43 +318,34 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                           thickness: 6,
                           radius: const Radius.circular(3),
                           interactive: true,
-                          child: SingleChildScrollView(
+                          child: ListView.builder(
                             controller: widget.verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: shadcn.Table(
-                              key: ValueKey(
-                                  'table_${_sortColumnIndex}_$_sortAscending'),
-                              columnWidths: {
-                                0: shadcn.FixedTableSize(timeWidth),
-                                1: shadcn.FixedTableSize(typeWidth),
-                                2: shadcn.FixedTableSize(instrumentWidth),
-                                3: shadcn.FixedTableSize(productWidth),
-                                4: shadcn.FixedTableSize(qtyWidth),
-                                5: shadcn.FixedTableSize(ltpWidth),
-                                6: shadcn.FixedTableSize(avgPriceWidth),
-                                7: shadcn.FixedTableSize(statusWidth),
-                              },
-                              defaultRowHeight: const shadcn.FixedTableSize(50),
-                              rows: [
-                                // Data Rows
-                                ...sortedOrders.asMap().entries.map((entry) {
-                                  final index = entry.key;
-                                  final order = entry.value;
-                                  final uniqueId =
-                                      order.norenordno?.toString() ??
-                                          order.token?.toString() ??
-                                          '';
-                                  final actionHandler = OrderActionHandler(
-                                      ref: ref, context: context);
-
-                                  return shadcn.TableRow(
+                            itemCount: sortedOrders.length,
+                            itemExtent: 50.0,
+                            itemBuilder: (context, index) {
+                              final order = sortedOrders[index];
+                              final uniqueId = order.norenordno?.toString() ?? order.token?.toString() ?? '';
+                              final actionHandler = OrderActionHandler(ref: ref, context: context);
+                              return shadcn.Table(
+                                columnWidths: {
+                                  0: shadcn.FixedTableSize(timeWidth),
+                                  1: shadcn.FixedTableSize(typeWidth),
+                                  2: shadcn.FixedTableSize(instrumentWidth),
+                                  3: shadcn.FixedTableSize(productWidth),
+                                  4: shadcn.FixedTableSize(qtyWidth),
+                                  5: shadcn.FixedTableSize(ltpWidth),
+                                  6: shadcn.FixedTableSize(avgPriceWidth),
+                                  7: shadcn.FixedTableSize(statusWidth),
+                                },
+                                defaultRowHeight: const shadcn.FixedTableSize(50),
+                                rows: [
+                                  shadcn.TableRow(
                                     cells: [
                                       // Time (with seconds)
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 0,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Text(
                                           _formatTime(order.norentm ?? '0.00'),
                                           style: _getTextStyle(context),
@@ -361,21 +357,16 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                       buildCellWithHover(
                                         rowIndex: index,
                                         columnIndex: 1,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Text(
-                                          order.trantype == "S"
-                                              ? "SELL"
-                                              : "BUY",
+                                          order.trantype == "S" ? "SELL" : "BUY",
                                           style: _getTextStyle(
                                             context,
                                             color: order.trantype == "S"
                                                 ? resolveThemeColor(context,
-                                                    dark: MyntColors.lossDark,
-                                                    light: MyntColors.loss)
+                                                    dark: MyntColors.lossDark, light: MyntColors.loss)
                                                 : resolveThemeColor(context,
-                                                    dark: MyntColors.profitDark,
-                                                    light: MyntColors.profit),
+                                                    dark: MyntColors.profitDark, light: MyntColors.profit),
                                           ),
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: false,
@@ -388,15 +379,10 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         child: ValueListenableBuilder<int?>(
                                           valueListenable: _hoveredRowIndex,
                                           builder: (context, hoveredIndex, _) {
-                                            // Row is hovered if mouse is over it OR if its dropdown menu is open
                                             final isHovered = hoveredIndex == index ||
                                                 (_activePopoverController != null && _popoverRowIndex == index);
                                             return _buildInstrumentCell(
-                                              order,
-                                              theme,
-                                              uniqueId,
-                                              actionHandler,
-                                              isHovered,
+                                              order, theme, uniqueId, actionHandler, isHovered,
                                               rowIndex: index,
                                             );
                                           },
@@ -407,8 +393,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         rowIndex: index,
                                         columnIndex: 3,
                                         alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Text(
                                           order.sPrdtAli ?? order.prd ?? '',
                                           style: _getTextStyle(context),
@@ -421,8 +406,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         rowIndex: index,
                                         columnIndex: 4,
                                         alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Text(
                                           _formatQty(order),
                                           style: _getTextStyle(context),
@@ -434,8 +418,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         rowIndex: index,
                                         columnIndex: 5,
                                         alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: _OrderBookLTPCell(
                                           token: order.token ?? '',
                                           initialLtp: _getValidLTP(order),
@@ -447,8 +430,7 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         rowIndex: index,
                                         columnIndex: 6,
                                         alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Text(
                                           order.avgprc ?? '0.00',
                                           style: _getTextStyle(context),
@@ -460,33 +442,23 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                         rowIndex: index,
                                         columnIndex: 7,
                                         alignRight: true,
-                                        onTap: () => actionHandler
-                                            .openOrderDetail(order),
+                                        onTap: () => actionHandler.openOrderDetail(order),
                                         child: Tooltip(
-                                          message: (order.rejreason != null &&
-                                                  order.rejreason!.isNotEmpty)
+                                          message: (order.rejreason != null && order.rejreason!.isNotEmpty)
                                               ? order.rejreason!
                                               : _getStatusText(order),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: _getStatusColor(
-                                                      _getStatusText(order),
-                                                      context)
+                                              color: _getStatusColor(_getStatusText(order), context)
                                                   .withValues(alpha: 0.12),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                              borderRadius: BorderRadius.circular(4),
                                             ),
                                             child: Text(
-                                              _getStatusText(order)
-                                                  .toUpperCase(),
-                                              style:
-                                                  MyntWebTextStyles.bodySmall(
+                                              _getStatusText(order).toUpperCase(),
+                                              style: MyntWebTextStyles.bodySmall(
                                                 context,
-                                                color: _getStatusColor(
-                                                    _getStatusText(order),
-                                                    context),
+                                                color: _getStatusColor(_getStatusText(order), context),
                                                 fontWeight: MyntFonts.medium,
                                               ),
                                               overflow: TextOverflow.ellipsis,
@@ -495,62 +467,11 @@ class _ExecutedOrdersScreenState extends ConsumerState<ExecutedOrdersScreen> {
                                           ),
                                         ),
                                       ),
-                                      // COMMENTED OUT COLUMNS:
-                                      // // Type (Price type) - LMT/MKT etc
-                                      // buildCellWithHover(
-                                      //   rowIndex: index,
-                                      //   columnIndex: 3,
-                                      //   onTap: () => actionHandler.openOrderDetail(order),
-                                      //   child: Text(
-                                      //     order.prctyp ?? '',
-                                      //     style: _getTextStyle(context),
-                                      //     overflow: TextOverflow.visible,
-                                      //     softWrap: false,
-                                      //   ),
-                                      // ),
-                                      // // LTP
-                                      // buildCellWithHover(
-                                      //   rowIndex: index,
-                                      //   columnIndex: 7,
-                                      //   alignRight: true,
-                                      //   onTap: () => actionHandler.openOrderDetail(order),
-                                      //   child: _OrderBookLTPCell(
-                                      //     token: order.token ?? '',
-                                      //     initialLtp: _getValidLTP(order),
-                                      //     order: order,
-                                      //   ),
-                                      // ),
-                                      // // Price
-                                      // buildCellWithHover(
-                                      //   rowIndex: index,
-                                      //   columnIndex: 8,
-                                      //   alignRight: true,
-                                      //   onTap: () => actionHandler.openOrderDetail(order),
-                                      //   child: Text(
-                                      //     _getValidPrice(order),
-                                      //     style: _getTextStyle(context),
-                                      //   ),
-                                      // ),
-                                      // // Trigger price
-                                      // buildCellWithHover(
-                                      //   rowIndex: index,
-                                      //   columnIndex: 9,
-                                      //   alignRight: true,
-                                      //   onTap: () => actionHandler.openOrderDetail(order),
-                                      //   child: Text(
-                                      //     (order.trgprc != null &&
-                                      //             order.trgprc != '0' &&
-                                      //             order.trgprc != '0.00')
-                                      //         ? order.trgprc!
-                                      //         : '0.00',
-                                      //     style: _getTextStyle(context),
-                                      //   ),
-                                      // ),
                                     ],
-                                  );
-                                }),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ),
                       ),

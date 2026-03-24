@@ -797,8 +797,12 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               OutlinedButton.icon(
                 onPressed: () {
                   setState(() {
-                    _yesOrNo = 'yes';
-                    _activePanel = 0;
+                    if (_yesOrNo == 'yes') {
+                      _yesOrNo = null;
+                    } else {
+                      _yesOrNo = 'yes';
+                      _activePanel = 0;
+                    }
                   });
                 },
                 icon: Icon(Icons.add,
@@ -828,7 +832,13 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               const SizedBox(width: 12),
               OutlinedButton(
                 onPressed: () {
-                  setState(() => _yesOrNo = 'no');
+                  setState(() {
+                    if (_yesOrNo == 'no') {
+                      _yesOrNo = null;
+                    } else {
+                      _yesOrNo = 'no';
+                    }
+                  });
                 },
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
@@ -1299,30 +1309,40 @@ class _NomineeScreenWebState extends ConsumerState<NomineeScreenWeb> {
               hoverBg: hoverBg,
               onTap: () {
                 setState(() {
-                  _yesOrNo = 'yes';
-                  _activePanel = 0;
+                  if (_yesOrNo == 'yes') {
+                    _yesOrNo = null;
+                  } else {
+                    _yesOrNo = 'yes';
+                    _activePanel = 0;
+                  }
                 });
               },
             ),
-            const SizedBox(width: 16),
-            _buildChoiceButton(
-              icon: Icons.schedule_outlined,
-              label: 'Skip for now',
-              subtitle: 'I\'ll do it later',
-              isSelected: _yesOrNo == 'no',
-              isPrimary: false,
-              primaryColor: primaryColor,
-              textColor: textColor,
-              subtitleColor: subtitleColor,
-              borderColor: borderColor,
-              cardBg: cardBg,
-              hoverBg: hoverBg,
-              onTap: () {
-                setState(() {
-                  _yesOrNo = 'no';
-                });
-              },
-            ),
+            if (!isEdit) ...[
+              const SizedBox(width: 16),
+              _buildChoiceButton(
+                icon: Icons.schedule_outlined,
+                label: 'Skip for now',
+                subtitle: 'I\'ll do it later',
+                isSelected: _yesOrNo == 'no',
+                isPrimary: false,
+                primaryColor: primaryColor,
+                textColor: textColor,
+                subtitleColor: subtitleColor,
+                borderColor: borderColor,
+                cardBg: cardBg,
+                hoverBg: hoverBg,
+                onTap: () {
+                  setState(() {
+                    if (_yesOrNo == 'no') {
+                      _yesOrNo = null;
+                    } else {
+                      _yesOrNo = 'no';
+                    }
+                  });
+                },
+              ),
+            ],
           ],
         ),
       ],

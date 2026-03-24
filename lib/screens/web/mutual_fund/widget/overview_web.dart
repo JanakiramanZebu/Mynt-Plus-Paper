@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import '../../../../models/mf_model/mf_nav_graph_model.dart';
 import '../../../../models/mf_model/mutual_fundmodel.dart';
@@ -37,6 +38,11 @@ class MFOverviewWeb extends ConsumerWidget {
 
     final isDarkMode = theme.isDarkMode;
     final List<NavGraphData> dataSource = navGraph?.data?.toList() ?? [];
+    // Sort data chronologically to prevent zig-zag lines
+    dataSource.sort((a, b) {
+      if (a.navDate == null || b.navDate == null) return 0;
+      return _parseDate(a.navDate!).compareTo(_parseDate(b.navDate!));
+    });
 
     return Container(
       // color: isDarkMode ? Colors.black : Colors.white,
@@ -175,21 +181,37 @@ class MFOverviewWeb extends ConsumerWidget {
   ) {
     final interactiveTooltip = InteractiveTooltip(
       enable: true,
-      format: 'NAV : point.y',
       borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark,light: MyntColors.primary),
       textStyle: TextStyle(color: resolveThemeColor(context, dark: MyntColors.textPrimary, light: MyntColors.textPrimaryDark)),
     );
 
     return SfCartesianChart(
+      onTrackballPositionChanging: (TrackballArgs args) {
+        final pointIndex = args.chartPointInfo.dataPointIndex;
+        if (pointIndex != null && pointIndex >= 0 && pointIndex < dataSource.length) {
+          final navData = dataSource[pointIndex];
+          final date = _parseDate(navData.navDate);
+          args.chartPointInfo.header = DateFormat('yyyy-MM-dd').format(date);
+          args.chartPointInfo.label = 'Nav : ${navData.nav ?? 0}';
+        }
+      },
       margin: const EdgeInsets.all(12),
       // backgroundColor: isDarkMode ? colors.colorBlack : Colors.white,
       backgroundColor: isDarkMode ? MyntColors.backgroundColorDark : MyntColors.backgroundColor,
       borderWidth: 0,
       plotAreaBorderWidth: 0,
-      primaryXAxis: CategoryAxis(
+      primaryXAxis: DateTimeAxis(
         isVisible: false,
         majorGridLines: const MajorGridLines(width: 0),
         axisLine: const AxisLine(width: 0),
+        dateFormat: DateFormat('MMM yy'),
+        intervalType: DateTimeIntervalType.auto,
+        labelStyle: TextStyle(
+          fontSize: 11,
+          color: isDarkMode
+              ? MyntColors.textSecondaryDark
+              : MyntColors.textSecondary,
+        ),
       ),
       primaryYAxis: NumericAxis(
         isVisible: true,
@@ -216,17 +238,14 @@ class MFOverviewWeb extends ConsumerWidget {
         lineColor: colors.colorBlue.withValues(alpha: 0.5),
         lineWidth: 1,
       ),
-      series: <CartesianSeries<NavGraphData, String>>[
-        AreaSeries<NavGraphData, String>(
+      series: <CartesianSeries<NavGraphData, DateTime>>[
+        AreaSeries<NavGraphData, DateTime>(
           name: "Historical NAV",
           color: colors.colorBlue.withValues(alpha: 0.1),
           borderColor:  resolveThemeColor(context, dark: MyntColors.primaryDark, light: MyntColors.primary),
           borderWidth: 2,
           dataSource: dataSource,
-          xValueMapper: (NavGraphData data, _) {
-            if (data.navDate == null) return "";
-            return _formatChartDate(data.navDate);
-          },
+          xValueMapper: (NavGraphData data, _) => _parseDate(data.navDate ?? ''),
           yValueMapper: (NavGraphData data, _) => data.nav,
         ),
       ],
@@ -485,17 +504,12 @@ class MFOverviewWeb extends ConsumerWidget {
     return 'The fund is managed by $fundManager. Launched on $launchDate, the fund has a current NAV of ₹$currentNAV as of $navDate. It has an AUM of ₹$aum Crores, with a minimum investment of ₹$minPurchase for purchase and ₹$minSip for SIP. The expense ratio is $expenseRatio% with a risk level of $risk. The benchmark is $benchmark.$returnsStr';
   }
 
-  String _formatChartDate(String? dateStr) {
-    if (dateStr == null || dateStr.isEmpty) return '';
-    try {
-      final parts = dateStr.split(' ')[0].split('-');
-      if (parts.length >= 3) {
-        // Return short format: DD/MM
-        return "${parts[2]}/${parts[1]}";
-      }
-      return dateStr.split(' ')[0];
+  DateTime _parseDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return DateTime.now();
+    try {     
+      return DateTime.parse(dateStr);
     } catch (e) {
-      return dateStr.split(' ')[0];
+      return DateTime.now();
     }
   }
 

@@ -781,9 +781,10 @@ class _StrategyDashboardScreenState
     }
   }
 
-  void _loadStrategyData(Data strategyData) {
+  Future<void> _loadStrategyData(Data strategyData) async {
     ref.read(dashboardProvider).shocustomButton(false);
-    ref.read(dashboardProvider).loadStrategy(strategyData);
+    await ref.read(dashboardProvider).loadStrategy(strategyData);
+    if (!mounted) return;
     Navigator.pushNamed(context, Routes.createBasketStrategy);
   }
 

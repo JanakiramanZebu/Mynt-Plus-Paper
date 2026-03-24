@@ -75,6 +75,9 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   // Refresh state
   bool _isRefreshing = false;
 
+  // Cache LayoutBuilder constraints to avoid unnecessary callbacks
+  BoxConstraints? _lastConstraints;
+
   void _updateScrollArrows() {
     if (!mounted) return;
     // Additional safety check to prevent setState after dispose
@@ -319,12 +322,14 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildInitializedContent(ThemesProvider theme) {
-    final orderBook = ref.watch(orderProvider);
+    // Only watch the specific fields we need for reactive UI updates
+    final orderTabName = ref.watch(orderProvider.select((p) => p.orderTabName));
+    final orderBook = ref.read(orderProvider);
 
     return SizedBox.expand(
       child: RefreshIndicator(
         onRefresh: () async {
-          await orderBook.fetchOrderBook(context, true);
+          await ref.read(orderProvider).fetchOrderBook(context, true);
         },
         child: Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
@@ -334,7 +339,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
             children: [
               // Main Content Area (includes tabs and search bar)
               Expanded(
-                child: _buildMainContent(theme, orderBook),
+                child: _buildMainContent(theme, orderBook, orderTabName),
               ),
             ],
           ),
@@ -347,12 +352,12 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     return const CircularLoaderImage();
   }
 
-  Widget _buildMainContent(ThemesProvider theme, OrderProvider orderBook) {
+  Widget _buildMainContent(ThemesProvider theme, OrderProvider orderBook, List<Tab> orderTabName) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Tabs and Search Bar in same row
-        _buildTabsAndActionBar(theme, orderBook),
+        _buildTabsAndActionBar(theme, orderBook, orderTabName),
 
         // Content Area - Now just delegates to separate screens
         Expanded(
@@ -362,15 +367,18 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
     );
   }
 
-  Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook) {
+  Widget _buildTabsAndActionBar(ThemesProvider theme, OrderProvider orderBook, List<Tab> orderTabName) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Update scroll arrows state when layout changes
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _updateScrollArrows();
-          });
+          // Only update scroll arrows when constraints actually change
+          if (_lastConstraints != constraints) {
+            _lastConstraints = constraints;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _updateScrollArrows();
+            });
+          }
 
           final double availableWidth = constraints.maxWidth;
           double searchWidth;
@@ -419,8 +427,8 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: List.generate(orderBook.orderTabName.length, (tabIndex) {
-                            final tabString = orderBook.orderTabName[tabIndex];
+                          children: List.generate(orderTabName.length, (tabIndex) {
+                            final tabString = orderTabName[tabIndex];
                             final parts = tabString.text?.split(' ') ?? [];
                             final title = parts.first;
                             final badge = parts.length > 1 ? parts[1] : null;
@@ -633,40 +641,51 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
   }
 
   Widget _buildContentArea(ThemesProvider theme, OrderProvider orderBook) {
-    return IndexedStack(
-      index: _tabController?.index ?? 0,
-      children: [
-        // Open Orders - Now uses separate screen widget
-        OpenOrdersScreen(
+    final index = _tabController?.index ?? 0;
+    // Only build the active tab — disposes previous tab's widgets and stream listeners
+    return KeyedSubtree(
+      key: ValueKey(index),
+      child: _buildTabContent(index),
+    );
+  }
+
+  Widget _buildTabContent(int index) {
+    switch (index) {
+      case 0:
+        return OpenOrdersScreen(
           horizontalScrollController: _openOrdersHorizontalScrollController,
           verticalScrollController: _openOrdersVerticalScrollController,
-        ),
-        // Executed Orders - Now uses separate screen widget
-        ExecutedOrdersScreen(
+        );
+      case 1:
+        return ExecutedOrdersScreen(
           horizontalScrollController: _executedOrdersHorizontalScrollController,
           verticalScrollController: _executedOrdersVerticalScrollController,
-        ),
-        // Trade Book - Now uses separate screen widget
-        TradeBookScreen(
+        );
+      case 2:
+        return TradeBookScreen(
           horizontalScrollController: _tradeBookHorizontalScrollController,
           verticalScrollController: _tradeBookVerticalScrollController,
-        ),
-        // GTT Orders - Now uses separate screen widget
-        GttOrdersScreen(
+        );
+      case 3:
+        return GttOrdersScreen(
           horizontalScrollController: _gttHorizontalScrollController,
           verticalScrollController: _gttVerticalScrollController,
-        ),
-        // Basket List
-        const BasketList(),
-        // SIP Orders
-        SipOrdersScreenWeb(
+        );
+      case 4:
+        return const BasketList();
+      case 5:
+        return SipOrdersScreenWeb(
           horizontalScrollController: _sipHorizontalScrollController,
           verticalScrollController: _sipVerticalScrollController,
-        ),
-        // Pending Alerts
-        const PendingAlertWeb(),
-      ],
-    );
+        );
+      case 6:
+        return const PendingAlertWeb();
+      default:
+        return OpenOrdersScreen(
+          horizontalScrollController: _openOrdersHorizontalScrollController,
+          verticalScrollController: _openOrdersVerticalScrollController,
+        );
+    }
   }
 
   // Icon button helper matching Positions page

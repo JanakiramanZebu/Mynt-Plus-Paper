@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -21,9 +22,6 @@ import 'package:mynt_plus/screens/web/mutual_fund/mf_top_category_list_web.dart'
 import 'package:mynt_plus/screens/web/mutual_fund/sip_calculator_screen_web.dart';
 import 'package:mynt_plus/screens/web/mutual_fund/cagr_calculator_screen_web.dart';
 import 'package:mynt_plus/screens/web/bonds/bonds_main_screen_web.dart';
-
-
-
 // import 'package:mynt_plus/screens/web/chart/web_chart_overlay.dart'; // Commented out - using panel chart only
 import 'package:mynt_plus/screens/web/chart/inline_chart_portal.dart';
 import 'package:mynt_plus/screens/web/option_flash/option_flash_panel.dart';
@@ -113,6 +111,11 @@ import 'home/widgets/app_bar/profile_dropdown.dart';
 import 'home/widgets/app_bar/navigation_drawer_web.dart';
 import '../../../res/responsive_extensions.dart';
 import 'scalper/scalper_screen_web.dart';
+import 'collection_basket/basketlist_dashboard_web.dart';
+import 'collection_basket/create_baskerscreen_web.dart' as basket_create;
+import 'collection_basket/collection_basket_builder.dart';
+import 'collection_basket/benchmark_backtest_web.dart';
+import 'collection_basket/save_strategy_screen_web.dart';
 import 'profile/refer/refer_screen_web.dart';
 import 'profile/help_support/help_support_screen_web.dart';
 import 'market_watch/tv_chart/chart_iframe_guard.dart';
@@ -158,6 +161,10 @@ enum ScreenTypeParam {
   portfolioAnalysis,
   strategyBuilder,
   tradingViewWebHook,
+  basketDashboard,
+  createBasketStrategy,
+  benchmarkBacktest,
+  saveBasketStrategy,
   profileDetails,
 }
 
@@ -427,6 +434,20 @@ class _CustomizableSplitHomeScreenState
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
+          } else if (routeName == "mutualFund") {
+            _handleMutualFundTap();
+          } else if (routeName == "basketDashboard" ||
+              routeName == Routes.basketScreen) {
+            _handleBasketDashboardTap();
+          } else if (routeName == Routes.createBasketStrategy ||
+              routeName == "createBasketStrategy") {
+            _replaceScreenInPanel(ScreenType.createBasketStrategy);
+          } else if (routeName == Routes.benchmarkBacktestAnalysis ||
+              routeName == "benchmarkBacktest") {
+            _replaceScreenInPanel(ScreenType.benchmarkBacktest);
+          } else if (routeName == Routes.saveStrategyScreen ||
+              routeName == "saveBasketStrategy") {
+            _replaceScreenInPanel(ScreenType.saveBasketStrategy);
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else {
@@ -493,6 +514,20 @@ class _CustomizableSplitHomeScreenState
             _handleScalperTap();
           } else if (routeName == "tradingViewWebHook") {
             _handleWebHookTap();
+          } else if (routeName == "mutualFund") {
+            _handleMutualFundTap();
+          } else if (routeName == "basketDashboard" ||
+              routeName == Routes.basketScreen) {
+            _handleBasketDashboardTap();
+          } else if (routeName == Routes.createBasketStrategy ||
+              routeName == "createBasketStrategy") {
+            _replaceScreenInPanel(ScreenType.createBasketStrategy);
+          } else if (routeName == Routes.benchmarkBacktestAnalysis ||
+              routeName == "benchmarkBacktest") {
+            _replaceScreenInPanel(ScreenType.benchmarkBacktest);
+          } else if (routeName == Routes.saveStrategyScreen ||
+              routeName == "saveBasketStrategy") {
+            _replaceScreenInPanel(ScreenType.saveBasketStrategy);
           } else if (routeName == "refer") {
             _replaceScreenInPanel(ScreenType.refer);
           } else {
@@ -652,6 +687,18 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenTypeParam.tradingViewWebHook:
         _handleWebHookTap();
+        break;
+      case ScreenTypeParam.basketDashboard:
+        _handleBasketDashboardTap();
+        break;
+      case ScreenTypeParam.createBasketStrategy:
+        _replaceScreenInPanel(ScreenType.createBasketStrategy);
+        break;
+      case ScreenTypeParam.benchmarkBacktest:
+        _replaceScreenInPanel(ScreenType.benchmarkBacktest);
+        break;
+      case ScreenTypeParam.saveBasketStrategy:
+        _replaceScreenInPanel(ScreenType.saveBasketStrategy);
         break;
       case ScreenTypeParam.profileDetails:
         _replaceScreenInPanel(ScreenType.profileDetails);
@@ -909,6 +956,27 @@ class _CustomizableSplitHomeScreenState
               screenType: BannerScreenType.homescreen,
               showImmediately: true,
             ),
+            // DEBUG: Screen size overlay — remove after testing
+            // Positioned(
+            //   bottom: 8,
+            //   right: 8,
+            //   child: Builder(
+            //     builder: (context) {
+            //       final size = MediaQuery.of(context).size;
+            //       return Container(
+            //         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            //         decoration: BoxDecoration(
+            //           color: Colors.black87,
+            //           borderRadius: BorderRadius.circular(6),
+            //         ),
+            //         child: Text(
+            //           '${size.width.toStringAsFixed(0)} × ${size.height.toStringAsFixed(0)}',
+            //           style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -2050,6 +2118,10 @@ class _CustomizableSplitHomeScreenState
     _replaceScreenInPanel(ScreenType.tradingViewWebHook);
   }
 
+  void _handleBasketDashboardTap() {
+    _replaceScreenInPanel(ScreenType.basketDashboard);
+  }
+
   void _handleScalperTap() {
     setState(() => _isScalperMode = true);
   }
@@ -2570,6 +2642,9 @@ class _CustomizableSplitHomeScreenState
             // Show NFO screen in right panel (panel 2)
             _showScreenInRightPanel(ScreenType.mfNfo);
           },
+          onStrategyTap: () {
+            _handleBasketDashboardTap();
+          },
           onCollectionTap: (title, subtitle, icon) {
             _showMfCollectionInPanel(title, subtitle, icon);
           },
@@ -2701,6 +2776,37 @@ class _CustomizableSplitHomeScreenState
         return const ScalperScreenWeb(embedded: true);
       case ScreenType.tradingViewWebHook:
         return const WebHookTradingViewScreen();
+      case ScreenType.basketDashboard:
+        return StrategyDashboardScreenWeb(
+          onCreateStrategy: () {
+            _showScreenInRightPanel(ScreenType.createBasketStrategy);
+          },
+          onLoadStrategy: (_) {
+            _showScreenInRightPanel(ScreenType.createBasketStrategy);
+          },
+          onBacktestStrategy: (_, __) {
+            _showScreenInRightPanel(ScreenType.benchmarkBacktest);
+          },
+        );
+      case ScreenType.createBasketStrategy:
+        return CollectionBasketBuilder(
+          onBack: _goBackInRightPanel,
+        );
+      case ScreenType.benchmarkBacktest:
+        return BenchMarkBacktestScreenWeb(
+          onBack: _goBackInRightPanel,
+          onCustomize: () {
+            _showScreenInRightPanel(ScreenType.createBasketStrategy);
+          },
+        );
+      case ScreenType.saveBasketStrategy:
+        return SaveStrategyScreenWeb(
+          isCreateFlow: true,
+          onBack: _goBackInRightPanel,
+          onBacktest: () {
+            _showScreenInRightPanel(ScreenType.benchmarkBacktest);
+          },
+        );
       case ScreenType.refer:
         return const ReferScreenWeb();
       case ScreenType.helpSupport:
@@ -2809,6 +2915,14 @@ class _CustomizableSplitHomeScreenState
         return 'Scalper';
       case ScreenType.tradingViewWebHook:
         return 'WebHook';
+      case ScreenType.basketDashboard:
+        return 'Baskets';
+      case ScreenType.createBasketStrategy:
+        return 'Create Strategy';
+      case ScreenType.benchmarkBacktest:
+        return 'Backtest Analysis';
+      case ScreenType.saveBasketStrategy:
+        return 'Save Strategy';
       case ScreenType.refer:
         return 'Refer & Earn';
       case ScreenType.helpSupport:
@@ -2910,6 +3024,14 @@ class _CustomizableSplitHomeScreenState
         return Icons.speed;
       case ScreenType.tradingViewWebHook:
         return Icons.webhook;
+      case ScreenType.basketDashboard:
+        return Icons.shopping_basket;
+      case ScreenType.createBasketStrategy:
+        return Icons.add_circle_outline;
+      case ScreenType.benchmarkBacktest:
+        return Icons.analytics;
+      case ScreenType.saveBasketStrategy:
+        return Icons.save;
       case ScreenType.refer:
         return Icons.card_giftcard;
       case ScreenType.helpSupport:
@@ -3342,6 +3464,10 @@ class _CustomizableSplitHomeScreenState
       case ScreenType.mfStockDetail:
       case ScreenType.strategyBuilder:
       case ScreenType.tradingViewWebHook:
+      case ScreenType.basketDashboard:
+      case ScreenType.createBasketStrategy:
+      case ScreenType.benchmarkBacktest:
+      case ScreenType.saveBasketStrategy:
         break;
       case ScreenType.scalper:
         setState(() => _isScalperMode = true);
@@ -3433,7 +3559,6 @@ class _CustomizableSplitHomeScreenState
             // Unsubscribe from current active tab when leaving order book screen
             ref.read(orderProvider).unsubscribeFromCurrentTab(context);
           }
-          _clearScreenCache(screenType);
           break;
 
         case ScreenType.funds:
@@ -3543,6 +3668,38 @@ class _CustomizableSplitHomeScreenState
           break;
 
         case ScreenType.orderBook:
+          final orderProv = ref.read(orderProvider);
+          // Collect all tokens from open orders, executed orders, trade book, and GTT
+          final orderTokens = <String>{};
+          for (var order in orderProv.openOrder ?? []) {
+            if (order.token != null && order.token!.isNotEmpty) {
+              orderTokens.add(order.token!);
+            }
+          }
+          for (var order in orderProv.executedOrder ?? []) {
+            if (order.token != null && order.token!.isNotEmpty) {
+              orderTokens.add(order.token!);
+            }
+          }
+          for (var trade in orderProv.tradeBook ?? []) {
+            if (trade.token != null && trade.token!.isNotEmpty) {
+              orderTokens.add(trade.token!);
+            }
+          }
+          for (var gtt in orderProv.gttOrderBookModel ?? []) {
+            final token = gtt.token?.toString();
+            if (token != null && token.isNotEmpty) {
+              orderTokens.add(token);
+            }
+          }
+          // Remove non-protected order tokens from socketDatas
+          for (var token in orderTokens) {
+            if (!protectedTokens.contains(token) &&
+                websocket.socketDatas.containsKey(token)) {
+              websocket.socketDatas.remove(token);
+              removedCount++;
+            }
+          }
           break;
 
         default:
@@ -4132,6 +4289,10 @@ class _CustomizableSplitHomeScreenState
       targetPanelIndex = 0;
     }
 
+    // WebSubscriptionManager handles smart unsubscription via _updateSubscriptionManagerForPanels()
+    // called below — it protects shared tokens (watchlist, positions, holdings, ticker, etc.)
+    // Do NOT clear _socketDatas here — the ticker needs position token data on all screens
+
     setState(() {
       _panels[targetPanelIndex].screenType = screenType;
       _panels[targetPanelIndex].screens = [screenType];
@@ -4190,6 +4351,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case ScreenType.tradingViewWebHook:
         urlPath = WebRoutes.tradingViewWebHook;
+        break;
+      case ScreenType.basketDashboard:
+        urlPath = WebRoutes.basketDashboard;
         break;
       case ScreenType.dashboard:
       case ScreenType.watchlist:
@@ -4269,13 +4433,9 @@ class _CustomizableSplitHomeScreenState
         // Preserve current tab selection - don't reset to tab 0 unless this is first load
         final currentTab = orderProviderRef.selectedTab;
 
-        // Fetch Order Book, GTT Orders, and Trade Book in parallel
-        // This ensures all order data is ready when user navigates between tabs
-        await Future.wait([
-          orderProviderRef.fetchOrderBook(context, false),
-          orderProviderRef.fetchGTTOrderBook(context, "initLoad"), // initLoad to prevent tab switch
-          orderProviderRef.fetchTradeBook(context),
-        ]);
+        // Only fetch Open + Executed orders on entry (same API).
+        // Trade Book, GTT, SIP, Basket, Alerts load lazily on tab click.
+        await orderProviderRef.fetchOrderBook(context, false);
 
         // SIP will be lazy loaded when user switches to that tab
         // This is handled in OrderProvider.changeTabIndex()
@@ -4418,6 +4578,9 @@ class _CustomizableSplitHomeScreenState
         break;
       case WebRoutes.tradingViewWebHook: // '/tradingview-webhook'
         _handleWebHookTap();
+        break;
+      case WebRoutes.basketDashboard: // '/basket-dashboard'
+        _handleBasketDashboardTap();
         break;
       case WebRoutes.optionChain: // '/option-chain'
         // Option chain requires arguments, navigate to dashboard instead
@@ -5304,6 +5467,10 @@ enum ScreenType {
   strategyBuilder,
   scalper,
   tradingViewWebHook,
+  basketDashboard,
+  createBasketStrategy,
+  benchmarkBacktest,
+  saveBasketStrategy,
   refer,
   helpSupport,
   ledger,
@@ -5771,7 +5938,7 @@ class _AppBarLivePriceWidgetState
   }
 
   @override
- Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     final changeColor = _getChangeColor(_change, _perChange);
     // Use Wrap - stays on same line when space available, wraps when not
     return Wrap(
@@ -5780,27 +5947,27 @@ class _AppBarLivePriceWidgetState
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text( 
-          _ltp,
-          style: MyntWebTextStyles.price(
-            context,
-            color: changeColor,
-            fontWeight: MyntFonts.medium,
-          ).copyWith(
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
+      _ltp,
+      style: MyntWebTextStyles.price(
+        context,
+        color: changeColor,
+        fontWeight: MyntFonts.medium,
+      ).copyWith(
+        fontFeatures: [FontFeature.tabularFigures()],
+      ),
         ),
         Text(
-          "$_change ($_perChange%)",
-          style: MyntWebTextStyles.exch(
-            context,
-            color: resolveThemeColor(
-              context,
-              dark: MyntColors.textSecondaryDark,
-              light: MyntColors.textSecondary,
-            ),
-          ).copyWith(
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
+      "$_change ($_perChange%)",
+      style: MyntWebTextStyles.exch(
+        context,
+        color: resolveThemeColor(
+          context,
+          dark: MyntColors.textSecondaryDark,
+          light: MyntColors.textSecondary,
+        ),
+      ).copyWith(
+        fontFeatures: [FontFeature.tabularFigures()],
+      ),
         ),
       ],
     );

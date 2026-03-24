@@ -1,6 +1,6 @@
-# mynt_plus_testing
+# Mynt Plus Web application
 
-A new Flutter project.
+A Flutter Web project.
 
 ## Getting Started
 

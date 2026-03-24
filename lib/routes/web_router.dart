@@ -41,6 +41,7 @@ class WebRoutes {
   static const String strategyBuilder = '/strategy-builder';
   static const String scalper = '/scalper';
   static const String tradingViewWebHook = '/tradingview-webhook';
+  static const String basketDashboard = '/basket-dashboard';
   static const String pledge = '/pledge';
 }
 
@@ -166,6 +167,14 @@ void initializeWebRouter() {
         path: WebRoutes.tradingViewWebHook,
         builder: (context, state) => const CustomizableSplitHomeScreen(
           initialRightPanel: ScreenTypeParam.tradingViewWebHook,
+        ),
+      ),
+
+      // Basket Dashboard screen
+      GoRoute(
+        path: WebRoutes.basketDashboard,
+        builder: (context, state) => const CustomizableSplitHomeScreen(
+          initialRightPanel: ScreenTypeParam.basketDashboard,
         ),
       ),
 

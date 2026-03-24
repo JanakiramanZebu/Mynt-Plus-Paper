@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import '../utils/url_utils.dart';
 import '../models/order_book_model/cancel_order_model.dart';
 import '../models/order_book_model/get_brokerage.dart';
@@ -16,6 +18,115 @@ import '../models/order_book_model/sip_place_order.dart';
 import '../models/order_book_model/trade_book_model.dart';
 import '../models/strategy_builder_model/select_symbols_model.dart';
 import 'core/api_core.dart';
+
+// Synchronous parsers for compute() on native platforms.
+// On web, compute() runs on the main thread — use async chunked versions instead.
+//
+// API contract:
+//   Success → JSON List of order objects
+//   No data / error → JSON Map: {"stat": "Not_Ok", "emsg": "..."}
+//   Session expired → JSON Map: {"stat": "Not_Ok", "emsg": "Session Expired : ..."}
+
+Map<String, dynamic> _parseOrderBookResponse(String body) {
+  final json = jsonDecode(body);
+
+  if (json is Map<String, dynamic>) {
+    if (json['emsg'] != null &&
+        json['emsg'].toString().contains('Session Expired')) {
+      return {"stat": "error", "data": [OrderBookModel.fromJson(json)]};
+    }
+    return {"stat": "no data", "data": <OrderBookModel>[]};
+  }
+
+  if (json is List && json.isNotEmpty) {
+    final List<OrderBookModel> data = [];
+    for (final item in json) {
+      data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
+    }
+    return {"stat": "success", "data": data};
+  }
+
+  return {"stat": "no data", "data": <OrderBookModel>[]};
+}
+
+Map<String, dynamic> _parseTradeBookResponse(String body) {
+  final json = jsonDecode(body);
+
+  if (json is Map<String, dynamic>) {
+    if (json['emsg'] != null &&
+        json['emsg'].toString().contains('Session Expired')) {
+      return {"stat": "error", "data": [TradeBookModel.fromJson(json)]};
+    }
+    return {"stat": "no data", "data": <TradeBookModel>[]};
+  }
+
+  if (json is List && json.isNotEmpty) {
+    final List<TradeBookModel> data = [];
+    for (final item in json) {
+      data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
+    }
+    return {"stat": "success", "data": data};
+  }
+
+  return {"stat": "no data", "data": <TradeBookModel>[]};
+}
+
+/// Batch size for chunked parsing — process this many items, then yield to event loop
+const int _parseBatchSize = 200;
+
+/// Async chunked order book parser for web — O(n) single pass with yields
+/// every [_parseBatchSize] items so other XHR callbacks can process.
+Future<Map<String, dynamic>> _parseOrderBookAsync(String body) async {
+  final json = jsonDecode(body);
+
+  if (json is Map<String, dynamic>) {
+    if (json['emsg'] != null &&
+        json['emsg'].toString().contains('Session Expired')) {
+      return {"stat": "error", "data": [OrderBookModel.fromJson(json)]};
+    }
+    return {"stat": "no data", "data": <OrderBookModel>[]};
+  }
+
+  if (json is List && json.isNotEmpty) {
+    final List<OrderBookModel> data = [];
+    for (var i = 0; i < json.length; i++) {
+      data.add(OrderBookModel.fromJson(json[i] as Map<String, dynamic>));
+      // Yield every batch so event loop can process other XHR callbacks
+      if ((i + 1) % _parseBatchSize == 0) {
+        await Future.delayed(Duration.zero);
+      }
+    }
+    return {"stat": "success", "data": data};
+  }
+
+  return {"stat": "no data", "data": <OrderBookModel>[]};
+}
+
+/// Async chunked trade book parser for web — O(n) single pass with yields
+Future<Map<String, dynamic>> _parseTradeBookAsync(String body) async {
+  final json = jsonDecode(body);
+
+  if (json is Map<String, dynamic>) {
+    if (json['emsg'] != null &&
+        json['emsg'].toString().contains('Session Expired')) {
+      return {"stat": "error", "data": [TradeBookModel.fromJson(json)]};
+    }
+    return {"stat": "no data", "data": <TradeBookModel>[]};
+  }
+
+  if (json is List && json.isNotEmpty) {
+    final List<TradeBookModel> data = [];
+    for (var i = 0; i < json.length; i++) {
+      data.add(TradeBookModel.fromJson(json[i] as Map<String, dynamic>));
+      if ((i + 1) % _parseBatchSize == 0) {
+        await Future.delayed(Duration.zero);
+      }
+    }
+    return {"stat": "success", "data": data};
+  }
+
+  return {"stat": "no data", "data": <TradeBookModel>[]};
+}
 
 mixin OrderAPI on ApiCore {
   // Get Order placing response from kambala
@@ -80,53 +191,31 @@ mixin OrderAPI on ApiCore {
   // Get order book data from kambala
 
   Future<Map<String, dynamic>> getOrderBook() async {
-    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.getOrder);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}" }&jKey=${prefs.clientSession}''');
-      //  log("ORDER BOOK RESPONSE ::: ${res.body}");
-      // log(res.statusCode.toString());
 
-      final List<OrderBookModel> data = [];
       if (res.statusCode == 200) {
-        final json = jsonDecode(res.body);
-        try {
-          if (json is Map<String, dynamic>) {
-            stat = 'no data';
-          } else if (json.isNotEmpty && json.length > 0) {
-            stat = 'success';
-            for (final item in json) {
-              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          } else if (json['stat'] == 'Not_Ok') {
-            stat = 'Not_Ok';
-            final OrderBookModel ord =
-                OrderBookModel.fromJson(json as Map<String, dynamic>);
-            return {"stat": stat, "data": ord};
-          } else {
-            stat = 'error';
-            for (final item in json) {
-              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
-        } catch (e) {
-          stat = 'error';
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(OrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
+        // On web, compute() runs synchronously and blocks the main thread.
+        // Use async chunked parser to yield between batches so other
+        // XHR callbacks (e.g. getLinkedScrips) can process their responses.
+        if (kIsWeb) {
+          return await _parseOrderBookAsync(res.body);
         }
+        return await compute(_parseOrderBookResponse, res.body);
       } else {
         final json = jsonDecode(res.body);
-        if (json['emsg'].contains('Session Expired')) {
-          data.add(OrderBookModel.fromJson(json as Map<String, dynamic>));
+        final List<OrderBookModel> data = [];
+        if (json is Map<String, dynamic> &&
+            json['emsg'] != null &&
+            json['emsg'].toString().contains('Session Expired')) {
+          data.add(OrderBookModel.fromJson(json));
         }
+        return {"stat": "error", "data": data};
       }
-      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -135,53 +224,28 @@ mixin OrderAPI on ApiCore {
 // Get Trade book data from kambala
 
   Future<Map<String, dynamic>> getTradeBook() async {
-    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.tradeBook);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}","actid":"${prefs.clientId}"}&jKey=${prefs.clientSession}''');
-      // log("Trade BOOK RESPONSE ::: ${res.body}");
-      // log(res.statusCode.toString());
 
-      final List<TradeBookModel> data = [];
       if (res.statusCode == 200) {
-        final json = jsonDecode(res.body);
-        try {
-          if (json is Map<String, dynamic>) {
-            stat = 'no data';
-          } else if (json.isNotEmpty && json.length > 0) {
-            stat = 'success';
-            for (final item in json) {
-              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          } else if (json['stat'] == 'Not_Ok') {
-            stat = 'Not_Ok';
-            final TradeBookModel ord =
-                TradeBookModel.fromJson(json as Map<String, dynamic>);
-            return {"stat": stat, "data": ord};
-          } else {
-            stat = 'error';
-            for (final item in json) {
-              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
-        } catch (e) {
-          stat = 'error';
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(TradeBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
+        if (kIsWeb) {
+          return await _parseTradeBookAsync(res.body);
         }
+        return await compute(_parseTradeBookResponse, res.body);
       } else {
         final json = jsonDecode(res.body);
-        if (json['emsg'].contains('Session Expired')) {
-          data.add(TradeBookModel.fromJson(json as Map<String, dynamic>));
+        final List<TradeBookModel> data = [];
+        if (json is Map<String, dynamic> &&
+            json['emsg'] != null &&
+            json['emsg'].toString().contains('Session Expired')) {
+          data.add(TradeBookModel.fromJson(json));
         }
+        return {"stat": "error", "data": data};
       }
-      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -703,59 +767,48 @@ mixin OrderAPI on ApiCore {
 // get GTT order book response from kambala
 
   Future<Map<String, dynamic>> getGTTOrderBook() async {
-    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.pendingGttorder);
       final res = await apiClient.post(uri,
           headers: defaultHeaders,
           body:
               '''jData={"uid":"${prefs.clientId}" }&jKey=${prefs.clientSession}''');
-      // log("GTT ORDER BOOK RESPONSE ::: ${res.body}");
-      // log(res.statusCode.toString());
 
       final List<GttOrderBookModel> data = [];
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        try {
-          if (json.isEmpty && json.length <1) {
-            stat = 'no data';
 
-            
-          } else if (json.isNotEmpty && json.length > 0) {
-            stat = 'success';
-            for (final item in json) {
-              data.add(
-                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          } else if (json['stat'] == 'Not_Ok') {
-            stat = 'Not_Ok';
-            final GttOrderBookModel ord =
-                GttOrderBookModel.fromJson(json as Map<String, dynamic>);
-            return {"stat": stat, "data": ord};
-          } else {
-            stat = 'error';
-            for (final item in json) {
-              data.add(
-                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
+        // Map response = error or "no data" from API
+        if (json is Map<String, dynamic>) {
+          if (json['emsg'] != null &&
+              json['emsg'].toString().contains('Session Expired')) {
+            data.add(GttOrderBookModel.fromJson(json));
+            return {"stat": "error", "data": data};
           }
-        } catch (e) {
-          stat = 'error';
-          if (res.statusCode == 200) {
-            for (final item in json) {
-              data.add(
-                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
+          return {"stat": "no data", "data": data};
         }
+
+        // List response = success
+        if (json is List && json.isNotEmpty) {
+          for (final item in json) {
+            data.add(
+                GttOrderBookModel.fromJson(item as Map<String, dynamic>));
+          }
+          return {"stat": "success", "data": data};
+        }
+
+        // Empty list
+        return {"stat": "no data", "data": data};
       } else {
         final json = jsonDecode(res.body);
-        if (json['emsg'].contains('Session Expired')) {
-          data.add(GttOrderBookModel.fromJson(json as Map<String, dynamic>));
+        if (json is Map<String, dynamic> &&
+            json['emsg'] != null &&
+            json['emsg'].toString().contains('Session Expired')) {
+          data.add(GttOrderBookModel.fromJson(json));
         }
+        return {"stat": "error", "data": data};
       }
-      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }
@@ -764,7 +817,6 @@ mixin OrderAPI on ApiCore {
   // get Triggered GTT orders from kambala
 
   Future<Map<String, dynamic>> getTriggeredGTTOrders() async {
-    String stat = "";
     try {
       final uri = Uri.parse(apiLinks.triggeredGttorder);
       final res = await apiClient.post(uri,
@@ -776,37 +828,36 @@ mixin OrderAPI on ApiCore {
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
-        try {
-          if (json is Map && json['stat'] == 'Not_Ok') {
-            stat = 'Not_Ok';
-            final GttOrderBookModel ord =
-                GttOrderBookModel.fromJson(json as Map<String, dynamic>);
-            return {"stat": stat, "data": ord};
-          } else if (json is List && json.isNotEmpty) {
-            stat = 'success';
-            for (final item in json) {
-              data.add(
-                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          } else {
-            stat = 'no data';
+
+        // Map response = error or "no data" from API
+        if (json is Map<String, dynamic>) {
+          if (json['emsg'] != null &&
+              json['emsg'].toString().contains('Session Expired')) {
+            data.add(GttOrderBookModel.fromJson(json));
+            return {"stat": "error", "data": data};
           }
-        } catch (e) {
-          stat = 'error';
-          if (json is List) {
-            for (final item in json) {
-              data.add(
-                  GttOrderBookModel.fromJson(item as Map<String, dynamic>));
-            }
-          }
+          return {"stat": "no data", "data": data};
         }
+
+        // List response = success
+        if (json is List && json.isNotEmpty) {
+          for (final item in json) {
+            data.add(
+                GttOrderBookModel.fromJson(item as Map<String, dynamic>));
+          }
+          return {"stat": "success", "data": data};
+        }
+
+        return {"stat": "no data", "data": data};
       } else {
         final json = jsonDecode(res.body);
-        if (json is Map && json['emsg'] != null && json['emsg'].contains('Session Expired')) {
-          data.add(GttOrderBookModel.fromJson(json as Map<String, dynamic>));
+        if (json is Map<String, dynamic> &&
+            json['emsg'] != null &&
+            json['emsg'].toString().contains('Session Expired')) {
+          data.add(GttOrderBookModel.fromJson(json));
         }
+        return {"stat": "error", "data": data};
       }
-      return {"stat": stat, "data": data};
     } catch (e) {
       rethrow;
     }

@@ -520,7 +520,7 @@ class MFSchemeInfoWeb extends ConsumerWidget {
           CircleAvatar(
             radius: 24,
             backgroundImage: NetworkImage(
-              "https://v3.mynt.in/mfapi/get-image/manager/${factSheetData.fundManager?.toLowerCase().trim() ?? "default"}.png",
+              "https://v3.mynt.in/mfapi/get-image/manager/${factSheetData.fundManager?.toLowerCase().replaceAll(' ', '') ?? "default"}.png",
             ),
             backgroundColor:
                 isDarkMode ? colors.darkColorDivider : colors.colorDivider,

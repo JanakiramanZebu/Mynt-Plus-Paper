@@ -1383,39 +1383,39 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                             ),
                           ),
                         // Total row
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            border: Border(
-                                top: BorderSide(color: borderColor)),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text('Total',
-                                    style: MyntWebTextStyles.body(context,
-                                        darkColor: MyntColors.textPrimaryDark,
-                                        lightColor: MyntColors.textPrimary,
-                                        fontWeight: MyntFonts.semiBold)),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                    '${totalCharges < 0 ? '- ' : ''}${totalCharges.abs().toStringAsFixed(2)}',
-                                    textAlign: TextAlign.right,
-                                    style: MyntWebTextStyles.body(context,
-                                        color: totalCharges < 0
-                                            ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
-                                            : totalCharges > 0
-                                                ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
-                                                : textColor,
-                                        fontWeight: MyntFonts.semiBold)),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Container(
+                        //   padding: const EdgeInsets.symmetric(
+                        //       horizontal: 16, vertical: 10),
+                        //   decoration: BoxDecoration(
+                        //     border: Border(
+                        //         top: BorderSide(color: borderColor)),
+                        //   ),
+                        //   child: Row(
+                        //     children: [
+                        //       Expanded(
+                        //         flex: 3,
+                        //         child: Text('Total',
+                        //             style: MyntWebTextStyles.body(context,
+                        //                 darkColor: MyntColors.textPrimaryDark,
+                        //                 lightColor: MyntColors.textPrimary,
+                        //                 fontWeight: MyntFonts.semiBold)),
+                        //       ),
+                        //       Expanded(
+                        //         flex: 2,
+                        //         child: Text(
+                        //             '${totalCharges < 0 ? '- ' : ''}${totalCharges.abs().toStringAsFixed(2)}',
+                        //             textAlign: TextAlign.right,
+                        //             style: MyntWebTextStyles.body(context,
+                        //                 color: totalCharges < 0
+                        //                     ? resolveThemeColor(context, dark: MyntColors.errorDark, light: MyntColors.error)
+                        //                     : totalCharges > 0
+                        //                         ? resolveThemeColor(context, dark: MyntColors.successDark, light: MyntColors.success)
+                        //                         : textColor,
+                        //                 fontWeight: MyntFonts.semiBold)),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                       ],
                     ),
                   ),
