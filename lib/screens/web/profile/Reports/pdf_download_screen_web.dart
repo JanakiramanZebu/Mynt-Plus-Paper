@@ -83,8 +83,10 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
     _rightMonth = DateTime(_leftMonth.year, _leftMonth.month + 1);
   }
 
-  void _fetchData() {
-    ref.read(ledgerProvider).fetchAllPdfDownloads(context, _fromDate, _toDate);
+  void _fetchData({bool force = false}) {
+    final ledger = ref.read(ledgerProvider);
+    if (!force && ledger.allPdfDownloads != null) return;
+    ledger.fetchAllPdfDownloads(context, _fromDate, _toDate);
   }
 
   @override
@@ -349,7 +351,7 @@ class _PdfDownloadScreenWebState extends ConsumerState<PdfDownloadScreenWeb> {
         const SizedBox(width: 8),
         Text(
           'PDF Download',
-          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
+          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
         ),
       ],
     );

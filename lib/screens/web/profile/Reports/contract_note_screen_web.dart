@@ -54,9 +54,11 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
     _selectedDate = yesterday;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ledgerprovider = ref.read(ledgerProvider);
-      final dateStr =
-          '${yesterday.day.toString().padLeft(2, '0')}/${yesterday.month.toString().padLeft(2, '0')}/${yesterday.year}';
-      ledgerprovider.fetchContractNote(dateStr, dateStr);
+      if (ledgerprovider.contractNoteModel == null) {
+        final dateStr =
+            '${yesterday.day.toString().padLeft(2, '0')}/${yesterday.month.toString().padLeft(2, '0')}/${yesterday.year}';
+        ledgerprovider.fetchContractNote(dateStr, dateStr);
+      }
     });
   }
 
@@ -198,7 +200,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
         Text(
           'Contract Note',
           style:
-              MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
+              MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -507,16 +509,16 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
           child: LayoutBuilder(
             builder: (context, constraints) {
               final double totalWidth = constraints.maxWidth;
-              final double col0 = totalWidth * 0.10; // Symbol
+              final double col0 = totalWidth * 0.20; // Symbol
               final double col1 = totalWidth * 0.05; // Exchange
               final double col2 = totalWidth * 0.14; // Order No
-              final double col3 = totalWidth * 0.10; // Trade No
+              final double col3 = totalWidth * 0.12; // Trade No
               final double col4 = totalWidth * 0.04; // B/S
               final double col5 = totalWidth * 0.05; // Qty
-              final double col6 = totalWidth * 0.12; // Gross Rate
+              final double col6 = totalWidth * 0.10; // Gross Rate
               final double col7 = totalWidth * 0.10; // Brokerage
-              final double col8 = totalWidth * 0.15; // Net Rate
-              final double col9 = totalWidth * 0.15; // Net Total
+              final double col8 = totalWidth * 0.10; // Net Rate
+              final double col9 = totalWidth * 0.10; // Net Total
 
               final columnWidths = {
                 0: shadcn.FixedTableSize(col0),
@@ -671,7 +673,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
                                                 columnIndex: 4,
                                                 totalColumns: 10,
                                                 child: Text(
-                                                  item.buySale ?? '',
+                                                  item.buySale != null ? item.buySale == 'BUY' ? 'B' : 'S' : '',
                                                   softWrap: false,
                                                   overflow: TextOverflow.ellipsis,
                                                   style: _getTextStyle(

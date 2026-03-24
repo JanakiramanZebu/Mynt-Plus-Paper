@@ -16,6 +16,8 @@ import 'package:mynt_plus/sharedWidget/common_text_fields_web.dart';
 import 'package:mynt_plus/sharedWidget/custom_back_btn.dart';
 import 'package:mynt_plus/sharedWidget/snack_bar.dart';
 import 'package:mynt_plus/utils/digio_esign.dart';
+import 'package:mynt_plus/routes/route_names.dart';
+import 'package:mynt_plus/utils/custom_navigator.dart';
 
 class ProfileSectionScreenWeb extends ConsumerStatefulWidget {
   final String sectionTitle;
@@ -546,62 +548,72 @@ class _ProfileSectionScreenWebState
                   color: warningBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: warningIcon, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Esign Pending - Click here to complete',
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: warningText, fontWeight: MyntFonts.medium)
-                            .copyWith(decoration: TextDecoration.none),
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: warningIcon, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Esign Pending - Click here to complete',
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: warningText, fontWeight: MyntFonts.medium)
+                                .copyWith(decoration: TextDecoration.none),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    _bankEsignLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: primaryColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _openBankEsign(),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Click here E-sign',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: primaryColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _bankEsignLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: primaryColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _openBankEsign(),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Click here E-sign',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: primaryColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                    const SizedBox(width: 4),
-                    _bankCancelLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: errorColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _showCancelBankRequestDialog(theme),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Cancel request',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: errorColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
+                        const SizedBox(width: 4),
+                        _bankCancelLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: errorColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _showCancelBankRequestDialog(theme),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Cancel request',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: errorColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -737,76 +749,111 @@ class _ProfileSectionScreenWebState
 
   // ─── Cancel Bank Request Dialog ───
   void _showCancelBankRequestDialog(ThemesProvider theme) {
-    final isDark = theme.isDarkMode;
     showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor:
-            isDark ? const Color(0xFF121212) : const Color(0xFFF1F3F8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 400,
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
+                    ),
+                  ),
+                ),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Cancel request?',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? colors.textPrimaryDark
-                            : colors.textPrimaryLight,
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: Icon(Icons.close,
-                          size: 20,
-                          color: isDark
-                              ? colors.textSecondaryDark
-                              : colors.textSecondaryLight),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(ctx).pop(),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Are you sure you want to cancel your "bank_change" request?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark
-                        ? colors.textSecondaryDark
-                        : colors.textSecondaryLight,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _cancelBankRequest();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0037B7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Are you sure you want to cancel your "Bank Change" request?',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
                       ),
                     ),
-                    child: const Text('Proceed',
-                        style: TextStyle(color: Colors.white)),
-                  ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _cancelBankRequest();
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.errorDark,
+                              light: MyntColors.tertiary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1151,6 +1198,9 @@ class _ProfileSectionScreenWebState
     final primaryColor = resolveThemeColor(context,
         dark: MyntColors.primaryDark, light: MyntColors.primary);
 
+    final dividerColor = resolveThemeColor(context,
+        dark: MyntColors.dividerDark, light: MyntColors.divider);
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1159,51 +1209,70 @@ class _ProfileSectionScreenWebState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           width: 420,
-          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('E-Sign Is Pending!',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold, color: textColor)),
+              // Header with divider
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: dividerColor),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Your Bank request is not yet Completed.',
-                  style: MyntWebTextStyles.bodySmall(context,
-                      fontWeight: MyntFonts.medium, color: textColor)),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _openBankEsign();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('E-Sign Is Pending!',
+                        style: MyntWebTextStyles.title(context, color: textColor)),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          ref.read(profileAllDetailsProvider).fetchMobEmailStatus();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(Icons.close, size: 20, color: subtitleColor),
+                        ),
+                      ),
                     ),
-                    elevation: 0,
-                  ),
-                  child: Text('Click here E-sign',
-                      style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white)),
+                  ],
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text('Your Bank request is not yet Completed.',
+                        textAlign: TextAlign.center,
+                        style: MyntWebTextStyles.body(context, color: textColor)),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          _openBankEsign();
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary, light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text('Click here E-sign',
+                            style: MyntWebTextStyles.buttonMd(context,
+                                color: Colors.white)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1401,66 +1470,76 @@ class _ProfileSectionScreenWebState
                   color: warningBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: warningIcon, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Esign Pending - Click here to complete',
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: warningText, fontWeight: MyntFonts.medium)
-                            .copyWith(decoration: TextDecoration.none),
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: warningIcon, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Esign Pending - Click here to complete',
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: warningText, fontWeight: MyntFonts.medium)
+                                .copyWith(decoration: TextDecoration.none),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    _ddpiEsignLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: primaryColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _openDdpiEsign(
-                                fileId: mobStatus?.dDPIFileid ?? '',
-                                email: (mobStatus?.dDPIClientEmail ?? '').toLowerCase(),
-                                session: mobStatus?.dDPISession ?? '',
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _ddpiEsignLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: primaryColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _openDdpiEsign(
+                                    fileId: mobStatus?.dDPIFileid ?? '',
+                                    email: (mobStatus?.dDPIClientEmail ?? '').toLowerCase(),
+                                    session: mobStatus?.dDPISession ?? '',
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Click here E-sign',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: primaryColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Click here E-sign',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: primaryColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
+                        const SizedBox(width: 4),
+                        _ddpiCancelLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: errorColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _cancelDdpiRequest(),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Cancel request',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: errorColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                    const SizedBox(width: 4),
-                    _ddpiCancelLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: errorColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _cancelDdpiRequest(),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Cancel request',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: errorColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
-                              ),
-                            ),
-                          ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -2223,66 +2302,76 @@ color: resolveThemeColor(context,
                   color: warningBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: warningIcon, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Esign Pending - Click here to complete',
-                        style: MyntWebTextStyles.bodySmall(context,
-                            color: warningText, fontWeight: MyntFonts.medium)
-                            .copyWith(decoration: TextDecoration.none),
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline, color: warningIcon, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Esign Pending - Click here to complete',
+                            style: MyntWebTextStyles.bodySmall(context,
+                                color: warningText, fontWeight: MyntFonts.medium)
+                                .copyWith(decoration: TextDecoration.none),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    _mtfEsignLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: primaryColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _openMtfEsign(
-                                fileId: mobStatus?.mtfFileid ?? '',
-                                email: (mobStatus?.mtfClientEmail ?? '').toLowerCase(),
-                                session: mobStatus?.mtfSession ?? '',
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        _mtfEsignLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: primaryColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _openMtfEsign(
+                                    fileId: mobStatus?.mtfFileid ?? '',
+                                    email: (mobStatus?.mtfClientEmail ?? '').toLowerCase(),
+                                    session: mobStatus?.mtfSession ?? '',
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Click here E-sign',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: primaryColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Click here E-sign',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: primaryColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
+                        const SizedBox(width: 4),
+                        _mtfCancelLoading
+                            ? SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: errorColor))
+                            : Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _cancelMtfRequest(),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    child: Text('Cancel request',
+                                        style: MyntWebTextStyles.bodySmall(context,
+                                            color: errorColor,
+                                            fontWeight: MyntFonts.semiBold)
+                                            .copyWith(decoration: TextDecoration.none)),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                    const SizedBox(width: 4),
-                    _mtfCancelLoading
-                        ? SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: errorColor))
-                        : Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _cancelMtfRequest(),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                child: Text('Cancel request',
-                                    style: MyntWebTextStyles.bodySmall(context,
-                                        color: errorColor,
-                                        fontWeight: MyntFonts.semiBold)
-                                        .copyWith(decoration: TextDecoration.none)),
-                              ),
-                            ),
-                          ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -2987,66 +3076,76 @@ color: resolveThemeColor(context,
                     color: warningBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.info_outline, color: warningIcon, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Esign Pending - Click here to complete',
-                          style: MyntWebTextStyles.bodySmall(context,
-                              color: warningText, fontWeight: MyntFonts.medium)
-                              .copyWith(decoration: TextDecoration.none),
-                        ),
+                      Row(
+                        children: [
+                          Icon(Icons.info_outline, color: warningIcon, size: 20),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Esign Pending - Click here to complete',
+                              style: MyntWebTextStyles.bodySmall(context,
+                                  color: warningText, fontWeight: MyntFonts.medium)
+                                  .copyWith(decoration: TextDecoration.none),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      _closureEsignLoading
-                          ? SizedBox(
-                              width: 20, height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: primaryColor))
-                          : Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _openClosureEsign(
-                                  fileId: mobStatus?.closureFileid ?? '',
-                                  email: (mobStatus?.closureClientEmail ?? '').toLowerCase(),
-                                  session: mobStatus?.closureSession ?? '',
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          _closureEsignLoading
+                              ? SizedBox(
+                                  width: 20, height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: primaryColor))
+                              : Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => _openClosureEsign(
+                                      fileId: mobStatus?.closureFileid ?? '',
+                                      email: (mobStatus?.closureClientEmail ?? '').toLowerCase(),
+                                      session: mobStatus?.closureSession ?? '',
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      child: Text('Click here E-sign',
+                                          style: MyntWebTextStyles.bodySmall(context,
+                                              color: primaryColor,
+                                              fontWeight: MyntFonts.semiBold)
+                                              .copyWith(decoration: TextDecoration.none)),
+                                    ),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  child: Text('Click here E-sign',
-                                      style: MyntWebTextStyles.bodySmall(context,
-                                          color: primaryColor,
-                                          fontWeight: MyntFonts.semiBold)
-                                          .copyWith(decoration: TextDecoration.none)),
+                          const SizedBox(width: 4),
+                          _closureCancelLoading
+                              ? SizedBox(
+                                  width: 20, height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: errorColor))
+                              : Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => _cancelClosureRequest(),
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      child: Text('Cancel request',
+                                          style: MyntWebTextStyles.bodySmall(context,
+                                              color: errorColor,
+                                              fontWeight: MyntFonts.semiBold)
+                                              .copyWith(decoration: TextDecoration.none)),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                      const SizedBox(width: 4),
-                      _closureCancelLoading
-                          ? SizedBox(
-                              width: 20, height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: errorColor))
-                          : Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _cancelClosureRequest(),
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  child: Text('Cancel request',
-                                      style: MyntWebTextStyles.bodySmall(context,
-                                          color: errorColor,
-                                          fontWeight: MyntFonts.semiBold)
-                                          .copyWith(decoration: TextDecoration.none)),
-                                ),
-                              ),
-                            ),
+                        ],
+                      ),
                     ],
                   ),
                 );
@@ -3360,6 +3459,249 @@ color: resolveThemeColor(context,
     );
   }
 
+  // ─── Negative Balance Dialog (shown when check_closure returns negative balance) ───
+  void _showNegativeBalanceDialog(double balance, String clientId) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final cardBg = resolveThemeColor(ctx,
+            dark: MyntColors.cardDark, light: MyntColors.card);
+        final textColor = resolveThemeColor(ctx,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+        final subtitleColor = resolveThemeColor(ctx,
+            dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+        final dividerColor = resolveThemeColor(ctx,
+            dark: MyntColors.dividerDark, light: MyntColors.divider);
+        final primaryColor = resolveThemeColor(ctx,
+            dark: MyntColors.primaryDark, light: MyntColors.primary);
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 420,
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: dividerColor),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Account Closure ?',
+                          style: MyntWebTextStyles.title(ctx, color: textColor)),
+                      MyntCloseButton(
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                // Body
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: MyntWebTextStyles.bodySmall(ctx,
+                              color: subtitleColor,
+                              fontWeight: MyntFonts.regular),
+                          children: [
+                            const TextSpan(
+                                text: 'You have a ledger balance of '),
+                            TextSpan(
+                              text: 'Rs ${balance.toStringAsFixed(2)}',
+                              style: MyntWebTextStyles.bodySmall(ctx,
+                                  color: textColor,
+                                  fontWeight: MyntFonts.semiBold),
+                            ),
+                            const TextSpan(text: ' in your '),
+                            TextSpan(
+                              text: '"$clientId"',
+                              style: MyntWebTextStyles.bodySmall(ctx,
+                                  color: textColor,
+                                  fontWeight: MyntFonts.semiBold),
+                            ),
+                            const TextSpan(
+                                text:
+                                    '. Please settle the outstanding amount so we can proceed further.'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Insufficient balance link row
+                      RichText(
+                        text: TextSpan(
+                          style: MyntWebTextStyles.bodySmall(ctx,
+                              color: subtitleColor,
+                              fontWeight: MyntFonts.regular),
+                          children: [
+                            const TextSpan(text: 'Insufficient balance, Add fund '),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  WebNavigationHelper.navigateTo(Routes.fundscreen);
+                                },
+                                child: Text(
+                                  'Click here',
+                                  style: MyntWebTextStyles.bodySmall(ctx,
+                                      color: primaryColor,
+                                      fontWeight: MyntFonts.semiBold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Close button
+                      MyntPrimaryButton(
+                        label: 'Close',
+                        size: MyntButtonSize.large,
+                        isFullWidth: true,
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ─── Positive Balance Dialog (shown when user needs to withdraw before closing) ───
+  void _showPositiveBalanceDialog(double balance) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final cardBg = resolveThemeColor(ctx,
+            dark: MyntColors.cardDark, light: MyntColors.card);
+        final textColor = resolveThemeColor(ctx,
+            dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
+        final subtitleColor = resolveThemeColor(ctx,
+            dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
+        final dividerColor = resolveThemeColor(ctx,
+            dark: MyntColors.dividerDark, light: MyntColors.divider);
+        final primaryColor = resolveThemeColor(ctx,
+            dark: MyntColors.primaryDark, light: MyntColors.primary);
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 420,
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: dividerColor)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Account Closure ?',
+                          style: MyntWebTextStyles.title(ctx, color: textColor)),
+                      MyntCloseButton(onPressed: () => Navigator.pop(ctx)),
+                    ],
+                  ),
+                ),
+                // Body
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: MyntWebTextStyles.bodySmall(ctx,
+                              color: subtitleColor,
+                              fontWeight: MyntFonts.regular),
+                          children: [
+                            const TextSpan(
+                                text: 'Please withdraw your available balance of '),
+                            TextSpan(
+                              text: 'Rs ${balance.toStringAsFixed(2)}',
+                              style: MyntWebTextStyles.bodySmall(ctx,
+                                  color: textColor,
+                                  fontWeight: MyntFonts.semiBold),
+                            ),
+                            const TextSpan(
+                                text: ' before submitting your closure request.'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Withdraw link row
+                      RichText(
+                        text: TextSpan(
+                          style: MyntWebTextStyles.bodySmall(ctx,
+                              color: subtitleColor,
+                              fontWeight: MyntFonts.regular),
+                          children: [
+                            const TextSpan(text: 'Click here to '),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(ctx);
+                                  WebNavigationHelper.navigateTo(Routes.fundscreen);
+                                },
+                                child: Text(
+                                  'Withdraw Your Amount',
+                                  style: MyntWebTextStyles.bodySmall(ctx,
+                                      color: primaryColor,
+                                      fontWeight: MyntFonts.semiBold),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      MyntPrimaryButton(
+                        label: 'Close',
+                        size: MyntButtonSize.large,
+                        isFullWidth: true,
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // ─── Submit Closure Request (balance check → closure API) ───
   Future<void> _submitClosureRequest(
       BuildContext dialogCtx, String reason, ThemesProvider themeVal) async {
@@ -3386,11 +3728,11 @@ color: resolveThemeColor(context,
     final String stat = balCheck['stat'] ?? '';
 
     // Negative balance → insufficient funds
-    if (msg1 == 'negative ledger balance') {
+    if (balance < 0 || msg1.toLowerCase().contains('negative')) {
       Navigator.pop(dialogCtx);
       if (mounted) {
-        warningMessage(context,
-            'You have a ledger balance of Rs ${balance.toStringAsFixed(2)}. Please settle the outstanding amount.');
+        final clientId = clientData.cLIENTID ?? '';
+        _showNegativeBalanceDialog(balance, clientId);
       }
       return;
     }
@@ -3399,8 +3741,7 @@ color: resolveThemeColor(context,
     if (stat != 'Ok' && balance > 0) {
       Navigator.pop(dialogCtx);
       if (mounted) {
-        warningMessage(context,
-            'Please withdraw your available balance of Rs ${balance.toStringAsFixed(2)} before submitting your closure request.');
+        _showPositiveBalanceDialog(balance);
       }
       return;
     }
@@ -3439,76 +3780,120 @@ color: resolveThemeColor(context,
   // ─── Closure E-Sign Confirmation Dialog ───
   void _showClosureEsignConfirmationDialog() {
     final mobStatus = ref.read(profileAllDetailsProvider).mobEmailStatus;
-    final textColor = resolveThemeColor(context,
-        dark: MyntColors.textPrimaryDark, light: MyntColors.textPrimary);
-    final subtitleColor = resolveThemeColor(context,
-        dark: MyntColors.textSecondaryDark, light: MyntColors.textSecondary);
-    final cardBg = resolveThemeColor(context,
-        dark: MyntColors.cardDark, light: MyntColors.card);
-    final primaryColor = resolveThemeColor(context,
-        dark: MyntColors.primaryDark, light: MyntColors.primary);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: cardBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: Colors.transparent,
         child: Container(
           width: 420,
-          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: resolveThemeColor(context,
+                dark: MyntColors.dialogDark, light: MyntColors.dialog),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('E-Sign Is Pending!',
-                        style: MyntWebTextStyles.body(context,
-                            fontWeight: MyntFonts.semiBold, color: textColor)),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ref.read(profileAllDetailsProvider).fetchMobEmailStatus();
-                    },
-                    icon: Icon(Icons.close, size: 20, color: subtitleColor),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text('Your Closure request is not yet Completed.',
-                  style: MyntWebTextStyles.bodySmall(context,
-                      fontWeight: MyntFonts.medium, color: textColor)),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _openClosureEsign(
-                      fileId: mobStatus?.closureFileid ?? '',
-                      email:
-                          (mobStatus?.closureClientEmail ?? '').toLowerCase(),
-                      session: mobStatus?.closureSession ?? '',
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              // Header with divider
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: resolveThemeColor(context,
+                          dark: MyntColors.dividerDark,
+                          light: MyntColors.divider),
                     ),
-                    elevation: 0,
                   ),
-                  child: Text('Click here E-sign',
-                      style: MyntWebTextStyles.body(context,
-                          fontWeight: MyntFonts.semiBold,
-                          color: Colors.white)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'E-Sign Is Pending!',
+                      style: MyntWebTextStyles.title(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () {
+                          Navigator.of(ctx).pop();
+                          ref
+                              .read(profileAllDetailsProvider)
+                              .fetchMobEmailStatus();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: resolveThemeColor(context,
+                                dark: MyntColors.textSecondaryDark,
+                                light: MyntColors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      'Your Account Closure request is not yet Completed.',
+                      textAlign: TextAlign.center,
+                      style: MyntWebTextStyles.body(
+                        context,
+                        color: resolveThemeColor(context,
+                            dark: MyntColors.textPrimaryDark,
+                            light: MyntColors.textPrimary),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _openClosureEsign(
+                            fileId: mobStatus?.closureFileid ?? '',
+                            email: (mobStatus?.closureClientEmail ?? '')
+                                .toLowerCase(),
+                            session: mobStatus?.closureSession ?? '',
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: resolveThemeColor(context,
+                              dark: MyntColors.secondary,
+                              light: MyntColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        child: Text(
+                          'Click here E-sign',
+                          style: MyntWebTextStyles.buttonMd(
+                            context,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -3565,7 +3950,12 @@ color: resolveThemeColor(context,
                       .copyWith(decoration: TextDecoration.none),
                 ),
               ),
-              const SizedBox(width: 8),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
               Material(
                 color: Colors.transparent,
                 child: InkWell(

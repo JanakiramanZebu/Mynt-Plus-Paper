@@ -2377,16 +2377,17 @@ class _WebDailyCalendar extends StatelessWidget {
               date.day == today.day;
 
           Color bgColor;
-          if (value == null) {
-            bgColor = emptyColor;
-          } else if (value < 0) {
+          final val = value ?? 0;
+          if (val > 0) {
+             bgColor = resolveThemeColor(context,
+                    dark: MyntColors.profitDark, light: MyntColors.profit).withAlpha(900);
+          } else if (val < 0) {
             // final intensity = _getIntensity(value.abs());
             bgColor = resolveThemeColor(context,
                     dark: MyntColors.lossDark, light: MyntColors.loss).withAlpha(900);
           } else {
             // final intensity = _getIntensity(value.abs());
-            bgColor = resolveThemeColor(context,
-                    dark: MyntColors.profitDark, light: MyntColors.profit).withAlpha(900);
+            bgColor = emptyColor;
           }
 
           final todayBorderColor = resolveThemeColor(context,

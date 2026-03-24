@@ -235,68 +235,78 @@ class _TradingPreferencesScreenWebState
                             color: warningBg,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.info_outline, color: warningIcon, size: 20),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'Esign Pending - Click here to complete',
-                                  style: MyntWebTextStyles.bodySmall(context,
-                                      color: warningText, fontWeight: MyntFonts.medium)
-                                      .copyWith(decoration: TextDecoration.none),
-                                ),
+                              Row(
+                                children: [
+                                  Icon(Icons.info_outline, color: warningIcon, size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Esign Pending - Click here to complete',
+                                      style: MyntWebTextStyles.bodySmall(context,
+                                          color: warningText, fontWeight: MyntFonts.medium)
+                                          .copyWith(decoration: TextDecoration.none),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              _segmentEsignLoading
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: primaryColor))
-                                  : Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () => _openEsignWebView(
-                                          fileId: mobStatus?.segmentFileId ?? '',
-                                          email: (mobStatus?.segmentClientEmail ?? '').toLowerCase(),
-                                          session: mobStatus?.segmentSession ?? '',
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  _segmentEsignLoading
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2, color: primaryColor))
+                                      : Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () => _openEsignWebView(
+                                              fileId: mobStatus?.segmentFileId ?? '',
+                                              email: (mobStatus?.segmentClientEmail ?? '').toLowerCase(),
+                                              session: mobStatus?.segmentSession ?? '',
+                                            ),
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 6),
+                                              child: Text('Click here E-sign',
+                                                  style: MyntWebTextStyles.bodySmall(context,
+                                                      color: primaryColor,
+                                                      fontWeight: MyntFonts.semiBold)
+                                                      .copyWith(decoration: TextDecoration.none)),
+                                            ),
+                                          ),
                                         ),
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 6),
-                                          child: Text('Click here E-sign',
-                                              style: MyntWebTextStyles.bodySmall(context,
-                                                  color: primaryColor,
-                                                  fontWeight: MyntFonts.semiBold)
-                                                  .copyWith(decoration: TextDecoration.none)),
+                                  const SizedBox(width: 4),
+                                  _segmentCancelLoading
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2, color: errorColor))
+                                      : Material(
+                                          color: Colors.transparent,
+                                          child: InkWell(
+                                            onTap: () => _cancelSegmentRequest(),
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 6),
+                                              child: Text('Cancel request',
+                                                  style: MyntWebTextStyles.bodySmall(context,
+                                                      color: errorColor,
+                                                      fontWeight: MyntFonts.semiBold)
+                                                      .copyWith(decoration: TextDecoration.none)),
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                              const SizedBox(width: 4),
-                              _segmentCancelLoading
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2, color: errorColor))
-                                  : Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () => _cancelSegmentRequest(),
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 6),
-                                          child: Text('Cancel request',
-                                              style: MyntWebTextStyles.bodySmall(context,
-                                                  color: errorColor,
-                                                  fontWeight: MyntFonts.semiBold)
-                                                  .copyWith(decoration: TextDecoration.none)),
-                                        ),
-                                      ),
-                                    ),
+                                ],
+                              ),
                             ],
                           ),
                         );

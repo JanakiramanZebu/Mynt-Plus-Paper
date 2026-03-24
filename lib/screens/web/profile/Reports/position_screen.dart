@@ -244,11 +244,14 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
   Widget _buildHeaderBar(BuildContext context, ThemesProvider theme) {
     return Row(
       children: [
-        CustomBackBtn(onBack: widget.onBack),
+        CustomBackBtn(onBack: () {
+          ref.read(ledgerProvider).ccancelalltimes();
+          widget.onBack?.call();
+        }),
         const SizedBox(width: 8),
         Text(
           'Positions',
-          style: MyntWebTextStyles.title(context, fontWeight: MyntFonts.semiBold),
+          style: MyntWebTextStyles.title(context, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -569,11 +572,11 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
       builder: (context, constraints) {
         final double totalWidth = constraints.maxWidth;
         // 11 columns
-        final double instrumentWidth = totalWidth * 0.16;
+        final double instrumentWidth = totalWidth * 0.14;
         final double qtyWidth = totalWidth * 0.06;
         final double avgPriceWidth = totalWidth * 0.10;
         final double ltpWidth = totalWidth * 0.08;
-        final double pnlWidth = totalWidth * 0.08;
+        final double pnlWidth = totalWidth * 0.10;
         final double buyQtyWidth = totalWidth * 0.07;
         final double sellQtyWidth = totalWidth * 0.07;
         final double buyAvgWidth = totalWidth * 0.09;
@@ -716,22 +719,25 @@ class _PositionScreenState extends ConsumerState<PositionScreen> {
         _buildDataCell(
           rowIndex: index,
           columnIndex: 0,
-          child: RichText(
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: displaySymbol,
-                  style: _getTextStyle(context, fontWeight: MyntFonts.semiBold),
-                ),
-                TextSpan(
-                  text: ' $exchange',
-                  style: MyntWebTextStyles.caption(context,
-                      darkColor: MyntColors.textSecondaryDark,
-                      lightColor: MyntColors.textSecondary),
-                ),
-              ],
+          child: Tooltip(
+            message: '$displaySymbol${exchange.isNotEmpty ? ' $exchange' : ''}',
+            child: RichText(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: displaySymbol,
+                    style: _getTextStyle(context, fontWeight: MyntFonts.semiBold),
+                  ),
+                  TextSpan(
+                    text: ' $exchange',
+                    style: MyntWebTextStyles.caption(context,
+                        darkColor: MyntColors.textSecondaryDark,
+                        lightColor: MyntColors.textSecondary),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1059,7 +1065,7 @@ class _PositionFilterPopoverState extends State<_PositionFilterPopover> {
               // Apply button
               SizedBox(
                 width: double.infinity,
-                height: 35,
+                height: 34,
                 child: ElevatedButton(
                   onPressed: () => widget.onApply(_selected),
                   style: ElevatedButton.styleFrom(
@@ -1068,7 +1074,7 @@ class _PositionFilterPopoverState extends State<_PositionFilterPopover> {
                         light: MyntColors.primary),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     elevation: 0,
                   ),

@@ -80,9 +80,10 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
     super.dispose();
   }
 
-  void _fetchData() {
+  void _fetchData({bool force = false}) {
     resetDisplayCount();
     final ledger = ref.read(ledgerProvider);
+    if (!force && ledger.caeventalldata != null) return;
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
     final to = DateFormat('dd/MM/yyyy').format(_endDate);
     ledger.fetchcaeventsdata(context, from, to);
@@ -121,7 +122,7 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
         _startDate = start;
         _endDate = end;
         _showDatePickerPopup = false;
-        _fetchData();
+        _fetchData(force: true);
       }
     });
   }
@@ -132,7 +133,7 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
       _startDate = _endDate.subtract(Duration(days: days));
       _showDatePickerPopup = false;
     });
-    _fetchData();
+    _fetchData(force: true);
   }
 
   bool _isSameDay(DateTime a, DateTime b) =>
@@ -198,10 +199,10 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
               children: [
                 Text(
                   'Event calendar',
-                  style: MyntWebTextStyles.title(context,
+                  style: MyntWebTextStyles.head(context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
-                      fontWeight: MyntFonts.semiBold),
+                      fontWeight: FontWeight.w600),
                 ),
                 // const SizedBox(height: 2),
                 // Text(
@@ -1156,7 +1157,7 @@ class _CAEventsScreenWebState extends ConsumerState<CAEventsScreenWeb>
                         _endDate = DateTime.now();
                         _showDatePickerPopup = false;
                       });
-                      _fetchData();
+                      _fetchData(force: true);
                     }),
                     _buildPresetChip(
                         'Last 7 days', () => _applyQuickDate(7)),

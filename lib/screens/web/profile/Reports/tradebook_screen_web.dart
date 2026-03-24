@@ -87,8 +87,9 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
     super.dispose();
   }
 
-  void _fetchData() {
+  void _fetchData({bool force = false}) {
     final ledger = ref.read(ledgerProvider);
+    if (!force && ledger.tradebookdata != null) return;
     final from = DateFormat('dd/MM/yyyy').format(_startDate);
     final to = DateFormat('dd/MM/yyyy').format(_endDate);
     ledger.fetchtradebookdata(context, from, to);
@@ -235,7 +236,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
             .inDays;
         if (diff > 90) {
           _dateValidationMsg =
-              'You can only select a date range of three month.';
+              'You can only select a date range of Three month.';
           _tempStartDate = date;
           _tempEndDate = null;
           return;
@@ -248,7 +249,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
         _endDate = end;
         displayedItemCount = ScrollToLoadMixin.itemsPerPage;
         _showDatePickerPopup = false;
-        _fetchData();
+        _fetchData(force: true);
       }
     });
   }
@@ -260,7 +261,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
       displayedItemCount = ScrollToLoadMixin.itemsPerPage;
       _showDatePickerPopup = false;
     });
-    _fetchData();
+    _fetchData(force: true);
   }
 
   @override
@@ -328,10 +329,10 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
               children: [
                 Text(
                   'Tradebook',
-                  style: MyntWebTextStyles.title(context,
+                  style: MyntWebTextStyles.head(context,
                       darkColor: MyntColors.textPrimaryDark,
                       lightColor: MyntColors.textPrimary,
-                      fontWeight: MyntFonts.semiBold),
+                      fontWeight: FontWeight.w500),
                 ),
                 // const SizedBox(height: 2),
                 // Text(
@@ -912,6 +913,35 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
   }
 
   // Text style helpers
+  Widget _buildScripCell(BuildContext context, Trades trade) {
+    final scripName = trade.sCRIPNAME ?? '--';
+    final strikePrice = (trade.sTRIKEPRICE ?? '').trim();
+    final optionType = (trade.oPTIONTYPE ?? '').trim();
+    final expiryDate = (trade.eXPIRYDATE ?? '').trim();
+
+    final hasStrike = strikePrice.isNotEmpty && strikePrice != '0' && strikePrice != 'null';
+    final hasOption = optionType.isNotEmpty && optionType != '--' && optionType != 'null';
+    final hasExpiry = expiryDate.isNotEmpty && expiryDate != '--' && expiryDate != 'null';
+
+    final parts = [
+      scripName,
+      if (hasStrike) strikePrice,
+      if (hasOption) optionType,
+      if (hasExpiry) expiryDate,
+    ];
+    final fullText = parts.join(' ');
+
+    return Tooltip(
+      message: fullText,
+      child: Text(
+        fullText,
+        style: _getTextStyle(context),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
+    );
+  }
+
   TextStyle _getTextStyle(BuildContext context, {Color? color}) {
     return MyntWebTextStyles.tableCell(
       context,
@@ -1159,14 +1189,7 @@ class _TradebookScreenWebState extends ConsumerState<TradebookScreenWeb>
                                               _buildDataCell(
                                                 rowIndex: index,
                                                 columnIndex: 2,
-                                                child: Text(
-                                                  trade.sCRIPNAME ?? '--',
-                                                  style:
-                                                      _getTextStyle(context),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
+                                                child: _buildScripCell(context, trade),
                                               ),
                                               // Trade Type
                                               _buildDataCell(

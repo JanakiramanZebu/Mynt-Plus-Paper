@@ -4673,53 +4673,21 @@ class _CustomizableSplitHomeScreenState
         .read(orderProvider)
         .requestWSOrderBook(context: context, isSubscribe: false);
 
-    // Fetch reports data
-    if (reportsprovider.ledgerAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
-          reportsprovider.endDate, reportsprovider.includeBillMargin);
-    }
-    if (reportsprovider.holdingsAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchholdingsData(reportsprovider.today, context);
-    }
-    if (reportsprovider.pnlAllData == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchpnldata(
-          context, reportsprovider.startDate, reportsprovider.today, true);
-    }
-    if (reportsprovider.calenderpnlAllData == null) {
+    // No API pre-fetching here — each report screen fetches its own data
+    // when opened, with cache guards to prevent duplicates.
+
+     if (reportsprovider.calenderpnlAllData == null) {
       await reportsprovider.getCurrentDate('else');
       reportsprovider.calendarProvider();
       reportsprovider.fetchcalenderpnldata(
           context, reportsprovider.startDate, reportsprovider.today, 'Equity');
     }
-    if (reportsprovider.taxpnldercomcur == null &&
-        reportsprovider.taxpnleq == null) {
-      await reportsprovider.getYearlistTaxpnl();
-      await reportsprovider.getCurrentDate('');
-    }
-    if (reportsprovider.tradebookdata == null) {
-      await reportsprovider.getCurrentDate('tradebook');
-      reportsprovider.fetchtradebookdata(
-          context, reportsprovider.startDate, reportsprovider.today);
-    }
-    if (reportsprovider.pdfdownload == null) {
-      await reportsprovider.getCurrentDate('else');
-      reportsprovider.fetchpdfdownload(
-          context, reportsprovider.startDate, reportsprovider.today);
-    }
   }
 
-  // Handle ledger tap
+  // Handle ledger tap — date context only, LedgerScreenWeb handles its own fetch
   void _handleLedgerTap() async {
     final reportsprovider = ref.read(ledgerProvider);
-
     await reportsprovider.getCurrentDate('else');
-    if (mounted) {
-      reportsprovider.fetchLegerData(context, reportsprovider.startDate,
-          reportsprovider.endDate, reportsprovider.includeBillMargin);
-    }
   }
 
   // Handle settings tap
@@ -4904,6 +4872,10 @@ class _CustomizableSplitHomeScreenState
     // Get the previous screen type from stack
     final historyStack = _panelScreenHistory[targetPanelIndex];
     if (historyStack != null && historyStack.isNotEmpty) {
+      // Cancel position polling timer when leaving reportPositions via back button
+      if (_panels[targetPanelIndex].screenType == ScreenType.reportPositions) {
+        ref.read(ledgerProvider).ccancelalltimes();
+      }
       final previousScreen = historyStack.removeLast(); // Pop from stack
       setState(() {
         _panels[targetPanelIndex].screenType = previousScreen;

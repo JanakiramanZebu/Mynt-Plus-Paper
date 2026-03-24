@@ -130,7 +130,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
           final fmt = DateFormat('dd/MM/yyyy');
           ledger.startDate = fmt.format(start);
           ledger.today = fmt.format(end);
-          _fetchData();
+          _fetchData(force: true);
           _removeDatePickerOverlay();
         },
         onQuickSelect: (preset) {
@@ -190,12 +190,13 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
     final fmt = DateFormat('dd/MM/yyyy');
     ledger.startDate = fmt.format(start);
     ledger.today = fmt.format(end);
-    _fetchData();
+    _fetchData(force: true);
   }
 
-  void _fetchData() {
+  void _fetchData({bool force = false}) {
     resetDisplayCount();
     final ledger = ref.read(ledgerProvider);
+    if (!force && ledger.pnlAllData != null) return;
     ledger.fetchpnldata(
       context,
       ledger.startDate.isNotEmpty ? ledger.startDate : _getDefaultStartDate(),
@@ -568,7 +569,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                       _withOpen = val ?? true;
                       displayedItemCount = ScrollToLoadMixin.itemsPerPage;
                     });
-                    _fetchData();
+                    _fetchData(force: true);
                   },
                   activeColor: resolveThemeColor(context,
                       dark: MyntColors.primaryDark,
@@ -818,7 +819,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
         // Rate+Amount columns (2-line) get 11%, Qty columns get 7%
         // Total: 22+7+11+7+11+7+11+10+14 = 100%
         final columnWidths = <int, shadcn.TableSize>{
-          0: shadcn.FixedTableSize(availableWidth * 0.22), // Symbol
+          0: shadcn.FixedTableSize(availableWidth * 0.26), // Symbol
           1: shadcn.FixedTableSize(availableWidth * 0.07), // Buy Qty
           2: shadcn.FixedTableSize(availableWidth * 0.11), // Buy Rate + Amt
           3: shadcn.FixedTableSize(availableWidth * 0.07), // Sell Qty
@@ -826,7 +827,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
           5: shadcn.FixedTableSize(availableWidth * 0.07), // Net Qty
           6: shadcn.FixedTableSize(availableWidth * 0.11), // Net Rate + Amt
           7: shadcn.FixedTableSize(availableWidth * 0.10), // Close Price
-          8: shadcn.FixedTableSize(availableWidth * 0.14), // Notional
+          8: shadcn.FixedTableSize(availableWidth * 0.10), // Notional
         };
 
         return shadcn.OutlinedContainer(

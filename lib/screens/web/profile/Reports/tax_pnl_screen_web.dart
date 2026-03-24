@@ -53,9 +53,11 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final ledger = ref.read(ledgerProvider);
-      ledger.getYearlistTaxpnl();
-      ledger.fetchtaxpnleqdata(context, ledger.yearforTaxpnl);
-      ledger.chargesforeqtaxpnl(context, ledger.yearforTaxpnl);
+      if (ledger.taxpnleq == null) {
+        ledger.getYearlistTaxpnl();
+        ledger.fetchtaxpnleqdata(context, ledger.yearforTaxpnl);
+        ledger.chargesforeqtaxpnl(context, ledger.yearforTaxpnl);
+      }
     });
   }
 
@@ -129,7 +131,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
             children: [
               Text('Tax P&L',
                   style: MyntWebTextStyles.title(context,
-                      fontWeight: MyntFonts.semiBold)),
+                      fontWeight: FontWeight.w600)),
               // const SizedBox(height: 2),
               // Text('Tax P&L Data',
               //     style: MyntWebTextStyles.caption(context,
@@ -361,7 +363,7 @@ class _TaxPnlScreenWebState extends ConsumerState<TaxPnlScreenWeb>
                         style: ElevatedButton.styleFrom(
                           backgroundColor:resolveThemeColor(context, dark: MyntColors.secondary, light: MyntColors.primary),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4)),
+                              borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                         ),
                         child: Text('Download',
