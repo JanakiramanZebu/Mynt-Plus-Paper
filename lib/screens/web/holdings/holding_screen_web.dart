@@ -19,6 +19,7 @@ import '../../../../locator/locator.dart';
 import '../../../../locator/preference.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import '../../../utils/rupee_convert_format.dart';
 import 'holdings_download_helper.dart';
 
@@ -885,6 +886,11 @@ class _HoldingScreenContentState extends ConsumerState<_HoldingScreenContent> {
         final clientName = pref.clientName ?? '';
         final holdings = portfolioData.holdingsModel ?? [];
         final socketData = ref.read(websocketProvider).socketDatas;
+
+        if (holdings.isEmpty) {
+          warningMessage(context, 'No holdings to download');
+          return;
+        }
 
         if (value == 'pdf') {
           HoldingsDownloadHelper.downloadPdf(

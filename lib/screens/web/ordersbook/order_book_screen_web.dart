@@ -16,6 +16,7 @@ import '../../../res/web_colors.dart';
 import '../../../res/mynt_web_text_styles.dart';
 import '../../../res/mynt_web_color_styles.dart';
 import '../../../res/responsive_extensions.dart';
+import '../../../sharedWidget/snack_bar.dart';
 import '../../../sharedWidget/splash_loader.dart';
 import 'orders_download_helper.dart';
 // import 'mf/mf_order_book_screen_web.dart';
@@ -774,9 +775,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           case 0: // Open Orders
             final orders = orderBook.openOrder ?? [];
             if (orders.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No open orders to download')),
-              );
+              warningMessage(context, 'No open orders to download');
               return;
             }
             if (value == 'pdf') {
@@ -790,9 +789,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           case 1: // Executed Orders
             final orders = orderBook.executedOrder ?? [];
             if (orders.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No executed orders to download')),
-              );
+              warningMessage(context, 'No executed orders to download');
               return;
             }
             if (value == 'pdf') {
@@ -806,9 +803,7 @@ class _OrderBookScreenWebState extends ConsumerState<OrderBookScreenWeb>
           case 2: // Trade Book
             final trades = orderBook.tradeBook ?? [];
             if (trades.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('No trades to download')),
-              );
+              warningMessage(context, 'No trades to download');
               return;
             }
             if (value == 'pdf') {
