@@ -362,7 +362,7 @@ String get searchScripNew => 'https://ws.mynt.in/search/SearchScrip';
   String get cmrdownload => 'https://rekycbe.mynt.in/report/cmr';
 
 //mf new3
-  String get newvenketmfurl => "https://v3.mynt.in/mfapi";
+  String get newvenketmfurl => "http://192.168.5.61.:5003";
   
   String get mfholdingsnewapi => "$newvenketmfurl/order/holdings";
   String get mfAllHoldingsApi => "$newvenketmfurl/order/All_holdings";

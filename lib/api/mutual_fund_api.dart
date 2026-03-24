@@ -227,18 +227,22 @@ mixin MutualFundApi on ApiCore {
   //   }
   // }
 
-  Future<MfPlaceOrderResponces> getLumpSumOrder(scode, amt) async {
+  Future<MfPlaceOrderResponces> getLumpSumOrder(scode, amt, [bool isAdditional = false]) async {
     try {
       final uri = Uri.parse(apiLinks.mflumsumorderplacenew);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({
+      final payload = {
             "ClientCode": "${prefs.clientId}",
             "scheme_code": scode,
             "amount": amt,
             "source": kIsWeb ? "WEB" : "MOB",
             "placed_by": "${prefs.clientId}"
-          }));
+          };
+      if (isAdditional) {
+        payload["additional"] = true;
+      }
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode(payload));
 
       final json = jsonDecode((res.body));
       log("palce order mf ==>$json");
@@ -426,12 +430,10 @@ mixin MutualFundApi on ApiCore {
       String amt,
       String noofinstallment,
       String enddate,
-      String mandateId) async {
+      String mandateId, [bool isAdditional = false]) async {
     try {
       final uri = Uri.parse(apiLinks.mfXSipordernew);
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({
+      final payload = {
             "ClientCode": prefs.clientId,
             "no_of_installment": noofinstallment,
             "scheme_code": schemecode,
@@ -441,7 +443,13 @@ mixin MutualFundApi on ApiCore {
             "start_date": startDate,
             "placed_by": prefs.clientId,
             "source": kIsWeb ? "WEB" : "MOB"
-          }));
+          };
+      if (isAdditional) {
+        payload["additional"] = 'true';
+      }
+      final res = await apiClient.post(uri,
+          headers: defaultHeaders,
+          body: jsonEncode(payload));
 
       print("MF X-sip PlaceOrder ==>${res.body}");
 
@@ -570,23 +578,23 @@ mixin MutualFundApi on ApiCore {
     }
   }
 
-  Future<MFCategoryList> getMFCategoryList(String type, String subtype) async {
-    try {
-      final uri = Uri.parse(apiLinks.mfCategoryList);
+  // Future<MFCategoryList> getMFCategoryList(String type, String subtype) async {
+  //   try {
+  //     final uri = Uri.parse(apiLinks.mfCategoryList);
 
-      final res = await apiClient.post(uri,
-          headers: defaultHeaders,
-          body: jsonEncode({"Type": type, "sub": subtype}));
+  //     final res = await apiClient.post(uri,
+  //         headers: defaultHeaders,
+  //         body: jsonEncode({"Type": type, "sub": subtype}));
 
-      final json = jsonDecode((res.body));
+  //     final json = jsonDecode((res.body));
 
-      // log("Best MF ==>$json");
+  //     // log("Best MF ==>$json");
 
-      return MFCategoryList.fromJson(json as Map<String, dynamic>);
-    } catch (e) {
-      rethrow;
-    }
-  }
+  //     return MFCategoryList.fromJson(json as Map<String, dynamic>);
+  //   } catch (e) {
+  //     rethrow;
+  //   }
+  // }
 
   Future<BestMFListModel> getMFBestListData(String type) async {
     try {

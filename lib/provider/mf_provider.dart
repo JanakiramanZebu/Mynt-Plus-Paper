@@ -1620,39 +1620,39 @@ class MFProvider extends DefaultChangeNotifier {
     notifyListeners();
   }
 
-  Future fetchMFCategoryList(String type, String subtype) async {
-    try {
-      _bestmfloader = true;
-      _mfCategoryList = await api.getMFCategoryList(type, subtype);
-      if (_mfCategoryList != null) {
-        _mfCategoryList!.data!.sort((a, b) {
-          // print("${a.aUM} ${b.aUM}");
-          return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
-              .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
-        }); // Sor
-      }
-      // print("_mfCategoryList $_mfCategoryList");
-      // if (_bestMFModel!.stat == "Ok") {
-      //   for (var watchListMf in _bestMFModel!.bestMFList!) {
-      //     _bestMFListStatic
-      //         .where((m) => m['title'] == watchListMf.title)
-      //         .forEach((m) => m['funds'] = watchListMf.counts);
-      //   }
-      for (var masterMf in _mfWatchlist!) {
-        _mfCategoryList!.data!
-            .where((m) => m.iSIN == masterMf.iSIN)
-            .forEach((m) => m.isAdd = true);
-      }
-      // }
-      notifyListeners();
-    } catch (e) {
-      _bestmfloader = false;
-      debugPrint("$e");
-    } finally {
-      _bestmfloader = false;
-      notifyListeners();
-    }
-  }
+  // Future fetchMFCategoryList(String type, String subtype) async {
+  //   try {
+  //     _bestmfloader = true;
+  //     _mfCategoryList = await api.getMFCategoryList(type, subtype);
+  //     if (_mfCategoryList != null) {
+  //       _mfCategoryList!.data!.sort((a, b) {
+  //         // print("${a.aUM} ${b.aUM}");
+  //         return double.parse(b.aUM == '' ? "0.00" : b.aUM!)
+  //             .compareTo(double.parse(a.aUM == '' ? "0.00" : a.aUM!));
+  //       }); // Sor
+  //     }
+  //     // print("_mfCategoryList $_mfCategoryList");
+  //     // if (_bestMFModel!.stat == "Ok") {
+  //     //   for (var watchListMf in _bestMFModel!.bestMFList!) {
+  //     //     _bestMFListStatic
+  //     //         .where((m) => m['title'] == watchListMf.title)
+  //     //         .forEach((m) => m['funds'] = watchListMf.counts);
+  //     //   }
+  //     for (var masterMf in _mfWatchlist!) {
+  //       _mfCategoryList!.data!
+  //           .where((m) => m.iSIN == masterMf.iSIN)
+  //           .forEach((m) => m.isAdd = true);
+  //     }
+  //     // }
+  //     notifyListeners();
+  //   } catch (e) {
+  //     _bestmfloader = false;
+  //     debugPrint("$e");
+  //   } finally {
+  //     _bestmfloader = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   // Future fetchMFCategoryType() async {
   //   _mfCategoryTypes = await api.getMFCategoryTypes();
@@ -2103,8 +2103,14 @@ class MFProvider extends DefaultChangeNotifier {
       if (_mandateDetailModel!.stat == "Ok") {
         _mandateData = _mandateDetailModel!.data!.mandateDetails ?? [];
 
-        _mandateId = _mandateData![0].mandateId!;
-        _mandateStatus = _mandateData![0].status!;
+        // Pick first approved mandate, fallback to first one
+        final approvedMandate = _mandateData!.cast<dynamic>().firstWhere(
+          (m) => m.status == "APPROVED",
+          orElse: () => null,
+        );
+        final defaultMandate = approvedMandate ?? _mandateData![0];
+        _mandateId = defaultMandate.mandateId!;
+        _mandateStatus = defaultMandate.status!;
       }
       notifyListeners();
     } catch (e) {
@@ -2673,13 +2679,13 @@ class MFProvider extends DefaultChangeNotifier {
   }
 
   Future placeordermftemp(BuildContext context, String upiId,
-      MfPlaceOrderInput input, String scode, double amt) async {
+      MfPlaceOrderInput input, String scode, double amt, [bool isAdditional = false]) async {
     _investloader = true;
     _loadingMessage = "Processing order...";
     notifyListeners();
 
     try {
-      _mfPlaceOrderResponces = await api.getLumpSumOrder(scode, amt);
+      _mfPlaceOrderResponces = await api.getLumpSumOrder(scode, amt, isAdditional);
 
       if (_mfPlaceOrderResponces?.stat == "Ok") {
         setLoadingMessage("Order Initiated");
@@ -2834,7 +2840,7 @@ class MFProvider extends DefaultChangeNotifier {
       String amt,
       String noofinstallment,
       String enddate,
-      String mandateId) async {
+      String mandateId, [bool isAdditional = false]) async {
     try {
       // Debug print before API call
       print("=== CALLING SIP SETUP API ===");
@@ -2851,7 +2857,7 @@ class MFProvider extends DefaultChangeNotifier {
       notifyListeners();
 
       _xsipOrderResponces = await api.getXsipPurchase(schemecode, startDate,
-          freqtype, amt, noofinstallment, endDate, mandateId);
+          freqtype, amt, noofinstallment, endDate, mandateId, isAdditional);
 
       // Debug print after API call
       print("=== SIP SETUP API RESPONSE RECEIVED ===");
@@ -2895,13 +2901,11 @@ class MFProvider extends DefaultChangeNotifier {
       }
       fetchmfsiplist();
       fetchMfOrderbook(context);
-      // print("object ${_xsipOrderResponces!.responseMessage} ");
     } catch (e) {
       log("Failed to Place X-sip :: ${e.toString()}");
       toggleLoadingOn(false);
       _loadingMessage = null;
       notifyListeners();
-      warningMessage(context, "Network Error");
       Navigator.pop(context);
     } finally {
       toggleLoadingOn(false);

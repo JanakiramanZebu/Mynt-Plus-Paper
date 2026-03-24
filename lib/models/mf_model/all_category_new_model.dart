@@ -102,6 +102,9 @@ class Fund {
   String? sETTLEMENTTYPE;
   String? startDate;
   String? endDate;
+  FundVariant? idcw;
+  FundVariant? reinv;
+  FundVariant? l1;
 
   Fund(
       {
@@ -132,7 +135,10 @@ class Fund {
       this.reOpeningDate,
       this.sETTLEMENTTYPE,
       this.startDate,
-      this.endDate});
+      this.endDate,
+      this.idcw,
+      this.reinv,
+      this.l1});
 
   Fund.fromJson(Map<String, dynamic> json) {
      aUM = json['AUM'];
@@ -163,6 +169,9 @@ class Fund {
     sETTLEMENTTYPE = json['SETTLEMENT_TYPE'];
     startDate = json['Start_Date'];
     endDate = json['End_Date'];
+    idcw = json['IDCW'] != null ? FundVariant.fromJson(json['IDCW']) : null;
+    reinv = json['Reinv'] != null ? FundVariant.fromJson(json['Reinv']) : null;
+    l1 = json['L1'] != null ? FundVariant.fromJson(json['L1']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -195,6 +204,63 @@ class Fund {
     data['SETTLEMENT_TYPE'] = sETTLEMENTTYPE;
     data['Start_Date'] = startDate;
     data['End_Date'] = endDate;
+    if (idcw != null) data['IDCW'] = idcw!.toJson();
+    if (reinv != null) data['Reinv'] = reinv!.toJson();
+    if (l1 != null) data['L1'] = l1!.toJson();
+    return data;
+  }
+}
+
+class FundVariant {
+  String? schemeCode;
+  String? iSIN;
+  String? schemeName;
+  String? purchaseAllowed;
+  String? sIPFLAG;
+  String? minimumPurchaseAmount;
+  String? additionalPurchaseAmount;
+  String? maximumPurchaseAmount;
+  String? redemptionAllowed;
+  FundVariant? l1;
+
+  FundVariant({
+    this.schemeCode,
+    this.iSIN,
+    this.schemeName,
+    this.purchaseAllowed,
+    this.sIPFLAG,
+    this.minimumPurchaseAmount,
+    this.additionalPurchaseAmount,
+    this.maximumPurchaseAmount,
+    this.redemptionAllowed,
+    this.l1,
+  });
+
+  FundVariant.fromJson(Map<String, dynamic> json) {
+    schemeCode = json['Scheme_Code'];
+    iSIN = json['ISIN'];
+    schemeName = json['Scheme_Name'];
+    purchaseAllowed = json['Purchase_Allowed'];
+    sIPFLAG = json['SIP_FLAG'];
+    minimumPurchaseAmount = json['Minimum_Purchase_Amount'];
+    additionalPurchaseAmount = json['Additional_Purchase_Amount'];
+    maximumPurchaseAmount = json['Maximum_Purchase_Amount'];
+    redemptionAllowed = json['Redemption_Allowed'];
+    l1 = json['L1'] != null ? FundVariant.fromJson(json['L1']) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['Scheme_Code'] = schemeCode;
+    data['ISIN'] = iSIN;
+    data['Scheme_Name'] = schemeName;
+    data['Purchase_Allowed'] = purchaseAllowed;
+    data['SIP_FLAG'] = sIPFLAG;
+    data['Minimum_Purchase_Amount'] = minimumPurchaseAmount;
+    data['Additional_Purchase_Amount'] = additionalPurchaseAmount;
+    data['Maximum_Purchase_Amount'] = maximumPurchaseAmount;
+    data['Redemption_Allowed'] = redemptionAllowed;
+    if (l1 != null) data['L1'] = l1!.toJson();
     return data;
   }
 }

@@ -36,7 +36,8 @@ String getDateSuffix(int day) {
 
 class MFOrderScreenWeb extends ConsumerStatefulWidget {
   final MutualFundList mfData;
-  const MFOrderScreenWeb({super.key, required this.mfData});
+  final bool isAdditional;
+  const MFOrderScreenWeb({super.key, required this.mfData, this.isAdditional = false});
 
   @override
   ConsumerState<MFOrderScreenWeb> createState() => _MFOrderScreenState();
@@ -856,7 +857,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
         ),
       );
 
-      await mfPlaceorder(widget.mfData, mfOrder, context);
+      await mfPlaceorder(widget.mfData, mfOrder, context, widget.isAdditional);
 
       final elapsed = DateTime.now().difference(startTime);
       if (elapsed < const Duration(seconds: 2)) {
@@ -896,6 +897,7 @@ class _MFOrderScreenState extends ConsumerState<MFOrderScreenWeb> {
         mfOrder.invDuration.text,
         mfOrder.freqName == "Daily" ? "0" : mfOrder.endDate,
         mfOrder.mandateId,
+        widget.isAdditional,
       );
 
       // Show response dialog
@@ -955,6 +957,7 @@ mfPlaceorder(
   MutualFundList mfData,
   MFProvider mfOrder,
   BuildContext context,
+  [bool isAdditional = false]
 ) {
   final schemeCode = mfData.schemeCode ?? '';
   MfPlaceOrderInput input = MfPlaceOrderInput(
@@ -988,6 +991,7 @@ mfPlaceorder(
     double.parse(mfOrder.mfOrderTpye == "One-time"
         ? mfOrder.invAmt.text
         : mfOrder.installmentAmt.text),
+    isAdditional,
   );
 
   print("object $input");
