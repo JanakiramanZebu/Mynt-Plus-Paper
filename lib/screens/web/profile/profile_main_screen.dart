@@ -4673,9 +4673,7 @@ class _TotpInlineWidgetState extends State<_TotpInlineWidget> {
 
   void _copyToClipboard(String text, String message) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    successMessage(context, message);
   }
 
   @override

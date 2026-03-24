@@ -164,11 +164,7 @@ class _SharingScreen extends State<SharingScreen> {
                                       mode: LaunchMode.externalApplication);
                                   Navigator.pop(context);
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text('Could not launch Twitter')),
-                                  );
+                                  error(context, 'Could not launch Twitter');
                                 }
                               },
                             ),

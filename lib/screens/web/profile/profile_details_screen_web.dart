@@ -3159,12 +3159,7 @@ class _KraSelfieDialogState extends State<_KraSelfieDialog> {
     final ext = file.extension?.toLowerCase() ?? '';
     if (!['jpg', 'jpeg', 'png'].contains(ext)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid file type. Please upload JPG, JPEG, or PNG only.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        error(context, 'Invalid file type. Please upload JPG, JPEG, or PNG only.');
       }
       return;
     }
@@ -3219,12 +3214,7 @@ class _KraSelfieDialogState extends State<_KraSelfieDialog> {
     img.onError.first.then((_) {
       html.Url.revokeObjectUrl(url);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load image. Please try another file.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        error(context, 'Failed to load image. Please try another file.');
       }
       completer.complete();
     });

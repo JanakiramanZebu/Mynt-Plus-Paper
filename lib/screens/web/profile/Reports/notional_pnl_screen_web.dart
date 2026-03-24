@@ -12,6 +12,7 @@ import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
@@ -309,9 +310,7 @@ class _NotionalPnlScreenWebState extends ConsumerState<NotionalPnlScreenWeb>
                   final filteredTransactions = _getFilteredTransactions(transactions);
 
                   if (filteredTransactions.isEmpty || pnlData == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No data to download')),
-                    );
+                    warningMessage(context, 'No data to download');
                     return;
                   }
 

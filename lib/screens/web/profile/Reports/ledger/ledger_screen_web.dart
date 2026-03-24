@@ -16,6 +16,7 @@ import '../../../../../res/mynt_web_color_styles.dart';
 import 'ledger_download_helper.dart';
 import '../../../../../sharedWidget/common_search_fields_web.dart';
 import '../../../../../sharedWidget/mynt_loader.dart';
+import '../../../../../sharedWidget/snack_bar.dart';
 import '../../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../../sharedWidget/no_data_found.dart';
 import '../../../../../sharedWidget/scroll_to_load_mixin.dart';
@@ -1713,9 +1714,7 @@ class _LedgerScreenWebState extends ConsumerState<LedgerScreenWeb>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download failed: $e')),
-        );
+        error(context, 'Download failed: $e');
       }
     }
   }

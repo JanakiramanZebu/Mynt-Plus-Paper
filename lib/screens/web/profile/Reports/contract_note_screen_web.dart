@@ -10,6 +10,7 @@ import '../../../../provider/thems.dart';
 import '../../../../res/mynt_web_text_styles.dart';
 import '../../../../res/mynt_web_color_styles.dart';
 import '../../../../sharedWidget/mynt_loader.dart';
+import '../../../../sharedWidget/snack_bar.dart';
 import '../../../../sharedWidget/custom_back_btn.dart';
 import '../../../../sharedWidget/no_data_found.dart';
 import '../../../../sharedWidget/scroll_to_load_mixin.dart';
@@ -377,9 +378,7 @@ class _ContractNoteScreenWebState extends ConsumerState<ContractNoteScreenWeb>
     final trades = contractData?.common ?? [];
 
     if (trades.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No data to download')),
-      );
+      warningMessage(context, 'No data to download');
       return;
     }
 
